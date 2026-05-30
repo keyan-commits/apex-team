@@ -1,52 +1,86 @@
 # apex-team
 
-A local web app that orchestrates a small **team of LLM agents** — each agent has a distinct role (MVP: Business Analyst + Developer), runs as its own conversation, and hands off to its teammate via a structured `[[HANDOFF: role]] … [[/HANDOFF]]` protocol.
+A local web app that runs a **team of seven role-specialized LLM agents** working in parallel on a project. The team is driven by **your Claude Code session** (in your terminal) connected to apex-team's own **MCP server**.
 
-Built on top of [apex-engine](../apex-engine): agents call apex-engine's MCP tools (`apex_synthesize`, `apex_fanout`, `doc_review`, code reviewers, `web_search`, etc.) when they need to research, review, or fan out a question to multiple models.
+You type to Claude Code → Claude Code calls apex-team's MCP tools → apex-team dispatches to the team → the web UI shows you what each role is doing in real time.
 
-## What you get
+Built on top of [apex-engine](../apex-engine): every team agent has apex-engine's MCP tools available (multi-model fan-out, doc review, code review, web search, etc.).
 
-- Two-pane UI (BA | Developer). Each pane shows messages from that role's perspective and has its own composer.
-- A top **Orchestrator bar** to dispatch a task to one of the agents.
-- Automatic handoff relay: an agent ends a reply with `[[HANDOFF: developer]] … [[/HANDOFF]]` and the orchestrator immediately streams the other agent's response (cap: 6 hops per user turn).
-- Per-agent provider switching: **Claude** (default — reuses Claude Code OAuth, no API key), **Gemini**, **Groq**.
-- SQLite-backed thread persistence.
+## The team
+
+| Role | Owns |
+|---|---|
+| **Product Owner** | In-app orchestrator — decides who runs next, auto-dispatches via `[[DISPATCH]]` |
+| **Business Analyst** | Functional requirements; maintains `<workspace>/requirements/` directory |
+| **Architect** | Non-functional requirements, system design, **all code reviews**, coding standards |
+| **UI Developer** | Frontend implementation |
+| **Backend Developer** | Backend / API / services |
+| **QA** | All testing — unit, smoke, regression, UI, backend, security; chooses testing tech |
+| **DevSecOps** | CI/CD, secrets, deployments, supply-chain security |
 
 ## Prerequisites
 
 - Node 22+ with pnpm enabled (`corepack enable`).
-- The sibling **apex-engine** project running with its HTTP MCP server:
+- The sibling **apex-engine** project running:
   ```bash
-  cd ../apex-engine
-  pnpm setup        # one-shot install + start
+  cd ../apex-engine && pnpm setup
   ```
-  Default MCP URL: `http://127.0.0.1:31001/mcp`.
-- For Claude agents: be logged into Claude Code on this machine (`claude login`).
-- For Gemini / Groq agents: set the matching key in `.env.local` (see `.env.local.example`).
+- Claude Code installed and logged in (`claude login`). Agents reuse that OAuth.
+- For Gemini / Groq: set keys in `.env.local`.
 
 ## Run
 
 ```bash
 pnpm install
-cp .env.local.example .env.local   # edit if you'll use Gemini or Groq
-pnpm dev                           # http://localhost:3000
+cp .env.local.example .env.local   # edit if you'll use Gemini/Groq
+pnpm dev                           # http://localhost:3000  + MCP at /mcp
 ```
 
-## Try it
+In a **separate terminal**, register apex-team's MCP with your Claude Code (once):
 
-1. In the top bar, leave the dropdown on **→ BA** and type:
-   *"Plan a tiny markdown todo list app for a developer audience."*
-   Click **Dispatch**.
-2. Watch the Business Analyst draft user stories + acceptance criteria, then end the reply with a `[[HANDOFF: developer]]` block.
-3. The Developer pane fills in automatically with an implementation outline.
-4. Either pane's composer lets you intervene: ask BA to tighten a story, or ask Dev for a risk callout.
+```bash
+claude mcp add apex-team --transport http http://localhost:3000/mcp
+```
+
+Then in any Claude Code session:
+
+```
+Use apex-team. Mint a new thread, set workspace to /path/to/my/project,
+then talk_to_product_owner about building a markdown todo list app.
+```
+
+Claude Code will use apex-team's tools, the PO will dispatch, peers will run, and the web dashboard at `http://localhost:3000` will stream every role's reply.
+
+## MCP tools
+
+| Tool | What it does |
+|---|---|
+| `talk_to_product_owner(message, thread_id, workspace?)` | Hand the PO a goal. PO dispatches; tool returns PO reply + every dispatched peer reply. |
+| `talk_to_role(role, message, thread_id, workspace?)` | Bypass PO; talk directly to a specific role. |
+| `get_team_status(thread_id)` | Snapshot of HANDOFF doc sizes + inbox counts per role. |
+| `read_handoff_doc(role, thread_id)` | Current HANDOFF doc for a role. |
+| `list_requirements(workspace?)` | List files in BA's `<workspace>/requirements/`. |
+| `read_requirement(path, workspace?)` | Read a specific requirement file. |
+| `new_thread()` | Mint a fresh thread id. |
+| `list_team_roles()` | List the role ids. |
+| `get_workspace()` | Server's default workspace (its cwd). |
+| `record_user_message(thread_id, message)` | Append user context to a thread without triggering a turn. |
+
+## Web dashboard
+
+`http://localhost:3000` — every role gets its own pane:
+
+- **Product Owner** on top (full width) — see the orchestration.
+- **Six peer panes** in a 3-col grid below — see each role's perspective.
+- Each pane has a collapsible HANDOFF doc panel, an inbox badge (peers only), and a composer (talk directly to that role).
+- **Workspace** field in the top bar controls which directory the team operates on. Persisted in `localStorage`.
 
 ## Configuration
 
-- `APEX_MCP_URL` — apex-engine MCP HTTP endpoint (default `http://127.0.0.1:31001/mcp`).
-- `GOOGLE_GENERATIVE_AI_API_KEY` — only needed when switching an agent to Gemini.
-- `GROQ_API_KEY` — only needed when switching an agent to Groq.
+- `APEX_MCP_URL` — apex-engine MCP endpoint (default `http://127.0.0.1:31001/mcp`).
+- `GOOGLE_GENERATIVE_AI_API_KEY` — only for Gemini agents.
+- `GROQ_API_KEY` — only for Groq agents.
 
 ## Architecture
 
-See `CLAUDE.md` for the full stack, file layout, and engineering standards. `HANDOFF.md` tracks current state and open next-steps.
+See `CLAUDE.md` for the full stack, file layout, role ownership boundaries, and the NOTES / HANDOFF / DISPATCH protocols. `HANDOFF.md` tracks current state and open next-steps.

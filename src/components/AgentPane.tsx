@@ -2,14 +2,21 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import type { AgentConfig, ChatMessage, Provider, TeamRoleId } from "@/types";
+import type {
+  AccentKey,
+  AgentConfig,
+  ChatMessage,
+  Provider,
+  RoleId,
+  TeamRoleId,
+} from "@/types";
 import { MessageBubble } from "./MessageBubble";
 import { AgentStatePanel } from "./AgentStatePanel";
 
 interface Props {
-  role: TeamRoleId;
+  role: RoleId;
   title: string;
-  accent: "ba" | "dev";
+  accent: AccentKey;
   config: AgentConfig;
   onConfigChange: (cfg: AgentConfig) => void;
   messages: ChatMessage[];
@@ -18,9 +25,12 @@ interface Props {
   status: string | null;
   handoffDoc: string;
   handoffDocUpdatedAt: number;
+  /** Pending inbox count. 0 for the PO (no inbox concept). */
   inboxCount: number;
-  onSend: (text: string, target: TeamRoleId) => void;
-  onProcessInbox: () => void;
+  /** Pane sends user message to its own role. */
+  onSend: (text: string, target: RoleId) => void;
+  /** Process inbox button — only meaningful when inboxCount > 0. */
+  onProcessInbox?: () => void;
   onEditHandoffDoc: (next: string) => Promise<void> | void;
 }
 
@@ -50,6 +60,8 @@ export function AgentPane({
   const [input, setInput] = useState("");
   const scrollerRef = useRef<HTMLDivElement | null>(null);
 
+  // Filter the shared transcript for this pane's perspective.
+  // PO sees everything; peers see their own slice.
   const visible = messages.filter((m) => {
     switch (m.author.kind) {
       case "user":
@@ -57,11 +69,14 @@ export function AgentPane({
       case "agent":
         return m.author.role === role;
       case "handoff":
-        return m.author.from === role || m.author.to === role;
+        return (
+          role !== "product-owner" &&
+          (m.author.from === role || m.author.to === role)
+        );
       case "dispatch":
-        return m.author.to === role;
+        return role === "product-owner" || m.author.to === role;
       case "orchestrator":
-        return false;
+        return role === "product-owner";
     }
   });
 
@@ -78,11 +93,13 @@ export function AgentPane({
     setInput("");
   };
 
+  const isPO = role === "product-owner";
+
   return (
     <section className={`pane pane-${accent}`}>
       <header className="pane-header">
         <div className="title">
-          <span className={`dot dot-${accent} ${busy ? "thinking" : ""}`} aria-hidden />
+          <span className={`dot ${busy ? "thinking" : ""}`} aria-hidden />
           {title}
           <span className="status">{status ?? (busy ? "thinking…" : "idle")}</span>
         </div>
@@ -135,7 +152,11 @@ export function AgentPane({
           />
         )}
         {visible.length === 0 && !pendingDraft && (
-          <div className="empty">No messages yet. Talk to {title.toLowerCase()} below.</div>
+          <div className="empty">
+            {isPO
+              ? "Type a goal; I'll route it to the team."
+              : `No messages yet. Talk to ${title.toLowerCase()} below.`}
+          </div>
         )}
       </div>
 
@@ -146,12 +167,12 @@ export function AgentPane({
           submit();
         }}
       >
-        {inboxCount > 0 && (
+        {!isPO && inboxCount > 0 && (
           <button
             type="button"
             className="inbox-btn"
             onClick={onProcessInbox}
-            disabled={busy}
+            disabled={busy || !onProcessInbox}
             title="Have this agent process their pending inbox without a new user message"
           >
             Process inbox ({inboxCount})
@@ -166,8 +187,12 @@ export function AgentPane({
               submit();
             }
           }}
-          placeholder={`Message ${title}… (⌘/Ctrl+Enter to send)`}
-          rows={3}
+          placeholder={
+            isPO
+              ? "Drop a task to the team… (PO orchestrates)  · ⌘/Ctrl+Enter"
+              : `Message ${title}… (⌘/Ctrl+Enter to send)`
+          }
+          rows={isPO ? 2 : 3}
           disabled={busy}
         />
         <button type="submit" disabled={busy || !input.trim()}>
@@ -185,73 +210,80 @@ export function AgentPane({
           border-radius: 12px;
           overflow: hidden;
         }
+        .pane-${accent} {
+          border-color: color-mix(in srgb, var(--accent-${accent}) 30%, var(--border));
+        }
         .pane-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 10px 14px;
+          padding: 8px 12px;
           border-bottom: 1px solid var(--border);
-          gap: 12px;
+          background: color-mix(in srgb, var(--accent-${accent}) 4%, var(--surface));
+          gap: 10px;
         }
         .title {
           font-weight: 600;
           display: flex;
           align-items: center;
           gap: 8px;
+          font-size: 13px;
         }
         .dot {
           width: 10px;
           height: 10px;
           border-radius: 50%;
+          background: var(--accent-${accent});
         }
         .dot.thinking { animation: pulse 1.1s ease-in-out infinite; }
-        .dot-ba { background: var(--accent-ba); }
-        .dot-dev { background: var(--accent-dev); }
         .status {
-          font-size: 11px;
+          font-size: 10px;
           color: var(--text-dim);
           font-weight: 400;
           margin-left: 4px;
           font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
         }
-        .config { display: flex; gap: 6px; font-size: 12px; }
+        .config { display: flex; gap: 4px; font-size: 11px; }
         .config select, .model-input {
           background: var(--surface-2);
           color: var(--text);
           border: 1px solid var(--border);
-          border-radius: 6px;
-          padding: 4px 6px;
-          font-size: 12px;
+          border-radius: 5px;
+          padding: 3px 5px;
+          font-size: 11px;
         }
-        .model-input { width: 180px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+        .model-input {
+          width: 140px;
+          font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        }
         .messages {
           flex: 1;
-          padding: 12px;
+          padding: 10px;
           overflow-y: auto;
-          min-height: 200px;
+          min-height: 120px;
         }
         .empty {
           color: var(--text-dim);
-          font-size: 13px;
+          font-size: 12px;
           text-align: center;
-          padding: 24px 0;
+          padding: 16px 0;
         }
         .composer {
           display: flex;
           flex-wrap: wrap;
-          gap: 8px;
-          padding: 10px;
+          gap: 6px;
+          padding: 8px;
           border-top: 1px solid var(--border);
           background: var(--surface-2);
         }
         .inbox-btn {
           flex-basis: 100%;
-          background: color-mix(in srgb, var(--accent-orch) 18%, var(--surface));
+          background: color-mix(in srgb, var(--accent-po) 18%, var(--surface));
           color: var(--text);
-          border: 1px solid color-mix(in srgb, var(--accent-orch) 50%, var(--border));
+          border: 1px solid color-mix(in srgb, var(--accent-po) 50%, var(--border));
           border-radius: 6px;
-          padding: 6px 10px;
-          font-size: 12px;
+          padding: 5px 8px;
+          font-size: 11px;
           font-weight: 600;
           cursor: pointer;
         }
@@ -262,20 +294,20 @@ export function AgentPane({
           background: var(--surface);
           color: var(--text);
           border: 1px solid var(--border);
-          border-radius: 6px;
-          padding: 8px 10px;
+          border-radius: 5px;
+          padding: 6px 8px;
           font-family: inherit;
-          font-size: 14px;
-          min-width: 200px;
+          font-size: 13px;
+          min-width: 160px;
         }
         button[type="submit"] {
-          align-self: stretch;
-          padding: 0 16px;
-          border-radius: 6px;
+          padding: 0 12px;
+          border-radius: 5px;
           border: 1px solid color-mix(in srgb, var(--accent-${accent}) 50%, var(--border));
           background: color-mix(in srgb, var(--accent-${accent}) 18%, var(--surface));
           color: var(--text);
           font-weight: 600;
+          font-size: 13px;
           cursor: pointer;
         }
         button:disabled { opacity: 0.5; cursor: not-allowed; }

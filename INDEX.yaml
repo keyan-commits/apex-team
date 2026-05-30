@@ -1,16 +1,6 @@
 # INDEX.yaml — machine-readable doc index (single source of truth).
 # Load this to map "what do I need?" -> exact path. INDEX.md is generated from it.
 # RULE: entries DESCRIBE docs; never reproduce sensitive content (names, $/money, secrets).
-#
-# Per entry:
-#   path           (required) repo-relative file or folder
-#   purpose        (required) one-line, non-leaking summary
-#   topics         (required) keyword tags  e.g. [setup, api, auth]
-#   doc_type       (required) entry|specification|reference|analysis|planning|log|index|guide
-#   authority_tier (required) entry|authoritative|reference|working|planning|meta|historical|log|archived
-#   last_updated   (recommended) YYYY-MM-DD
-#   read_this_when (optional) scenario triggers
-#   related_files  (optional) other paths
 
 documents:
   - path: README.md
@@ -25,15 +15,15 @@ documents:
     related_files: [CLAUDE.md, HANDOFF.md]
 
   - path: CLAUDE.md
-    purpose: Stable architecture and engineering standards — stack, file layout, role protocols, caveats.
-    topics: [architecture, standards, stack, agents, mcp, orchestrator]
+    purpose: Stable architecture and standards — 7-role team composition, MCP server architecture, file layout, role ownership boundaries.
+    topics: [architecture, standards, roles, mcp, orchestrator, po, ba, architect, qa, devsecops]
     doc_type: specification
     authority_tier: authoritative
-    last_updated: 2026-05-30
+    last_updated: 2026-05-31
     read_this_when:
-      - making structural changes (new role, new endpoint, dep changes)
-      - need the canonical description of the agent protocols (NOTES, HANDOFF, DISPATCH)
-      - debugging cross-pane behavior or MCP wiring
+      - making structural changes (new role, new endpoint, MCP tool changes)
+      - need the canonical description of NOTES / HANDOFF / DISPATCH protocols
+      - debugging cross-pane behavior or MCP-driven orchestration
     related_files: [HANDOFF.md, README.md]
 
   - path: HANDOFF.md
@@ -48,12 +38,11 @@ documents:
     related_files: [CLAUDE.md]
 
   - path: .env.local.example
-    purpose: Example environment file — apex-engine MCP URL, optional Gemini/Groq keys, optional CLAUDE_BIN override.
+    purpose: Example environment file — apex-engine MCP URL, optional Gemini/Groq keys.
     topics: [config, env, setup]
     doc_type: reference
     authority_tier: reference
-    last_updated: 2026-05-30
+    last_updated: 2026-05-31
     read_this_when:
       - first-time setup (copy to .env.local and edit)
       - switching an agent to a non-Claude provider
-      - the top terminal can't find `claude` on PATH

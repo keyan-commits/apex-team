@@ -38,7 +38,7 @@ export function buildConversation(
       m.author.kind === "user" &&
       m.author.to &&
       m.author.to !== role &&
-      role !== "orchestrator"
+      role !== "product-owner"
     ) {
       continue;
     }

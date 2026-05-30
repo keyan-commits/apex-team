@@ -6,9 +6,13 @@ import remarkGfm from "remark-gfm";
 import type { ChatMessage, RoleId } from "@/types";
 
 const ROLE_LABEL: Record<RoleId, string> = {
+  "product-owner": "Product Owner",
   "business-analyst": "Business Analyst",
-  developer: "Developer",
-  orchestrator: "Orchestrator",
+  architect: "Architect",
+  "ui-developer": "UI Developer",
+  "backend-developer": "Backend Developer",
+  qa: "QA",
+  devsecops: "DevSecOps",
 };
 
 interface Props {
@@ -48,7 +52,7 @@ export function MessageBubble({ message, perspective, pending }: Props) {
       }
       break;
     case "orchestrator":
-      label = "Orchestrator (system)";
+      label = "System note";
       tone = "system";
       break;
     case "handoff":
@@ -62,10 +66,10 @@ export function MessageBubble({ message, perspective, pending }: Props) {
       break;
     case "dispatch":
       if (author.to === perspective) {
-        label = `⇩ Dispatch from Orchestrator`;
+        label = `⇩ Dispatch from Product Owner`;
         tone = "dispatch-in";
       } else {
-        label = `⇩ Dispatched to ${ROLE_LABEL[author.to]}`;
+        label = `⇩ PO dispatched ${ROLE_LABEL[author.to]}`;
         tone = "dispatch-out";
       }
       break;
@@ -87,9 +91,7 @@ export function MessageBubble({ message, perspective, pending }: Props) {
           padding: 10px 12px;
           background: var(--surface);
         }
-        .bubble + .bubble {
-          margin-top: 10px;
-        }
+        .bubble + .bubble { margin-top: 10px; }
         .bubble-header {
           font-size: 11px;
           text-transform: uppercase;
@@ -101,9 +103,7 @@ export function MessageBubble({ message, perspective, pending }: Props) {
           gap: 6px;
         }
         .bubble-user { border-color: #3b4252; }
-        .bubble-self {
-          border-color: color-mix(in srgb, var(--accent-dev) 40%, var(--border));
-        }
+        .bubble-self { border-color: color-mix(in srgb, var(--accent-ui) 40%, var(--border)); }
         .bubble-peer {
           border-color: color-mix(in srgb, var(--accent-ba) 30%, var(--border));
           background: var(--surface-2);
@@ -111,23 +111,23 @@ export function MessageBubble({ message, perspective, pending }: Props) {
         .bubble-handoff-in,
         .bubble-handoff-out {
           border-style: dashed;
-          border-color: var(--accent-orch);
-          background: color-mix(in srgb, var(--accent-orch) 8%, var(--surface));
+          border-color: var(--accent-po);
+          background: color-mix(in srgb, var(--accent-po) 8%, var(--surface));
         }
         .bubble-dispatch-in,
         .bubble-dispatch-out {
-          border-color: color-mix(in srgb, var(--accent-orch) 60%, var(--border));
-          background: color-mix(in srgb, var(--accent-orch) 12%, var(--surface));
+          border-color: color-mix(in srgb, var(--accent-po) 60%, var(--border));
+          background: color-mix(in srgb, var(--accent-po) 12%, var(--surface));
         }
         .bubble-system {
           border-style: dotted;
-          background: color-mix(in srgb, var(--accent-orch) 4%, var(--surface));
+          background: color-mix(in srgb, var(--accent-po) 4%, var(--surface));
         }
         .pending-dot {
           width: 8px;
           height: 8px;
           border-radius: 50%;
-          background: var(--accent-dev);
+          background: var(--accent-ui);
           animation: pulse 1.1s ease-in-out infinite;
         }
         @keyframes pulse {

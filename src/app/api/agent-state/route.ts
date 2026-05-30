@@ -2,12 +2,21 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 
 import { getAgentState, listPendingInbox, setAgentHandoffDoc } from "@/lib/db";
-import type { RoleId } from "@/types";
+import { isTeamRole } from "@/lib/roles";
+import type { TeamRoleId } from "@/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const RoleEnum = z.enum(["business-analyst", "developer"]);
+const RoleEnum = z.enum([
+  "product-owner",
+  "business-analyst",
+  "architect",
+  "ui-developer",
+  "backend-developer",
+  "qa",
+  "devsecops",
+]);
 
 const QuerySchema = z.object({
   threadId: z.string().min(1),
@@ -24,9 +33,12 @@ export async function GET(req: NextRequest): Promise<Response> {
     return Response.json({ error: "missing threadId/role" }, { status: 400 });
   }
   const { threadId, role } = parsed.data;
+  const pendingInbox = isTeamRole(role)
+    ? listPendingInbox(threadId, role as TeamRoleId)
+    : [];
   return Response.json({
     state: getAgentState(threadId, role),
-    pendingInbox: listPendingInbox(threadId, role as RoleId),
+    pendingInbox,
   });
 }
 

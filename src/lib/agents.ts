@@ -23,7 +23,7 @@ export async function* runAgentTurn(input: AgentTurnInput): AsyncGenerator<strin
   const history: ChatMessage[] = listMessages(input.threadId);
   const state = getAgentState(input.threadId, input.role);
 
-  if (input.role === "orchestrator") {
+  if (input.role === "product-owner") {
     const peerStates = TEAM_ROLES.map((r) => getAgentState(input.threadId, r));
     yield* streamAgent(
       cfg,

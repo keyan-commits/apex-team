@@ -15,13 +15,13 @@ _Generated from `INDEX.yaml` (the single source of truth). Edit that file to add
 
 | Doc | Purpose | Type |
 |---|---|---|
-| [`CLAUDE.md`](CLAUDE.md) | Stable architecture and engineering standards — stack, file layout, role protocols, caveats. | specification |
+| [`CLAUDE.md`](CLAUDE.md) | Stable architecture and standards — 7-role team composition, MCP server architecture, file layout, role ownership boundaries. | specification |
 
 ## Reference
 
 | Doc | Purpose | Type |
 |---|---|---|
-| [`.env.local.example`](.env.local.example) | Example environment file — apex-engine MCP URL, optional Gemini/Groq keys, optional CLAUDE_BIN override. | reference |
+| [`.env.local.example`](.env.local.example) | Example environment file — apex-engine MCP URL, optional Gemini/Groq keys. | reference |
 
 ## Logs
 

@@ -1,16 +1,22 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 
-import { appendMessage, setAgentHandoffDoc } from "@/lib/db";
-import { runAgentTurn } from "@/lib/agents";
-import { parseAgentReply } from "@/lib/orchestrator";
+import { runTurn } from "@/lib/run-turn";
 import { sseFormat, sseHeaders } from "@/lib/sse";
 import type { AgentConfig, RoleId } from "@/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const RoleEnum = z.enum(["business-analyst", "developer", "orchestrator"]);
+const RoleEnum = z.enum([
+  "product-owner",
+  "business-analyst",
+  "architect",
+  "ui-developer",
+  "backend-developer",
+  "qa",
+  "devsecops",
+]);
 const ProviderEnum = z.enum(["claude", "gemini", "groq"]);
 
 const AgentConfigSchema = z.object({
@@ -25,9 +31,13 @@ const BodySchema = z.object({
   userMessage: z.string().optional(),
   workspace: z.string().optional(),
   agents: z.object({
+    "product-owner": AgentConfigSchema,
     "business-analyst": AgentConfigSchema,
-    developer: AgentConfigSchema,
-    orchestrator: AgentConfigSchema,
+    architect: AgentConfigSchema,
+    "ui-developer": AgentConfigSchema,
+    "backend-developer": AgentConfigSchema,
+    qa: AgentConfigSchema,
+    devsecops: AgentConfigSchema,
   }),
 });
 
@@ -54,64 +64,44 @@ export async function POST(req: NextRequest): Promise<Response> {
       };
 
       try {
-        if (userMessage && userMessage.trim()) {
-          appendMessage(
-            threadId,
-            { kind: "user", to: target },
-            userMessage.trim(),
-          );
-        }
-
         send({ type: "turn-start", role: target });
 
-        let buffer = "";
-        for await (const chunk of runAgentTurn({
+        const result = await runTurn({
           threadId,
-          role: target,
+          target,
+          userMessage,
+          workspace,
           agents: agents as Record<RoleId, AgentConfig>,
-          cwd: workspace,
           signal: ctrl.signal,
-        })) {
-          buffer += chunk;
-          send({ type: "delta", role: target, text: chunk });
-        }
+          onChunk: (chunk) => send({ type: "delta", role: target, text: chunk }),
+        });
 
-        const { visibleText, newHandoffDoc, handoffs, dispatches } = parseAgentReply(buffer);
-
-        appendMessage(
-          threadId,
-          { kind: "agent", role: target },
-          visibleText || buffer.trim(),
-        );
-
-        if (newHandoffDoc !== null) {
-          setAgentHandoffDoc(threadId, target, newHandoffDoc);
+        if (result.newHandoffDoc !== null) {
           send({
             type: "notes-updated",
             role: target,
-            handoffDoc: newHandoffDoc,
+            handoffDoc: result.newHandoffDoc,
           });
         }
 
-        // Peer HANDOFF — async inbox, no auto-trigger. BA/Dev emit these.
-        for (const h of handoffs) {
-          if (target === "orchestrator") continue; // orchestrator uses DISPATCH; ignore stray HANDOFF.
-          appendMessage(
-            threadId,
-            { kind: "handoff", from: target as "business-analyst" | "developer", to: h.to },
-            h.message,
-          );
-          send({ type: "handoff", from: target as "business-analyst" | "developer", to: h.to, message: h.message });
+        if (target !== "product-owner") {
+          for (const h of result.handoffs) {
+            send({
+              type: "handoff",
+              from: target as Exclude<RoleId, "product-owner">,
+              to: h.to as Exclude<RoleId, "product-owner">,
+              message: h.message,
+            });
+          }
         }
 
-        // Orchestrator DISPATCH — auto-triggers target turn (client picks this up).
-        for (const d of dispatches) {
-          if (target !== "orchestrator") continue; // only orchestrator may DISPATCH.
-          appendMessage(threadId, { kind: "dispatch", to: d.to }, d.message);
-          send({ type: "dispatch", to: d.to, message: d.message });
+        if (target === "product-owner") {
+          for (const d of result.dispatches) {
+            send({ type: "dispatch", to: d.to, message: d.message });
+          }
         }
 
-        send({ type: "turn-end", role: target, text: visibleText });
+        send({ type: "turn-end", role: target, text: result.visibleText });
         send({ type: "done" });
       } catch (err) {
         send({ type: "error", message: errorMessage(err) });

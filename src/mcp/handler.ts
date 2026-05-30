@@ -1,0 +1,67 @@
+// Streamable HTTP MCP handler. Mounted at /mcp in server.ts.
+//
+// Stateless per-request: each MCP request creates a fresh McpServer +
+// transport. Mirrors apex-engine's pattern — cheap (microseconds),
+// avoids cross-request state that would survive a respawn, simpler
+// debugging.
+
+import type { IncomingMessage, ServerResponse } from "node:http";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
+
+import { registerApexTeamTools } from "./tools";
+
+export const MCP_PATH = "/mcp";
+
+export async function handleMcpRequest(
+  req: IncomingMessage,
+  res: ServerResponse,
+): Promise<void> {
+  const raw = await readBody(req);
+
+  const server = new McpServer(
+    { name: "apex-team", version: "0.1.0" },
+    {
+      capabilities: { tools: {} },
+    },
+  );
+  registerApexTeamTools(server);
+
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: undefined, // stateless
+    enableDnsRebindingProtection: true,
+    allowedHosts: [
+      "localhost",
+      "127.0.0.1",
+      "[::1]",
+      `localhost:${process.env.PORT ?? "3000"}`,
+      `127.0.0.1:${process.env.PORT ?? "3000"}`,
+      `[::1]:${process.env.PORT ?? "3000"}`,
+    ],
+  });
+  await server.connect(transport);
+  await transport.handleRequest(req, res, raw);
+}
+
+function readBody(req: IncomingMessage): Promise<unknown> {
+  return new Promise((resolve, reject) => {
+    let buf = "";
+    req.setEncoding("utf8");
+    req.on("data", (chunk) => {
+      buf += chunk;
+      if (buf.length > 5 * 1024 * 1024) {
+        reject(new Error("request body too large"));
+        req.destroy();
+      }
+    });
+    req.on("end", () => {
+      if (!buf) return resolve(undefined);
+      try {
+        resolve(JSON.parse(buf));
+      } catch (err) {
+        reject(err);
+      }
+    });
+    req.on("error", reject);
+  });
+}

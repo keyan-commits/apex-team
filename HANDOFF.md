@@ -2,98 +2,94 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State:** Working end-to-end MVP on `main`, pushed to `keyan-commits/apex-team` (private). Top pane runs **real `claude` CLI** via PTY (xterm.js + node-pty); BA + Dev panes run SDK agents with per-agent HANDOFF docs and async inbox. A shared **workspace** input in the top bar drives both the terminal's spawn cwd and the agents' `query()` cwd — point it at any project directory and the whole team operates there.
+**State:** Team-of-7 architecture is live and pushed. The embedded `claude` CLI in the top pane is **gone**; apex-team now **exposes its own MCP server** at `/mcp` on the same Next.js custom server. External Claude Code sessions register with `claude mcp add apex-team --transport http http://localhost:3000/mcp` and drive the team via tools (`talk_to_product_owner`, `talk_to_role`, etc.). Type-check + production build pass clean.
 
 **Repo:** https://github.com/keyan-commits/apex-team
 
-**Just done (today, 2026-05-31):**
-- Shared workspace field: top bar input + `localStorage` persistence; `?cwd=` query param on `/api/pty` WS URL; `workspace` field on `/api/chat` body; threaded through `runAgentTurn` → `streamAgent` → `query({ options: { cwd } })`. Top terminal re-spawns when workspace changes; agents pick up new cwd on next turn.
-- `git init` + `/handoff-init` scaffold (`INDEX.yaml`, `INDEX.md`, scripts/, `scripts/git-hooks/pre-commit`, `core.hooksPath`, `.handoff-init` marker). Existing `HANDOFF.md` was already conformant — left untouched at init time.
-- Initial commit (`1167b3a`); created private `keyan-commits/apex-team` and pushed `main`.
-- Expanded `INDEX.yaml` with entries for `README.md`, `CLAUDE.md`, `.env.local.example`.
-- **Dependabot alert #1 patched**: postcss `<8.5.10` (GHSA-qx2v-qp2m-jg93, CVE-2026-41305 — XSS via unescaped `</style>` in stringify output). Added `overrides: { postcss: ">=8.5.10" }` to `pnpm-workspace.yaml` (mirrors apex-engine's pin), wiped + regenerated lockfile. Verified only `postcss@8.5.15` remains. Type-check + build clean.
+**The 7 roles:**
+
+| Role | Owns |
+|---|---|
+| Product Owner | In-app orchestrator — uses `[[DISPATCH: role]]` to auto-trigger peers |
+| Business Analyst | Functional requirements; manages `<workspace>/requirements/` |
+| Architect | Non-functional requirements, system design, **all code reviews**, coding standards |
+| UI Developer | Frontend |
+| Backend Developer | Backend / APIs |
+| QA | All testing (unit / smoke / regression / UI / backend / security); test-tech choices |
+| DevSecOps | CI/CD, secrets, deployments, supply chain |
+
+**Just done (this 2026-05-31 session):**
+- Replaced 2-role MVP (BA + Dev) with the 7-role architecture above. Each role has its own pane, HANDOFF doc, system prompt, provider/model config.
+- Removed the embedded `claude` CLI (TerminalPane + xterm.js + node-pty + ws + the WebSocket PTY handler in `server.ts`).
+- Built apex-team's own MCP server at `/mcp`: `src/mcp/handler.ts` (Streamable HTTP, stateless per-request, DNS-rebinding protection) + `src/mcp/tools.ts` (8 tools). Mounted in `server.ts` before the Next.js handler.
+- MCP tools: `talk_to_role`, `talk_to_product_owner` (runs PO + all peers PO dispatches), `get_team_status`, `read_handoff_doc`, `list_requirements`, `read_requirement`, `new_thread`, `get_workspace`, `list_team_roles`, `record_user_message`.
+- Extracted `src/lib/run-turn.ts` so both `/api/chat` (streaming) and MCP tools (non-streaming) share the same turn-persistence logic.
+- PO uses `[[DISPATCH: role]]` (auto-trigger); peers use `[[HANDOFF: role]]` (async inbox, no auto-trigger). Both protocols active.
+- Layout: PO pane on top full-width, six peer panes in a responsive 3-col / 2-col / 1-col grid. New accent colors per role (PO orange, BA blue, Arch purple, UI green, BE cyan, QA pink, DevSecOps amber).
+- Removed deps: `node-pty`, `@xterm/xterm`, `@xterm/addon-fit`, `ws`, `@types/ws`. Removed `postinstall` script + `scripts/fix-node-pty-perms.mjs`. Added `@modelcontextprotocol/sdk`.
+- Deleted dead code: `TerminalPane.tsx`, `OrchestratorPane.tsx`, `slash-commands.ts`, `routing.ts`, `/api/route-task/`, `scripts/pty-probe.mjs`.
 
 **Open next-steps (in priority order):**
-1. End-to-end smoke test against a non-trivial workspace: point apex-team at, e.g., `../my-finances/` via the workspace field and have BA read its CLAUDE.md + propose a small change.
-2. Verify the Claude Agent SDK's `mcp__apex-engine__<tool>` allow-list naming once an agent actually invokes an apex-engine tool. Adjust `apexAllowedTools()` in `src/lib/mcp-config.ts` if the SDK uses a different prefix for HTTP-transport servers.
-3. Wire client-side abort (stop button per pane) — server already honours `req.signal`.
-4. Cross-talk from the top Claude Code terminal to BA/Dev via an **apex-team MCP server** (tools: `dispatch_to_ba`, `dispatch_to_dev`, `read_agent_handoff`). Closes the BMAD loop — Claude Code at the top can read the team's state and dispatch work.
-5. Clean up unused orchestrator-as-SDK code (`OrchestratorPane.tsx`, `slash-commands.ts`, orchestrator system prompt + DISPATCH parsing). Kept in-tree during the CLI pivot in case we wanted a fallback; CLI works fine, can delete.
-6. Migrate from deprecated `next lint` to ESLint CLI (Next 15.5 warning).
+1. End-to-end smoke test:
+   - Start apex-engine MCP (`cd ../apex-engine && pnpm setup`).
+   - Start apex-team (`pnpm dev`).
+   - Register: `claude mcp add apex-team --transport http http://localhost:3000/mcp`.
+   - In a fresh `claude` session: `Use apex-team. Mint a new thread, then talk_to_product_owner about building a markdown todo list app. Workspace: /Users/nikoe/Development/Study/my-finances`.
+   - Watch the web dashboard — PO should dispatch, peers should stream replies, BA should create `<workspace>/requirements/`.
+2. **The PO's dispatched peers fire sequentially inside `talk_to_product_owner`, but in the web UI they fire in parallel.** Reconcile: probably keep MCP sequential (Claude Code expects to see all replies in one tool result), but verify no race conditions when the same thread has parallel turns running.
+3. Verify Claude Agent SDK's `mcp__apex-engine__<tool>` allowlist naming works when an agent actually invokes an apex-engine tool. Adjust `apexAllowedTools()` if needed.
+4. BA's `requirements/` directory has no pre-existing template — BA creates it on first turn. Watch the first run; may need to tighten the BA prompt if it gets the structure wrong.
+5. Add an `/api/health` field reporting whether the MCP transport is mounted (cheap sanity).
+6. Migrate `next lint` → ESLint CLI (Next 15.5 deprecation warning).
+7. Client-side abort button per pane (server already honours `req.signal`).
+8. Persist per-agent provider/model choice (currently resets to Sonnet on reload).
 
 **Parked:**
-- LLM-driven orchestrator (a "team lead" that watches inboxes and acts) — superseded by real Claude Code at the top.
-- Per-agent provider/model persistence across reloads.
-- Streaming-input mode for the Claude Agent SDK (each turn re-serializes the transcript into a fresh `query()`).
-- Thread list / resume sidebar (DB supports it — needs `/api/threads` GET + UI).
+- Streaming-input mode for Claude Agent SDK (each turn re-serializes transcript into a fresh `query()`).
+- Thread list / resume sidebar (DB supports it).
+- LLM-driven inbox watcher (PO actively notices peer HANDOFFs and decides whether to re-dispatch).
 
 **Resume commands:**
 
 ```bash
 cd /Users/nikoe/Development/Study/apex-team
-pnpm dev    # http://localhost:3000
+pnpm dev                                  # http://localhost:3000  + MCP at /mcp
 
 # in another shell:
 cd /Users/nikoe/Development/Study/apex-engine && pnpm setup
+
+# register apex-team's MCP with your Claude Code (once):
+claude mcp add apex-team --transport http http://localhost:3000/mcp
 ```
 
 ---
 
-## Session — 2026-05-30 → 2026-05-31 — initial build + parallel rework + Claude CLI embed
+## Session — 2026-05-30 → 2026-05-31 — initial build + parallel rework + Claude CLI embed (now superseded)
 
-**One long session that produced the whole MVP.** Major arcs, in order:
+**One long session that produced the v1 MVP**, then a structural redesign to the v2 team-of-7 + MCP-driven model. v1 arcs preserved here for context:
 
-### 1. Initial scaffold (2026-05-30)
-Stack chosen to match apex-engine: Next.js 15 App Router + React 19 + TS 5.7 + Tailwind v4 + SQLite (better-sqlite3) + Claude Agent SDK + AI SDK (Gemini/Groq) + pnpm. Two roles (BA, Dev). Single SSE chat endpoint with a 6-hop auto-relay handoff loop. Type-check + production build clean on first pass.
+### v1 — initial build (now superseded)
+1. Scaffold (Next.js 15, Claude Agent SDK, apex-engine MCP wired) — 2 roles (BA + Dev), serial handoff relay.
+2. Parallel-agent rework: per-agent `agent_state` table; `[[NOTES]]` + `[[HANDOFF: role]]` blocks; async inbox; per-pane busy + composer.
+3. Role-ownership tightening: BA owns functional reqs, Dev escalates business-logic questions.
+4. Auto routing classifier (`/api/route-task` via Claude Haiku 4.5) for the OrchestratorBar dropdown.
+5. SDK-orchestrator agent: third role with `[[DISPATCH: role]]` auto-trigger. **Wrong abstraction** — user wanted real Claude Code, not a simulation. Pivoted away.
+6. Embedded real `claude` CLI in top pane via node-pty + xterm.js + WebSocket PTY. Worked, but then…
+7. node-pty gotcha: pnpm strips +x from `spawn-helper`; opaque `posix_spawnp failed.`. Fixed via postinstall chmod script.
+8. Shared workspace field — top bar input flowing to PTY spawn cwd + agents' `query() cwd`. Persisted in localStorage.
+9. `git init` + `/handoff-init` + initial commit (`1167b3a`) + push to private `keyan-commits/apex-team`.
+10. Dependabot patch — postcss `>=8.5.10` via pnpm override (CVE-2026-41305).
 
-### 2. Parallel-agent rework (user feedback: "their own HANDOFF so they can work in parallel")
-- ❌ Removed the auto-relay loop in `/api/chat`.
-- ✅ Added `agent_state` table `(thread_id, role, handoff_doc, updated_at)` — each agent maintains its own working-state doc, persisted per thread.
-- ✅ Added reply protocol: `[[NOTES]] … [[/NOTES]]` updates own HANDOFF; `[[HANDOFF: role]] … [[/HANDOFF]]` drops a message in teammate's inbox (does NOT auto-trigger).
-- ✅ Pending inbox derived on the fly = handoff messages to this role with id > the role's last agent turn.
-- ✅ Providers augment system prompt with `## Your current HANDOFF doc` + `## Pending inbox` sections each turn.
-- ✅ `GET/PUT /api/agent-state` for UI fetch + manual edit.
-- ✅ UI per-pane busy state; both panes can run concurrent SSE streams.
-- ✅ `AgentStatePanel` component — collapsible HANDOFF doc viewer / editor; inbox badge; "Process inbox" button.
-- ✅ `MessageAuthor.user.to: RoleId` so each pane filters out user turns aimed at the other role.
-
-### 3. Role-ownership tightening (user feedback: "BA should manage all the requirements")
-- BA system prompt: "**You own the product requirements end-to-end.** Your HANDOFF doc IS the canonical product spec." Explicit boundaries: BA does NOT design implementation.
-- Dev system prompt: "**You do NOT own the product requirements.** Never pick a default for a business decision." Explicit examples of what counts as business-logic (always escalate) vs technical (decide yourself).
-
-### 4. Auto routing classifier
-- New `POST /api/route-task` calls Claude Haiku 4.5 to classify a task → `business-analyst | developer | both`. Result + REASON surfaced in the status bar.
-- Orchestrator bar dropdown: `→ Auto`, `→ BA`, `→ Dev`, `→ Both`. `Both` fires two `runTurn` promises in parallel.
-
-### 5. Orchestrator-as-SDK-agent (later superseded — see arc 6)
-Added a third agent ("orchestrator") with its own pane, HANDOFF doc, system prompt, and a new `[[DISPATCH: role]]` block that auto-triggered the target's turn (distinct from peer HANDOFF). Slash commands at the app level (`/help`, `/status`, `/clear`, `/ba`, `/dev`, `/both`, `/auto`) intercepted client-side. **This was the wrong abstraction** — user wanted real Claude Code, not a simulation. Code kept in-tree but unused; cleanup deferred.
-
-### 6. Pivot — embed real `claude` CLI in the top pane (user feedback: "I want claude-code to be the top chat")
-- Recognized the gap: `@anthropic-ai/claude-agent-sdk` is a library; `claude` (CLI) is a binary. Real `/status`, `/memory`, `/skills` etc. are CLI-only.
-- New `server.ts` — custom Next.js server with WebSocket upgrade at `/api/pty`. Spawns `claude` via `node-pty`; bridges raw output and resize messages to xterm.js in the browser.
-- `pnpm dev` script: `next dev` → `NODE_ENV=development tsx server.ts`.
-- New deps: `node-pty`, `@xterm/xterm`, `@xterm/addon-fit`, `ws`, `tsx`, `@types/ws`.
-- New `TerminalPane` component. Dynamically imports xterm (touches `window` at module top), themes to apex-team's palette.
-- BA/Dev panes unchanged — still SDK agents.
-
-### 7. node-pty gotcha — pnpm drops +x on `spawn-helper`
-Symptom: `posix_spawnp failed.` for every spawn, even against `/bin/zsh`. Diagnosed via a probe script that compared `child_process.spawn` (worked) vs `node-pty.spawn` (failed). Root cause: pnpm's tarball extraction drops the execute bit from `prebuilds/<platform>/spawn-helper`. Fix in `scripts/fix-node-pty-perms.mjs`, wired to `package.json → scripts.postinstall` so it runs on every install. Cross-referenced in [reference-node-pty-pnpm] memory.
-
-### 8. Workspace input (2026-05-31)
-Shared workspace field in the top bar — drives the PTY spawn's `cwd` (via `?cwd=` on the WS URL) AND the SDK agents' `query({ options: { cwd } })`. Persisted in `localStorage`. Default comes from `/api/health` which returns the server's `process.cwd()`. Changing the workspace re-spawns the top terminal; agents pick up the new cwd on their next turn.
-
-### Verified at end of session
-- `pnpm install` ✓ (incl. native builds: better-sqlite3, sharp, unrs-resolver, node-pty, esbuild)
-- `pnpm type-check` ✓ (zero TS errors)
-- `pnpm build` ✓ (Next.js 15.5.18 — 6 routes incl. `/api/agent-state`, `/api/route-task`)
-- End-to-end smoke test ✓ (BA → Dev handoff round-trip with `[[NOTES]]` + `[[HANDOFF: role]]` blocks rendering correctly)
-- Real Claude CLI in top pane ✓ (`/status` renders the actual TUI panel)
-- Initial commit `1167b3a` ✓
-- Pushed to `keyan-commits/apex-team` (private) ✓
+### v2 — team-of-7 + MCP-driven (THIS session's structural redesign)
+- Embedded `claude` CLI removed entirely (with all its xterm/node-pty/ws machinery).
+- apex-team becomes its own MCP server (`src/mcp/` + `/mcp` endpoint).
+- Roles expand from 2 → 7: PO replaces the SDK-orchestrator concept; Developer splits into UI Dev + Backend Dev; Architect picks up code reviews (was QA's lane in BMAD v1, now Architect's); QA narrows to testing; DevSecOps added.
+- BA's spec persistence becomes a file-based `<workspace>/requirements/` directory (BA creates + maintains).
+- Architect owns `<workspace>/architecture/`; DevSecOps owns `<workspace>/ops/`.
 
 ### Caveats carried forward
-- The Claude Agent SDK's `mcp__apex-engine__<tool>` allow-list naming hasn't been verified against an actual MCP tool call yet — see open next-step #2.
-- Non-Claude providers (Gemini/Groq) don't accept a `cwd` parameter. They see the path in their system prompt but can't `Read` files there.
-- `messages.author.kind === "dispatch"` and the DISPATCH SSE event exist in code but are unreachable from the UI now that the orchestrator-as-SDK-agent isn't rendered.
-- `MessageAuthor.user.to` is optional for backward compat with rows that pre-date the field.
-- `agent_state` and `messages` are independent tables. The HANDOFF doc is a single mutable blob per (thread, role) — not an audit log.
+- Claude Agent SDK's `mcp__apex-engine__<tool>` allowlist naming still unverified in practice — open next-step #3.
+- Non-Claude providers (Gemini/Groq) don't accept a `cwd`. They see workspace in their system prompt but can't read files there.
+- `messages.author.kind` includes `dispatch` (PO → peer) AND `orchestrator` (system note). Both render but `orchestrator` notes are rare in v2.
+- Block parsing is regex-based; malformed blocks render as visible text.
+- Inbox is implicit (last-agent-turn cursor); processing the inbox without a reply still marks items "seen".

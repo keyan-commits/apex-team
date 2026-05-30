@@ -1,12 +1,17 @@
-// The two role-specialized team members. HANDOFF / inbox / per-pane state
-// all assume this narrower union. Use `RoleId` (the wider union below) for
-// anything that includes the orchestrator.
-export type TeamRoleId = "business-analyst" | "developer";
+// Peer roles — the six team members the Product Owner dispatches to,
+// and that handoff to each other via the async inbox protocol.
+export type TeamRoleId =
+  | "business-analyst"
+  | "architect"
+  | "ui-developer"
+  | "backend-developer"
+  | "qa"
+  | "devsecops";
 
-// All addressable agents in the system. The orchestrator drives the team
-// via DISPATCH (auto-trigger); BA & Dev are peers that communicate via
-// HANDOFF (async-inbox).
-export type RoleId = TeamRoleId | "orchestrator";
+// All addressable agents. The product-owner is the in-app orchestrator
+// — it uses DISPATCH (auto-trigger) to drive the team; peers use HANDOFF
+// (async inbox, no auto-trigger).
+export type RoleId = TeamRoleId | "product-owner";
 
 export type Provider = "claude" | "gemini" | "groq";
 
@@ -14,9 +19,19 @@ export interface RoleDefinition {
   id: RoleId;
   label: string;
   shortLabel: string;
-  accent: "ba" | "dev" | "orch";
+  accent: AccentKey;
   systemPrompt: string;
 }
+
+// Accent key drives both UI color and grouping. Six peer accents + PO.
+export type AccentKey =
+  | "po"
+  | "ba"
+  | "arch"
+  | "ui"
+  | "be"
+  | "qa"
+  | "ops";
 
 export interface AgentConfig {
   role: RoleId;
@@ -27,9 +42,9 @@ export interface AgentConfig {
 export type MessageAuthor =
   | { kind: "user"; to?: RoleId }
   | { kind: "agent"; role: RoleId }
-  // System-generated entries shown in the orchestrator pane (slash command
-  // outputs, "dispatched → Dev" confirmations). Distinct from the
-  // orchestrator's own LLM replies, which use `{ kind: "agent"; role: "orchestrator" }`.
+  // System-generated entries shown in the orchestrator pane (e.g. dispatch
+  // confirmations). Distinct from PO's own LLM replies, which use
+  // `{ kind: "agent"; role: "product-owner" }`.
   | { kind: "orchestrator" }
   | { kind: "handoff"; from: TeamRoleId; to: TeamRoleId }
   | { kind: "dispatch"; to: TeamRoleId };
@@ -53,7 +68,7 @@ export interface ChatTurnRequest {
   threadId: string;
   target: RoleId;
   userMessage: string;
-  agents: Record<TeamRoleId, AgentConfig>;
+  agents: Record<RoleId, AgentConfig>;
 }
 
 export type SseEventType =

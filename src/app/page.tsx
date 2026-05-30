@@ -4,9 +4,9 @@ import { useCallback, useEffect, useState } from "react";
 
 import { AgentPane } from "@/components/AgentPane";
 import { OrchestratorBar } from "@/components/OrchestratorBar";
-import { TerminalPane } from "@/components/TerminalPane";
 import { consumeSse } from "@/lib/sse-client";
 import type {
+  AccentKey,
   AgentConfig,
   AgentState,
   ChatMessage,
@@ -22,22 +22,48 @@ const DEFAULT_MODELS: Record<Provider, string> = {
   groq: "llama-3.3-70b-versatile",
 };
 
-const TEAM_ROLES: TeamRoleId[] = ["business-analyst", "developer"];
+const ALL_ROLES: RoleId[] = [
+  "product-owner",
+  "business-analyst",
+  "architect",
+  "ui-developer",
+  "backend-developer",
+  "qa",
+  "devsecops",
+];
+const TEAM_ROLES: TeamRoleId[] = [
+  "business-analyst",
+  "architect",
+  "ui-developer",
+  "backend-developer",
+  "qa",
+  "devsecops",
+];
 
-// Orchestrator is rendered via TerminalPane (real `claude` CLI subprocess);
-// we never invoke /api/chat for target=orchestrator anymore. But the request
-// schema and Record<RoleId, …> shapes still expect an `orchestrator` entry,
-// so we keep a stub config that's never actually used.
+const ROLE_META: Record<RoleId, { title: string; accent: AccentKey }> = {
+  "product-owner": { title: "Product Owner", accent: "po" },
+  "business-analyst": { title: "Business Analyst", accent: "ba" },
+  architect: { title: "Architect", accent: "arch" },
+  "ui-developer": { title: "UI Developer", accent: "ui" },
+  "backend-developer": { title: "Backend Developer", accent: "be" },
+  qa: { title: "QA", accent: "qa" },
+  devsecops: { title: "DevSecOps", accent: "ops" },
+};
+
 function defaultAgents(): Record<RoleId, AgentConfig> {
-  return {
-    "business-analyst": { role: "business-analyst", provider: "claude", model: DEFAULT_MODELS.claude },
-    developer: { role: "developer", provider: "claude", model: DEFAULT_MODELS.claude },
-    orchestrator: { role: "orchestrator", provider: "claude", model: DEFAULT_MODELS.claude },
-  };
+  return Object.fromEntries(
+    ALL_ROLES.map((r) => [r, { role: r, provider: "claude" as Provider, model: DEFAULT_MODELS.claude }]),
+  ) as Record<RoleId, AgentConfig>;
 }
 
-function blankPerTeamRole<T>(value: T): Record<TeamRoleId, T> {
-  return { "business-analyst": value, developer: value };
+function blankPerRole<T>(value: T): Record<RoleId, T> {
+  return Object.fromEntries(ALL_ROLES.map((r) => [r, value])) as Record<RoleId, T>;
+}
+
+function blankAgentStates(): Record<RoleId, AgentState> {
+  return Object.fromEntries(
+    ALL_ROLES.map((r) => [r, { threadId: "", role: r, handoffDoc: "", updatedAt: 0 }]),
+  ) as Record<RoleId, AgentState>;
 }
 
 function newThreadId(): string {
@@ -51,19 +77,16 @@ export default function Home() {
   const [workspace, setWorkspace] = useState<string>("");
   const [agents, setAgents] = useState<Record<RoleId, AgentConfig>>(defaultAgents);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [pending, setPending] = useState<Record<TeamRoleId, string | null>>(() =>
-    blankPerTeamRole<string | null>(null),
+  const [pending, setPending] = useState<Record<RoleId, string | null>>(() =>
+    blankPerRole<string | null>(null),
   );
-  const [busy, setBusy] = useState<Record<TeamRoleId, boolean>>(() => blankPerTeamRole(false));
-  const [status, setStatus] = useState<Record<TeamRoleId, string | null>>(() =>
-    blankPerTeamRole<string | null>(null),
+  const [busy, setBusy] = useState<Record<RoleId, boolean>>(() => blankPerRole(false));
+  const [status, setStatus] = useState<Record<RoleId, string | null>>(() =>
+    blankPerRole<string | null>(null),
   );
-  const [handoffDocs, setHandoffDocs] = useState<Record<TeamRoleId, AgentState>>(() => ({
-    "business-analyst": { threadId: "", role: "business-analyst", handoffDoc: "", updatedAt: 0 },
-    developer: { threadId: "", role: "developer", handoffDoc: "", updatedAt: 0 },
-  }));
+  const [handoffDocs, setHandoffDocs] = useState<Record<RoleId, AgentState>>(blankAgentStates);
   const [inboxCounts, setInboxCounts] = useState<Record<TeamRoleId, number>>(() =>
-    blankPerTeamRole(0),
+    Object.fromEntries(TEAM_ROLES.map((r) => [r, 0])) as Record<TeamRoleId, number>,
   );
 
   useEffect(() => {
@@ -73,28 +96,23 @@ export default function Home() {
       setWorkspace(stored);
       return;
     }
-    // No stored workspace — fall back to the server's cwd (apex-team itself).
     fetch("/api/health", { cache: "no-store" })
       .then((r) => r.json())
       .then((data: { defaultCwd?: string }) => {
         if (data.defaultCwd) setWorkspace(data.defaultCwd);
       })
-      .catch(() => {
-        // ignore
-      });
+      .catch(() => {});
   }, []);
 
   const onWorkspaceChange = useCallback((next: string) => {
     setWorkspace(next);
     try {
       localStorage.setItem(WORKSPACE_STORAGE_KEY, next);
-    } catch {
-      // private mode or quota; non-fatal
-    }
+    } catch {}
   }, []);
 
   const refreshStates = useCallback(async (tid: string) => {
-    const fetches = TEAM_ROLES.map((r) =>
+    const fetches = ALL_ROLES.map((r) =>
       fetch(`/api/agent-state?threadId=${tid}&role=${r}`, { cache: "no-store" })
         .then((r) => r.json())
         .then((data: { state: AgentState; pendingInbox: ChatMessage[] }) => ({ r, data }))
@@ -111,7 +129,9 @@ export default function Home() {
     setInboxCounts((prev) => {
       const next = { ...prev };
       for (const res of results) {
-        if (res?.data) next[res.r] = res.data.pendingInbox.length;
+        if (res && res.r !== "product-owner") {
+          next[res.r as TeamRoleId] = res.data.pendingInbox.length;
+        }
       }
       return next;
     });
@@ -138,7 +158,7 @@ export default function Home() {
   );
 
   const runTurn = useCallback(
-    async (target: TeamRoleId, userMessage: string | null) => {
+    async (target: RoleId, userMessage: string | null) => {
       if (!threadId) return;
       if (busy[target]) return;
 
@@ -172,10 +192,7 @@ export default function Home() {
               break;
             case "delta":
               if (ev.text) {
-                setPending((p) => ({
-                  ...p,
-                  [target]: (p[target] ?? "") + ev.text,
-                }));
+                setPending((p) => ({ ...p, [target]: (p[target] ?? "") + ev.text }));
               }
               break;
             case "turn-end":
@@ -189,20 +206,21 @@ export default function Home() {
                 setStatus((s) => ({ ...s, [target]: `→ ${ev.to}` }));
               }
               break;
+            case "dispatch":
+              if (ev.to && ev.message) {
+                appendLocal({ kind: "dispatch", to: ev.to }, ev.message);
+                setStatus((s) => ({ ...s, [target]: `dispatched → ${ev.to}` }));
+                // PO drives the team — auto-trigger the dispatched peer.
+                void runTurn(ev.to, null);
+              }
+              break;
             case "notes-updated":
               if (ev.role && typeof ev.handoffDoc === "string") {
-                const updatedRole = ev.role;
-                if (updatedRole === "business-analyst" || updatedRole === "developer") {
-                  setHandoffDocs((d) => ({
-                    ...d,
-                    [updatedRole]: {
-                      threadId,
-                      role: updatedRole,
-                      handoffDoc: ev.handoffDoc!,
-                      updatedAt: Date.now(),
-                    },
-                  }));
-                }
+                const r = ev.role;
+                setHandoffDocs((d) => ({
+                  ...d,
+                  [r]: { threadId, role: r, handoffDoc: ev.handoffDoc!, updatedAt: Date.now() },
+                }));
               }
               break;
             case "error":
@@ -228,7 +246,7 @@ export default function Home() {
   );
 
   const onPaneSend = useCallback(
-    (text: string, target: TeamRoleId) => {
+    (text: string, target: RoleId) => {
       void runTurn(target, text);
     },
     [runTurn],
@@ -242,7 +260,7 @@ export default function Home() {
   );
 
   const onEditHandoffDoc = useCallback(
-    async (role: TeamRoleId, next: string) => {
+    async (role: RoleId, next: string) => {
       if (!threadId) return;
       const res = await fetch("/api/agent-state", {
         method: "PUT",
@@ -259,20 +277,36 @@ export default function Home() {
   const onNewThread = useCallback(() => {
     setThreadId(newThreadId());
     setMessages([]);
-    setStatus(blankPerTeamRole(null));
-    setPending(blankPerTeamRole<string | null>(null));
-    setBusy(blankPerTeamRole(false));
-    setHandoffDocs({
-      "business-analyst": { threadId: "", role: "business-analyst", handoffDoc: "", updatedAt: 0 },
-      developer: { threadId: "", role: "developer", handoffDoc: "", updatedAt: 0 },
-    });
-    setInboxCounts(blankPerTeamRole(0));
+    setStatus(blankPerRole(null));
+    setPending(blankPerRole<string | null>(null));
+    setBusy(blankPerRole(false));
+    setHandoffDocs(blankAgentStates());
+    setInboxCounts(Object.fromEntries(TEAM_ROLES.map((r) => [r, 0])) as Record<TeamRoleId, number>);
   }, []);
 
   const updateAgent = (role: RoleId, cfg: AgentConfig) =>
     setAgents((prev) => ({ ...prev, [role]: cfg }));
 
   const anyBusy = Object.values(busy).some(Boolean);
+
+  const paneProps = (role: RoleId) => ({
+    role,
+    title: ROLE_META[role].title,
+    accent: ROLE_META[role].accent,
+    config: agents[role],
+    onConfigChange: (c: AgentConfig) => updateAgent(role, c),
+    messages,
+    pendingDraft: pending[role],
+    busy: busy[role],
+    status: status[role],
+    handoffDoc: handoffDocs[role].handoffDoc,
+    handoffDocUpdatedAt: handoffDocs[role].updatedAt,
+    inboxCount: role === "product-owner" ? 0 : inboxCounts[role as TeamRoleId],
+    onSend: onPaneSend,
+    onProcessInbox:
+      role === "product-owner" ? undefined : () => onProcessInbox(role as TeamRoleId),
+    onEditHandoffDoc: (next: string) => onEditHandoffDoc(role, next),
+  });
 
   return (
     <main className="layout">
@@ -284,50 +318,41 @@ export default function Home() {
         onWorkspaceChange={onWorkspaceChange}
       />
 
-      <div className="orch-area">
-        <TerminalPane workspace={workspace} />
+      <div className="po-area">
+        <AgentPane {...paneProps("product-owner")} />
       </div>
 
-      <div className="panes">
+      <div className="team-grid">
         {TEAM_ROLES.map((r) => (
-          <AgentPane
-            key={r}
-            role={r}
-            title={r === "business-analyst" ? "Business Analyst" : "Developer"}
-            accent={r === "business-analyst" ? "ba" : "dev"}
-            config={agents[r]}
-            onConfigChange={(c) => updateAgent(r, c)}
-            messages={messages}
-            pendingDraft={pending[r]}
-            busy={busy[r]}
-            status={status[r]}
-            handoffDoc={handoffDocs[r].handoffDoc}
-            handoffDocUpdatedAt={handoffDocs[r].updatedAt}
-            inboxCount={inboxCounts[r]}
-            onSend={onPaneSend}
-            onProcessInbox={() => onProcessInbox(r)}
-            onEditHandoffDoc={(next) => onEditHandoffDoc(r, next)}
-          />
+          <AgentPane key={r} {...paneProps(r)} />
         ))}
       </div>
 
       <style jsx>{`
         .layout {
-          height: 100vh;
+          min-height: 100vh;
           display: grid;
           grid-template-rows: auto auto 1fr;
           gap: 0;
         }
-        .orch-area {
-          padding: 12px 12px 0;
-          min-height: 0;
+        .po-area {
+          padding: 10px 12px 0;
         }
-        .panes {
+        .team-grid {
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
-          padding: 12px;
-          min-height: 0;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 10px;
+          padding: 10px 12px 12px;
+        }
+        @media (max-width: 1100px) {
+          .team-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+        }
+        @media (max-width: 720px) {
+          .team-grid {
+            grid-template-columns: 1fr;
+          }
         }
       `}</style>
     </main>

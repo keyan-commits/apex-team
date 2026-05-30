@@ -8,9 +8,15 @@
   --border: #232a36;
   --text: #e6e9ef;
   --text-dim: #8a93a3;
-  --accent-ba: #7aa2f7;
-  --accent-dev: #9ece6a;
-  --accent-orch: #e0af68;
+
+  /* Role accents — one per RoleId */
+  --accent-po: #e0af68;    /* Product Owner — orange/gold */
+  --accent-ba: #7aa2f7;    /* Business Analyst — blue */
+  --accent-arch: #bb9af7;  /* Architect — purple */
+  --accent-ui: #9ece6a;    /* UI Developer — green */
+  --accent-be: #7dcfff;    /* Backend Developer — cyan */
+  --accent-qa: #f7768e;    /* QA — pink */
+  --accent-ops: #ff9e64;   /* DevSecOps — amber/red */
 }
 
 html,
