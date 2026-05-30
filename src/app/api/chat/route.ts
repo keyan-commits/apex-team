@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
 
-import { runTurn } from "@/lib/run-turn";
-import { sseFormat, sseHeaders } from "@/lib/sse";
+import { runTurnWithDispatches } from "@/lib/run-turn-with-dispatches";
+import { publish } from "@/lib/event-bus";
 import type { AgentConfig, RoleId } from "@/types";
 
 export const runtime = "nodejs";
@@ -41,6 +41,10 @@ const BodySchema = z.object({
   }),
 });
 
+// POST kicks off a turn (plus any PO-dispatched peers) and awaits it.
+// All observable events flow through the per-thread event bus; subscribe
+// at /api/thread-events to watch them stream. No SSE on this endpoint —
+// the bus is the single delivery path for turn events.
 export async function POST(req: NextRequest): Promise<Response> {
   let parsed: z.infer<typeof BodySchema>;
   try {
@@ -54,67 +58,29 @@ export async function POST(req: NextRequest): Promise<Response> {
 
   const { threadId, target, userMessage, workspace, agents } = parsed;
 
-  const stream = new ReadableStream<Uint8Array>({
-    async start(controller) {
-      const ctrl = new AbortController();
-      req.signal.addEventListener("abort", () => ctrl.abort(), { once: true });
+  const ctrl = new AbortController();
+  req.signal.addEventListener("abort", () => ctrl.abort(), { once: true });
 
-      const send = (event: Parameters<typeof sseFormat>[0]) => {
-        controller.enqueue(sseFormat(event));
-      };
-
-      try {
-        send({ type: "turn-start", role: target });
-
-        const result = await runTurn({
-          threadId,
-          target,
-          userMessage,
-          workspace,
-          agents: agents as Record<RoleId, AgentConfig>,
-          signal: ctrl.signal,
-          onChunk: (chunk) => send({ type: "delta", role: target, text: chunk }),
-        });
-
-        if (result.newHandoffDoc !== null) {
-          send({
-            type: "notes-updated",
-            role: target,
-            handoffDoc: result.newHandoffDoc,
-          });
-        }
-
-        if (target !== "product-owner") {
-          for (const h of result.handoffs) {
-            send({
-              type: "handoff",
-              from: target as Exclude<RoleId, "product-owner">,
-              to: h.to as Exclude<RoleId, "product-owner">,
-              message: h.message,
-            });
-          }
-        }
-
-        if (target === "product-owner") {
-          for (const d of result.dispatches) {
-            send({ type: "dispatch", to: d.to, message: d.message });
-          }
-        }
-
-        send({ type: "turn-end", role: target, text: result.visibleText });
-        send({ type: "done" });
-      } catch (err) {
-        send({ type: "error", message: errorMessage(err) });
-      } finally {
-        controller.close();
-      }
-    },
-  });
-
-  return new Response(stream, { headers: sseHeaders() });
-}
-
-function errorMessage(err: unknown): string {
-  if (err instanceof Error) return err.message;
-  return String(err);
+  try {
+    await runTurnWithDispatches({
+      threadId,
+      target,
+      userMessage,
+      workspace,
+      agents: agents as Record<RoleId, AgentConfig>,
+      signal: ctrl.signal,
+    });
+    return new Response(JSON.stringify({ ok: true }), {
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    // Best-effort error broadcast — runTurn already publishes its own
+    // error event for stream failures, but catch the outer envelope too.
+    publish(threadId, { type: "error", role: target, message });
+    return new Response(JSON.stringify({ error: message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }

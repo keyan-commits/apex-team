@@ -1,10 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AgentPane } from "@/components/AgentPane";
 import { OrchestratorBar } from "@/components/OrchestratorBar";
-import { consumeSse } from "@/lib/sse-client";
 import type {
   AccentKey,
   AgentConfig,
@@ -13,6 +12,7 @@ import type {
   MessageAuthor,
   Provider,
   RoleId,
+  SseEvent,
   TeamRoleId,
 } from "@/types";
 
@@ -89,6 +89,9 @@ export default function Home() {
     Object.fromEntries(TEAM_ROLES.map((r) => [r, 0])) as Record<TeamRoleId, number>,
   );
 
+  const messagesRef = useRef(messages);
+  messagesRef.current = messages;
+
   useEffect(() => {
     setThreadId(newThreadId());
     const stored = localStorage.getItem(WORKSPACE_STORAGE_KEY);
@@ -157,104 +160,157 @@ export default function Home() {
     [threadId],
   );
 
+  // Replay history, THEN subscribe to live events. Sequencing matters —
+  // opening the EventSource first races against the history fetch and
+  // can cause a live event to be wiped by a stale fetch result.
+  useEffect(() => {
+    if (!threadId) return;
+    let cancelled = false;
+    let es: EventSource | null = null;
+
+    (async () => {
+      try {
+        const res = await fetch(`/api/thread?threadId=${threadId}`, { cache: "no-store" });
+        if (cancelled) return;
+        if (res.ok) {
+          const data = (await res.json()) as { messages?: ChatMessage[] };
+          if (!cancelled && Array.isArray(data.messages)) setMessages(data.messages);
+        }
+      } catch {
+        /* leave messages as-is */
+      }
+      if (cancelled) return;
+
+      es = new EventSource(`/api/thread-events?threadId=${threadId}`);
+
+      es.onmessage = (e) => {
+      let ev: SseEvent;
+      try {
+        ev = JSON.parse(e.data);
+      } catch {
+        return;
+      }
+      switch (ev.type) {
+        case "user-message":
+          if (ev.role && ev.text) appendLocal({ kind: "user", to: ev.role }, ev.text);
+          break;
+        case "turn-start":
+          if (ev.role) {
+            const r = ev.role;
+            setBusy((b) => ({ ...b, [r]: true }));
+            setPending((p) => ({ ...p, [r]: "" }));
+            setStatus((s) => ({ ...s, [r]: "thinking…" }));
+          }
+          break;
+        case "delta":
+          if (ev.role && ev.text) {
+            const r = ev.role;
+            setPending((p) => ({ ...p, [r]: (p[r] ?? "") + ev.text! }));
+          }
+          break;
+        case "turn-end":
+          if (ev.role) {
+            const r = ev.role;
+            appendLocal({ kind: "agent", role: r }, ev.text ?? "");
+            setBusy((b) => ({ ...b, [r]: false }));
+            setPending((p) => ({ ...p, [r]: null }));
+            setStatus((s) => ({ ...s, [r]: "idle" }));
+            // Auto-refresh handoff / inbox counts after each turn.
+            refreshStates(threadId);
+          }
+          break;
+        case "handoff":
+          if (ev.from && ev.to && ev.message) {
+            appendLocal({ kind: "handoff", from: ev.from, to: ev.to }, ev.message);
+          }
+          break;
+        case "dispatch":
+          if (ev.to && ev.message) {
+            appendLocal({ kind: "dispatch", to: ev.to }, ev.message);
+            // PO dispatch fan-out is server-driven now; just reflect
+            // status so the UI shows the peer queued up.
+            setStatus((s) => ({ ...s, [ev.to!]: "dispatching" }));
+          }
+          break;
+        case "notes-updated":
+          if (ev.role && typeof ev.handoffDoc === "string") {
+            const r = ev.role;
+            setHandoffDocs((d) => ({
+              ...d,
+              [r]: { threadId, role: r, handoffDoc: ev.handoffDoc!, updatedAt: Date.now() },
+            }));
+          }
+          break;
+        case "error":
+          if (ev.role) {
+            const r = ev.role;
+            setStatus((s) => ({ ...s, [r]: `error: ${ev.message ?? "unknown"}` }));
+            setBusy((b) => ({ ...b, [r]: false }));
+            setPending((p) => ({ ...p, [r]: null }));
+          }
+          break;
+      }
+    };
+
+      es.onerror = () => {
+        // EventSource auto-reconnects; nothing to do here. Surfacing the
+        // error in any UI is noise during dev (HMR restarts trip it).
+      };
+    })();
+
+    return () => {
+      cancelled = true;
+      es?.close();
+    };
+  }, [threadId, appendLocal, refreshStates]);
+
   const runTurn = useCallback(
-    async (target: RoleId, userMessage: string | null) => {
+    (target: RoleId, userMessage: string | null) => {
       if (!threadId) return;
       if (busy[target]) return;
 
-      setBusy((b) => ({ ...b, [target]: true }));
       setStatus((s) => ({ ...s, [target]: "dispatching" }));
 
-      if (userMessage) appendLocal({ kind: "user", to: target }, userMessage);
-
-      try {
-        const res = await fetch("/api/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            threadId,
-            target,
-            ...(userMessage ? { userMessage } : {}),
-            ...(workspace ? { workspace } : {}),
-            agents,
-          }),
-        });
-        if (!res.ok) {
-          const detail = await res.text().catch(() => "");
-          throw new Error(`HTTP ${res.status}: ${detail || res.statusText}`);
-        }
-
-        await consumeSse(res, (ev) => {
-          switch (ev.type) {
-            case "turn-start":
-              setPending((p) => ({ ...p, [target]: "" }));
-              setStatus((s) => ({ ...s, [target]: "thinking…" }));
-              break;
-            case "delta":
-              if (ev.text) {
-                setPending((p) => ({ ...p, [target]: (p[target] ?? "") + ev.text }));
-              }
-              break;
-            case "turn-end":
-              appendLocal({ kind: "agent", role: target }, ev.text ?? "");
-              setPending((p) => ({ ...p, [target]: null }));
-              setStatus((s) => ({ ...s, [target]: "done" }));
-              break;
-            case "handoff":
-              if (ev.from && ev.to && ev.message) {
-                appendLocal({ kind: "handoff", from: ev.from, to: ev.to }, ev.message);
-                setStatus((s) => ({ ...s, [target]: `→ ${ev.to}` }));
-              }
-              break;
-            case "dispatch":
-              if (ev.to && ev.message) {
-                appendLocal({ kind: "dispatch", to: ev.to }, ev.message);
-                setStatus((s) => ({ ...s, [target]: `dispatched → ${ev.to}` }));
-                // PO drives the team — auto-trigger the dispatched peer.
-                void runTurn(ev.to, null);
-              }
-              break;
-            case "notes-updated":
-              if (ev.role && typeof ev.handoffDoc === "string") {
-                const r = ev.role;
-                setHandoffDocs((d) => ({
-                  ...d,
-                  [r]: { threadId, role: r, handoffDoc: ev.handoffDoc!, updatedAt: Date.now() },
-                }));
-              }
-              break;
-            case "error":
-              setStatus((s) => ({ ...s, [target]: `error: ${ev.message ?? "unknown"}` }));
-              break;
-            case "done":
-              setStatus((s) => ({ ...s, [target]: "idle" }));
-              break;
+      void fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          threadId,
+          target,
+          ...(userMessage ? { userMessage } : {}),
+          ...(workspace ? { workspace } : {}),
+          agents,
+        }),
+      })
+        .then(async (res) => {
+          if (!res.ok) {
+            const detail = await res.text().catch(() => "");
+            setStatus((s) => ({
+              ...s,
+              [target]: `error: HTTP ${res.status}: ${detail || res.statusText}`,
+            }));
           }
+        })
+        .catch((err) => {
+          setStatus((s) => ({
+            ...s,
+            [target]: `error: ${err instanceof Error ? err.message : String(err)}`,
+          }));
         });
-      } catch (err) {
-        setStatus((s) => ({
-          ...s,
-          [target]: `error: ${err instanceof Error ? err.message : String(err)}`,
-        }));
-      } finally {
-        setBusy((b) => ({ ...b, [target]: false }));
-        setPending((p) => ({ ...p, [target]: null }));
-        refreshStates(threadId);
-      }
     },
-    [threadId, agents, busy, appendLocal, refreshStates, workspace],
+    [threadId, agents, busy, workspace],
   );
 
   const onPaneSend = useCallback(
     (text: string, target: RoleId) => {
-      void runTurn(target, text);
+      runTurn(target, text);
     },
     [runTurn],
   );
 
   const onProcessInbox = useCallback(
     (target: TeamRoleId) => {
-      void runTurn(target, null);
+      runTurn(target, null);
     },
     [runTurn],
   );
@@ -274,8 +330,7 @@ export default function Home() {
     [threadId],
   );
 
-  const onNewThread = useCallback(() => {
-    setThreadId(newThreadId());
+  const resetThreadLocalState = useCallback(() => {
     setMessages([]);
     setStatus(blankPerRole(null));
     setPending(blankPerRole<string | null>(null));
@@ -283,6 +338,21 @@ export default function Home() {
     setHandoffDocs(blankAgentStates());
     setInboxCounts(Object.fromEntries(TEAM_ROLES.map((r) => [r, 0])) as Record<TeamRoleId, number>);
   }, []);
+
+  const onNewThread = useCallback(() => {
+    setThreadId(newThreadId());
+    resetThreadLocalState();
+  }, [resetThreadLocalState]);
+
+  const onThreadIdChange = useCallback(
+    (next: string) => {
+      const trimmed = next.trim();
+      if (!trimmed) return;
+      setThreadId(trimmed);
+      resetThreadLocalState();
+    },
+    [resetThreadLocalState],
+  );
 
   const updateAgent = (role: RoleId, cfg: AgentConfig) =>
     setAgents((prev) => ({ ...prev, [role]: cfg }));
@@ -313,6 +383,7 @@ export default function Home() {
       <OrchestratorBar
         threadId={threadId || "(initializing)"}
         onNewThread={onNewThread}
+        onThreadIdChange={onThreadIdChange}
         busy={anyBusy}
         workspace={workspace}
         onWorkspaceChange={onWorkspaceChange}

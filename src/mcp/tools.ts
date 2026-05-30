@@ -16,6 +16,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { runTurn } from "@/lib/run-turn";
+import { runTurnWithDispatches } from "@/lib/run-turn-with-dispatches";
 import {
   appendMessage,
   getAgentState,
@@ -127,7 +128,11 @@ export function registerApexTeamTools(server: McpServer): void {
       },
     },
     async ({ message, thread_id, workspace }) => {
-      const result = await runTurn({
+      // runTurnWithDispatches runs the PO turn, then fans out to every
+      // dispatched peer in PARALLEL (each peer is its own runTurn).
+      // Every event is also published to the thread's bus, so the web
+      // dashboard sees the entire dance in real time.
+      const result = await runTurnWithDispatches({
         threadId: thread_id,
         target: "product-owner",
         userMessage: message,
@@ -135,22 +140,6 @@ export function registerApexTeamTools(server: McpServer): void {
         agents: defaultAgents(),
         signal: new AbortController().signal,
       });
-
-      // After PO dispatches, the dispatched peers auto-trigger.
-      // We run them sequentially and collect their replies so the caller
-      // sees the full team response in one tool call.
-      const teamReplies: Array<{ role: TeamRoleId; visibleText: string }> = [];
-      for (const d of result.dispatches) {
-        const peerResult = await runTurn({
-          threadId: thread_id,
-          target: d.to,
-          // No userMessage — the DISPATCH row is already in their history.
-          workspace: workspaceOrCwd(workspace),
-          agents: defaultAgents(),
-          signal: new AbortController().signal,
-        });
-        teamReplies.push({ role: d.to, visibleText: peerResult.visibleText });
-      }
 
       const out = [
         "### Product Owner reply",
@@ -161,8 +150,12 @@ export function registerApexTeamTools(server: McpServer): void {
           "",
           `### PO dispatched ${result.dispatches.length} role(s) — their replies:`,
         );
-        for (const reply of teamReplies) {
-          out.push("", `**${reply.role}**:`, reply.visibleText || "(no visible text)");
+        for (const reply of result.peerReplies) {
+          out.push(
+            "",
+            `**${reply.role}**:`,
+            reply.result.visibleText || "(no visible text)",
+          );
         }
       }
       return { content: [{ type: "text", text: out.join("\n") }] };

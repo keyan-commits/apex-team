@@ -2,7 +2,37 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State:** Team-of-7 architecture is live and pushed. The embedded `claude` CLI in the top pane is **gone**; apex-team now **exposes its own MCP server** at `/mcp` on the same Next.js custom server. External Claude Code sessions register with `claude mcp add apex-team --transport http http://localhost:3000/mcp` and drive the team via tools (`talk_to_product_owner`, `talk_to_role`, etc.). Type-check + production build pass clean.
+**State:** Event-bus SSE refactor committed. Skills injection (Wave 1 Commit 2) in progress.
+
+**Just committed (Commit 1 — event-bus SSE refactor):**
+- `src/lib/event-bus.ts` — in-process pub/sub for per-thread events
+- `/api/thread-events` — SSE route streaming turn/dispatch/error events to browser
+- `src/lib/run-turn-with-dispatches.ts` — PO dispatch pipeline wired to event bus
+- `src/app/page.tsx` — subscribes to EventSource, handles all event types live
+- `src/components/OrchestratorBar.tsx` — thread ID is now an editable input
+- Deleted `src/lib/sse-client.ts` (replaced by native EventSource)
+- `package.json` — dev script uses `tsx watch` with ignore patterns
+
+**In progress (Commit 2 — skills injection):**
+- `skills?: string` on `RoleDefinition` in `types.ts`
+- `src/lib/skills/ui-developer.ts` — UI/UX domain expertise block (6 sections)
+- `providers.ts` augmentSystemPrompt() injects `role.skills` when present
+- `roles.ts` — ui-developer wired to skills constant
+- `architecture/decisions/ADR-001-role-skills-injection.md`
+
+**Open next-steps after Wave 1:**
+- Wave 2: UI Dev (model dropdown), Backend Dev (/api/active-thread + context mgmt), DevSecOps (dev:test instance) — parallel streams
+- Wave 3: Architect reviews Wave 2 + writes remaining 5 skills files; QA smoke tests
+- Wave 4: HANDOFF refresh, commit, push to main
+
+**Backlog (unchanged from previous):**
+- End-to-end smoke test (apex-engine + apex-team + MCP registration)
+- Reconcile sequential MCP vs parallel web-UI dispatch
+- SDK `mcp__apex-engine__` allowlist naming verification
+- `/api/health` MCP-transport field
+- `next lint` → ESLint CLI migration
+- Client-side abort button
+- Provider/model persistence across reload
 
 **Repo:** https://github.com/keyan-commits/apex-team
 

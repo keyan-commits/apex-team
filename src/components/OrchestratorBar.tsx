@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 interface Props {
   threadId: string;
   onNewThread: () => void;
+  onThreadIdChange: (next: string) => void;
   busy: boolean;
   workspace: string;
   onWorkspaceChange: (next: string) => void;
@@ -13,20 +14,30 @@ interface Props {
 export function OrchestratorBar({
   threadId,
   onNewThread,
+  onThreadIdChange,
   busy,
   workspace,
   onWorkspaceChange,
 }: Props) {
   const [draft, setDraft] = useState(workspace);
+  const [threadDraft, setThreadDraft] = useState(threadId);
 
-  // Sync incoming workspace (e.g. when defaultCwd loads from /api/health).
   useEffect(() => {
     setDraft(workspace);
   }, [workspace]);
 
+  useEffect(() => {
+    setThreadDraft(threadId);
+  }, [threadId]);
+
   const commit = () => {
     const trimmed = draft.trim();
     if (trimmed && trimmed !== workspace) onWorkspaceChange(trimmed);
+  };
+
+  const commitThread = () => {
+    const trimmed = threadDraft.trim();
+    if (trimmed && trimmed !== threadId) onThreadIdChange(trimmed);
   };
 
   return (
@@ -58,7 +69,25 @@ export function OrchestratorBar({
 
       <div className="thread">
         <span className="label">thread</span>
-        <code>{threadId}</code>
+        <input
+          type="text"
+          value={threadDraft}
+          onChange={(e) => setThreadDraft(e.target.value)}
+          onBlur={commitThread}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              commitThread();
+              (e.target as HTMLInputElement).blur();
+            }
+          }}
+          spellCheck={false}
+          placeholder="thread id"
+          title="Paste a thread id (e.g. from an MCP-driven session) to subscribe to its events."
+        />
+        {threadDraft !== threadId && (
+          <span className="dirty" title="Press Enter to apply">●</span>
+        )}
         <button type="button" className="ghost" onClick={onNewThread} disabled={busy}>
           new
         </button>
@@ -111,13 +140,20 @@ export function OrchestratorBar({
           gap: 6px;
           align-items: center;
         }
-        .thread code {
+        .thread input {
           background: var(--surface-2);
+          color: var(--text);
           border: 1px solid var(--border);
           border-radius: 4px;
           padding: 2px 6px;
-          color: var(--text);
           font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+          font-size: 12px;
+          min-width: 200px;
+        }
+        .thread .dirty {
+          color: var(--accent-orch);
+          font-size: 14px;
+          line-height: 1;
         }
         .ghost {
           background: transparent;

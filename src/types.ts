@@ -78,6 +78,7 @@ export type SseEventType =
   | "handoff"
   | "dispatch"
   | "notes-updated"
+  | "user-message"
   | "error"
   | "done";
 
