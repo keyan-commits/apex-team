@@ -4,3 +4,9 @@ allowBuilds:
   unrs-resolver: true
   node-pty: true
   esbuild: true
+
+overrides:
+  # GHSA-qx2v-qp2m-jg93 / CVE-2026-41305 — postcss XSS via unescaped </style>
+  # in CSS stringify output. Force all transitive postcss (incl. one pulled
+  # by an older Next.js sub-dep) to the patched line.
+  postcss: ">=8.5.10"

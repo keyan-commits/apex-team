@@ -11,6 +11,7 @@
 - `git init` + `/handoff-init` scaffold (`INDEX.yaml`, `INDEX.md`, scripts/, `scripts/git-hooks/pre-commit`, `core.hooksPath`, `.handoff-init` marker). Existing `HANDOFF.md` was already conformant — left untouched at init time.
 - Initial commit (`1167b3a`); created private `keyan-commits/apex-team` and pushed `main`.
 - Expanded `INDEX.yaml` with entries for `README.md`, `CLAUDE.md`, `.env.local.example`.
+- **Dependabot alert #1 patched**: postcss `<8.5.10` (GHSA-qx2v-qp2m-jg93, CVE-2026-41305 — XSS via unescaped `</style>` in stringify output). Added `overrides: { postcss: ">=8.5.10" }` to `pnpm-workspace.yaml` (mirrors apex-engine's pin), wiped + regenerated lockfile. Verified only `postcss@8.5.15` remains. Type-check + build clean.
 
 **Open next-steps (in priority order):**
 1. End-to-end smoke test against a non-trivial workspace: point apex-team at, e.g., `../my-finances/` via the workspace field and have BA read its CLAUDE.md + propose a small change.
