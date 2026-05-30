@@ -13,11 +13,47 @@
 #   related_files  (optional) other paths
 
 documents:
+  - path: README.md
+    purpose: Public-facing one-pager — what apex-team is, prerequisites, how to run, basic test flow.
+    topics: [readme, setup, overview, entry]
+    doc_type: entry
+    authority_tier: entry
+    last_updated: 2026-05-30
+    read_this_when:
+      - first time looking at the repo
+      - need a quick "how do I run this" recap
+    related_files: [CLAUDE.md, HANDOFF.md]
+
+  - path: CLAUDE.md
+    purpose: Stable architecture and engineering standards — stack, file layout, role protocols, caveats.
+    topics: [architecture, standards, stack, agents, mcp, orchestrator]
+    doc_type: specification
+    authority_tier: authoritative
+    last_updated: 2026-05-30
+    read_this_when:
+      - making structural changes (new role, new endpoint, dep changes)
+      - need the canonical description of the agent protocols (NOTES, HANDOFF, DISPATCH)
+      - debugging cross-pane behavior or MCP wiring
+    related_files: [HANDOFF.md, README.md]
+
   - path: HANDOFF.md
-    purpose: What's in flight right now + recent session log.
-    topics: [handoff, log, in-flight]
+    purpose: What's in flight right now + recent session log. The NOW block on top is the authoritative resume point.
+    topics: [handoff, log, in-flight, resume]
     doc_type: log
     authority_tier: log
     last_updated: 2026-05-31
     read_this_when:
       - resuming work — read the top NOW block first
+      - need to know what was just done or what blocked the previous session
+    related_files: [CLAUDE.md]
+
+  - path: .env.local.example
+    purpose: Example environment file — apex-engine MCP URL, optional Gemini/Groq keys, optional CLAUDE_BIN override.
+    topics: [config, env, setup]
+    doc_type: reference
+    authority_tier: reference
+    last_updated: 2026-05-30
+    read_this_when:
+      - first-time setup (copy to .env.local and edit)
+      - switching an agent to a non-Claude provider
+      - the top terminal can't find `claude` on PATH
