@@ -97,7 +97,7 @@ export async function* streamAgent(
   const augmentedSystem = augmentSystemPrompt(role, ctx);
 
   if (cfg.provider === "claude") {
-    yield* streamClaude(cfg.model, augmentedSystem, messages, ctx.cwd, signal, onUsage);
+    yield* streamClaude(cfg.model, augmentedSystem, messages, ctx.cwd, signal, onUsage, cfg.role);
     return;
   }
 
@@ -158,6 +158,7 @@ async function* streamClaude(
   cwd: string | undefined,
   signal: AbortSignal,
   onUsage?: (u: UsageCapture) => void,
+  role?: string,
 ): AsyncGenerator<string> {
   const prompt = serializeForClaudePrompt(messages);
 
@@ -166,8 +167,8 @@ async function* streamClaude(
     options: {
       model,
       systemPrompt: { type: "preset", preset: "claude_code", append: systemPrompt },
-      mcpServers: apexMcpServers(),
-      allowedTools: apexAllowedTools(),
+      mcpServers: apexMcpServers(role),
+      allowedTools: apexAllowedTools(role),
       ...(cwd ? { cwd } : {}),
     },
   });
