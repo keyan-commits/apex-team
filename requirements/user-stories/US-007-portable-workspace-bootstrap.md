@@ -1,6 +1,6 @@
 # US-007 — Portable workflow bootstrap for external workspaces
 
-**Status:** proposed
+**Status:** in-progress
 **Owner role:** devsecops
 **Created:** 2026-05-31
 **Story ID:** US-007

@@ -205,3 +205,38 @@ curl -X PUT \
 ```
 
 The local pre-push hook (`scripts/git-hooks/pre-push`) blocks direct pushes to `origin/main` regardless of whether GitHub-side protection is active — it is the first line of defense. GitHub branch protection is the second line (catches `--no-verify` bypasses and pushes from non-hook environments).
+
+## Portable workspace bootstrap (US-007)
+
+`scripts/devsecops/bootstrap-workspace.mjs` packages the apex-team enforcement recipe so any git workspace inherits it with one command.
+
+```bash
+pnpm devsecops:bootstrap-workspace [workspace-path]
+# defaults to cwd if workspace-path is omitted
+```
+
+### What it does (in order)
+
+1. **Validates** the workspace is a clean git repo (refuses dirty trees).
+2. **Installs hooks** — copies `scripts/git-hooks/pre-commit` and `pre-push` into `<workspace>/scripts/git-hooks/`, then sets `git config core.hooksPath scripts/git-hooks`. If a hook already exists and differs from the source, it shows a diff and prompts before overwriting.
+3. **Installs a CI workflow stub** (Node workspaces only) — writes `.github/workflows/ci.yml` if absent. Uses the workspace's `scripts.test` and `scripts.lint` if defined; otherwise stubs with echo commands. Non-Node workspaces (no `package.json`) are skipped with a note.
+4. **Applies branch protection** (interactive) — prints the full JSON payload, then prompts `[y/N]` before running `gh api -X PUT /repos/<owner>/<repo>/branches/main/protection`. If `gh` fails (e.g. missing scope), falls back to printing the `gh` command and a `curl` equivalent for manual application.
+5. **Creates `ops/README.md`** — writes a minimal stub noting "bootstrapped from apex-team on `<date>`" if the file is absent.
+
+### Idempotency
+
+Every step checks its own precondition before applying. Re-running on the same workspace produces only "skip" log lines and exits 0.
+
+### Non-Node workspaces
+
+Steps 1–2 and 4–5 work on any git repo. Step 3 (CI workflow) is skipped with a log message if there is no `package.json`.
+
+### Branch protection requires `gh` scope
+
+`gh api -X PUT /repos/…/branches/…/protection` needs a `gh` token with `repo` scope. If missing:
+
+```bash
+gh auth refresh -h github.com -s repo
+```
+
+The script never auto-applies branch protection — explicit `y` at the prompt is always required.
