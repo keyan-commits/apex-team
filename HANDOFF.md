@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**UI Dev — Wave 8c complete.** Poll error banner for issue #22. Commit `(SHA-pending)`.
+**UI Dev — Wave 8c complete.** Poll error banner for issue #22. Commit `2f49c14`.
 
 **Wave 8c UI Dev changes:**
 - `src/app/dashboard/page.tsx` — added `fetchError` state; `.catch(() => {})` → `.catch(() => setFetchError(true))`; `.then(d => ...)` chains `setFetchError(false)` on success; `{fetchError && <div className="poll-error">…</div>}` banner below OrchestratorBar; `.poll-error` CSS rule added. Closes #22.
