@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 18 — UI Dev skill additions: `### Container queries` bullet added to `### Mobile-first responsive` (#10) + `### Pre-HANDOFF unit testing` section added (#37) in `src/lib/skills/ui-developer.ts`. 34/34 tests green. Feature branch: `feature/18-ui-skill-additions`.**
+
 **Wave 17 — Architect skill addition: `### Fitness functions` (#7) added to `src/lib/skills/architect.ts`. 34/34 tests green. Feature branch: `feature/17-arch-fitness-functions`.**
 
 **Wave 16 — BA skill additions: `### Discovery (Example Mapping)` (#5) + `### Consultation-hub responsibilities` (#36) added to `src/lib/skills/business-analyst.ts`. Issue #6 was already implemented (Story lifecycle section existed). 34/34 tests green. Feature branch: `feature/16-ba-skill-additions`.**
