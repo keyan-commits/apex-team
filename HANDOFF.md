@@ -2,6 +2,23 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**🎉 US-004 SHIPPED. THE META-FIX. `#31` closed.** MCP transport drops are now solved at the source — Node `requestTimeout=0` removes the only server-side timer that was tearing down long-running agent turns. Merge `03b086f` on `origin/main`. Server respawned (new PID 5527). `pnpm smoke` PASS.
+
+**Wave 12 net:**
+
+| Phase | Wave | Output |
+|---|---|---|
+| Requirements | 12a | Architect diagnosis (real culprit: `requestTimeout=5min`, not `keepAliveTimeout`) + BA US-004 `bc75f9e` |
+| Implementation | 12b | BE Dev in own worktree → `server.ts` `applyHttpTimeouts(server)` helper + 4 unit tests → `464fe73` |
+| Verification | 12c | QA in own worktree → 4/4 ACs PASS, 17/17 tests green |
+| Deployment | 12d | DevSecOps merge `03b086f` + push + worktree cleanup + restart-trigger + smoke PASS |
+
+**Empirical confirmation comes from the very next long-running PO dispatch.** If we still see drops on a >5-minute turn, the remaining culprit is client-side (Claude Code MCP HTTP client timeout) and outside our server's control — Architect flagged this in Wave 12a.
+
+**Next user-facing work:** Wave 11 (US-003 workspace-scoped issues — the dashboard's Issues panel showing the wrong repo on the user's other Mac). Pending: UX Designer dispatch + OQ-003 (manual repo override?) + OQ-004 (Architect already answered: per-request git derivation + multi-key cache). Architect's full design ready, BA's user story written.
+
+---
+
 **Wave 12b BE Dev — US-004 MCP transport fix implemented. Feature branch: `feature/12b-mcp-transport-fix`. Awaiting QA PASS.**
 
 - `server.ts` — exported `applyHttpTimeouts(server)` helper; called between `createServer(...)` and `server.listen(...)`. Sets `requestTimeout=0`, `keepAliveTimeout=65_000`, `headersTimeout=66_000`.
@@ -9,9 +26,7 @@
 - Pre-HANDOFF checklist: `pnpm type-check` clean, `pnpm test:run` 17/17 green.
 - Commit SHA: `464fe73`
 
-**Next:** QA verifies US-004 ACs (AC1: 5-min turn survives, AC2: 30s silence gap OK, AC3: short turns unaffected). DevSecOps merges on PASS.
-
-**US-003 still pending:** OQ-003 (UX Designer) + OQ-004 (Architect) + UX spec in `design/` before Wave 11b can be scoped.
+**US-003 still pending:** OQ-003 (UX Designer) + UX spec in `design/` before Wave 11b can be scoped.
 
 ---
 

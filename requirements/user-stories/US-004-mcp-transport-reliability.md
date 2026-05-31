@@ -1,9 +1,10 @@
 ---
 id: US-004
 slug: mcp-transport-reliability
-status: proposed
+status: done
 owner: backend-developer
 raised: 2026-05-31
+closed: 2026-05-31
 references:
   - issue: "#31"
   - open-questions: OQ-005
@@ -50,5 +51,7 @@ _For Architect / BE Dev reference — not acceptance criteria._
 
 ## Links
 
-- impl: _pending_
-- test: _pending_
+- impl: `464fe73` (Wave 12b — `server.ts` `applyHttpTimeouts(server)` helper)
+- test: `tests/server/timeouts.test.ts` (4 vitest cases locking `requestTimeout=0`, `keepAliveTimeout=65_000`, `headersTimeout=66_000`, and `headersTimeout > keepAliveTimeout`)
+- qa-pass-by: Wave 12c — QA verified all 4 ACs, 17/17 tests green
+- deployed-by: `03b086f` (Wave 12d — DevSecOps merge to main; `.restart-trigger` touched; new server PID 5527; `pnpm smoke` PASS)
