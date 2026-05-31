@@ -97,6 +97,8 @@ export interface SseEvent {
   agentModels?: Record<RoleId, string>;
 }
 
+export type RepoStatus = "ok" | "none" | "not-git" | "non-github" | "bad-path";
+
 export interface TeamStatus {
   now: Array<{ role: RoleId; taskSummary: string; startedAt: number; state: "thinking" | "streaming" | "dispatching" }>;
   queued: Array<{ id: number; toRole: RoleId; fromRole: RoleId | "user"; taskSummary: string; createdAt: number }>;
@@ -109,6 +111,7 @@ export interface TeamStatus {
     mcpProposal: number;
     recent: Array<{ number: number; title: string; label: string; url: string }>;
     repo: string | null;
+    repoStatus: RepoStatus;
   };
   scout: { lastRunAt: number | null; nextScheduledAt: number | null; proposalsLast7Days: number };
   context: Array<{ role: RoleId; handoffChars: number; historyDepth: number; inboxCount: number; needsCleanup: boolean }>;

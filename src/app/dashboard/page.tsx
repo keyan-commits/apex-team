@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import type { TeamStatus } from "@/types";
+import type { TeamStatus, RepoStatus } from "@/types";
 import { OrchestratorBar } from "@/components/OrchestratorBar";
 
 const ROLE_ACCENT: Record<string, string> = {
@@ -133,6 +133,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!threadId) return;
+    setData(null); // clear stale data immediately when workspace or threadId changes
     const fetchData = () => {
       if (document.visibilityState !== "visible") return;
       fetch(`/api/team-status?threadId=${encodeURIComponent(threadId)}&workspace=${encodeURIComponent(workspace)}`, { cache: "no-store" })
@@ -260,6 +261,13 @@ export default function DashboardPage() {
   const setRoleModel = (role: string, model: string) => {
     setRoleModels((prev) => ({ ...prev, [role]: model }));
     try { localStorage.setItem(`apex-model-${role}`, model); } catch {}
+  };
+
+  const REPO_STATUS_COPY: Record<Exclude<RepoStatus, "ok">, string> = {
+    none: "No origin remote configured — issues unavailable.",
+    "not-git": "This workspace isn't a git repo — issues unavailable.",
+    "non-github": "Workspace remote isn't on GitHub — issues unavailable.",
+    "bad-path": "Workspace path not found — set a valid directory above.",
   };
 
   const empty = (msg: string) => <p className="empty-msg">{msg}</p>;
@@ -459,12 +467,11 @@ export default function DashboardPage() {
           {panelHd("Issues", "issues")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : (
             <div className="issue-panel-inner">
-              {data.issues.repo === null ? (
-                <p className="empty-msg">This workspace has no GitHub remote — Issues panel unavailable.</p>
+              {data.issues.repoStatus !== "ok" ? (
+                <p className="empty-msg">{REPO_STATUS_COPY[data.issues.repoStatus]}</p>
               ) : (
                 <>
                   <p className="issue-repo-attr">
-                    Issues:{" "}
                     <a
                       href={`https://github.com/${data.issues.repo}/issues`}
                       target="_blank"
@@ -771,6 +778,7 @@ export default function DashboardPage() {
           text-decoration: none;
         }
         .issue-repo-link:hover { color: var(--text); text-decoration: underline; }
+        .issue-repo-link:visited { color: var(--text-dim); }
         .issue-repo-link:focus-visible { outline: 1px solid var(--accent-po); border-radius: 2px; }
 
         .recent-issues { display: flex; flex-direction: column; gap: 4px; }

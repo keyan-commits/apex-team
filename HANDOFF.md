@@ -26,6 +26,20 @@ gh api -X PUT /repos/keyan-commits/apex-team/branches/main/protection \
 
 If `gh auth status` lacks the needed scopes: `gh auth refresh -h github.com -s admin:org`. After applying, even YOU (as admin) cannot push directly to main — only merges via PR through CI green.
 
+**Wave 13e — US-005 carry-forwards merging via PR #50 (branch protection now enforced — first merge through the gate).**
+
+**Wave 13b-d net — US-005 implementation complete, UX PASS + QA PASS received:**
+
+| Phase | Wave | SHA | Output |
+|---|---|---|---|
+| Requirements | 13a | `4e69429` / `4d76002` / `8ca2507` | BA US-005, UX spec amendments, Architect repoStatus design |
+| Impl BE | 13b | `35533b0` | RepoStatus enum + deriveGithubRepo rewrite + 9 test cases |
+| Impl UI | 13b | `e73bfa7` | Drop prefix + per-status copy + :visited + setData(null) flicker fix |
+| Verification UX | 13c | — | UX Designer PASS — all 4 amendments verified verbatim against spec |
+| Verification QA | 13d | — | QA PASS — AC1 grep, AC2 live API on :3100, AC3 grep, AC4 code inspection; 26/26 green |
+
+**US-005 status: `done`.**
+
 **Wave 14b-ops shipped:**
 
 - `scripts/git-hooks/pre-push` — new POSIX hook blocking direct pushes to `origin/main`
@@ -34,19 +48,9 @@ If `gh auth status` lacks the needed scopes: `gh auth refresh -h github.com -s a
 - `ops/branch-protection-payload.json` — exact JSON ready for the user's `gh api` apply
 - `ops/README.md` — "Branch protection" section documents the apply command
 
-**Wave 13b still in flight:** BE Dev `35533b0` (repoStatus enum) + UI Dev `e73bfa7` (copy/CSS fixes) on feature branches; awaiting UX → QA → DevSecOps merge.
-
 **US-007 portable workspace bootstrap** is next-up — same pattern packaged as `pnpm devsecops:bootstrap-workspace <path>`. Ships after US-006's server-side apply is confirmed.
-- `ops/README.md` — `## Branch protection (US-006)` section documenting the `gh api` command + curl fallback
-- `pnpm type-check` clean · `pnpm test:run` 24/24 green
-- **Note:** branch protection itself is NOT applied. User must run after merge.
 
-**Wave 14a BA — US-006 + US-007 committed (SHA-pending) on main. Requirements phase.**
-
-- `requirements/user-stories/US-006-main-branch-enforcement.md` — 6 ACs: AC1 (no direct push incl. admin), AC2 (CI gate blocks PR merge), AC3 (local pre-push hook), AC4 (pre-commit type-check), AC5 (CODEOWNERS advisory), AC6 (--no-verify caught by CI). Owner: DevSecOps.
-- `requirements/user-stories/US-007-portable-workspace-bootstrap.md` — 5 ACs: AC1 (install hooks), AC2 (CI stub, non-destructive), AC3 (branch protection via gh CLI + fallback), AC4 (non-Node graceful degradation), AC5 (ops/README record). Owner: DevSecOps. Depends on US-006.
-- `requirements/open-questions.md` — OQ-006 (bootstrap install gitleaks? default: yes w/ fallback) + OQ-007 (require user consent for branch-protection? default: yes interactive).
-- `requirements/INDEX.md` — US-006 + US-007 rows added. Commit `8ca2507`.
+**Wave 14a BA — US-006 + US-007 committed on main. Requirements phase.**
 
 **Wave 13c-ops — post-public-switch gitleaks history audit complete. CLEAN.**
 
@@ -60,7 +64,7 @@ If `gh auth status` lacks the needed scopes: `gh auth refresh -h github.com -s a
 
 - `.github/workflows/codeql.yml` removed in `983e817`, then restored after public-repo switch. The brief removal was correct under the private-tier constraint.
 - `design/US-003-workspace-scoped-issues.md` — Wave 13 Amendments section added (`4d76002`).
-- Requirements phase complete: BA committed US-005 at `4e69429`, Architect designed `repoStatus` enum. Awaiting PO synthesis → Wave 13b implementation dispatch.
+- Requirements phase complete: BA committed US-005 at `4e69429`, Architect designed `repoStatus` enum. Dispatched Wave 13b BE.
 
 ---
 
