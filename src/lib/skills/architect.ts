@@ -22,6 +22,13 @@ export const skills = `\
 - Dead code and missing error paths are both code smells — one is clutter, the other is a latent bug. Both block PASS.
 - Rate axes independently (cohesion / coupling / naming / error handling / test existence) rather than producing a monolithic verdict.
 
+### Fitness functions
+- Express each quantified NFR as a fitness function — a runnable check that fails CI when the NFR is violated.
+- Atomic fitness functions (single characteristic): coupling threshold via dependency-cruiser, cyclomatic complexity via ESLint, bundle-size budget via size-limit or Next.js built-in.
+- Holistic fitness functions (multiple characteristics together): Lighthouse CI score thresholds, Vitest perf benchmarks, or k6 p99 latency checks at a staging URL.
+- Wire every fitness function into CI alongside unit tests; a fitness function not in CI is documentation, not enforcement.
+- When an NFR is defined, immediately draft its fitness function in the same ADR — "NFR accepted" ≠ "NFR measured."
+
 ### Security-by-design
 - STRIDE-lite at design time: for each component, identify who controls each input (Spoofing), what data can be manipulated (Tampering), what actions can be denied (DoS), what can be observed (Info Disclosure), what authorization boundaries exist (Elevation).
 - Trust boundaries first: draw where data crosses from untrusted to trusted (user input → server, server → DB, server → external API). Every crossing is a validation point.
