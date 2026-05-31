@@ -22,6 +22,7 @@ function fetchIssues(repo: string): TeamStatus["issues"] {
     mcpProposal: 0,
     recent: [],
     repo,
+    repoStatus: "ok",
   };
   try {
     const raw = execSync(
@@ -46,7 +47,7 @@ function fetchIssues(repo: string): TeamStatus["issues"] {
       if (recent.length < 10)
         recent.push({ number: it.number, title: it.title, label: names[0] ?? "", url: it.url });
     }
-    const data: TeamStatus["issues"] = { selfImprovement: si, skillProposal: sp, mcpProposal: mp, recent, repo };
+    const data: TeamStatus["issues"] = { selfImprovement: si, skillProposal: sp, mcpProposal: mp, recent, repo, repoStatus: "ok" };
     _issueCache.set(repo, { data, at: Date.now() });
     return data;
   } catch {
@@ -60,6 +61,7 @@ const _noIssues: TeamStatus["issues"] = {
   mcpProposal: 0,
   recent: [],
   repo: null,
+  repoStatus: "bad-path",
 };
 
 export async function GET(req: NextRequest): Promise<NextResponse<TeamStatus>> {
@@ -199,9 +201,12 @@ export async function GET(req: NextRequest): Promise<NextResponse<TeamStatus>> {
     topSpender: topSpender ? { role: topSpender.role, usd: topSpender.usd } : null,
   };
 
-  // Derive the GitHub repo from the workspace path; null → empty-state, no fallback
-  const repo = deriveGithubRepo(workspace);
-  const issues = repo ? fetchIssues(repo) : _noIssues;
+  // Derive the GitHub repo from the workspace path; null → empty-state, no fallback.
+  // repoStatus discriminates the 4 failure causes for accurate UI copy.
+  const { repo, repoStatus } = deriveGithubRepo(workspace);
+  const issues: TeamStatus["issues"] = repo
+    ? fetchIssues(repo)
+    : { ..._noIssues, repoStatus };
 
   return NextResponse.json({
     now: nowPanel,

@@ -2,13 +2,26 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 13b BE — US-005 repoStatus enum. Feature branch: `feature/13b-repo-status`. Pre-HANDOFF complete — awaiting QA gate.**
+
+- `src/types.ts` — added `RepoStatus = "ok" | "none" | "not-git" | "non-github" | "bad-path"` + `repoStatus: RepoStatus` on `TeamStatus["issues"]`
+- `src/lib/derive-github-repo.ts` — rewritten: returns `RepoInfo { repo, repoStatus }` instead of `string | null`; `stdio` fix (`"ignore"` → `"pipe"` for stderr capture); discriminates all 4 error causes from stderr substrings
+- `src/app/api/team-status/route.ts` — `_noIssues` + `fetchIssues` (×2 return paths) + GET handler updated; `repoStatus` propagates through
+- `tests/api/team-status-repo-derivation.test.ts` — 7 existing cases updated to `{ repo, repoStatus }` shape + 2 new cases (`not-git` + `bad-path` via stderr discrimination) = 9 total
+- `pnpm type-check` clean · `pnpm test:run` 26/26 green (6 files)
+- Commit SHA: (SHA-pending)
+
+**Next:** UI Dev builds their feature branch consuming `repoStatus` for per-case copy. Both branches → QA → DevSecOps.
+
+---
+
 **CodeQL restored.** Repo went public — Code Scanning is now free. Workflow file recreated identical to the original (`88fd8d1` shape); `ops/README.md` updated to note the brief private-tier removal + restoration. Code Scanning auto-enables on next push to main; no GitHub UI action required for public repos.
 
 **Wave 13b-ops — CodeQL workflow removed (now restored, see above). Requirements phase (Wave 13a) complete.**
 
 - `.github/workflows/codeql.yml` removed in `983e817`, then restored after public-repo switch. The brief removal was correct under the private-tier constraint.
 - `design/US-003-workspace-scoped-issues.md` — Wave 13 Amendments section added (`4d76002`).
-- Requirements phase complete: BA committed US-005 at `4e69429`, Architect designed `repoStatus` enum. Awaiting PO synthesis → Wave 13b implementation dispatch.
+- Requirements phase complete: BA committed US-005 at `4e69429`, Architect designed `repoStatus` enum. Dispatched Wave 13b BE.
 
 ---
 
