@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 7c UX audit complete. Issues #19–#23 filed. Waves 6e + 7a + 7b fully reviewed and gated PASS. Wave 7c UI Dev in progress (parallel).
+**State.** Wave 7c UI Dev in progress. Dashboard nav + model dropdown + per-row dispatch fix in progress (SHA-pending).
 
 **Wave 7c UX audit findings — 5 issues filed:**
 - **#19** (warn) — `--accent-orch` undefined in `globals.css` → invisible logo + broken AgentStatePanel styling

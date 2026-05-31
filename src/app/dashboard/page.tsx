@@ -3,12 +3,21 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { TeamStatus } from "@/types";
+import { OrchestratorBar } from "@/components/OrchestratorBar";
 
 const ROLE_ACCENT: Record<string, string> = {
   "product-owner": "po", "business-analyst": "ba", architect: "arch",
   "ui-developer": "ui", "backend-developer": "be", qa: "qa", devsecops: "ops",
 };
 
+const WORKSPACE_KEY = "apex-team:workspace";
+const KNOWN_MODELS = [
+  "claude-opus-4-7",
+  "claude-sonnet-4-6",
+  "claude-haiku-4-5-20251001",
+  "gemini-2.5-flash",
+  "llama-3.3-70b-versatile",
+];
 const ROLES = [
   "product-owner","business-analyst","architect",
   "ui-developer","backend-developer","qa","devsecops",
@@ -68,6 +77,8 @@ export default function DashboardPage() {
   const [expandedRow, setExpandedRow] = useState<Record<string, string | number>>({});
   const [openTooltip, setOpenTooltip] = useState<string | null>(null);
   const [roleModels, setRoleModels] = useState<Record<string, string>>({});
+  const [workspace, setWorkspace] = useState<string>("");
+  const [sendingRows, setSendingRows] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     fetch("/api/active-thread", { cache: "no-store" })
@@ -90,6 +101,7 @@ export default function DashboardPage() {
       m[r] = localStorage.getItem(`apex-model-${r}`) ?? "claude-sonnet-4-6";
     }
     setRoleModels(m);
+    try { const ws = localStorage.getItem(WORKSPACE_KEY); if (ws) setWorkspace(ws); } catch {}
   }, []);
 
   useEffect(() => {
@@ -188,6 +200,32 @@ export default function DashboardPage() {
     }
   };
 
+  // Per-row single-issue dispatch — runs concurrently; does NOT block other rows.
+  const dispatchRowToPo = async (issueNumber: number) => {
+    if (!threadId || sendingRows.has(issueNumber)) return;
+    setSendingRows((prev) => new Set(prev).add(issueNumber));
+    try {
+      const res = await fetch("/api/po-dispatch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ threadId, issueNumbers: [issueNumber] }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error((body as { error?: string }).error ?? `HTTP ${res.status}`);
+      }
+    } catch {
+      // swallow — button re-enables for retry
+    } finally {
+      setSendingRows((prev) => { const n = new Set(prev); n.delete(issueNumber); return n; });
+    }
+  };
+
+  const setRoleModel = (role: string, model: string) => {
+    setRoleModels((prev) => ({ ...prev, [role]: model }));
+    try { localStorage.setItem(`apex-model-${role}`, model); } catch {}
+  };
+
   const empty = (msg: string) => <p className="empty-msg">{msg}</p>;
   const notReady = empty("Endpoint building… (Wave 6b BE Dev)");
 
@@ -210,19 +248,17 @@ export default function DashboardPage() {
 
   return (
     <div className="dash">
-      <header className="dash-bar">
-        <span className="logo">⌬</span>
-        <span className="brand">apex-team</span>
-        <nav className="tabs">
-          <Link href="/" className="tab">Team</Link>
-          <Link href="/dashboard" className="tab tab-active">Dashboard</Link>
-        </nav>
-        {threadId && (
-          <span className="thread-id" title="Active thread">
-            thread: <code>{threadId}</code>
-          </span>
-        )}
-      </header>
+      <OrchestratorBar
+        threadId={threadId}
+        onNewThread={() => setThreadId(`t_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`)}
+        onThreadIdChange={setThreadId}
+        busy={false}
+        workspace={workspace}
+        onWorkspaceChange={(ws) => {
+          setWorkspace(ws);
+          try { localStorage.setItem(WORKSPACE_KEY, ws); } catch {}
+        }}
+      />
 
       <div className="grid">
 
@@ -417,11 +453,11 @@ export default function DashboardPage() {
                       </a>
                       <button
                         className="iss-po-btn"
-                        onClick={() => dispatchToPo([iss.number])}
-                        disabled={dispatchState === "sending" || !threadId}
+                        onClick={() => dispatchRowToPo(iss.number)}
+                        disabled={sendingRows.has(iss.number) || !threadId}
                         aria-label={`Send issue #${iss.number} to PO`}
                         title="Send to Product Owner"
-                      >→ PO</button>
+                      >{sendingRows.has(iss.number) ? "…" : "→ PO"}</button>
                     </div>
                   ))}
                 </div>
@@ -485,7 +521,17 @@ export default function DashboardPage() {
                     <span>{fmtNum(ctx.handoffChars)} chars</span>
                     <span>{ctx.historyDepth} msgs</span>
                   </div>
-                  <div className="ctx-model">{roleModels[ctx.role] ?? "claude-sonnet-4-6"}</div>
+                  <select
+                    className="ctx-model-select"
+                    value={roleModels[ctx.role] ?? "claude-sonnet-4-6"}
+                    onChange={(e) => setRoleModel(ctx.role, e.target.value)}
+                    aria-label={`Model for ${ctx.role}`}
+                    title={`Model for ${ctx.role}`}
+                  >
+                    {KNOWN_MODELS.map((m) => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
                 </div>
               ))}
             </div>
@@ -526,22 +572,6 @@ export default function DashboardPage() {
 
       <style jsx>{`
         .dash { min-height: 100vh; display: flex; flex-direction: column; }
-        .dash-bar {
-          display: flex; align-items: center; gap: 16px; padding: 8px 16px;
-          border-bottom: 1px solid var(--border); background: var(--surface);
-          flex-wrap: wrap;
-        }
-        .logo { color: var(--accent-po); font-size: 18px; }
-        .brand { font-weight: 700; letter-spacing: 0.02em; }
-        .tabs { display: flex; gap: 4px; }
-        .tab {
-          padding: 4px 12px; border-radius: 4px; border: 1px solid var(--border);
-          font-size: 12px; font-weight: 500; color: var(--text-dim); text-decoration: none;
-        }
-        .tab:hover { color: var(--text); background: var(--surface-2); }
-        .tab-active { color: var(--text); background: var(--surface-2); border-color: var(--accent-po); }
-        .thread-id { font-size: 11px; color: var(--text-dim); margin-left: auto; }
-        .thread-id code { font-family: ui-monospace, monospace; }
 
         .grid {
           display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -647,7 +677,13 @@ export default function DashboardPage() {
           width: fit-content;
         }
         .ctx-stats { display: flex; gap: 8px; font-size: 10px; color: var(--text-dim); font-family: ui-monospace, monospace; }
-        .ctx-model { font-size: 9px; color: var(--text-dim); font-family: ui-monospace, monospace; opacity: 0.65; }
+        .ctx-model-select {
+          font-size: 10px; color: var(--text-dim);
+          background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
+          padding: 2px 4px; cursor: pointer; width: 100%;
+        }
+        .ctx-model-select:hover { border-color: var(--text-dim); }
+        .ctx-model-select:focus { outline: 2px solid var(--accent-po); outline-offset: 1px; }
 
         .spend-totals { display: flex; gap: 20px; margin-bottom: 12px; }
         .spend-stat { display: flex; flex-direction: column; align-items: center; }
