@@ -2,10 +2,11 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 7a BE Dev complete (`d598c3e`). `pnpm type-check` clean. Pushed to origin/main.
+**State.** Wave 7a UI Dev complete (`SHA-pending`). `pnpm type-check` clean. Pushed to origin/main.
 
 **Wave 7a shipped:**
-- `src/app/api/po-dispatch/route.ts` — NEW: `POST /api/po-dispatch`. Body: `{ threadId, issueNumbers: number[], workspace? }`. Fetches each issue via `gh issue view --json`, constructs a PO message, calls `runTurnWithDispatches` targeting `product-owner`, returns `{ ok, dispatched, issueCount }`. Long-running (30–60s); no timeout. Bus events stream live.
+- `src/app/api/po-dispatch/route.ts` — NEW: `POST /api/po-dispatch`. Body: `{ threadId, issueNumbers: number[], workspace? }`. Fetches each issue via `gh issue view --json`, constructs a PO message, calls `runTurnWithDispatches` targeting `product-owner`, returns `{ ok, dispatched, issueCount }`. Long-running (30–60s); no timeout. Bus events stream live. (BE Dev, `d598c3e`)
+- `src/app/dashboard/page.tsx` — Issues panel enhanced: per-row checkbox multi-select, per-row "→ PO" instant-dispatch button, multi-select sticky footer with send/cancel, in-flight spinner, success toast with Team link, error banner with retry. All states account for `dispatchState: idle|sending|success|error`. (UI Dev, `SHA-pending`)
 
 **Wave 6 complete (all on origin/main):**
 

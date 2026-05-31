@@ -45,6 +45,9 @@ export default function DashboardPage() {
   const [endpointReady, setEndpointReady] = useState(true);
   const [savedOrder, setSavedOrder] = useState<number[]>([]);
   const [dragFrom, setDragFrom] = useState<number | null>(null);
+  const [selectedIssues, setSelectedIssues] = useState<Set<number>>(new Set());
+  const [dispatchState, setDispatchState] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [dispatchError, setDispatchError] = useState<string | null>(null);
 
   // Fetch active thread on mount.
   useEffect(() => {
@@ -105,6 +108,37 @@ export default function DashboardPage() {
       try { localStorage.setItem(`apex-priority-${threadId}`, JSON.stringify(ids)); } catch {}
     }
     setDragFrom(null);
+  };
+
+  const toggleIssue = (num: number) => {
+    setSelectedIssues((prev) => {
+      const next = new Set(prev);
+      if (next.has(num)) next.delete(num); else next.add(num);
+      return next;
+    });
+  };
+
+  const dispatchToPo = async (issueNumbers: number[]) => {
+    if (!threadId) return;
+    setDispatchState("sending");
+    setDispatchError(null);
+    try {
+      const res = await fetch("/api/po-dispatch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ threadId, issueNumbers }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error((body as { error?: string }).error ?? `HTTP ${res.status}`);
+      }
+      setSelectedIssues(new Set());
+      setDispatchState("success");
+      setTimeout(() => setDispatchState("idle"), 8000);
+    } catch (err) {
+      setDispatchError(err instanceof Error ? err.message : String(err));
+      setDispatchState("error");
+    }
   };
 
   const empty = (msg: string) => <p className="empty-msg">{msg}</p>;
@@ -213,22 +247,95 @@ export default function DashboardPage() {
         </section>
 
         {/* ISSUES */}
-        <section className="panel">
+        <section className="panel issue-panel">
           <h2 className="panel-h">Issues</h2>
           {!endpointReady ? notReady : !data ? empty("Loading…") : (
-            <div className="issue-grid">
-              <a className="issue-row" href="https://github.com/keyan-commits/apex-team/issues?q=label%3Aself-improvement+is%3Aopen" target="_blank" rel="noreferrer">
-                <span className="issue-count">{data.issues.selfImprovement}</span>
-                <span className="issue-label">self-improvement</span>
-              </a>
-              <a className="issue-row" href="https://github.com/keyan-commits/apex-team/issues?q=label%3Askill-proposal+is%3Aopen" target="_blank" rel="noreferrer">
-                <span className="issue-count">{data.issues.skillProposal}</span>
-                <span className="issue-label">skill-proposal</span>
-              </a>
-              <a className="issue-row" href="https://github.com/keyan-commits/apex-team/issues?q=label%3Amcp-proposal+is%3Aopen" target="_blank" rel="noreferrer">
-                <span className="issue-count">{data.issues.mcpProposal}</span>
-                <span className="issue-label">mcp-proposal</span>
-              </a>
+            <div className="issue-panel-inner">
+              {/* Label-count summary rows */}
+              <div className="issue-grid">
+                <a className="issue-row" href="https://github.com/keyan-commits/apex-team/issues?q=label%3Aself-improvement+is%3Aopen" target="_blank" rel="noreferrer">
+                  <span className="issue-count">{data.issues.selfImprovement}</span>
+                  <span className="issue-label">self-improvement</span>
+                </a>
+                <a className="issue-row" href="https://github.com/keyan-commits/apex-team/issues?q=label%3Askill-proposal+is%3Aopen" target="_blank" rel="noreferrer">
+                  <span className="issue-count">{data.issues.skillProposal}</span>
+                  <span className="issue-label">skill-proposal</span>
+                </a>
+                <a className="issue-row" href="https://github.com/keyan-commits/apex-team/issues?q=label%3Amcp-proposal+is%3Aopen" target="_blank" rel="noreferrer">
+                  <span className="issue-count">{data.issues.mcpProposal}</span>
+                  <span className="issue-label">mcp-proposal</span>
+                </a>
+              </div>
+
+              {/* Individual recent issues */}
+              {data.issues.recent.length > 0 && (
+                <div className="recent-issues">
+                  <p className="recent-issues-hd">Recent open</p>
+                  {data.issues.recent.map((iss) => (
+                    <div key={iss.number} className="recent-row">
+                      <input
+                        type="checkbox"
+                        className="iss-check"
+                        checked={selectedIssues.has(iss.number)}
+                        onChange={() => toggleIssue(iss.number)}
+                        aria-label={`Select issue #${iss.number}`}
+                        onClick={(e) => e.stopPropagation()}
+                        disabled={dispatchState === "sending"}
+                      />
+                      <a
+                        className="recent-row-body"
+                        href={iss.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        title={`#${iss.number} — ${iss.label}`}
+                      >
+                        <span className="iss-num">#{iss.number}</span>
+                        <span className="iss-title">{iss.title}</span>
+                        <span className="iss-label-badge">{iss.label}</span>
+                      </a>
+                      <button
+                        className="iss-po-btn"
+                        onClick={() => dispatchToPo([iss.number])}
+                        disabled={dispatchState === "sending" || !threadId}
+                        aria-label={`Send issue #${iss.number} to PO`}
+                        title="Send to Product Owner"
+                      >→ PO</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Dispatch status messages */}
+              {dispatchState === "success" && (
+                <div className="dispatch-success">
+                  Dispatched to PO. Switch to Team view to watch.{" "}
+                  <Link href="/" className="team-link">Team →</Link>
+                </div>
+              )}
+              {dispatchState === "error" && dispatchError && (
+                <div className="dispatch-error">{dispatchError}</div>
+              )}
+
+              {/* Multi-select footer */}
+              {selectedIssues.size > 0 && (
+                <div className="issue-footer">
+                  <span className="sel-count">{selectedIssues.size} selected</span>
+                  <button
+                    className="footer-cancel"
+                    onClick={() => setSelectedIssues(new Set())}
+                    disabled={dispatchState === "sending"}
+                  >Cancel</button>
+                  <button
+                    className="footer-dispatch"
+                    onClick={() => dispatchToPo([...selectedIssues])}
+                    disabled={dispatchState === "sending" || !threadId}
+                  >
+                    {dispatchState === "sending"
+                      ? <><span className="spinner" aria-hidden="true" /> Sending…</>
+                      : `→ Send ${selectedIssues.size} to PO`}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </section>
@@ -389,6 +496,78 @@ export default function DashboardPage() {
         .spend-bar-wrap { flex: 1; height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
         .spend-bar { height: 100%; background: var(--accent-po); border-radius: 99px; min-width: 2px; }
         .spend-cost { font-family: ui-monospace, monospace; font-size: 11px; min-width: 56px; text-align: right; }
+
+        .issue-panel { position: relative; }
+        .issue-panel-inner { display: flex; flex-direction: column; gap: 10px; }
+
+        .recent-issues { display: flex; flex-direction: column; gap: 4px; }
+        .recent-issues-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-dim); margin: 0 0 4px; }
+        .recent-row {
+          display: flex; align-items: center; gap: 6px;
+          padding: 4px 6px; background: var(--surface-2); border-radius: 6px;
+        }
+        .iss-check { flex-shrink: 0; cursor: pointer; accent-color: var(--accent-po); }
+        .recent-row-body {
+          display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;
+          text-decoration: none; color: var(--text); font-size: 12px;
+        }
+        .recent-row-body:hover .iss-title { text-decoration: underline; }
+        .iss-num { font-size: 10px; color: var(--text-dim); font-family: ui-monospace, monospace; flex-shrink: 0; }
+        .iss-title { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .iss-label-badge {
+          font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 99px;
+          background: color-mix(in srgb, var(--accent-po) 12%, var(--surface-2));
+          color: var(--accent-po); border: 1px solid color-mix(in srgb, var(--accent-po) 30%, var(--border));
+          white-space: nowrap; flex-shrink: 0;
+        }
+        .iss-po-btn {
+          flex-shrink: 0; font-size: 10px; font-weight: 700; padding: 2px 7px;
+          border-radius: 4px; border: 1px solid var(--accent-po);
+          background: color-mix(in srgb, var(--accent-po) 12%, var(--surface));
+          color: var(--accent-po); cursor: pointer; white-space: nowrap;
+        }
+        .iss-po-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--accent-po) 22%, var(--surface)); }
+        .iss-po-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .issue-footer {
+          display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+          background: var(--surface-2); border-radius: 6px;
+          border: 1px solid color-mix(in srgb, var(--accent-po) 30%, var(--border));
+          position: sticky; bottom: 0;
+        }
+        .sel-count { font-size: 12px; font-weight: 600; color: var(--accent-po); flex: 1; }
+        .footer-cancel {
+          font-size: 11px; padding: 3px 10px; border-radius: 4px;
+          border: 1px solid var(--border); background: var(--surface); color: var(--text-dim); cursor: pointer;
+        }
+        .footer-cancel:hover:not(:disabled) { color: var(--text); }
+        .footer-cancel:disabled { opacity: 0.4; cursor: not-allowed; }
+        .footer-dispatch {
+          display: flex; align-items: center; gap: 5px;
+          font-size: 11px; font-weight: 700; padding: 3px 12px; border-radius: 4px;
+          border: 1px solid var(--accent-po);
+          background: var(--accent-po); color: #fff; cursor: pointer;
+        }
+        .footer-dispatch:hover:not(:disabled) { opacity: 0.88; }
+        .footer-dispatch:disabled { opacity: 0.5; cursor: not-allowed; }
+        .spinner {
+          display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+          border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff;
+          animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .dispatch-success {
+          font-size: 12px; padding: 8px 10px; border-radius: 6px;
+          background: color-mix(in srgb, var(--accent-po) 10%, var(--surface-2));
+          color: var(--accent-po); border: 1px solid color-mix(in srgb, var(--accent-po) 30%, var(--border));
+        }
+        .team-link { color: var(--accent-po); font-weight: 700; text-decoration: underline; }
+        .dispatch-error {
+          font-size: 12px; padding: 8px 10px; border-radius: 6px;
+          background: color-mix(in srgb, var(--accent-qa) 10%, var(--surface-2));
+          color: var(--accent-qa); border: 1px solid color-mix(in srgb, var(--accent-qa) 30%, var(--border));
+        }
 
         @media (max-width: 720px) {
           .grid { grid-template-columns: 1fr; }
