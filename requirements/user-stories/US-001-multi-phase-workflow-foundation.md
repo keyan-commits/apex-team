@@ -14,7 +14,7 @@ As the user, I want every change to apex-team to flow through a mandatory phased
 ## Acceptance Criteria
 
 - **AC1:** Given a new feature request from the user, when the PO begins orchestration, then Architect + UX Designer + BA are dispatched in parallel BEFORE any implementer (UI Dev, BE Dev) receives a DISPATCH. _(No implementation wave starts without a BA user story in `requirements/user-stories/`.)_
-- **AC2:** Given a BA user story exists for a feature, when UI Dev or BE Dev begins implementation, then each works on a named feature branch (`feature/<wave>-<short>`) and spins up their own isolated dev instance (`pnpm dev:test:ui` port 3110 or `pnpm dev:test:be` port 3120) with a separate SQLite DB. _(Isolated instances provisioned by DevSecOps.)_
+- **AC2:** Given a BA user story exists for a feature, when UI Dev or BE Dev begins implementation, then each invokes `pnpm branch:start <role> <wave>-<short>` to create a git worktree at `../apex-team-<role>-<short>/` with a feature branch (`feature/<wave>-<short>`) checked out, and spins up their own isolated dev instance (`pnpm dev:test:ui` port 3110 or `pnpm dev:test:be` port 3120) with a separate SQLite DB. _(Worktree + isolated instances provisioned by DevSecOps Wave 9c `3d2a933`.)_
 - **AC3:** Given an implementer has completed work and all local unit tests pass, when they hand off to QA, then: (a) if the change touches UI, UX Designer reviews first and returns PASS or REVISE against `design/INDEX.md`; (b) only after UX PASS (if applicable) does QA exercise the change on `:3100` against the story's ACs; (c) QA returns PASS or FAIL with evidence. _(Both gates required for UI changes; QA alone for non-UI.)_
 - **AC4:** Given QA returns PASS (and UX returns PASS if UI), when the deploy handoff is triggered, then only DevSecOps merges the feature branch to main and pushes to `origin/main`. No other role merges or pushes directly. _(DevSecOps is the sole merge + push authority.)_
 - **AC5:** Given any role identifies a missing skill or MCP tool, when they cannot fulfill their phase obligations with existing capabilities, then they file a `skill-proposal` or `mcp-proposal` GitHub issue (label: `skill-proposal`/`mcp-proposal`) and may search mcpmarket.com before the next wave. _(Self-enrichment protocol closes skill gaps without blocking the current turn.)_
@@ -28,7 +28,7 @@ As the user, I want every change to apex-team to flow through a mandatory phased
 
 ## Open Questions
 
-- **OQ-001**: Feature branches vs git worktrees vs separate clones — see `open-questions.md`. Affects AC2. Current implementation assumes feature branches. Awaiting user decision.
+- **OQ-001**: ~~Feature branches vs git worktrees vs separate clones~~ — **RESOLVED**. User confirmed: feature branches for logical isolation + git worktrees for physical isolation. Implemented in DevSecOps Wave 9c (`3d2a933`). AC2 updated accordingly.
 
 ## Design Spec
 
@@ -38,6 +38,8 @@ As the user, I want every change to apex-team to flow through a mandatory phased
 
 - impl: `2a81587` (Architect — `src/lib/protocols.ts`, `architecture/decisions/ADR-002-multi-phase-workflow.md`, `src/lib/roles.ts`)
 - impl: `a8fab5d` (Architect — `DEPLOYMENT_GATES_PROTOCOL` predecessor, Wave 9a)
+- impl: `5802292` (DevSecOps — per-role `dev:test:*` scripts + `pnpm branch:start` helper, Wave 9b)
+- impl: `3d2a933` (DevSecOps — worktree-based isolation: `pnpm branch:start <role> <slug>` + `pnpm branch:cleanup`, Wave 9c)
 - test: _(pending — DevSecOps script verification + QA smoke test for gate flow)_
 - design-pass-by: N/A (non-UI)
 - qa-pass-by: _(pending — Wave 9b QA gate)_

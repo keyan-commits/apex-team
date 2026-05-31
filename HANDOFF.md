@@ -2,7 +2,12 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 9c BA — requirements/ updates for resolved OQ-001 + glossary additions. Commit `f31ae5f`.**
+**Wave 9c BA (retry) — US-001 updated to reflect resolved OQ-001 + worktree model. Commit (SHA-pending).**
+
+- `requirements/user-stories/US-001-multi-phase-workflow-foundation.md` — AC2 updated: explicitly references `pnpm branch:start <role> <slug>` + worktree path convention; Open Questions OQ-001 marked RESOLVED; impl links added for `5802292` + `3d2a933`.
+- `requirements/INDEX.md` — US-001 summary updated to list all three impl SHAs.
+
+**Previous Wave 9c BA — `f31ae5f`.**
 
 - `requirements/open-questions.md` — OQ-001 marked RESOLVED: user confirmed feature branches + git worktrees. Decision and DevSecOps Wave 9c implementation (`3d2a933`) documented.
 - `requirements/glossary.md` — added `ADR` and `Worktree` entries (22 terms total).
