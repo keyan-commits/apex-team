@@ -1,9 +1,16 @@
 # US-006 — Main-branch enforcement for apex-team
 
-**Status:** proposed
+**Status:** done (local hooks live; server-side branch protection pending user `gh api` consent step)
 **Owner role:** devsecops
 **Created:** 2026-05-31
+**Closed:** 2026-05-31
 **Story ID:** US-006
+
+**Links:**
+- impl: `443b379` (DevSecOps Wave 14b — pre-push hook + pre-commit type-check + CODEOWNERS + branch-protection-payload.json + ops/README "Branch protection" section)
+- qa-pass-by: Wave 14c — 6/6 ACs PASS (live hook simulation: refs/heads/main → exit 1; feature/foo → exit 0)
+- deployed-by: `3e401aa` (DevSecOps Wave 14d merge to main; `core.hooksPath = scripts/git-hooks` verified live; branches + worktrees cleaned)
+- user-action-pending: `gh api -X PUT /repos/keyan-commits/apex-team/branches/main/protection --input ops/branch-protection-payload.json` (OQ-007 — explicit consent step; once run, AC1/AC2/AC6 are server-side enforced)
 
 ---
 
