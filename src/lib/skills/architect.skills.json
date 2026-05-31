@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "sections": {
+    "ADR discipline": "claude",
+    "NFR quantification": "claude",
+    "Design pattern recognition": "claude",
+    "Code review rubric": "claude",
+    "Fitness functions": "user",
+    "Security-by-design": "claude"
+  }
+}
