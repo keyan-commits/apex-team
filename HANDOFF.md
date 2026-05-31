@@ -13,6 +13,8 @@
 
 **Hotfix on top of Wave 8e:** `/api/po-dispatch` made fire-and-forget. Endpoint was awaiting `runTurnWithDispatches`, which for a 10-issue batch is 5+ minutes — the browser saw "Sending…" indefinitely and the HTTP transport timeout aborted the in-flight PO turn via `req.signal`. Now returns 202 immediately after kicking off the turn detached; bus events drive the UI. Closes user-reported "selections keep getting ignored."
 
+**Removed: Workflow panel.** User feedback: not useful — comparison against a hardcoded "canonical chain" (PO→BA→UX→UI Dev→UX→QA→DevSecOps) is misleading because (a) the chain was something I made up from a passing user comment, not enforced by the system; (b) the only auto-trigger source is PO, peer-to-peer HANDOFFs don't trigger turns; (c) the visualization sprawled across an entire long-lived thread, washing out signal. Deleted: WORKFLOW section in `dashboard/page.tsx`, `wfStatus`/`expandedWfStep`, all `.wf-*` CSS, `/api/workflow/route.ts`, `WorkflowEdge` + `WorkflowResponse` types. Parked for future: per-instruction segmented view if/when a meaningful comparison spec is defined.
+
 ---
 
 **UI Dev — Wave 8d complete.** WORKFLOW panel on dashboard. Commit `04a5f7c`.

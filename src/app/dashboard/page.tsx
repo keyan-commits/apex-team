@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import type { TeamStatus, WorkflowResponse } from "@/types";
+import type { TeamStatus } from "@/types";
 import { OrchestratorBar } from "@/components/OrchestratorBar";
 
 const ROLE_ACCENT: Record<string, string> = {
@@ -34,7 +34,6 @@ const PANEL_INFO: Record<string, string> = {
   scout: "Weekly self-improvement scan that files skill-proposal issues. Currently manual — Product Owner proposes a scout wave when 7+ days have passed.",
   context: "Each role's working memory: HANDOFF doc size + message-history depth. \"Needs cleanup\" badge appears when oversized; Product Owner compacts on next turn.",
   spend: "Token cost per role, based on reference public API pricing. Useful as a relative efficiency signal — you're on a Claude subscription, not pay-per-token.",
-  workflow: "Compares the team's actual handoff chain against the canonical PO → BA → UX → UI Dev → UX (review) → QA → DevSecOps workflow.",
 };
 
 function fmtTime(ms: number | null | undefined): string {
@@ -82,8 +81,6 @@ export default function DashboardPage() {
   const [workspace, setWorkspace] = useState<string>("");
   const [sendingRows, setSendingRows] = useState<Set<number>>(new Set());
   const [fetchError, setFetchError] = useState(false);
-  const [workflow, setWorkflow] = useState<WorkflowResponse | null>(null);
-  const [expandedWfStep, setExpandedWfStep] = useState<string | null>(null);
   const [flashedRowId, setFlashedRowId] = useState<number | null>(null);
   const [liveMsg, setLiveMsg] = useState("");
   const queuedRowRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -142,22 +139,6 @@ export default function DashboardPage() {
     fetchData();
     const id = setInterval(fetchData, 10_000);
     const onVis = () => { if (document.visibilityState === "visible") fetchData(); };
-    document.addEventListener("visibilitychange", onVis);
-    return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
-  }, [threadId]);
-
-  useEffect(() => {
-    if (!threadId) return;
-    const fetchWf = () => {
-      if (document.visibilityState !== "visible") return;
-      fetch(`/api/workflow?threadId=${encodeURIComponent(threadId)}`, { cache: "no-store" })
-        .then((r) => r.json() as Promise<WorkflowResponse>)
-        .then((d) => setWorkflow(d))
-        .catch(() => {});
-    };
-    fetchWf();
-    const id = setInterval(fetchWf, 10_000);
-    const onVis = () => { if (document.visibilityState === "visible") fetchWf(); };
     document.addEventListener("visibilitychange", onVis);
     return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
   }, [threadId]);
@@ -273,24 +254,6 @@ export default function DashboardPage() {
     try { localStorage.setItem(`apex-model-${role}`, model); } catch {}
   };
 
-  const wfStatus = (
-    steps: WorkflowResponse["steps"],
-    expected: string[]
-  ): ("match" | "out-of-order" | "extra")[] => {
-    const out: ("match" | "out-of-order" | "extra")[] = [];
-    let ptr = 0;
-    for (const step of steps) {
-      const idx = expected.indexOf(step.role, ptr);
-      if (idx !== -1) {
-        out.push(idx === ptr ? "match" : "out-of-order");
-        ptr = idx + 1;
-      } else {
-        out.push(expected.indexOf(step.role) !== -1 ? "out-of-order" : "extra");
-      }
-    }
-    return out;
-  };
-
   const empty = (msg: string) => <p className="empty-msg">{msg}</p>;
   const notReady = empty("Endpoint building… (Wave 6b BE Dev)");
 
@@ -333,94 +296,6 @@ export default function DashboardPage() {
 
       <div className="grid">
 
-        {/* WORKFLOW */}
-        <section className="panel span2">
-          {panelHd("Workflow", "workflow")}
-          {!workflow || workflow.edges.length === 0 ? (
-            <p className="empty-msg">No handoffs yet in this thread.</p>
-          ) : (() => {
-            const statuses = wfStatus(workflow.steps, workflow.expected);
-            const seenRoles = new Set(workflow.steps.map(s => s.role));
-            const skipped = workflow.expected.filter((r, i) =>
-              !seenRoles.has(r) && workflow.expected.indexOf(r) === i
-            );
-            const hasOutOfOrder = statuses.some(s => s === "out-of-order");
-            let mismatch = "";
-            if (skipped.length > 0) mismatch = `Skipped: ${skipped.join(", ")} not yet involved.`;
-            else if (hasOutOfOrder) mismatch = "Out of order: some roles ran outside the canonical sequence.";
-
-            return (
-              <div className="wf-wrap">
-                <div className="wf-row">
-                  <span className="wf-label">Expected</span>
-                  <div className="wf-chain">
-                    {workflow.expected.map((role, i) => (
-                      <span key={`${role}-${i}`} className="wf-chain-item">
-                        {i > 0 && <span className="wf-arrow" aria-hidden="true">→</span>}
-                        <span
-                          className="wf-pill"
-                          style={{
-                            background: `color-mix(in srgb, var(--accent-${ROLE_ACCENT[role] ?? "po"}) 18%, var(--surface-2))`,
-                            color: `var(--accent-${ROLE_ACCENT[role] ?? "po"})`,
-                            borderColor: `color-mix(in srgb, var(--accent-${ROLE_ACCENT[role] ?? "po"}) 35%, var(--border))`,
-                          }}
-                        >{role}</span>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="wf-row">
-                  <span className="wf-label">Actual</span>
-                  <div className="wf-chain">
-                    {workflow.steps.map((step, i) => {
-                      const st = statuses[i];
-                      const accent = ROLE_ACCENT[step.role] ?? "po";
-                      const isExpanded = expandedWfStep === `${step.role}-${i}`;
-                      const stepEdges = workflow.edges
-                        .filter(e => e.to === step.role || e.from === step.role)
-                        .slice(-5);
-                      return (
-                        <span key={`${step.role}-${i}`} className="wf-chain-item">
-                          {i > 0 && <span className="wf-arrow" aria-hidden="true">→</span>}
-                          <span className="wf-pill-wrap">
-                            <button
-                              className={`wf-pill wf-pill-btn wf-pill-${st}`}
-                              style={{
-                                background: `color-mix(in srgb, var(--accent-${accent}) 18%, var(--surface-2))`,
-                                color: `var(--accent-${accent})`,
-                                borderColor: `color-mix(in srgb, var(--accent-${accent}) 35%, var(--border))`,
-                              }}
-                              onClick={() => setExpandedWfStep(isExpanded ? null : `${step.role}-${i}`)}
-                              aria-expanded={isExpanded}
-                              aria-label={`${step.role} — click to view edges`}
-                            >
-                              {st === "match" && <span className="wf-mark wf-ok" aria-hidden="true">✓</span>}
-                              {st === "out-of-order" && <span className="wf-mark wf-warn" aria-hidden="true">!</span>}
-                              {step.role}
-                              {step.visits > 1 && <span className="wf-visits">×{step.visits}</span>}
-                            </button>
-                            {isExpanded && stepEdges.length > 0 && (
-                              <div className="wf-edges">
-                                {stepEdges.map((edge) => (
-                                  <div key={edge.messageId} className="wf-edge-row">
-                                    <span className={`wf-kind wf-kind-${edge.kind}`}>{edge.kind}</span>
-                                    <span className="wf-excerpt">{edge.excerpt}</span>
-                                    <span className="dim">{fmtTime(edge.createdAt)}</span>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </span>
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-                {mismatch && <p className="wf-mismatch">{mismatch}</p>}
-              </div>
-            );
-          })()}
-        </section>
 
         {/* NOW */}
         <section className="panel span2">
@@ -941,56 +816,6 @@ export default function DashboardPage() {
           font-size: 13px;
           border-radius: 4px;
           margin-bottom: 12px;
-        }
-
-        .wf-wrap { display: flex; flex-direction: column; gap: 8px; }
-        .wf-row { display: flex; align-items: flex-start; gap: 8px; }
-        .wf-label {
-          font-size: 9px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
-          color: var(--text-dim); white-space: nowrap; padding-top: 3px; min-width: 58px;
-        }
-        .wf-chain { display: flex; flex-wrap: wrap; align-items: center; gap: 2px; }
-        .wf-chain-item { display: flex; align-items: center; gap: 2px; }
-        .wf-arrow { font-size: 10px; color: var(--text-dim); padding: 0 1px; }
-        .wf-pill {
-          display: inline-flex; align-items: center; gap: 3px;
-          padding: 2px 7px; border-radius: 99px; font-size: 10px; font-weight: 700;
-          font-family: ui-monospace, monospace; letter-spacing: 0.03em;
-          border: 1px solid; white-space: nowrap;
-        }
-        .wf-pill-btn {
-          cursor: pointer; background: none;
-          transition: opacity 0.1s;
-        }
-        .wf-pill-btn:hover { opacity: 0.8; }
-        .wf-pill-btn:focus-visible { outline: 2px solid var(--accent-po); outline-offset: 2px; }
-        .wf-pill-extra { opacity: 0.45; }
-        .wf-mark { font-size: 9px; font-weight: 900; }
-        .wf-ok { color: #4ade80; }
-        .wf-warn { color: #fb923c; }
-        .wf-visits {
-          font-size: 9px; font-weight: 700; padding: 0 3px;
-          background: rgba(0,0,0,0.15); border-radius: 99px;
-        }
-        .wf-pill-wrap { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; }
-        .wf-edges {
-          min-width: 200px; max-width: 320px; padding: 6px 8px;
-          background: var(--surface-2); border: 1px solid var(--border);
-          border-radius: 6px; display: flex; flex-direction: column; gap: 4px;
-        }
-        .wf-edge-row {
-          display: flex; align-items: baseline; gap: 6px; font-size: 10px; flex-wrap: wrap;
-        }
-        .wf-kind {
-          font-size: 9px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
-          padding: 1px 5px; border-radius: 99px; white-space: nowrap;
-        }
-        .wf-kind-dispatch { background: color-mix(in srgb, var(--accent-po) 15%, var(--surface-2)); color: var(--accent-po); }
-        .wf-kind-handoff { background: color-mix(in srgb, var(--accent-ba) 15%, var(--surface-2)); color: var(--accent-ba); }
-        .wf-kind-user { background: color-mix(in srgb, var(--accent-arch) 15%, var(--surface-2)); color: var(--accent-arch); }
-        .wf-excerpt { flex: 1; min-width: 0; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .wf-mismatch {
-          font-size: 11px; color: #fb923c; margin: 2px 0 0; padding-left: 66px;
         }
 
         @media (max-width: 720px) {
