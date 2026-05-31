@@ -154,3 +154,11 @@ Exits 0 if the server is healthy, 1 with a descriptive error message if not. If 
 ### CI secrets
 
 The CI workflows use only `GITHUB_TOKEN` (auto-injected by GitHub Actions). No additional secrets are required.
+
+## Infrastructure as Code (IaC)
+
+**Not applicable for apex-team.** This project runs entirely on a single Mac with no cloud infrastructure, no remote servers, no VPCs, and no managed databases. There is nothing to provision with Terraform, Pulumi, CDK, or equivalent tooling. The "infrastructure" is: one Mac, one repo, one SQLite file.
+
+If apex-team ever acquires remote infra (a staging server, a hosted deployment, a managed database), DevSecOps will open an ADR to select an IaC tool and provision it under `ops/infra/`. Until that happens, this section serves as the explicit record that IaC was considered and deliberately deferred.
+
+*Decision recorded per US-002 AC5 and ADR-002.*

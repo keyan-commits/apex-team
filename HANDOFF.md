@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 10d DevSecOps — AC5 fix applied on `feature/10b-pipeline-ownership`. IaC N/A section added to `ops/README.md`. Re-verification requested from QA (AC5 only). Awaiting QA RE-PASS before merge to main.**
+
 **Wave 10b DevSecOps — US-002 implementation complete. Feature branch: `feature/10b-pipeline-ownership`. Worktree: `../apex-team-devsecops-10b-pipeline-ownership/`. Awaiting QA PASS before merge to main.**
 
 **Deliverables shipped on `feature/10b-pipeline-ownership` (`88fd8d1`):**
