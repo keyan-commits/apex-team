@@ -176,3 +176,32 @@ The CI workflows use only `GITHUB_TOKEN` (auto-injected by GitHub Actions). No a
 If apex-team ever acquires remote infra (a staging server, a hosted deployment, a managed database), DevSecOps will open an ADR to select an IaC tool and provision it under `ops/infra/`. Until that happens, this section serves as the explicit record that IaC was considered and deliberately deferred.
 
 *Decision recorded per US-002 AC5 and ADR-002.*
+
+## Branch protection (US-006)
+
+Branch protection for `origin/main` is documented in `ops/branch-protection-payload.json`. The payload enforces:
+
+- `enforce_admins: true` — no direct push, even for the repo owner
+- `required_status_checks.contexts: ["build"]` — CI must pass before merge
+- `strict: true` — feature branch must be up-to-date with main before merging
+- `allow_force_pushes: false` — history is immutable
+- `allow_deletions: false` — main cannot be deleted
+
+**To apply (user must run manually — requires explicit consent per OQ-007):**
+
+```bash
+gh api -X PUT /repos/keyan-commits/apex-team/branches/main/protection \
+  --input ops/branch-protection-payload.json
+```
+
+Requires `gh` CLI authenticated with a token that has `repo` scope. If `gh` is not available or lacks the scope, run the equivalent `curl` command:
+
+```bash
+curl -X PUT \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
+  -H "Accept: application/vnd.github+json" \
+  https://api.github.com/repos/keyan-commits/apex-team/branches/main/protection \
+  --data-binary @ops/branch-protection-payload.json
+```
+
+The local pre-push hook (`scripts/git-hooks/pre-push`) blocks direct pushes to `origin/main` regardless of whether GitHub-side protection is active — it is the first line of defense. GitHub branch protection is the second line (catches `--no-verify` bypasses and pushes from non-hook environments).
