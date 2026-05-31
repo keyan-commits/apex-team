@@ -33,6 +33,8 @@ interface Props {
   /** Process inbox button — only meaningful when inboxCount > 0. */
   onProcessInbox?: () => void;
   onEditHandoffDoc: (next: string) => Promise<void> | void;
+  /** CSS max-height for the expanded pane. Defaults to "min(560px, 65vh)". PO passes "min(420px, 48vh)". */
+  maxHeight?: string;
 }
 
 const PROVIDER_LABEL: Record<Provider, string> = {
@@ -70,6 +72,7 @@ export function AgentPane({
   onSend,
   onProcessInbox,
   onEditHandoffDoc,
+  maxHeight = "min(560px, 65vh)",
 }: Props) {
   const [input, setInput] = useState("");
   const [isOther, setIsOther] = useState(false);
@@ -264,7 +267,7 @@ export function AgentPane({
   }
 
   return (
-    <section className={`pane pane-${accent}`}>
+    <section className={`pane pane-${accent}`} style={{ maxHeight }}>
       <header className="pane-header">
         <div className="header-row">
           <div className="title">
@@ -419,7 +422,7 @@ export function AgentPane({
               ? "Drop a task to the team… (PO orchestrates)  · ⌘/Ctrl+Enter"
               : `Message ${title}… (⌘/Ctrl+Enter to send)`
           }
-          rows={isPO ? 2 : 3}
+          rows={isPO ? 2 : 2}
           disabled={busy}
         />
         <button type="submit" disabled={busy || !input.trim()}>
@@ -547,7 +550,7 @@ export function AgentPane({
           flex: 1;
           padding: 10px;
           overflow-y: auto;
-          min-height: 120px;
+          min-height: 80px;
         }
         .empty {
           color: var(--text-dim);
@@ -601,6 +604,9 @@ export function AgentPane({
         @keyframes pill-pulse {
           0%, 100% { opacity: 0.45; }
           50% { opacity: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .pane { transition: none; }
         }
       `}</style>
     </section>

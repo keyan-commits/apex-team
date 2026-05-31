@@ -487,7 +487,7 @@ export default function Home() {
       <ActivityLog entries={activityLog} />
 
       <div className="po-area">
-        <AgentPane {...paneProps("product-owner")} />
+        <AgentPane {...paneProps("product-owner")} maxHeight="min(420px, 48vh)" />
       </div>
 
       <div className="team-grid">

@@ -52,7 +52,7 @@ export function AgentStatePanel({
       </button>
 
       {open && (
-        <div className="body">
+        <div className="body" tabIndex={0}>
           {editing ? (
             <>
               <textarea
@@ -86,8 +86,11 @@ export function AgentStatePanel({
             </>
           ) : hasDoc ? (
             <>
-              <div className="prose prose-invert prose-sm max-w-none">
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{handoffDoc}</ReactMarkdown>
+              <div className="doc-scroll">
+                <div className="prose prose-invert prose-sm max-w-none">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{handoffDoc}</ReactMarkdown>
+                </div>
+                <div className="body-fade" aria-hidden />
               </div>
               {onEdit && (
                 <div className="row">
@@ -152,6 +155,20 @@ export function AgentStatePanel({
         }
         .body {
           padding: 4px 14px 12px;
+        }
+        .doc-scroll {
+          max-height: 220px;
+          overflow-y: auto;
+          position: relative;
+        }
+        .doc-scroll:focus { outline: none; }
+        .body-fade {
+          height: 24px;
+          margin-top: -24px;
+          background: linear-gradient(transparent, color-mix(in srgb, var(--accent-orch) 4%, var(--surface)));
+          pointer-events: none;
+          position: sticky;
+          bottom: 0;
         }
         .empty {
           color: var(--text-dim);
