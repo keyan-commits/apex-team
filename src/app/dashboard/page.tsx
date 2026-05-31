@@ -648,7 +648,7 @@ export default function DashboardPage() {
                 className="scout-run-btn"
                 onClick={() => { void triggerScout(); }}
                 disabled={scoutRunning}
-                aria-live="polite"
+                aria-busy={scoutRunning}
               >
                 {scoutRunning
                   ? <><span className="spinner" aria-hidden="true" /> Running…</>
@@ -851,8 +851,8 @@ export default function DashboardPage() {
         .ctx-stats { display: flex; gap: 8px; font-size: 10px; color: var(--text-dim); font-family: ui-monospace, monospace; }
         .sat-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
         .sat-bar { height: 100%; border-radius: 99px; min-width: 2px; }
-        .sat-green { background: #4caf50; }
-        .sat-amber { background: #ff9800; }
+        .sat-green { background: var(--status-green); }
+        .sat-amber { background: var(--status-amber); }
         .sat-red { background: var(--accent-qa); }
         .ctx-model-select {
           font-size: 10px; color: var(--text-dim);
