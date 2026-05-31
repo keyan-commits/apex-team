@@ -2,33 +2,41 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 6b DevSecOps scout-cadence pivot done (`4f39199`). `pnpm type-check` clean.
+**State.** Wave 6d Architect review complete. Gate: UI Dev FAIL (block #17); all other streams PASS.
 
-**Wave 6b DevSecOps delivered (`4f39199`):**
-- `src/lib/roles.ts` — PO prompt: added `### Weekly skill-scout cadence` section (confirm with user before dispatching; PO proposes when >7 days since last scout).
-- `README.md` — added `## Claude authentication` section documenting no-API-key constraint + manual scout rationale.
-- `.env.local.example` — added comment: `ANTHROPIC_API_KEY: not used. Claude Agent SDK reuses Claude Code OAuth.`
-- **No GH Actions workflow** — deliberately omitted; `ANTHROPIC_API_KEY` unavailable for cron use.
+**Wave 6d review findings:**
 
-**Previous Wave 6b commits:**
+| Commit | File:line | Severity | Issue |
+|---|---|---|---|
+| `7291391` | `dashboard/page.tsx:7-26` | **BLOCK** | `TeamStatusData` interface uses snake_case + wrong shapes; all panels render empty. Issue #17 filed. |
+| `e29755f` | `.env.local.example` | **warn** | "ANTHROPIC_API_KEY: not used" is inaccurate — `skill-scout.mjs` requires it. Fix: document as optional/for-scout-use. |
+| `e29755f` | `skill-scout.mjs:58-89` | **warn** | Empty `tool_result` content for managed web-search beta is unvalidated — happy path exits round 0 (stop_reason=end_turn), error path behavior uncertain. |
+| `7291391` | `AgentPane.tsx:118-125` | **nit** | Auto-fold collapses grid row height, shrinking sibling panes in same row. Acceptable V1 behavior. |
+| `7291391` | `dashboard/page.tsx:263` | **nit** | Scout panel hard-codes "08:00 UTC (daily cron)" — cron was dropped. Use `nextScheduledAt ?? "manual only"`. |
+
+**PASS streams:** Architect `2e55fa2`, BE Dev `70fff8e` + `e29755f`, DevSecOps `4f39199`.  
+**FAIL stream:** UI Dev `7291391` — dashboard field name mismatch (issue #17, block).
+
+**Issue #9 closed** — INP guidance addressed in `7291391`.
+
+**Wave 6b all streams complete:**
 - `e29755f` (BE Dev): skill-scout.mjs + scout_runs/issue_cache tables + PO prompt Parts C/E/F.
 - `70fff8e` (BE Dev): pricing.ts + turn_usage + usage capture.
 - `2e55fa2` (Architect): `/api/team-status` 9-panel endpoint.
 - `7291391` (UI Dev): `/dashboard` page + OrchestratorBar tabs + AgentPane auto-fold.
-
-**Wave 6b open streams:**
-- DevSecOps: complete (this commit).
+- `4f39199` (DevSecOps): pivot scout from API-cron to PO-scheduled wave.
 
 **Next:**
-- Wave 6d Architect review — after DevSecOps completes.
-- Issue #4 — `page.tsx:113-117` mount fetch race (< 100ms window).
+- UI Dev: fix dashboard field names per issue #17 (block). Then Wave 6e push.
+- Issue #4 — `page.tsx:113-117` mount fetch race — still open.
+- Issues #5–#8, #10–#16 — Wave 6a proposals — open, not yet implemented.
 
-**Previous wave:**
+**Previous waves:**
 - Wave 5a: UI Dev `188d2f5`, BE Dev `737f154`, DevSecOps `eaf32e9`.
 - Wave 5b Architect PASS, issues #1–#3 closed.
-- Wave 6a: 12 skill-proposal/mcp-proposal issues filed (#5–#16) across all 6 roles.
+- Wave 6a: 12 skill-proposal/mcp-proposal issues filed (#5–#16).
 
-**Pending:** `git push origin main` — awaiting user authorization.
+**Pending:** `git push origin main` — awaiting user authorization (after UI Dev fixes #17).
 
 **User context:** will use apex-team on a second Mac; Fresh-Mac onboarding functional.
 
