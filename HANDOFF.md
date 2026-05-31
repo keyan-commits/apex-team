@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 20 — QA skill additions: `### Visual verification via Playwright MCP` (#30) + `### Contract testing` (#13) + `### Mutation testing` (#14) + `### Gate verification workflow` (#39) added to `src/lib/skills/qa.ts`. 34/34 tests green. Feature branch: `feature/20-qa-skill-additions`.**
+
 **Wave 19 — BE Dev skill additions: `### OpenTelemetry trace correlation` (#11) + `### Rate limiting` (#12) + `### Pre-HANDOFF unit testing` (#38) added to `src/lib/skills/backend-developer.ts`. 34/34 tests green. Feature branch: `feature/19-be-skill-additions`.**
 
 **Wave 18 — UI Dev skill additions: `### Container queries` bullet added to `### Mobile-first responsive` (#10) + `### Pre-HANDOFF unit testing` section added (#37) in `src/lib/skills/ui-developer.ts`. 34/34 tests green. Feature branch: `feature/18-ui-skill-additions`.**
