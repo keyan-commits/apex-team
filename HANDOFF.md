@@ -2,6 +2,34 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 9b — Mandatory phased workflow encoded. Commit SHA pending.**
+
+`src/lib/protocols.ts` (NEW):
+- `REQUIREMENTS_PHASE_PROTOCOL` — PO convenes Arch + UX + BA before any implementer
+- `IMPLEMENTATION_PHASE_PROTOCOL` — feature branches, isolated dev instances, local unit tests before HANDOFF
+- `VERIFICATION_PHASE_PROTOCOL` — UX PASS before QA; QA on `:3100` against BA ACs
+- `DEPLOYMENT_PHASE_PROTOCOL` — DevSecOps sole merge/push authority; never push from implementer
+- `CONSULTATION_PROTOCOL` — any role HANDOFF BA for requirements clarification
+- `SKILLS_SELF_ENRICHMENT_PROTOCOL` — skill-proposal / mcp-proposal issue flow + mcpmarket.com search
+
+`architecture/decisions/ADR-002-multi-phase-workflow.md` (NEW): documents phased model, per-role gate ownership, isolation rationale, skills self-enrichment, ADR-001 compatibility.
+
+`architecture/INDEX.md` (NEW): doc index for architecture/.
+
+`src/lib/roles.ts` (MODIFIED):
+- Imports all 6 protocol constants from `./protocols`
+- `PHASED_WORKFLOW_DISCIPLINE` constant appended to `PEER_PROTOCOL` → flows into all 7 peer system prompts
+- `ORCHESTRATOR_PROTOCOL` updated: Requirements phase mandatory (Arch+UX+BA first), Implementation wave (BA story required), Verification wave (UX before QA), Deployment wave (DevSecOps only)
+- QA: "Deployment-gate verification" section — must use `:3100`, never PASS on code inspection alone
+- UX Designer: is the design gate for all UI changes before QA proceeds
+- DevSecOps: sole merge-to-main + push authority called out explicitly via `PHASED_WORKFLOW_DISCIPLINE`
+
+**Downstream HANDOFFs sent:** BA, DevSecOps, all 6 peers (skill assessment ask).
+
+**Ambiguity flagged to user:** "their own source code" interpreted as **feature branches** (not git worktrees / separate clones). ADR-002 §Consequences calls this out explicitly. Awaiting user confirmation if stronger isolation is desired.
+
+---
+
 **Wave 9a — Deployment-gate policy encoded. Commit `a8fab5d` on main.**
 
 `src/lib/roles.ts` changes:
