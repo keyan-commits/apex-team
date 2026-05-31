@@ -91,6 +91,52 @@ pnpm dev:supervised   # http://localhost:3000 + auto-restart on sentinel change
 
 The team triggers a clean restart by appending a line to `.restart-trigger`. The supervisor catches the file change, SIGTERMs the server, waits up to 5s for graceful shutdown, then respawns. Use plain `pnpm dev` if you don't need this behavior.
 
+## Fresh-Mac Setup
+
+Complete checklist for a clean machine with no prior apex-team setup.
+
+**Prerequisites**
+
+1. Install Node.js 22+ — https://nodejs.org (or `brew install node`)
+2. Enable pnpm: `corepack enable`
+3. Install gh CLI: `brew install gh`
+4. Install Claude Code: `npm i -g @anthropic-ai/claude-code`
+
+**Clone and install**
+
+5. `git clone https://github.com/keyan-commits/apex-team.git && cd apex-team`
+6. `pnpm install`
+
+**Configure environment**
+
+7. `cp .env.local.example .env.local`
+8. Edit `.env.local` — add `GOOGLE_GENERATIVE_AI_API_KEY` and/or `GROQ_API_KEY` if you plan to use Gemini or Groq agents (optional; Claude agents need no key)
+
+**Bootstrap apex-engine (sibling repo)**
+
+9. `cd ../apex-engine && pnpm setup` — starts the apex-engine MCP server at `http://127.0.0.1:31001/mcp`
+10. Leave it running; return to this repo: `cd ../apex-team`
+
+**Authenticate**
+
+11. `claude login` — Claude agents reuse this OAuth
+12. `gh auth login` — needed for QA's self-improvement issue filing
+
+**Register the MCP server with Claude Code (once per machine)**
+
+13. `claude mcp add apex-team --transport http http://localhost:3000/mcp`
+
+**Start**
+
+14. `pnpm dev:supervised` — server at `http://localhost:3000` with auto-restart support
+
+**Verify**
+
+15. Open `http://localhost:3000` — seven role panes should appear
+16. In a Claude Code session: call `talk_to_product_owner("hello", "<thread_id>")` — PO should reply
+
+Run `pnpm preflight` at any point to check all prerequisites automatically.
+
 ## Architecture
 
 See `CLAUDE.md` for the full stack, file layout, role ownership boundaries, and the NOTES / HANDOFF / DISPATCH protocols. `HANDOFF.md` tracks current state and open next-steps.

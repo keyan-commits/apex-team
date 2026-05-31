@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 5a Backend Dev complete (`737f154`). Fixed issue #3 + history truncation + health route. `pnpm type-check` clean. Wave 5a UI Dev also complete (`188d2f5`).
+**State.** Wave 5a complete across all three streams. BE Dev (`737f154`): issue #3 + history truncation + health route. UI Dev (`188d2f5`): issues #1 + #2. DevSecOps (SHA-pending): fresh-Mac readiness — `.env.local.example` updated, README Fresh-Mac Setup added, `scripts/preflight.mjs` + `pnpm preflight`. `pnpm type-check` clean. Awaiting Wave 5b Architect review.
 
 **Wave 4 complete — commits on `main` ahead of `origin/main`:**
 
