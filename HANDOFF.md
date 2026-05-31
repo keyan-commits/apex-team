@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 27 — TypeScript 5.9 → 6.0 upgrade (closes #47). `package.json`: `typescript` bumped `^5.7.0` → `^6.0.3`. New `src/types/css-modules.d.ts`: `declare module "*.css"` satisfies TS 6's stricter side-effect import check. 39/39 green. Feature branch: `feature/27-ts-6-upgrade`.**
+
 **Wave 26 — Pre-wave hygiene check (closes #32). `branch-start.mjs`: dirty-tree check refactored into named `validateMainCleanliness()` with explicit remediation hints (git stash / restore / clean). `branch-cleanup.mjs`: same pattern (`validateWorktreeCleanliness()`), plus `devsecops` added to `VALID_ROLES` (was missing). `tests/ops/branch-hygiene.test.ts`: 5 new tests. 39/39 green. Feature branch: `feature/26-pre-wave-hygiene`.**
 
 **Wave 25 — UI fix: 3 UX bugs (closes #20, #25, #26). (1) `AgentStatePanel.tsx`: `.toggle:focus-visible` rule restores keyboard focus ring stripped by `all:unset`. (2) `dashboard/page.tsx` line 274: user-facing notReady copy replaces stale milestone reference. (3) `dashboard/page.tsx`: 4s active-thread poll + `userEditedThreadRef` guard — dashboard now tracks MCP-driven thread switches without overwriting manual edits. 34/34 green. Feature branch: `feature/25-ux-bugs`.**
