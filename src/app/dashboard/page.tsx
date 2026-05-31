@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { TeamStatus, WorkflowResponse } from "@/types";
 import { OrchestratorBar } from "@/components/OrchestratorBar";
@@ -84,6 +84,9 @@ export default function DashboardPage() {
   const [fetchError, setFetchError] = useState(false);
   const [workflow, setWorkflow] = useState<WorkflowResponse | null>(null);
   const [expandedWfStep, setExpandedWfStep] = useState<string | null>(null);
+  const [flashedRowId, setFlashedRowId] = useState<number | null>(null);
+  const [liveMsg, setLiveMsg] = useState("");
+  const queuedRowRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
     fetch("/api/active-thread", { cache: "no-store" })
@@ -177,6 +180,29 @@ export default function DashboardPage() {
       try { localStorage.setItem(`apex-priority-${threadId}`, JSON.stringify(ids)); } catch {}
     }
     setDragFrom(null);
+  };
+
+  const moveQueued = (fromIdx: number, dir: -1 | 1) => {
+    const toIdx = fromIdx + dir;
+    if (toIdx < 0 || toIdx >= sortedQueued.length) return;
+    const arr = [...sortedQueued];
+    const [item] = arr.splice(fromIdx, 1);
+    arr.splice(toIdx, 0, item);
+    const ids = arr.map((x) => x.id);
+    setSavedOrder(ids);
+    if (threadId) {
+      try { localStorage.setItem(`apex-priority-${threadId}`, JSON.stringify(ids)); } catch {}
+    }
+    setFlashedRowId(item.id);
+    setTimeout(() => setFlashedRowId(null), 200);
+    setLiveMsg(`Moved to position ${toIdx + 1} of ${arr.length}`);
+    setTimeout(() => { queuedRowRefs.current[toIdx]?.focus(); }, 0);
+  };
+
+  const queuedRowKd = (idx: number, itemId: number) => (ev: React.KeyboardEvent) => {
+    if (ev.key === "ArrowUp") { ev.preventDefault(); moveQueued(idx, -1); return; }
+    if (ev.key === "ArrowDown") { ev.preventDefault(); moveQueued(idx, 1); return; }
+    if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); toggleRow("queued", itemId); }
   };
 
   const toggleIssue = (num: number) => {
@@ -433,21 +459,25 @@ export default function DashboardPage() {
         <section className="panel span2">
           {panelHd("Queued — Drag to prioritize", "queued")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : sortedQueued.length === 0 ? empty("No queued tasks.") : (
-            <div className="row-list">
+            <>
+              <div className="sr-only" aria-live="polite" aria-atomic="true">{liveMsg}</div>
+              <div className="row-list">
               {sortedQueued.map((item, i) => (
                 <div key={item.id} className="row-item">
                   <div
+                    ref={(el) => { queuedRowRefs.current[i] = el; }}
                     draggable
                     onDragStart={() => setDragFrom(i)}
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={() => handleDrop(i)}
                     onDragEnd={() => setDragFrom(null)}
                     onClick={() => toggleRow("queued", item.id)}
-                    onKeyDown={rowKd("queued", item.id)}
+                    onKeyDown={queuedRowKd(i, item.id)}
                     tabIndex={0}
                     role="button"
                     aria-expanded={expandedRow["queued"] === item.id}
-                    className={`row draggable${dragFrom === i ? " row-dragging" : ""}`}
+                    aria-label={`${item.taskSummary} — position ${i + 1} of ${sortedQueued.length}. Use arrow keys to reorder.`}
+                    className={`row draggable${dragFrom === i ? " row-dragging" : ""}${flashedRowId === item.id ? " row-flash" : ""}`}
                   >
                     <span className="drag-handle" aria-hidden="true">⠿</span>
                     <span className="row-chevron" aria-hidden="true">{expandedRow["queued"] === item.id ? "▾" : "▸"}</span>
@@ -464,6 +494,7 @@ export default function DashboardPage() {
                 </div>
               ))}
             </div>
+            </>
           )}
         </section>
 
@@ -768,6 +799,8 @@ export default function DashboardPage() {
         .row-error { background: color-mix(in srgb, var(--accent-qa) 8%, var(--surface-2)); }
         .row.draggable { cursor: grab; }
         .row.row-dragging { opacity: 0.4; }
+        .row.row-flash { background: var(--surface-2); transition: background 200ms ease-out; }
+        .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
         .drag-handle { color: var(--text-dim); font-size: 14px; cursor: grab; }
         .state-pill {
           font-size: 9px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;

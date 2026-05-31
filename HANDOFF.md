@@ -2,6 +2,17 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**UI Dev — Wave 8e complete.** QUEUED keyboard reorder (#21) + expandable error pill (#24). Commit `(SHA-pending)`.
+
+**Wave 8e UI Dev changes:**
+- `src/app/dashboard/page.tsx` — `useRef` added to imports; `flashedRowId`, `liveMsg`, `queuedRowRefs` added; `moveQueued(fromIdx, dir)` + `queuedRowKd(idx, itemId)` helpers; QUEUED rows now respond to ArrowUp/Down for reorder (same localStorage persistence as DnD); `aria-live` region announces "Moved to position N of M"; `.row-flash` CSS (200ms background flash); `.sr-only` CSS.
+- `src/components/AgentPane.tsx` — `errorExpanded` state + `errorDetailRef`; Escape + outside-mousedown close handlers; pill in both folded + expanded view gets `title={pillLabel}` (Tier 1 hover tooltip); in error state pill gets `cursor:pointer` + `onClick` toggle + `aria-expanded`; inline error detail block renders below header when expanded (left border in role accent, monospace body, full error text); CSS for `.pill-error-btn`, `.pill-open`, `.error-detail*`.
+- `pnpm type-check` clean.
+
+**Awaiting:** Architect PASS for Wave 8e.
+
+---
+
 **UI Dev — Wave 8d complete.** WORKFLOW panel on dashboard. Commit `04a5f7c`.
 
 **Wave 8d UI Dev changes:**

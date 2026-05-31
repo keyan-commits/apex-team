@@ -75,7 +75,9 @@ export function AgentPane({
   const [otherText, setOtherText] = useState("");
   const [activeSec, setActiveSec] = useState(0);
   const [folded, setFolded] = useState(false);
+  const [errorExpanded, setErrorExpanded] = useState(false);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const errorDetailRef = useRef<HTMLDivElement | null>(null);
   const lastBusyAtRef = useRef(0);
   const lastActivityAtRef = useRef(Date.now());
   // Refs keep the mount effect stable without stale closures.
@@ -130,6 +132,26 @@ export function AgentPane({
       scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight;
     }
   }, [folded]);
+
+  // Error detail panel — close on Escape.
+  useEffect(() => {
+    if (!errorExpanded) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === "Escape") setErrorExpanded(false); };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [errorExpanded]);
+
+  // Error detail panel — close on outside mousedown.
+  useEffect(() => {
+    if (!errorExpanded) return;
+    const handler = (e: MouseEvent) => {
+      if (errorDetailRef.current && !errorDetailRef.current.contains(e.target as Node)) {
+        setErrorExpanded(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [errorExpanded]);
 
   const pillState =
     status?.startsWith("error:") ? "error" :
@@ -194,7 +216,7 @@ export function AgentPane({
     return (
       <section className={`pane pane-${accent} pane-folded`}>
         <div className="folded-bar">
-          <span className={`pill pill-${pillState}`} aria-label={`Status: ${pillLabel}`}>{pillLabel}</span>
+          <span className={`pill pill-${pillState}`} aria-label={`Status: ${pillLabel}`} title={pillLabel}>{pillLabel}</span>
           <span className="folded-title">{title}</span>
           {inboxCount > 0 && (
             <span className="inbox-badge" title={`${inboxCount} pending`}>{inboxCount}</span>
@@ -242,7 +264,13 @@ export function AgentPane({
       <header className="pane-header">
         <div className="header-row">
           <div className="title">
-            <span className={`pill pill-${pillState}`} aria-label={`Status: ${pillLabel}`}>
+            <span
+              className={`pill pill-${pillState}${pillState === "error" ? " pill-error-btn" : ""}${pillState === "error" && errorExpanded ? " pill-open" : ""}`}
+              aria-label={`Status: ${pillLabel}`}
+              title={pillLabel}
+              aria-expanded={pillState === "error" ? errorExpanded : undefined}
+              onClick={pillState === "error" ? () => setErrorExpanded(prev => !prev) : undefined}
+            >
               {pillLabel}
             </span>
             {title}
@@ -314,6 +342,13 @@ export function AgentPane({
           </div>
         )}
       </header>
+
+      {pillState === "error" && errorExpanded && (
+        <div ref={errorDetailRef} className="error-detail">
+          <div className="error-detail-title">Agent error — last turn</div>
+          <pre className="error-detail-body">{status}</pre>
+        </div>
+      )}
 
       <AgentStatePanel
         handoffDoc={handoffDoc}
@@ -442,6 +477,31 @@ export function AgentPane({
         .pill-thinking { color: var(--accent-arch); animation: pill-pulse 1.1s ease-in-out infinite; }
         .pill-streaming { color: var(--accent-ui); animation: pill-pulse 0.6s ease-in-out infinite; }
         .pill-error { color: var(--accent-qa); }
+        .pill-error-btn { cursor: pointer; }
+        .pill-error-btn:hover { background: color-mix(in srgb, var(--accent-qa) 20%, transparent); }
+        .pill-open { background: var(--surface-2); }
+        .error-detail {
+          border-left: 3px solid var(--accent-${accent});
+          background: var(--surface);
+          padding: 8px 12px;
+          font-size: 0.75rem;
+          border-bottom: 1px solid var(--border);
+        }
+        .error-detail-title {
+          font-weight: 600;
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          color: var(--text-dim);
+          margin-bottom: 4px;
+        }
+        .error-detail-body {
+          font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+          white-space: pre-wrap;
+          word-break: break-all;
+          color: var(--accent-qa);
+          margin: 0;
+        }
         .elapsed {
           font-size: 10px;
           color: var(--text-dim);
