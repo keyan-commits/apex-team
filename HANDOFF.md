@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 7c UI Dev in progress. Dashboard nav + model dropdown + per-row dispatch fix in progress (SHA-pending).
+**State.** Wave 7c UI Dev complete (`e561885`). `pnpm type-check` clean. Pushed to origin/main.
 
 **Wave 7c UX audit findings — 5 issues filed:**
 - **#19** (warn) — `--accent-orch` undefined in `globals.css` → invisible logo + broken AgentStatePanel styling
