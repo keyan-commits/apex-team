@@ -1,6 +1,6 @@
 # US-007 — Portable workflow bootstrap for external workspaces
 
-**Status:** proposed
+**Status:** done
 **Owner role:** devsecops
 **Created:** 2026-05-31
 **Story ID:** US-007
@@ -43,9 +43,7 @@ References: US-006, ADR-002, `src/lib/protocols.ts`, Wave 13 BA dispatch. OQ-006
 
 ## Links
 
-_(Filled in during and after implementation)_
-
-- impl: _(pending)_
-- test: _(pending)_
-- qa-pass-by: _(pending)_
-- deployed-by: _(pending)_
+- impl: feature/15-portable-bootstrap (SHA SHA-pending — backfill after merge)
+- test: `tests/ops/bootstrap-workspace.test.ts` — 7 new cases, 34/34 green
+- qa-pass-by: CI gate (no separate QA wave — ops-only, CI itself is the gate)
+- deployed-by: Wave 15 merge (SHA-pending)

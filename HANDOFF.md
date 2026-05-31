@@ -2,6 +2,10 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 15 — US-007 portable workspace bootstrap implemented on `feature/15-portable-bootstrap`. US-007 flipped to `done` (merge SHA pending CI).**
+
+`scripts/devsecops/bootstrap-workspace.mjs` ships the apex-team enforcement recipe (hooks, CI template, branch protection) to any git workspace via `pnpm devsecops:bootstrap-workspace <path>`. All 5 steps implemented: validate, hooks install, CI workflow stub, branch protection (interactive, never auto-yes), ops/README.md drop. Fully idempotent. Tests: 34/34 green (7 files, 7 new bootstrap tests). `pnpm type-check` clean.
+
 **Wave 14f — CI hotfix: bump `node-version: 20 → 22` in `.github/workflows/ci.yml`.** pnpm 11.x requires Node ≥ 22.13; `node:sqlite` (used by better-sqlite3 bindings) also requires Node 22+. One-line change. PR opened; CI on the PR branch is the verification gate. No QA gate — CI itself is the check.
 
 **Wave 14e — protocol amendment: HANDOFF refresh ships INSIDE the same PR as the code change.** No more separate "chore: backfill SHA X in HANDOFF" follow-up commits. The pre-push hook (just installed in Wave 14b) blocks direct main pushes, so the old pattern of "merge code, then push HANDOFF doc separately" no longer works. The implementer updates HANDOFF on their feature branch BEFORE pushing. Encoded into `src/lib/protocols.ts` `DEPLOYMENT_PHASE_PROTOCOL`. Also flagged: `--no-verify` is never the default bypass — only with explicit per-incident user authorization. This very commit is the first PR to land via the new flow (feature/14e-handoff-in-pr-policy).
