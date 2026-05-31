@@ -141,6 +141,40 @@ Run `pnpm preflight` at any point to check all prerequisites automatically.
 
 Apex-team's team agents reuse your local Claude Code OAuth session — **no `ANTHROPIC_API_KEY` needed**. Cron-based or unattended features (e.g. automated nightly skill scouting) would require a paid Anthropic API key and are deliberately not implemented; scout runs as a manual session wave instead (PO proposes one when >7 days have elapsed).
 
+## Per-role isolated work (ADR-002 phased workflow)
+
+Each wave follows a strict phase model: Requirements → Implementation → Verification → DevSecOps deploy.
+
+### Start a feature branch
+
+```bash
+pnpm branch:start <wave>-<short>
+# e.g. pnpm branch:start 10a-workflow-ui
+```
+
+Requires: clean working tree on `main`. Creates `feature/<wave>-<short>` from latest main.
+
+### Per-role dev instances
+
+| Role | Script | Port | DB |
+|---|---|---|---|
+| UI Developer | `pnpm dev:test:ui` | 3110 | `data/apex-team-test-ui.db` |
+| BE Developer | `pnpm dev:test:be` | 3120 | `data/apex-team-test-be.db` |
+| QA | `pnpm dev:test:qa` | 3100 | `data/apex-team-test-qa.db` |
+| UX Designer | `pnpm dev:test:ux` | 3130 | `data/apex-team-test-ux.db` |
+| **Live (user)** | `pnpm dev` | **3000** | `data/apex-team.db` |
+
+### Workflow summary
+
+1. **Implementers** (UI Dev / BE Dev): branch → isolated instance → implement → unit tests → HANDOFF QA + UX.
+2. **UX Designer**: review on `:3130` against `design/INDEX.md` → PASS/REVISE → HANDOFF DevSecOps on final PASS.
+3. **QA**: verify on `:3100` against BA's acceptance criteria → PASS/FAIL with evidence → HANDOFF DevSecOps.
+4. **DevSecOps** (sole deploy authority): on QA PASS + UX PASS → `git merge --no-ff feature/<slug>` → `git push origin main`.
+   - The user's `pnpm dev` on port 3000 is the live instance.
+   - Rollback: `git revert HEAD` + push.
+
+Full ops documentation: `ops/README.md`.
+
 ## Architecture
 
 See `CLAUDE.md` for the full stack, file layout, role ownership boundaries, and the NOTES / HANDOFF / DISPATCH protocols. `HANDOFF.md` tracks current state and open next-steps.

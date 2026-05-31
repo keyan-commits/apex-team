@@ -2,6 +2,22 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 9b DevSecOps — per-role isolated dev instances + branch-start helper. Commit (SHA-pending).**
+
+- `package.json` — added `dev:test:qa` (3100, test-qa.db), `dev:test:ui` (3110, test-ui.db), `dev:test:be` (3120, test-be.db), `dev:test:ux` (3130, test-ux.db); `branch:start` script. Existing `dev:test` unchanged (backward compat).
+- `scripts/branch-start.mjs` — validates slug, checks clean working tree, verifies on main, refuses if branch exists, creates `feature/<slug>` from latest main, prints next-steps per role.
+- `ops/README.md` — created (ops/ dir was absent); full per-role environment table, merge+deploy flow, secrets docs, rollback procedure.
+- `README.md` — appended "Per-role isolated work" section with branch + instance workflow summary.
+- `pnpm type-check` clean.
+
+**Skill self-audit (ADR-002 §SKILLS_SELF_ENRICHMENT_PROTOCOL):** No new skill or MCP needed for sole deployment authority. Git merge/push/revert are standard CLI ops. No merge-conflict MCP required — conflicts are resolved with standard git tooling already available.
+
+**Deployment authority:** as of ADR-002, DevSecOps is the sole agent authorized to merge feature branches to main and push to origin/main. Trigger: HANDOFF from QA with PASS evidence (+ UX PASS if UI). Merge procedure is in `ops/README.md`.
+
+**Pending:** HANDOFF to Architect confirming script names (so ADR-002 §Consequences can be updated).
+
+---
+
 **Wave 9b BA — requirements/ scaffold complete. Commit `c693fc0`.**
 
 - `requirements/scope.md` — full 8-role, MCP, ADR-002 phased workflow, constraints table
