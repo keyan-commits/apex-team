@@ -4,6 +4,8 @@
 
 **Hotfix on top of QA 8f.** `/api/agent-state` + `/api/chat` route-level Zod `RoleEnum` did NOT include `ux-designer`, so adding the 8th role broke `/`'s `refreshStates` — Zod rejected the role param → response shape lacked `pendingInbox` → `Cannot read properties of undefined (reading 'length')` runtime crash on page.tsx:172. Also added defensive `?.pendingInbox?.length ?? 0` for resilience. Triple-checked all hardcoded RoleEnums (3 copies — agent-state, chat, mcp/tools.ts) and the `agents` object schema in `/api/chat` BodySchema; all now include `ux-designer`. The 3-copy duplication is a code-smell carried over from before — flagged as a refactor candidate but not done now. Closes the dashboard 500 + the `/` crash.
 
+**Hygiene:** Added `.playwright-mcp/` to `.gitignore` and removed the 2 console/snapshot artifacts that QA accidentally committed. These are per-turn dump files, not source of truth.
+
 **QA — Wave 8f complete.** Code + live browser verification of Wave 8e fixes + po-dispatch hotfix. New smoke test file `tests/smoke/po-dispatch.test.ts` (2 tests). `pnpm test:run` 8/8. Commit `6c804ab`.
 
 **Wave 8f QA findings — all PASS:**

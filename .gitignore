@@ -22,3 +22,6 @@ data/
 # tsbuild
 *.tsbuildinfo
 next-env.d.ts.bak
+
+# Playwright MCP artifacts (per-turn console/snapshot dumps)
+.playwright-mcp/
