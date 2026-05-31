@@ -2,6 +2,16 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 9d BE Dev — skill self-audit complete.**
+
+- Filed skill-proposal **#38** — "Pre-HANDOFF unit testing — Vitest patterns for Next.js API routes and SQLite service layer"
+- Gap identified: `backend-developer.ts` skills file has zero testing guidance. Under `IMPLEMENTATION_PHASE_PROTOCOL`, BE Dev must write unit tests in `tests/be/` and pass `pnpm test:run` before HANDOFF to QA. Proposal covers: what to test per endpoint (validation, happy path, error propagation), how to mock `better-sqlite3`, how to test Next.js App Router handlers directly, and the pre-HANDOFF checklist.
+- No other gaps. Worktree workflow (`pnpm branch:start backend-developer <slug>`) and isolated instance (`pnpm dev:test:be`, port 3120) are standard scripts already provisioned by DevSecOps. No-direct-push obligation is protocol awareness, not a skills gap.
+
+**Awaiting:** skill-proposal #38 triage.
+
+---
+
 **Wave 9d UI Dev — skill self-audit complete.**
 
 - Filed skill-proposal **#37** — "Pre-HANDOFF unit testing — Vitest + testing-library patterns for React components"
