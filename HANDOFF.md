@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 5a Backend Dev complete (SHA-pending). Fixed issue #3 + history truncation + health route. `pnpm type-check` clean. Wave 5a UI Dev also complete (`188d2f5`).
+**State.** Wave 5a Backend Dev complete (`737f154`). Fixed issue #3 + history truncation + health route. `pnpm type-check` clean. Wave 5a UI Dev also complete (`188d2f5`).
 
 **Wave 4 complete — commits on `main` ahead of `origin/main`:**
 
