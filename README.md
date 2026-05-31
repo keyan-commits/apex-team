@@ -166,12 +166,45 @@ Requires: clean working tree on `main`. Creates `feature/<wave>-<short>` from la
 
 ### Workflow summary
 
-1. **Implementers** (UI Dev / BE Dev): branch → isolated instance → implement → unit tests → HANDOFF QA + UX.
+1. **Implementers** (UI Dev / BE Dev): branch → worktree → isolated instance → implement → unit tests → HANDOFF QA + UX.
 2. **UX Designer**: review on `:3130` against `design/INDEX.md` → PASS/REVISE → HANDOFF DevSecOps on final PASS.
 3. **QA**: verify on `:3100` against BA's acceptance criteria → PASS/FAIL with evidence → HANDOFF DevSecOps.
 4. **DevSecOps** (sole deploy authority): on QA PASS + UX PASS → `git merge --no-ff feature/<slug>` → `git push origin main`.
    - The user's `pnpm dev` on port 3000 is the live instance.
    - Rollback: `git revert HEAD` + push.
+
+### Worktree workflow (physical filesystem isolation)
+
+Worktrees give each implementer a **separate filesystem checkout** — uncommitted work is invisible to other roles, and each process writes to its own isolated DB.
+
+#### Create a worktree
+
+```bash
+pnpm branch:start <role> <wave>-<short>
+# e.g. pnpm branch:start ui-developer 10a-workflow-ui
+# Creates ../apex-team-ui-developer-10a-workflow-ui/ on a new feature branch
+```
+
+Valid roles: `ui-developer | backend-developer | qa | ux-designer`
+
+#### Inside the worktree
+
+```bash
+cd ../apex-team-<role>-<wave>-<short>
+pnpm install          # each worktree needs its own node_modules (pnpm per-dir virtual store)
+pnpm dev:test:ui      # or dev:test:be / dev:test:qa / dev:test:ux
+```
+
+**`node_modules` caveat:** run `pnpm install` once inside each new worktree before starting the server.
+
+**DB caveat:** `pnpm dev:test:<role>` writes to a role-specific `data/apex-team-test-<role>.db` inside the worktree's own `data/` directory. DB state is per-worktree — no cross-contamination between implementers.
+
+#### Cleanup (DevSecOps runs this after successful deploy)
+
+```bash
+pnpm branch:cleanup <role> <wave>-<short>
+# Removes the worktree directory; deletes the branch if already merged into main.
+```
 
 Full ops documentation: `ops/README.md`.
 

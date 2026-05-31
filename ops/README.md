@@ -16,37 +16,54 @@ The legacy `pnpm dev:test` (port 3100, `data/apex-team-test.db`) remains for bac
 
 ## Per-role isolated work (ADR-002)
 
-### Branch creation
+### Branch + worktree creation
 
 Implementers start every wave with:
 
 ```bash
-pnpm branch:start <wave>-<short>
-# e.g. pnpm branch:start 10a-workflow-ui
-# Creates feature/10a-workflow-ui from latest main
+pnpm branch:start <role> <wave>-<short>
+# e.g. pnpm branch:start ui-developer 10a-workflow-ui
+# Creates ../apex-team-ui-developer-10a-workflow-ui/ + feature/10a-workflow-ui branch
 ```
 
-Requires: clean working tree, current branch is `main`.
+Valid roles: `ui-developer | backend-developer | qa | ux-designer`
+
+Requires: clean working tree, current branch is `main`. Fetches `origin/main` before creating the branch.
 
 Branch naming convention: `feature/<wave>-<short>` (lowercase, hyphens only).
 
+Each worktree is a physical filesystem clone at `../apex-team-<role>-<short>` — multiple implementers can work in parallel without seeing each other's uncommitted files.
+
+After creating, `cd` into the worktree and run `pnpm install` once before starting the dev server.
+
+### Worktree cleanup (DevSecOps post-deploy)
+
+```bash
+pnpm branch:cleanup <role> <wave>-<short>
+# Removes worktree; deletes feature branch if merged into main.
+```
+
+Run this after `git push origin main` confirms the merge is live.
+
 ### UI Developer workflow
 
-1. `pnpm branch:start <wave>-<short>` — create branch
-2. `pnpm dev:test:ui` — spin up on port 3110 with isolated DB
-3. Implement + write unit tests in `tests/ui/`
-4. `pnpm test:run` must pass locally
-5. HANDOFF to QA + UX Designer (if UI changes)
-6. Do NOT push — HANDOFF to DevSecOps with PASS evidence
+1. `pnpm branch:start ui-developer <wave>-<short>` — create worktree + branch
+2. `cd ../apex-team-ui-developer-<short> && pnpm install`
+3. `pnpm dev:test:ui` — spin up on port 3110 with isolated DB
+4. Implement + write unit tests in `tests/ui/`
+5. `pnpm test:run` must pass locally
+6. HANDOFF to QA + UX Designer (if UI changes)
+7. Do NOT push to main — HANDOFF to DevSecOps with PASS evidence
 
 ### BE Developer workflow
 
-1. `pnpm branch:start <wave>-<short>` — create branch
-2. `pnpm dev:test:be` — spin up on port 3120 with isolated DB
-3. Implement + write unit tests in `tests/be/`
-4. `pnpm test:run` must pass locally
-5. HANDOFF to QA
-6. Do NOT push — HANDOFF to DevSecOps with PASS evidence
+1. `pnpm branch:start backend-developer <wave>-<short>` — create worktree + branch
+2. `cd ../apex-team-backend-developer-<short> && pnpm install`
+3. `pnpm dev:test:be` — spin up on port 3120 with isolated DB
+4. Implement + write unit tests in `tests/be/`
+5. `pnpm test:run` must pass locally
+6. HANDOFF to QA
+7. Do NOT push to main — HANDOFF to DevSecOps with PASS evidence
 
 ### QA workflow
 

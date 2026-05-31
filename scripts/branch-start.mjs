@@ -1,21 +1,38 @@
 #!/usr/bin/env node
-// branch-start.mjs — create a feature branch from main with safety checks.
-// Usage: pnpm branch:start <wave>-<short>
-//   e.g. pnpm branch:start 10a-workflow-ui
+// branch-start.mjs — create a feature branch + git worktree for a role.
+// Usage: pnpm branch:start <role> <wave>-<short>
+//   e.g. pnpm branch:start ui-developer 10a-workflow-ui
 
 import { execFileSync } from "node:child_process";
+import { existsSync } from "node:fs";
+import { resolve } from "node:path";
 
+const VALID_ROLES = ["ui-developer", "backend-developer", "qa", "ux-designer"];
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/;
+const ROLE_SCRIPT = {
+  "ui-developer": "dev:test:ui",
+  "backend-developer": "dev:test:be",
+  qa: "dev:test:qa",
+  "ux-designer": "dev:test:ux",
+};
 
 function run(cmd, args, opts = {}) {
   return execFileSync(cmd, args, { encoding: "utf8", ...opts }).trim();
 }
 
-const slug = process.argv[2];
+const [role, slug] = process.argv.slice(2);
 
-if (!slug) {
-  console.error("Usage: pnpm branch:start <wave>-<short>");
-  console.error("  e.g. pnpm branch:start 10a-workflow-ui");
+if (!role || !slug) {
+  console.error("Usage: pnpm branch:start <role> <wave>-<short>");
+  console.error("  e.g. pnpm branch:start ui-developer 10a-workflow-ui");
+  console.error("");
+  console.error(`Valid roles: ${VALID_ROLES.join(" | ")}`);
+  process.exit(1);
+}
+
+if (!VALID_ROLES.includes(role)) {
+  console.error(`Invalid role: "${role}"`);
+  console.error(`Valid roles: ${VALID_ROLES.join(" | ")}`);
   process.exit(1);
 }
 
@@ -24,6 +41,9 @@ if (!SLUG_RE.test(slug)) {
   console.error("Must be lowercase alphanumeric + hyphens (no leading/trailing hyphens).");
   process.exit(1);
 }
+
+const branchName = `feature/${slug}`;
+const worktreePath = resolve(process.cwd(), `../apex-team-${role}-${slug}`);
 
 // Check working tree is clean
 const dirty = run("git", ["status", "--porcelain"]);
@@ -36,36 +56,50 @@ if (dirty) {
 // Check current branch is main
 const currentBranch = run("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
 if (currentBranch !== "main") {
-  console.error(`You must be on main to start a feature branch (currently on: ${currentBranch}).`);
+  console.error(
+    `You must be on main to start a feature branch (currently on: ${currentBranch}).`
+  );
   process.exit(1);
 }
 
-const branchName = `feature/${slug}`;
+// Check worktree path doesn't already exist
+if (existsSync(worktreePath)) {
+  console.error(`Worktree path already exists: ${worktreePath}`);
+  console.error(`Remove it first with: pnpm branch:cleanup ${role} ${slug}`);
+  process.exit(1);
+}
 
-// Check branch doesn't already exist
+// Check branch doesn't already exist locally
 try {
   run("git", ["rev-parse", "--verify", branchName], { stdio: "pipe" });
-  // If we reach here, the branch exists
-  console.error(`Branch "${branchName}" already exists. Choose a different slug.`);
+  console.error(`Branch "${branchName}" already exists locally. Choose a different slug.`);
   process.exit(1);
 } catch {
   // Branch doesn't exist — good.
 }
 
-// Pull latest main
-console.log("Pulling latest main...");
-run("git", ["pull", "origin", "main"]);
+// Fetch latest main
+console.log("Fetching latest origin/main...");
+run("git", ["fetch", "origin", "main"]);
 
-// Create the feature branch
-run("git", ["checkout", "-b", branchName]);
-console.log(`\n✓ Created and switched to branch: ${branchName}\n`);
+// Create worktree + branch from origin/main
+console.log(`Creating worktree at: ${worktreePath}`);
+run("git", ["worktree", "add", worktreePath, "-b", branchName, "origin/main"]);
 
-console.log("Next steps:");
-console.log("  UI Developer  → pnpm dev:test:ui   (port 3110, isolated DB)");
-console.log("  BE Developer  → pnpm dev:test:be   (port 3120, isolated DB)");
-console.log("  UX Designer   → pnpm dev:test:ux   (port 3130, isolated DB)");
-console.log("");
-console.log("When your work is done + unit tests pass:");
-console.log("  HANDOFF to QA (and UX Designer if UI changes).");
-console.log("  Do NOT push directly — HANDOFF to DevSecOps with QA PASS + UX PASS evidence.");
-console.log("  DevSecOps will merge feature/" + slug + " to main and push.");
+const devScript = ROLE_SCRIPT[role];
+const needsUX = role === "ui-developer";
+
+console.log(`
+✓ Worktree created: ${worktreePath}
+
+Next steps:
+  Switch to it:    cd ${worktreePath}
+  Install deps:    pnpm install
+  Run your inst:   pnpm ${devScript}
+
+When done (unit tests passing locally):
+  Commit + push the branch (git push -u origin ${branchName}).
+  HANDOFF to QA${needsUX ? " + UX Designer" : ""}.
+  Do NOT push to main — HANDOFF to DevSecOps with QA PASS${needsUX ? " + UX PASS" : ""} evidence.
+  DevSecOps will merge ${branchName} to main and push.
+`);
