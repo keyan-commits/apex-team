@@ -6,7 +6,7 @@
 
 - `gitleaks detect --source . --redact` run against full 140-commit history (~865 KB).
 - Result: `[]` — no leaks. All clear. Safe to remain public.
-- `ops/README.md` updated with audit record (SHA-pending).
+- `ops/README.md` updated with audit record (`9a30588`).
 
 **CodeQL restored.** Repo went public — Code Scanning is now free. Workflow file recreated identical to the original (`88fd8d1` shape); `ops/README.md` updated to note the brief private-tier removal + restoration. Code Scanning auto-enables on next push to main; no GitHub UI action required for public repos.
 
