@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 29a BA — US-009, US-010, US-011 written. OQ-008 (provenance format) + OQ-009 (scout trigger mechanism) filed. `requirements/INDEX.md` updated. Feature branch: `feature/29a-ba-user-stories`.**
+
 **Wave 28a BA (gap fix) — US-008 Out of Scope section updated: added explicit deferral for nested HANDOFF count badge (PO AC4 → US-009) + streaming auto-collapse (existing behavior, not a new requirement). Feature branch: `feature/28a-ba-us008-gap-fix`.**
 
 **Wave 28a BA — US-008 written: `requirements/user-stories/US-008-team-page-density.md` (proposed, owner: ui-developer). 6 ACs: HANDOFF body max-height 200px, messages area clamp(260px,38vh,480px), bubble threshold 200c/3l, outbound bubbles collapsed by default, 1080p viewport fits all 8 idle panes, activity log regression-free. `requirements/INDEX.md` updated. Feature branch: `feature/28a-ba-us-008`.**
