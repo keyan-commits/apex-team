@@ -20,7 +20,7 @@ export interface AgentTurnInput {
 //   - Orchestrator: sees both peers' HANDOFF docs; no inbox concept.
 export async function* runAgentTurn(input: AgentTurnInput): AsyncGenerator<string> {
   const cfg = input.agents[input.role] ?? defaultAgentConfig(input.role);
-  const history: ChatMessage[] = listMessages(input.threadId);
+  const history: ChatMessage[] = listMessages(input.threadId).slice(-60);
   const state = getAgentState(input.threadId, input.role);
 
   if (input.role === "product-owner") {

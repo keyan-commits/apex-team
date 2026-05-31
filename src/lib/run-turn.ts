@@ -8,6 +8,7 @@ import { appendMessage, setAgentHandoffDoc, setThreadAgentModels } from "@/lib/d
 import { runAgentTurn } from "@/lib/agents";
 import { parseAgentReply } from "@/lib/orchestrator";
 import { publish } from "@/lib/event-bus";
+import { ALL_ROLES } from "@/lib/roles";
 import type { AgentConfig, RoleId, TeamRoleId } from "@/types";
 
 export interface RunTurnInput {
@@ -115,12 +116,15 @@ export async function runTurn(input: RunTurnInput): Promise<RunTurnResult> {
   }
 
   // PO-only: persist + broadcast per-role model overrides for this thread.
+  // Filter against ALL_ROLES before persisting to prevent unknown keys from
+  // accumulating in thread_config if the PO emits malformed role names.
   if (input.target === "product-owner" && agentModels) {
-    setThreadAgentModels(input.threadId, agentModels);
-    publish(input.threadId, {
-      type: "agent-models",
-      agentModels: agentModels as Record<RoleId, string>,
-    });
+    const knownRoles = new Set<string>(ALL_ROLES);
+    const filtered = Object.fromEntries(
+      Object.entries(agentModels).filter(([k]) => knownRoles.has(k)),
+    ) as Record<RoleId, string>;
+    setThreadAgentModels(input.threadId, filtered);
+    publish(input.threadId, { type: "agent-models", agentModels: filtered });
   }
 
   publish(input.threadId, {

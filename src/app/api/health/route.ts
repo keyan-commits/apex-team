@@ -1,20 +1,22 @@
 import { APEX_MCP_URL } from "@/lib/mcp-config";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET(): Promise<Response> {
-  let apexEngineReachable = false;
+  let apexEngineUp = false;
   try {
-    const res = await fetch(APEX_MCP_URL.replace(/\/mcp$/, "/healthz"), {
-      signal: AbortSignal.timeout(1500),
-    });
-    apexEngineReachable = res.ok;
+    // Any HTTP response (2xx or 4xx) means the process is up.
+    // Only a network error or timeout means it's down.
+    await fetch(APEX_MCP_URL, { signal: AbortSignal.timeout(2000) });
+    apexEngineUp = true;
   } catch {
-    apexEngineReachable = false;
+    apexEngineUp = false;
   }
   return Response.json({
-    ok: true,
-    apex: { url: APEX_MCP_URL, reachable: apexEngineReachable },
+    status: apexEngineUp ? "ok" : "degraded",
+    apexEngine: apexEngineUp ? "up" : "down",
     defaultCwd: process.cwd(),
+    mcpMounted: true,
   });
 }
