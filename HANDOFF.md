@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** BA inbox seeding fix complete (SHA-pending). `pnpm type-check` clean.
+**State.** BA inbox seeding fix complete (`b7b90d0`). `pnpm type-check` clean.
 
 **Fix shipped (this commit):**
 - `src/types.ts` — `from: TeamRoleId` → `from: RoleId` on `handoff` MessageAuthor (minimal widening; PO can legitimately HANDOFF peers per the protocol).
