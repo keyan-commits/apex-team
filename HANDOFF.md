@@ -2,12 +2,39 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 14b-ops — US-006 implementation on `feature/14b-main-enforcement` (`443b379`). Awaiting QA gate.**
+**Wave 14e — protocol amendment: HANDOFF refresh ships INSIDE the same PR as the code change.** No more separate "chore: backfill SHA X in HANDOFF" follow-up commits. The pre-push hook (just installed in Wave 14b) blocks direct main pushes, so the old pattern of "merge code, then push HANDOFF doc separately" no longer works. The implementer updates HANDOFF on their feature branch BEFORE pushing. Encoded into `src/lib/protocols.ts` `DEPLOYMENT_PHASE_PROTOCOL`. Also flagged: `--no-verify` is never the default bypass — only with explicit per-incident user authorization. This very commit is the first PR to land via the new flow (feature/14e-handoff-in-pr-policy).
+
+**🎉 US-006 SHIPPED. Main-branch enforcement live on origin/main.** Merge `3e401aa`. `core.hooksPath` verified `scripts/git-hooks`; pre-push hook simulated PASS (refs/heads/main → exit 1; feature/foo → exit 0).
+
+**Wave 14 net:**
+
+| Phase | Wave | Output |
+|---|---|---|
+| Requirements | 14a | BA US-006 + US-007 (`8ca2507`); Architect design (full JSON payload + hook code + CODEOWNERS + bootstrap skeleton) |
+| Implementation | 14b | DevSecOps `443b379` — pre-push + type-check pre-commit + CODEOWNERS + payload JSON + ops/README |
+| Verification | 14c | QA PASS — 6/6 ACs, hook simulation green, type-check + tests clean |
+| Deployment | 14d | DevSecOps merge `3e401aa` + push + worktree cleanup |
+
+**⚠️ ONE USER ACTION PENDING (OQ-007 explicit consent):** server-side GitHub branch protection requires you to run this once, with `gh auth` carrying `admin:repo_hook` (and `repo`) scope:
+
+```bash
+gh api -X PUT /repos/keyan-commits/apex-team/branches/main/protection \
+  --input ops/branch-protection-payload.json
+```
+
+If `gh auth status` lacks the needed scopes: `gh auth refresh -h github.com -s admin:org`. After applying, even YOU (as admin) cannot push directly to main — only merges via PR through CI green.
+
+**Wave 14b-ops shipped:**
 
 - `scripts/git-hooks/pre-push` — new POSIX hook blocking direct pushes to `origin/main`
 - `scripts/git-hooks/pre-commit` — type-check inserted as first step (before gitleaks)
-- `.github/CODEOWNERS` — 8 entries, all lanes → `@keyan-commits`
-- `ops/branch-protection-payload.json` — exact JSON for GitHub branch protection (NOT yet applied; user must run `gh api` command after merge — OQ-007 explicit consent)
+- `.github/CODEOWNERS` — 8 entries, all lanes → `@keyan-commits` (advisory in single-identity repo)
+- `ops/branch-protection-payload.json` — exact JSON ready for the user's `gh api` apply
+- `ops/README.md` — "Branch protection" section documents the apply command
+
+**Wave 13b still in flight:** BE Dev `35533b0` (repoStatus enum) + UI Dev `e73bfa7` (copy/CSS fixes) on feature branches; awaiting UX → QA → DevSecOps merge.
+
+**US-007 portable workspace bootstrap** is next-up — same pattern packaged as `pnpm devsecops:bootstrap-workspace <path>`. Ships after US-006's server-side apply is confirmed.
 - `ops/README.md` — `## Branch protection (US-006)` section documenting the `gh api` command + curl fallback
 - `pnpm type-check` clean · `pnpm test:run` 24/24 green
 - **Note:** branch protection itself is NOT applied. User must run after merge.
