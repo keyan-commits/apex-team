@@ -2,6 +2,20 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 9a — Deployment-gate policy encoded. Commit (SHA-pending) on main.**
+
+`src/lib/roles.ts` changes:
+- `DEPLOYMENT_GATES_PROTOCOL` constant (exported) — canonical policy spec
+- `GATE_DISCIPLINE` paragraph appended to `PEER_PROTOCOL` → flows into all 7 peer system prompts
+- `ORCHESTRATOR_PROTOCOL` — "At the END of any wave" rule: QA at wave close, UX Designer before QA if UI touched; never declare wave done without QA PASS
+- QA system prompt — new "Deployment-gate verification" section: must run `pnpm dev:test` on `:3100`, never PASS on code inspection alone
+- UX Designer step 6 — explicit design gate: PASS/REVISE with severity list, HANDOFF to both implementer and QA
+- Architect code review step 6 — PASS explicitly named as design gate for non-UI changes
+
+Policy sharpening notes filed in reply.
+
+---
+
 **Hotfix on top of QA 8f.** `/api/agent-state` + `/api/chat` route-level Zod `RoleEnum` did NOT include `ux-designer`, so adding the 8th role broke `/`'s `refreshStates` — Zod rejected the role param → response shape lacked `pendingInbox` → `Cannot read properties of undefined (reading 'length')` runtime crash on page.tsx:172. Also added defensive `?.pendingInbox?.length ?? 0` for resilience. Triple-checked all hardcoded RoleEnums (3 copies — agent-state, chat, mcp/tools.ts) and the `agents` object schema in `/api/chat` BodySchema; all now include `ux-designer`. The 3-copy duplication is a code-smell carried over from before — flagged as a refactor candidate but not done now. Closes the dashboard 500 + the `/` crash.
 
 **Hygiene:** Added `.playwright-mcp/` to `.gitignore` and removed the 2 console/snapshot artifacts that QA accidentally committed. These are per-turn dump files, not source of truth.

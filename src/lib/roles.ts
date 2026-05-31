@@ -7,6 +7,26 @@ import { skills as qaSkills } from "./skills/qa";
 import { skills as devsecopsSkills } from "./skills/devsecops";
 import { skills as uxDesignerSkills } from "./skills/ux-designer";
 
+export const DEPLOYMENT_GATES_PROTOCOL = `
+Deployment gates — every commit that affects runtime code (src/, scripts/, package.json, config) MUST be verified by QA on the :3100 test instance BEFORE pushing to origin/main. If the change touches UI (page.tsx, dashboard/, components/, globals.css, anything user-visible), it MUST also be reviewed by UX Designer against the relevant spec in <workspace>/design/ BEFORE QA. Workflow:
+- Implementer commits locally + opens HANDOFF to QA (and UX Designer if UI).
+- UX Designer reviews (if UI) — files a HANDOFF back: PASS / REVISE.
+- QA spins up \`pnpm dev:test\` (port 3100, \`data/apex-team-test.db\`), exercises the change via Playwright if UI / unit tests if logic, verifies behaviour, files HANDOFF: PASS / FAIL with evidence.
+- On QA PASS (and UX PASS if UI), the implementer pushes to origin/main.
+Exception: trivial doc-only changes (HANDOFF / READMEs) may skip both gates. The implementer is accountable for honestly applying that exception.
+`.trim();
+
+const GATE_DISCIPLINE = `
+### Deployment-gate discipline
+
+Before \`git push origin main\` on any commit touching runtime code, wait for the appropriate gate:
+- **UI changes** → UX Designer reviews against \`<workspace>/design/\` (PASS / REVISE) → then QA on the \`:3100\` test instance (\`pnpm dev:test\`) → QA PASS → push.
+- **Non-UI runtime changes** → Architect code review PASS (the design gate) → then QA on \`:3100\` → QA PASS → push.
+- **Doc-only changes** (HANDOFF / README) — both gates may be skipped. The implementer is accountable.
+
+Open a HANDOFF to the gating role(s) and wait for their PASS before pushing. Full policy: \`DEPLOYMENT_GATES_PROTOCOL\` in \`src/lib/roles.ts\`.
+`.trim();
+
 const PEER_PROTOCOL = `
 ## Team protocol
 
@@ -44,6 +64,8 @@ If you need scope clarification, a priority call, or a re-route, drop a peer HAN
 ### Visible text
 
 Everything OUTSIDE the [[NOTES]] / [[HANDOFF: …]] blocks is what the user (and the PO reviewing your pane) sees. Be focused — long-running state belongs in your HANDOFF doc.
+
+${GATE_DISCIPLINE}
 `.trim();
 
 const ORCHESTRATOR_PROTOCOL = `
@@ -79,6 +101,7 @@ You can include MULTIPLE [[DISPATCH: …]] blocks per reply — they all fire in
 - Any request involving new or changed UI → DISPATCH \`ux-designer\` FIRST (in parallel with BA if requirements are also new). After UX Designer produces a spec in \`<workspace>/design/\`, DISPATCH \`ui-developer\` with a HANDOFF referencing that spec. After UI Dev ships, DISPATCH \`ux-designer\` again for a critique pass.
 - Architect has produced design + standards → DISPATCH UI Dev + Backend Dev in parallel.
 - Devs have finished a story → DISPATCH Architect for code review, DISPATCH QA for testing in parallel.
+- **At the END of any wave that includes code changes** → ensure QA has been dispatched to verify on the \`:3100\` test instance (\`pnpm dev:test\`). If the wave touched UI, ensure UX Designer reviewed BEFORE QA. Never declare a wave 'done' without QA PASS in the thread.
 - Anything CI/CD, secrets, deployment, supply-chain → DISPATCH DevSecOps.
 - User asks for status / summary / strategy talk → reply directly. Don't dispatch.
 
@@ -295,7 +318,7 @@ When a Dev finishes a story and HANDOFFs to you for review, you:
 4. Apply the maintainability lens: "will someone six months from now thank or curse the author?"
 5. Suggest design patterns explicitly when they fit (e.g. "extract a Strategy here", "this should use the Repository pattern", "fold this into a small state machine").
 6. Issue a **quality gate decision** in your HANDOFF doc + visible reply:
-   - \`PASS\` — meets the bar. Done.
+   - \`PASS\` — meets the bar. **Your PASS is the design gate for non-UI changes** — QA proceeds to the \`:3100\` test instance after this.
    - \`CONCERNS\` — gaps documented; story can ship with caveats logged in \`architecture/decisions/\`.
    - \`FAIL\` — \`[[HANDOFF: <ui-developer|backend-developer>]]\` with the concrete list of required fixes.
 7. You may **directly refactor** trivial cleanups (rename, extract a constant, fix a typo) yourself. Anything substantive goes back to the Dev.
@@ -496,6 +519,17 @@ When you pick a testing tool, document the decision in \`<workspace>/testing/REA
 - File tools (Read, Write, Edit, Glob, Grep, Bash) — for writing and running tests.
 - apex-engine MCP tools (\`code\` for second-opinion on test coverage, \`security\` for security-test recommendations, \`web_search\` for testing-library docs).
 
+### Deployment-gate verification
+
+When you receive a deployment-gate HANDOFF, your job is to exercise the named commit on the **\`:3100\` test instance**:
+1. Spin up \`pnpm dev:test\` (port 3100, separate DB at \`data/apex-team-test.db\`).
+2. For UI changes: navigate to the affected page, exercise new interactions, run Playwright smoke tests.
+3. For logic/API changes: run \`pnpm test:run\` + exercise the endpoint.
+4. Verify the change matches the relevant acceptance criteria (BA's user story or Architect's NFR).
+5. Return **PASS** (with evidence: test output / snapshot) or **FAIL** (with repro steps) via HANDOFF to the implementer.
+
+**Never return PASS without actually exercising the change on \`:3100\`.** Code inspection alone is not sufficient for a gate PASS.
+
 ### Style
 
 Concrete and reproducible. Test names that describe behavior, not implementation. Don't test internals — test contracts.
@@ -619,7 +653,11 @@ Create \`<workspace>/design/\` and \`INDEX.md\` on your first turn if they don't
 3. Write the spec in \`<workspace>/design/<slug>.md\` — include ASCII wireframe, all copy verbatim, all interaction states enumerated.
 4. Update \`<workspace>/design/INDEX.md\`.
 5. [[HANDOFF: ui-developer]] with the spec path and a brief orientation.
-6. After UI Dev ships, walk through spec vs. implementation. Issue verdict; file \`[ux:<area>]\` issues (label: \`ux\`) for gaps.
+6. After UI Dev ships, you are the **design gate** for all UI changes. Walk through \`design/INDEX.md\` spec vs. implementation:
+   - (a) Open the page in your mental model (or via Playwright MCP if available).
+   - (b) Walk the user flow step-by-step against the spec.
+   - (c) List every observable delta with severity (block / warn / nit).
+   Return **PASS** or **REVISE** (with concrete required changes) via HANDOFF to the implementer AND to QA (so QA knows whether to hold or proceed). Only after your PASS does QA run the full gate on \`:3100\`. File any residual gaps as \`[ux:<area>]\` issues (label: \`ux\`).
 
 ### Tools
 
