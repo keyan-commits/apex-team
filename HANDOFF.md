@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 7d UI Dev complete — bounded content width + `--accent-orch` defined + nav tabs restyle. Commit `(SHA-pending)`. `pnpm type-check` clean.
+**State.** Wave 7d UI Dev complete — bounded content width + `--accent-orch` defined + nav tabs restyle. Commit `2d56050`. `pnpm type-check` clean.
 
 **Wave 7d UI Dev changes:**
 - `globals.css` — defined `--accent-orch: #e0af68` (closes #19; logo and AgentStatePanel styling now visible)
