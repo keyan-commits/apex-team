@@ -2,6 +2,23 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 9b BA — requirements/ scaffold complete. Commit (SHA-pending).**
+
+- `requirements/scope.md` — full 8-role, MCP, ADR-002 phased workflow, constraints table
+- `requirements/glossary.md` — 20 canonical terms (AC, gate, instance, PASS/REVISE/FAIL, feature branch, spec, story, protocol, skill, and existing terms)
+- `requirements/open-questions.md` — OQ-001: feature-branch vs worktree vs clone isolation (awaiting user decision)
+- `requirements/user-stories/_TEMPLATE.md` — story template per ADR-002 format
+- `requirements/user-stories/US-001-multi-phase-workflow-foundation.md` — inaugural story; status in-dev; 6 ACs; impl links to `2a81587` + `a8fab5d`
+- `requirements/INDEX.md` — updated to list all 5 docs
+
+**Skill self-audit:** filed skill-proposal #36 — BA consultation-hub guidance (responding to peer HANDOFF requirements queries). No other gaps identified.
+
+**HANDOFF to PO + Architect:** scaffold is live; implementation waves can now gate on story docs.
+
+**Open question for user (OQ-001):** Feature branches vs git worktrees vs separate clones for implementer isolation — see `requirements/open-questions.md`. Awaiting user decision before DevSecOps finalizes provisioning scripts.
+
+---
+
 **Wave 9b — Mandatory phased workflow encoded. Commit `2a81587` on main.**
 
 `src/lib/protocols.ts` (NEW):
