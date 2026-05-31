@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 14f — CI hotfix: bump `node-version: 20 → 22` in `.github/workflows/ci.yml`.** pnpm 11.x requires Node ≥ 22.13; `node:sqlite` (used by better-sqlite3 bindings) also requires Node 22+. One-line change. PR opened; CI on the PR branch is the verification gate. No QA gate — CI itself is the check.
+
 **Wave 14e — protocol amendment: HANDOFF refresh ships INSIDE the same PR as the code change.** No more separate "chore: backfill SHA X in HANDOFF" follow-up commits. The pre-push hook (just installed in Wave 14b) blocks direct main pushes, so the old pattern of "merge code, then push HANDOFF doc separately" no longer works. The implementer updates HANDOFF on their feature branch BEFORE pushing. Encoded into `src/lib/protocols.ts` `DEPLOYMENT_PHASE_PROTOCOL`. Also flagged: `--no-verify` is never the default bypass — only with explicit per-incident user authorization. This very commit is the first PR to land via the new flow (feature/14e-handoff-in-pr-policy).
 
 **🎉 US-006 SHIPPED. Main-branch enforcement live on origin/main.** Merge `3e401aa`. `core.hooksPath` verified `scripts/git-hooks`; pre-push hook simulated PASS (refs/heads/main → exit 1; feature/foo → exit 0).
