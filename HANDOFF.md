@@ -2,7 +2,29 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 7e UI Dev complete — collapsible MessageBubble. Commit `49cd73f`. `pnpm type-check` clean.
+**State.** Wave 7d retry QA complete. Wave 7e UI Dev awaiting Architect PASS.
+
+**Wave 7d retry QA — code-analysis + curl. Playwright MCP still not available in direct Claude Code session.**
+
+Confirmed FIXED (by code inspection):
+| Fix | Issue | Evidence |
+|---|---|---|
+| `--accent-orch: #e0af68` defined | #19 | `globals.css:20` ✓ |
+| MessageBubble `max-width: 820px` | #28 | `MessageBubble.tsx:151` ✓ |
+| OrchestratorBar on dashboard | #23 | `dashboard/page.tsx:251` ✓ |
+| OrchestratorBar tabs: border+padding+hover+active+focus ring | — | `OrchestratorBar.tsx:129-146` ✓ |
+
+Wave 7e collapsible MessageBubble (`49cd73f`) — code review passed:
+- `getPreview()` min(6 lines, 400 chars) logic correct
+- `useState(!isLong)` correctly starts long messages collapsed
+- Streaming/pending messages stay expanded (mount when short → stays expanded) ✓
+- Click-expand with link guard, double-toggle prevention (stopPropagation on CTA) ✓
+- `aria-expanded` on outer div, `:focus-visible` on CTA ✓
+- Nit: `bubble-fade` gradient uses `var(--surface)` but peer/handoff bubbles use `var(--surface-2)` — noted in code comment, acceptable
+
+`pnpm test:run`: 6/6 ✓  `pnpm type-check`: clean ✓
+
+No new issues filed — all known defects already tracked (#20, #21, #22, #24, #25, #26).
 
 **Wave 7e UI Dev changes:**
 - `MessageBubble.tsx` — per-bubble collapse state; default collapsed when >400 chars; `getPreview()` takes min(6 lines, 400 chars); gradient fade overlay; "Show more / Collapse ▴" CTA; outer div `role="button"` + `aria-expanded` + Enter/Space toggle when collapsed; `bubble-fade` for gradient; `:focus-visible` ring on CTA.
