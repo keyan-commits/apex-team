@@ -2,40 +2,31 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Event-bus SSE refactor + permission widening committed (`9a6f6a4`). Skills-injection Wave-1 commit-2 still in-flight on disk (uncommitted). `tsx watch` was tried as the auto-restart mechanism and reverted — it kills the in-process agent that just edited a source file, so future restarts go back to manual until a graceful-restart supervisor is built. Resume on branch `main`; HEAD = `9a6f6a4`.
+**State.** Wave 1 complete. Two commits on `main`: event-bus SSE refactor (`2f037dc`) + skills injection (`SHA-pending`). `pnpm type-check` passes clean. `tsx` running plain (no watch). Resume on branch `main`.
 
-**Mid-flight (uncommitted — recover after one final manual `pnpm dev` restart):**
-- `package.json` — `dev` script reverted from `tsx watch` back to plain `tsx server.ts`. Running process still under `tsx watch` (it doesn't re-read package.json), so user must restart once more to drop it.
-- `src/types.ts` — `skills?: string` added to `RoleDefinition`. (Architect edit, partial.)
-- `src/lib/providers.ts` — `augmentSystemPrompt()` patched to inject `role.skills`. (Architect edit, partial.)
-- `src/lib/skills/ui-developer.ts` — new file, 6-section UI/UX domain-expertise constant. (Architect created, partial.)
-- **Not yet on disk:** `src/lib/roles.ts` wire-up of `ui-developer` skills; `architecture/decisions/ADR-001-role-skills-injection.md`; the Commit-2 `git commit`.
+**Wave 1 shipped:**
+- `src/types.ts` — `skills?: string` on `RoleDefinition` (backward-compat).
+- `src/lib/skills/ui-developer.ts` — 6-skill UI/UX domain expertise constant.
+- `src/lib/providers.ts` — `augmentSystemPrompt(role, ctx)` now accepts full `RoleDefinition`; appends `role.skills` when present; all providers benefit.
+- `src/lib/roles.ts` — `ui-developer` wired to `uiDeveloperSkills`.
+- `architecture/decisions/ADR-001-role-skills-injection.md` — ADR created.
 
-**Shipped today (post-event-bus session):**
-- `mcp-config.ts` — `ALLOWED_BUILTIN_TOOLS` added (Read/Write/Edit/Glob/Grep/Bash/WebSearch/WebFetch) so headless team agents can act on the workspace without permission prompts (was previously blocked).
-- `/api/thread-events` and event-bus verified end-to-end via a curl SSE listener; UI confirms live PO+peer streaming.
-- `OrchestratorBar` thread input lets the dashboard subscribe to any thread (incl. MCP-minted) — workaround until auto-thread-discovery ships in Wave 2.
-- `event-bus.ts` keys its `Map` on `globalThis` (`Symbol.for("apex-team.event-bus.emitters")`) so the `tsx`-loaded MCP module and the Next.js-bundled SSE route share state. Without this, MCP-side `publish()` and Next-side `subscribe()` hit separate Maps and the UI sees nothing from MCP turns.
-- Approved PO's wave plan for the remaining backlog (Skills + Auto-thread-discovery + Model dropdown + QA test instance + Context mgmt + HANDOFF refresh). User has handed full control to PO with an autonomous-iteration mandate.
+**Open next-steps — Wave 2 (three parallel streams):**
+- **UI Dev:** Replace AgentPane free-text model input with dropdown (`claude-opus-4-8`, `claude-sonnet-4-6`, `claude-haiku-4-5-20251001`, `gemini-2.5-flash`, `llama-3.3-70b-versatile`, "Other…"); persist per-role to `localStorage`.
+- **Backend Dev:** `/api/active-thread` GET endpoint + write-side in `new_thread`/`talk_to_*` MCP tools (auto-switches browser thread); `src/lib/handoff-utils.ts` `summarizeHandoff()` calling `apex_synthesize`; PO prompt updated to invoke it when HANDOFF doc > ~8K chars.
+- **DevSecOps:** `pnpm dev:test` script at `PORT=3100 DB_PATH=data/apex-team-test.db tsx server.ts`; verify `db.ts` honors `DB_PATH`.
 
-**Open next-steps (priority order):**
-1. **User does ONE final manual `pnpm dev` restart** — drops `tsx watch` from the running process. Future agent edits no longer kill the agent mid-turn.
-2. Re-dispatch PO → Architect to finish Wave 1 Commit 2 (roles.ts wire-up + ADR-001 + commit the skills feature).
-3. **Wave 2 — three parallel streams:**
-   - UI Dev: replace AgentPane's free-text model input with a dropdown (`claude-opus-4-7`, `claude-sonnet-4-6`, `claude-haiku-4-5-20251001`, `gemini-2.5-flash`, `llama-3.3-70b-versatile`, plus "Other…"); persist per-role choice to `localStorage`.
-   - Backend Dev: `/api/active-thread` GET + write-side in `new_thread`/`talk_to_*` MCP tools so the browser auto-switches thread (no copy/paste); `src/lib/handoff-utils.ts` `summarizeHandoff(doc, maxChars)` calling `apex_synthesize`; PO prompt update to invoke it when a HANDOFF doc exceeds ~8K chars.
-   - DevSecOps: `pnpm dev:test` script on `PORT=3100` with `DB_PATH=data/apex-team-test.db`; verify `db.ts` honors `DB_PATH`.
-4. **Wave 3:** Architect reviews Wave 2 + drafts remaining 5 skills files (`ba`, `architect`, `backend-developer`, `qa`, `devsecops`); QA smoke tests on the `:3100` instance covering new-thread creation, `talk_to_product_owner` round-trip, active-thread auto-switch, model dropdown persistence, single-turn SSE delivery.
-5. **Wave 4:** HANDOFF refresh + push to `main`.
+**Wave 3 (after Wave 2):** Architect reviews Wave 2 output + writes remaining 5 skills files (`ba`, `architect`, `backend-developer`, `qa`, `devsecops`); QA smoke tests on `:3100` instance.
+
+**Wave 4:** HANDOFF refresh + push to `main`.
 
 **Parked (deliberate deferrals):**
-- Graceful-restart supervisor — agents currently can't restart the parent process safely. Options: pm2 / forever / external sentinel-file watcher / detached spawn + SIGTERM. Deferred until the team is functioning end-to-end on a real external workspace.
-- Role-boundary discipline — PO assigned Wave-1 implementation work to Architect (Architect's lane is design + reviews). Tolerable for tiny mechanism + PoC, revisit if pattern recurs.
-- Symptom watched: BA misread a DISPATCH addressed to DevSecOps in Round 3 of the greeting test. Likely a PO authoring slip, not a routing bug. Revisit if it recurs.
-- Streaming-input mode for Claude Agent SDK; thread list / resume sidebar; LLM-driven inbox watcher; SDK-native `skills: ['code-review' / 'verify' / 'security-review']` per-role (Wave 3 of original plan).
-- Pre-existing backlog still open: end-to-end smoke test against an external workspace (e.g. `my-finances`); SDK `mcp__apex-engine__<tool>` allowlist naming verification under real apex-engine tool invocation; `/api/health` MCP-transport field; `next lint` → ESLint CLI migration; client-side abort button per pane.
+- Graceful-restart supervisor (pm2 / sentinel-file watcher / detached spawn).
+- Role-boundary discipline (Architect doing implementation work — tolerable for tiny PoC).
+- SDK-native `skills: ['code-review']` for Architect / `skills: ['verify']` for QA (Wave 3 of original plan).
+- Pre-existing backlog: end-to-end smoke test against external workspace; `/api/health` MCP-transport field; `next lint` → ESLint CLI migration; client-side abort button per pane.
 
-**Active thread (so you can resume in the dashboard):** `mcp_mpsoeous_bih2`.
+**Active thread:** `mcp_mpsoeous_bih2`.
 
 **Repo:** https://github.com/keyan-commits/apex-team
 
@@ -43,7 +34,7 @@
 
 ```bash
 cd /Users/nikoe/Development/Study/apex-team
-pnpm dev                                  # http://localhost:3000  + MCP at /mcp  (plain tsx now, no watch)
+pnpm dev                                  # http://localhost:3000  + MCP at /mcp  (plain tsx, no watch)
 
 # in another shell, if not already running:
 cd /Users/nikoe/Development/Study/apex-engine && pnpm setup

@@ -21,6 +21,7 @@ export interface RoleDefinition {
   shortLabel: string;
   accent: AccentKey;
   systemPrompt: string;
+  skills?: string;
 }
 
 // Accent key drives both UI color and grouping. Six peer accents + PO.

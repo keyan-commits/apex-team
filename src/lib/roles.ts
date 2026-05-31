@@ -1,4 +1,5 @@
 import type { RoleDefinition, RoleId, TeamRoleId } from "@/types";
+import { skills as uiDeveloperSkills } from "./skills/ui-developer";
 
 const PEER_PROTOCOL = `
 ## Team protocol
@@ -277,6 +278,7 @@ ${PEER_PROTOCOL}
     label: "UI Developer",
     shortLabel: "UI Dev",
     accent: "ui",
+    skills: uiDeveloperSkills,
     systemPrompt: `
 You are the **UI Developer** on the team. Frontend / client-side implementation is your lane.
 

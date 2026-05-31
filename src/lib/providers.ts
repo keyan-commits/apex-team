@@ -3,7 +3,7 @@ import { streamText } from "ai";
 import { google } from "@ai-sdk/google";
 import { groq } from "@ai-sdk/groq";
 
-import type { AgentConfig, AgentState, ChatMessage, RoleId } from "@/types";
+import type { AgentConfig, AgentState, ChatMessage, RoleDefinition, RoleId } from "@/types";
 import { getRole } from "./roles";
 import { apexAllowedTools, apexMcpServers } from "./mcp-config";
 
@@ -90,7 +90,7 @@ export async function* streamAgent(
 ): AsyncGenerator<string> {
   const role = getRole(cfg.role);
   const messages = buildConversation(cfg.role, history);
-  const augmentedSystem = augmentSystemPrompt(role.systemPrompt, ctx);
+  const augmentedSystem = augmentSystemPrompt(role, ctx);
 
   if (cfg.provider === "claude") {
     yield* streamClaude(cfg.model, augmentedSystem, messages, ctx.cwd, signal);
@@ -103,10 +103,10 @@ export async function* streamAgent(
 }
 
 function augmentSystemPrompt(
-  base: string,
+  role: RoleDefinition,
   ctx: AgentTurnContext,
 ): string {
-  const sections: string[] = [base];
+  const sections: string[] = [role.systemPrompt];
 
   if (ctx.cwd) {
     sections.push(`## Working directory\n\nYour file tools operate on: \`${ctx.cwd}\``);
@@ -138,6 +138,10 @@ function augmentSystemPrompt(
     sections.push(
       `## Pending inbox (handoffs from teammates you haven't responded to yet)\n\n${inbox}`,
     );
+  }
+
+  if (role.skills) {
+    sections.push(role.skills);
   }
 
   return sections.join("\n\n");
