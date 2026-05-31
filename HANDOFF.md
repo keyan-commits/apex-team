@@ -2,9 +2,9 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 6b DevSecOps scout-cadence pivot done (SHA-pending). `pnpm type-check` clean.
+**State.** Wave 6b DevSecOps scout-cadence pivot done (`4f39199`). `pnpm type-check` clean.
 
-**Wave 6b DevSecOps delivered (SHA-pending):**
+**Wave 6b DevSecOps delivered (`4f39199`):**
 - `src/lib/roles.ts` — PO prompt: added `### Weekly skill-scout cadence` section (confirm with user before dispatching; PO proposes when >7 days since last scout).
 - `README.md` — added `## Claude authentication` section documenting no-API-key constraint + manual scout rationale.
 - `.env.local.example` — added comment: `ANTHROPIC_API_KEY: not used. Claude Agent SDK reuses Claude Code OAuth.`
