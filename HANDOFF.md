@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 30 UI — Dashboard expand-state fix. `src/app/dashboard/page.tsx` Done panel: array-index key `i` replaced with stable composite key `${e.role}-${e.completedAt}`. Poll refreshes no longer collapse expanded Done rows. 39/39 green. Feature branch: `feature/30-dashboard-expand-stable`.**
+
 **Wave 29a BA — US-009, US-010, US-011 written. OQ-008 (provenance format) + OQ-009 (scout trigger mechanism) filed. `requirements/INDEX.md` updated. Feature branch: `feature/29a-ba-user-stories`.**
 
 **Wave 28a BA (gap fix) — US-008 Out of Scope section updated: added explicit deferral for nested HANDOFF count badge (PO AC4 → US-009) + streaming auto-collapse (existing behavior, not a new requirement). Feature branch: `feature/28a-ba-us008-gap-fix`.**
