@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 4b QA complete (SHA-pending). Self-improvement issue-filing loop wired. `pnpm type-check` clean.
+**State.** Wave 4b QA complete (`780faa9`). Self-improvement issue-filing loop wired. `pnpm type-check` clean.
 
 **Wave 4b shipped (this commit):**
 - `src/lib/skills/qa.ts` — 6th skill section: Defect filing (gh issue create pattern, workspace fallback, body format, severity guide).
