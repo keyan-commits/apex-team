@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 14b-ops — US-006 implementation on `feature/14b-main-enforcement` (SHA-pending). Awaiting QA gate.**
+**Wave 14b-ops — US-006 implementation on `feature/14b-main-enforcement` (`443b379`). Awaiting QA gate.**
 
 - `scripts/git-hooks/pre-push` — new POSIX hook blocking direct pushes to `origin/main`
 - `scripts/git-hooks/pre-commit` — type-check inserted as first step (before gitleaks)
