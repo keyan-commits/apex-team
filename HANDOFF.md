@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 9b BA — requirements/ scaffold complete. Commit (SHA-pending).**
+**Wave 9b BA — requirements/ scaffold complete. Commit `c693fc0`.**
 
 - `requirements/scope.md` — full 8-role, MCP, ADR-002 phased workflow, constraints table
 - `requirements/glossary.md` — 20 canonical terms (AC, gate, instance, PASS/REVISE/FAIL, feature branch, spec, story, protocol, skill, and existing terms)
