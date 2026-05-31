@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 6a scout complete (issues #5–#16 filed). Wave 6b UI Dev stream done (`SHA-pending`). `pnpm type-check` clean.
+**State.** Wave 6a scout complete (issues #5–#16 filed). Wave 6b UI Dev stream done (`7291391`). `pnpm type-check` clean.
 
 **Wave 6b UI Dev delivered (this commit):**
 - `src/lib/skills/ui-developer.ts` — added INP/useTransition guidance to Performance budget; added `### UI/UX self-review discipline` section (7th skill).
