@@ -2,68 +2,53 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** BA inbox seeding fix complete (`b7b90d0`). `pnpm type-check` clean.
+**State.** All waves complete. HANDOFF refresh only (`SHA-pending`). `pnpm type-check` clean. Push to `main` awaiting explicit user authorization.
 
-**Fix shipped (this commit):**
-- `src/types.ts` — `from: TeamRoleId` → `from: RoleId` on `handoff` MessageAuthor (minimal widening; PO can legitimately HANDOFF peers per the protocol).
-- `src/mcp/tools.ts` — `talk_to_role` + `talk_to_product_owner`: seed BA's inbox with every user message before `runTurn` fires; skip when target IS `business-analyst`.
-- `src/lib/roles.ts` — PO prompt: `### Requirement capture` section (always dispatch BA in parallel for product-relevant messages). BA prompt: `### Requirement capture discipline` section (processing-watermark pattern in HANDOFF doc).
+**Wave 4 complete — commits on `main` ahead of `origin/main`:**
 
-**Wave 4c DevSecOps complete (`8adf5a1`):** Graceful-restart supervisor shipped. `pnpm type-check` clean.
+| SHA | Commit |
+|---|---|
+| `2fe1e5d` | chore: backfill SHA b7b90d0 in HANDOFF NOW block |
+| `b7b90d0` | fix(ba): auto-seed business-analyst on every user message via MCP |
+| `d2a8ff8` | chore: backfill SHA 8adf5a1 in HANDOFF NOW block |
+| `8adf5a1` | feat: dev-supervisor with sentinel-file graceful restart |
+| `47dc6bc` | chore: backfill SHA 780faa9 in HANDOFF NOW block |
+| `780faa9` | feat: QA self-improvement issue-filing loop |
+| `2f0b6dd` | chore: backfill SHA 97216d5 in HANDOFF NOW block |
+| `97216d5` | feat: PO-initialized model defaults per thread |
+| `0c7fefa` | chore: backfill SHA e6c93d1 in HANDOFF NOW block |
+| `e6c93d1` | feat: live activity indicators + active-thread polling |
+| `5097f80` | chore: backfill SHA 3df1112 in HANDOFF NOW block |
+| `3df1112` | test: wave 3 smoke tests against :3100 isolated instance |
+| `8d351bf` | chore: backfill SHA cea839c in HANDOFF NOW block |
+| `cea839c` | feat: wave 3 — remaining 5 role skills + apex-team requirements snapshot |
+| `8f74e74` | chore: backfill SHA 2fd294f in HANDOFF NOW block |
+| `2fd294f` | feat: per-role model dropdown with localStorage persistence |
+| `c276d8d` | chore: backfill SHA f754ade in HANDOFF NOW block |
+| `f754ade` | feat: dev:test isolated instance on :3100 with separate DB |
+| `2241ea7` | chore: backfill SHA a3dd9cb in HANDOFF NOW block |
+| `a3dd9cb` | feat: auto-thread-discovery + handoff context-management primitives |
 
-**Wave 4c shipped (this commit):**
-- `scripts/dev-supervisor.mjs` — NEW: sentinel-file watcher; spawns `tsx server.ts`; SIGTERMs + SIGKILLs (5s grace) + respawns on `.restart-trigger` change; cleans up on SIGINT/SIGTERM.
-- `.restart-trigger` — NEW: tracked sentinel file with inline docs.
-- `package.json` — `dev:supervised` script added.
-- `src/lib/skills/devsecops.ts` — 6th skill: Restart triggering (when + how to touch sentinel).
-- `README.md` — "Autonomous restart support" section.
+**Architect Wave 4b review:** PASS, no blocks. 2 warns + 3 nits. Issue #3 filed (`agentModels` cast without `ALL_ROLES` filter at `run-turn.ts:122`).
 
-**Wave 4b QA complete (`780faa9`):** Self-improvement issue-filing loop wired. `pnpm type-check` clean.
+**Open self-improvement issues (GitHub `self-improvement` label):**
+- #1 — AgentPane "Other…" sends empty model string before typing (warn)
+- #2 — Spurious EventSource on locally-minted thread before active-thread fetch (nit)
+- #3 — `agentModels` cast to `Record<RoleId,string>` without `ALL_ROLES` filter (warn)
 
-**Wave 4b shipped (this commit):**
-- `src/lib/skills/qa.ts` — 6th skill section: Defect filing (gh issue create pattern, workspace fallback, body format, severity guide).
-- `src/lib/roles.ts` — PO system prompt: Self-improvement backlog section (gh issue list command, scheduling heuristic).
-- GitHub issues filed: #1 AgentPane empty model string race (warn), #2 Spurious EventSource on mount (nit). Label: `self-improvement`.
+**MCP module-cache caveat:** `b7b90d0` and other MCP-side changes are on disk but NOT in the running server's cached module graph (if `pnpm dev` is running). Activate on next process restart. Use `pnpm dev:supervised` for future sessions — MCP-side changes activate cleanly via `.restart-trigger`.
 
-**Wave 4a complete (`97216d5`):** PO-initialized model defaults per thread fully wired. `pnpm type-check` clean.
+**Active thread for resume:** `mcp_mpsoeous_bih2`.
 
-**Wave 4a shipped (this commit):**
-- `src/types.ts` — `agent-models` added to `SseEventType`; `agentModels` field on `SseEvent`.
-- `src/lib/orchestrator.ts` — `AGENT_MODELS_RE` + `agentModels` parsing in `parseAgentReply()`.
-- `src/lib/run-turn.ts` — PO-only: persist + publish `agent-models` SSE event when block present.
-- `src/lib/db.ts` — `thread_config` table; `getThreadAgentModels` / `setThreadAgentModels`.
-- `src/app/api/thread-config/route.ts` — GET returns stored agent-model map for a thread.
-- `src/lib/roles.ts` — PO system prompt: Model initialization section (emit `[[AGENT-MODELS]]` on first turn).
-- `src/app/page.tsx` — `agent-models` SSE handler + `/api/thread-config` fetch on thread switch (committed in `e6c93d1`).
+**Next planned workspace:** point apex-team workspace field at `/Users/nikoe/Development/Study/my-finances` (iOS SwiftUI personal-finance app).
 
-**Wave 4a prior (`e6c93d1`):** live activity indicators + active-thread polling.
+**Pending:** `git push origin main` — awaiting explicit user authorization.
 
-**Wave 3 QA shipped (`3df1112`):** 4/4 unit tests + 6/6 HTTP smoke tests PASS.
-
-**Wave 3 Architect (`cea839c`):** code review PASS; 5 remaining skills files.
-
-**Wave 2 shipped:**
-- UI Dev: model dropdown (`2fd294f`). Backend Dev: active-thread + handoff-utils (`a3dd9cb`). DevSecOps: dev:test isolated instance (`f754ade`).
-
-**Wave 1 shipped:**
-- Event-bus SSE refactor (`2f037dc`). Skills injection mechanism + ui-developer PoC (`263ab77`).
-
-**Open next-steps:**
-- Push to `main` (16+ commits ahead of origin).
-- Wave 4b candidates: `/api/health` MCP-transport field; `next lint` → ESLint CLI migration; client-side abort button.
-
-**Known gaps / deliberate omissions:**
-- MCP new_thread → active-thread auto-switch: skipped (requires full MCP session handshake in test; wiring verified by code review).
-- Model dropdown localStorage persistence: requires browser (Playwright candidate, Wave 4+).
-- End-to-end LLM turn: requires live Claude Code OAuth session.
-
-**Parked (deliberate deferrals):**
-- Graceful-restart supervisor (pm2 / sentinel-file watcher / detached spawn).
-- Role-boundary discipline (Architect doing implementation work — tolerable for tiny PoC).
-- SDK-native `skills: ['code-review']` for Architect / `skills: ['verify']` for QA (Wave 3 of original plan).
-- Pre-existing backlog: end-to-end smoke test against external workspace; `/api/health` MCP-transport field; `next lint` → ESLint CLI migration; client-side abort button per pane.
-
-**Active thread:** `mcp_mpsoeous_bih2`.
+**Parked:**
+- CI pipeline (not requested).
+- Secrets management (no secrets beyond `.env*.local` which is gitignored).
+- Supply-chain scanning (Dependabot/Renovate — future wave).
+- SDK-native `skills: ['code-review']` for Architect / `skills: ['verify']` for QA.
 
 **Repo:** https://github.com/keyan-commits/apex-team
 
