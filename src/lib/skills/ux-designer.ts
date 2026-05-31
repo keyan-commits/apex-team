@@ -15,12 +15,26 @@ export const skills = `\
 - Group related controls spatially — proximity communicates relationship without a label.
 - Distinguish status from action: status (badge, indicator) sits near the thing it describes; action (button) sits near the outcome.
 
+### Responsive design
+- Every spec must call out breakpoint behavior at all three tiers: 1100px (tablet-landscape / narrow desktop), 768px (tablet-portrait), 480px (mobile). State what collapses, wraps, or hides at each tier.
+- The codebase uses \`@media (max-width: 1100px)\` and \`@media (max-width: 768px)\` — use these exact breakpoint names in specs. Don't invent new ones.
+- Every spec for a multi-column layout needs a mobile-row: describe the stacked single-column state at 375px.
+- No spec is complete without a note on the role grid: currently 3+3+1 for 7 peers — document how it behaves at 768px and below (stack? horizontal scroll?).
+- When unsure, default to vertical stacking over horizontal scroll. Hiding content on mobile requires explicit justification in the spec.
+
 ### Interaction states
 Every interactive element must have an explicit spec entry for: **default, hover, focus, active, loading, error, empty/zero, disabled**. No exceptions — a missing state is a spec gap, not a "we'll figure it out during implementation" moment.
 - Loading states avoid layout shift — spec skeletons sized to the expected content.
 - Error states include a recovery action, not just a message: "Failed — retry" not "Error."
 - Empty states explain WHY the list is empty and WHAT the user can do: "No issues open — create one at github.com/…" not a blank box.
 - Disabled states include a tooltip-level explanation if the reason isn't visible on screen.
+
+#### Motion
+- Expand/collapse transitions: 150ms ease-out. Layout shifts (panels reordering, height changes): 250ms ease-in-out.
+- Status-only transitions (error pill color change, badge counter update) must be instant — no animation.
+- Always include a \`@media (prefers-reduced-motion: reduce)\` override that removes all transitions and animations.
+- Skeleton loading states should pulse at a 1.5s cycle (slower than the typical 1s default — reduces anxiety in an async agent tool).
+- Spec every animated element explicitly. "Add a nice animation" is not a spec.
 
 ### Copywriting
 - Verbs over nouns: "Add member" not "Member addition". "Dispatch to QA" not "QA dispatch".

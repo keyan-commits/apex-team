@@ -2,6 +2,28 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 9d UX Designer — Wave 8c retry + skill self-audit complete.**
+
+- `src/lib/skills/ux-designer.ts` — added `### Responsive design` section (closes #34) + `#### Motion` subsection under `### Interaction states` (closes #35). Commit (SHA-pending).
+- Filed skill-proposal **#40** — "Gate verdict format — structured PASS/REVISE output for the UX design gate"
+- Gap: critique workflow describes process but not the structured output artifact (PASS/REVISE verdict format DevSecOps + UI Dev act on). Proposal covers: PASS required fields (SHA, spec consulted, no-block confirmation, nit issues filed), REVISE required fields (blocking items with spec→delta→change, who receives HANDOFF), missing-spec path, port 3130 usage guidance.
+
+**Awaiting:** PO triage of skill-proposals #37, #38, #39, #40.
+
+---
+
+**Wave 9d QA — skill self-audit complete.**
+
+- Filed skill-proposal **#39** — "Gate verification workflow — evidence format and worktree setup protocol"
+- Gap identified: `qa.ts` skills file has no guidance on worktree setup for gate verification or structured PASS/FAIL evidence format. Under `VERIFICATION_PHASE_PROTOCOL`, I return a gate verdict DevSecOps uses to decide merges. Without a template, output is free-form and inconsistent.
+- Proposal covers: worktree setup (`pnpm branch:start qa <wave>-<short>`, feature branch checkout), port 3100 spin-up, AC checklist format, required PASS evidence fields (SHA, test output, per-AC table, Playwright snapshot for UI), required FAIL evidence fields (AC text, repro steps, severity, fix suggestion), fallback path when Playwright transport drops (#31).
+- Also flagged: #30 (Playwright visual verification) should ship only if it includes a transport-drop fallback.
+- No other gaps. AC-to-test traceability, edge-case enumeration, security patterns, defect filing are all solid.
+
+**Awaiting:** skill-proposals #39, #38, #37 triage.
+
+---
+
 **Wave 9d BE Dev — skill self-audit complete.**
 
 - Filed skill-proposal **#38** — "Pre-HANDOFF unit testing — Vitest patterns for Next.js API routes and SQLite service layer"
