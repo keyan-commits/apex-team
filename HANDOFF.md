@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 28a BA (gap fix) — US-008 Out of Scope section updated: added explicit deferral for nested HANDOFF count badge (PO AC4 → US-009) + streaming auto-collapse (existing behavior, not a new requirement). Feature branch: `feature/28a-ba-us008-gap-fix`.**
+
 **Wave 28a BA — US-008 written: `requirements/user-stories/US-008-team-page-density.md` (proposed, owner: ui-developer). 6 ACs: HANDOFF body max-height 200px, messages area clamp(260px,38vh,480px), bubble threshold 200c/3l, outbound bubbles collapsed by default, 1080p viewport fits all 8 idle panes, activity log regression-free. `requirements/INDEX.md` updated. Feature branch: `feature/28a-ba-us-008`.**
 
 **Wave 28a UX — US-008 team-page density spec (research + design, no code). Root cause: `.pane` has no `max-height` — one active pane towers over 6 idle panes. Secondary: HANDOFF `.body` has no height cap. Tertiary: MessageBubble collapse threshold too permissive (6 lines/400 chars). Spec in `design/US-008-team-page-density.md`. Key decisions: pane max-height `min(560px, 65vh)`, HANDOFF body cap `220px`, bubble thresholds `3 lines / 200 chars`, outbound HANDOFF/dispatch bubbles collapsed by default. HANDOFF to UI Dev for Wave 28b implementation. Skill-proposals #66 + #68 filed for `### Feed density patterns` gap. Feature branch: `feature/28a-team-density-spec`.**
