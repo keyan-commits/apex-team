@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 8a UI Dev complete — ux-designer role rendered in both pages. Commit (SHA-pending).
+**State.** Wave 8a UI Dev complete — ux-designer role rendered in both pages. Commit `15e57b1`.
 
 **Wave 8a UI Dev changes:**
 - `globals.css` — `--accent-uxd: #bf6dff` (violet)
