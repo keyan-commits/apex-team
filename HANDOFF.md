@@ -4,7 +4,7 @@
 
 **Wave 13a UX — design spec amendments committed. US-005 spec complete.**
 
-- `design/US-003-workspace-scoped-issues.md` — Wave 13 Amendments section added. 4 amendments fully resolved: (1) drop "Issues:" prefix → bare monospace link, (2) per-`repoStatus` copy table (none/not-git/non-github/bad-path), (3) `:visited` CSS fix, (4) stale-flicker fix (setData(null) before fetchData). Commit SHA: (SHA-pending).
+- `design/US-003-workspace-scoped-issues.md` — Wave 13 Amendments section added. 4 amendments fully resolved: (1) drop "Issues:" prefix → bare monospace link, (2) per-`repoStatus` copy table (none/not-git/non-github/bad-path), (3) `:visited` CSS fix, (4) stale-flicker fix (setData(null) before fetchData). Commit `4d76002`.
 - `design/INDEX.md` — US-003 row updated to reflect Wave 13 amendments.
 - Requirements phase complete: BA committed US-005 at `4e69429`, Architect designed `repoStatus` enum (exact diffs in conversation). Awaiting PO synthesis → Wave 13b implementation dispatch.
 
