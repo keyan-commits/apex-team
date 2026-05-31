@@ -22,6 +22,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Dependency audit
+        run: pnpm audit --audit-level moderate
+        continue-on-error: true  # transient registry failures don't block PRs
+
       - name: Type check
         run: pnpm type-check
 
