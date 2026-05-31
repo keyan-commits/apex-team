@@ -2,9 +2,11 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 13b-ops — CodeQL workflow removed. Requirements phase (Wave 13a) complete.**
+**CodeQL restored.** Repo went public — Code Scanning is now free. Workflow file recreated identical to the original (`88fd8d1` shape); `ops/README.md` updated to note the brief private-tier removal + restoration. Code Scanning auto-enables on next push to main; no GitHub UI action required for public repos.
 
-- `.github/workflows/codeql.yml` removed — GHAS not available on personal-account private tier. Every run was failing with "Code scanning is not enabled for this repository" — pure noise. `ops/README.md` updated with deferred rationale + re-enablement conditions. Commit `983e817`.
+**Wave 13b-ops — CodeQL workflow removed (now restored, see above). Requirements phase (Wave 13a) complete.**
+
+- `.github/workflows/codeql.yml` removed in `983e817`, then restored after public-repo switch. The brief removal was correct under the private-tier constraint.
 - `design/US-003-workspace-scoped-issues.md` — Wave 13 Amendments section added (`4d76002`).
 - Requirements phase complete: BA committed US-005 at `4e69429`, Architect designed `repoStatus` enum. Awaiting PO synthesis → Wave 13b implementation dispatch.
 

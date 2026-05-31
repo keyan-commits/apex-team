@@ -128,22 +128,14 @@ Implemented in Wave 10b (US-002, ADR-002). DevSecOps owns all artifacts below �
 | Artifact | Purpose |
 |---|---|
 | `.github/workflows/ci.yml` | Runs `pnpm type-check` + `pnpm test:run` + `pnpm lint` on every PR and push. Lint is `continue-on-error` pending next-lint → standalone ESLint migration. |
+| `.github/workflows/codeql.yml` | CodeQL SAST for JS/TS. Runs on push to main + weekly Monday 05:30 UTC. Free because the repo is public. |
 | `.github/dependabot.yml` | Weekly CVE scan of npm deps. Minor + patch updates grouped into one PR to reduce noise. Critical CVEs in direct deps block merge until patched. |
 | `scripts/post-deploy-smoke.mjs` | Post-deploy health check. Curls `localhost:3000/api/health`, validates `status=ok` and `mcpMounted=true`. Run via `pnpm smoke`. |
 | `scripts/git-hooks/pre-commit` | Gitleaks secrets scan on staged files (see below). Also enforces HANDOFF.md update + INDEX.yaml integrity. |
 
-### CodeQL (deferred)
+### CodeQL note
 
-CodeQL SAST was shipped in `88fd8d1` but removed in the Wave 13b-ops commit — GitHub
-Advanced Security (required for Code Scanning on private repos) is not available on
-personal-account private tier. Re-add `.github/workflows/codeql.yml` when one of
-these is true:
-
-- The repo is made public (Code Scanning is free for public repos), OR
-- The repo is moved to an org on Team/Enterprise (GHAS available).
-
-Until then, `npm audit` + Dependabot cover supply-chain CVEs, which is the
-highest-value security signal for a single-user local dev tool.
+Originally shipped in `88fd8d1`, briefly removed in `983e817` (the repo was private and lacked GHAS), restored after the user made the repo public. Free for public repos; if the repo ever goes private again, this workflow will fail until GHAS is enabled or the workflow is removed again.
 
 ### Gitleaks setup (one-time, per machine)
 
