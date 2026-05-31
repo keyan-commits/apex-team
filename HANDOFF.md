@@ -2,7 +2,16 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 7d UI Dev complete — bounded content width + `--accent-orch` defined + nav tabs restyle. Commit `2d56050`. `pnpm type-check` clean.
+**State.** Wave 7e UI Dev complete — collapsible MessageBubble. Commit `(SHA-pending)`. `pnpm type-check` clean.
+
+**Wave 7e UI Dev changes:**
+- `MessageBubble.tsx` — per-bubble collapse state; default collapsed when >400 chars; `getPreview()` takes min(6 lines, 400 chars); gradient fade overlay; "Show more / Collapse ▴" CTA; outer div `role="button"` + `aria-expanded` + Enter/Space toggle when collapsed; `bubble-fade` for gradient; `:focus-visible` ring on CTA.
+
+**Awaiting:** Architect PASS for Wave 7e.
+
+---
+
+**Wave 7d UI Dev complete — commit `2d56050`. `pnpm type-check` clean.**
 
 **Wave 7d UI Dev changes:**
 - `globals.css` — defined `--accent-orch: #e0af68` (closes #19; logo and AgentStatePanel styling now visible)

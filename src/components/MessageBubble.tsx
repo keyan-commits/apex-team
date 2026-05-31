@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -15,6 +16,20 @@ const ROLE_LABEL: Record<RoleId, string> = {
   devsecops: "DevSecOps",
 };
 
+const COLLAPSE_CHARS = 400;
+const COLLAPSE_LINES = 6;
+
+function getPreview(content: string) {
+  const lines = content.split("\n");
+  const byLines = lines.slice(0, COLLAPSE_LINES).join("\n");
+  const byChars = content.slice(0, COLLAPSE_CHARS);
+  // Use whichever captures less content (shorter string = less shown)
+  const preview = byLines.length <= byChars.length ? byLines : byChars;
+  const hasMore = preview.length < content.trimEnd().length;
+  const extraLines = Math.max(0, lines.length - COLLAPSE_LINES);
+  return { preview, hasMore, extraLines };
+}
+
 interface Props {
   message: ChatMessage;
   /** The role this pane belongs to — used to pick "you" vs "teammate" framing. */
@@ -25,6 +40,8 @@ interface Props {
 
 export function MessageBubble({ message, perspective, pending }: Props) {
   const { author, content } = message;
+  const isLong = (content?.length ?? 0) > COLLAPSE_CHARS;
+  const [expanded, setExpanded] = useState(!isLong);
 
   let label = "";
   let tone:
@@ -75,15 +92,56 @@ export function MessageBubble({ message, perspective, pending }: Props) {
       break;
   }
 
+  const { preview, hasMore, extraLines } = getPreview(content || "");
+  const displayContent = expanded || !hasMore ? content || " " : preview;
+  const moreCopy = extraLines > 0 ? `+${extraLines} lines` : "more";
+
+  const toggleExpand = () => setExpanded((e) => !e);
+
+  const handleCollapseClick = (e: React.MouseEvent) => {
+    // Don't intercept link navigation inside the markdown
+    if ((e.target as HTMLElement).closest("a")) return;
+    toggleExpand();
+  };
+
+  const handleCollapseKey = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      toggleExpand();
+    }
+  };
+
+  const collapsed = !expanded && hasMore;
+
   return (
-    <div className={`bubble bubble-${tone}`}>
+    <div
+      className={`bubble bubble-${tone}${collapsed ? " bubble-collapsed" : ""}`}
+      onClick={collapsed ? handleCollapseClick : undefined}
+      role={collapsed ? "button" : undefined}
+      tabIndex={collapsed ? 0 : undefined}
+      aria-expanded={hasMore ? expanded : undefined}
+      onKeyDown={collapsed ? handleCollapseKey : undefined}
+    >
       <div className="bubble-header">
         <span>{label}</span>
         {pending && <span className="pending-dot" aria-hidden />}
       </div>
       <div className="prose prose-invert prose-sm max-w-none">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content || " "}</ReactMarkdown>
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{displayContent}</ReactMarkdown>
       </div>
+      {collapsed && <div className="bubble-fade" aria-hidden />}
+      {hasMore && (
+        <button
+          className="bubble-cta"
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleExpand();
+          }}
+          aria-label={expanded ? "Collapse message" : "Expand full message"}
+        >
+          {expanded ? "Collapse ▴" : `Show more (${moreCopy}) ▾`}
+        </button>
+      )}
       <style jsx>{`
         .bubble {
           border: 1px solid var(--border);
@@ -93,6 +151,7 @@ export function MessageBubble({ message, perspective, pending }: Props) {
           max-width: 820px;
         }
         .bubble + .bubble { margin-top: 10px; }
+        .bubble-collapsed { cursor: pointer; }
         .bubble-header {
           font-size: 11px;
           text-transform: uppercase;
@@ -134,6 +193,34 @@ export function MessageBubble({ message, perspective, pending }: Props) {
         @keyframes pulse {
           0%, 100% { opacity: 0.3; }
           50% { opacity: 1; }
+        }
+        .bubble-fade {
+          height: 24px;
+          margin-top: -24px;
+          background: linear-gradient(transparent, var(--surface));
+          pointer-events: none;
+          position: relative;
+          z-index: 1;
+        }
+        /* For non-default-surface bubbles, the fade blends imperfectly but the gradient
+           still signals "there's more" — acceptable for this density-control affordance. */
+        .bubble-cta {
+          display: block;
+          margin-top: 8px;
+          font-size: 11px;
+          color: var(--text-dim);
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 0;
+          position: relative;
+          z-index: 1;
+        }
+        .bubble-cta:hover { color: var(--text); }
+        .bubble-cta:focus-visible {
+          outline: 1px solid var(--accent-ui);
+          outline-offset: 2px;
+          border-radius: 2px;
         }
       `}</style>
     </div>
