@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 28a — US-008 team-page density spec (research + design, no code). Root cause: `.pane` has no `max-height` — one active pane towers over 6 idle panes. Secondary: HANDOFF `.body` has no height cap. Tertiary: MessageBubble collapse threshold too permissive (6 lines/400 chars). Spec in `design/US-008-team-page-density.md`. Key decisions: pane max-height `min(560px, 65vh)`, HANDOFF body cap `220px`, bubble thresholds `3 lines / 200 chars`. HANDOFF to UI Dev for Wave 28b implementation. Skill-proposal #68 filed for `### Feed density patterns` gap. Feature branch: `feature/28a-team-density-spec`.**
+
 **Wave 27 — TypeScript 5.9 → 6.0 upgrade (closes #47). `package.json`: `typescript` bumped `^5.7.0` → `^6.0.3`. New `src/types/css-modules.d.ts`: `declare module "*.css"` satisfies TS 6's stricter side-effect import check. 39/39 green. Feature branch: `feature/27-ts-6-upgrade`.**
 
 **Wave 26 — Pre-wave hygiene check (closes #32). `branch-start.mjs`: dirty-tree check refactored into named `validateMainCleanliness()` with explicit remediation hints (git stash / restore / clean). `branch-cleanup.mjs`: same pattern (`validateWorktreeCleanliness()`), plus `devsecops` added to `VALID_ROLES` (was missing). `tests/ops/branch-hygiene.test.ts`: 5 new tests. 39/39 green. Feature branch: `feature/26-pre-wave-hygiene`.**

@@ -5,6 +5,7 @@ UX Designer owns this directory. Every spec file is listed here with its linked 
 | File | Issue | Status | Notes |
 |---|---|---|---|
 | [US-003-workspace-scoped-issues.md](US-003-workspace-scoped-issues.md) | US-003 / US-005 | reviewed + Wave 13 amendments | Post-hoc spec (Wave 11a dispatch dropped). Wave 13 amendments added: drop "Issues:" prefix, per-`repoStatus` copy (4 cases), `:visited` fix, no-flicker spec. |
+| [US-008-team-page-density.md](US-008-team-page-density.md) | US-008 / Wave 28a | ready | Density redesign: pane max-height cap (560px), HANDOFF body scroll cap (220px), MessageBubble threshold tightened (3 lines/200 chars), PO pane cap (420px). Handoff to UI Dev. |
 
 ---
 
