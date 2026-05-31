@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 7e UI Dev complete — collapsible MessageBubble. Commit `(SHA-pending)`. `pnpm type-check` clean.
+**State.** Wave 7e UI Dev complete — collapsible MessageBubble. Commit `49cd73f`. `pnpm type-check` clean.
 
 **Wave 7e UI Dev changes:**
 - `MessageBubble.tsx` — per-bubble collapse state; default collapsed when >400 chars; `getPreview()` takes min(6 lines, 400 chars); gradient fade overlay; "Show more / Collapse ▴" CTA; outer div `role="button"` + `aria-expanded` + Enter/Space toggle when collapsed; `bubble-fade` for gradient; `:focus-visible` ring on CTA.
