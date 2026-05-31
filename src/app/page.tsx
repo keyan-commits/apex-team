@@ -115,12 +115,12 @@ export default function Home() {
       .then((data: { threadId: string | null }) => {
         if (data.threadId && !userEditedThreadRef.current) {
           setThreadId(data.threadId);
-        } else {
+        } else if (!userEditedThreadRef.current) {
           setThreadId(newThreadId());
         }
       })
       .catch(() => {
-        setThreadId(newThreadId());
+        if (!userEditedThreadRef.current) setThreadId(newThreadId());
       });
 
     const stored = localStorage.getItem(WORKSPACE_STORAGE_KEY);
