@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 4a complete (SHA-pending). PO-initialized model defaults per thread fully wired. `pnpm type-check` clean.
+**State.** Wave 4a complete (`97216d5`). PO-initialized model defaults per thread fully wired. `pnpm type-check` clean.
 
 **Wave 4a shipped (this commit):**
 - `src/types.ts` — `agent-models` added to `SseEventType`; `agentModels` field on `SseEvent`.
