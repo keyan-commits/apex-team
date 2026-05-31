@@ -16,6 +16,8 @@
 
 **US-005 `requirements/user-stories/US-005-wave-11c-carry-forwards.md` → status: `done` (in this commit).**
 
+**CI fix needed:** feature branch predated Wave 14f — `ci.yml` still had `node-version: 20`. Added fixup commit bumping to 22.
+
 **Next:** PR CI green → `gh pr merge` → cleanup worktrees + branches → smoke.
 
 ---
