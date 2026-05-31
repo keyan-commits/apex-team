@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 9c BA — requirements/ updates for resolved OQ-001 + glossary additions. Commit (SHA-pending).**
+**Wave 9c BA — requirements/ updates for resolved OQ-001 + glossary additions. Commit `f31ae5f`.**
 
 - `requirements/open-questions.md` — OQ-001 marked RESOLVED: user confirmed feature branches + git worktrees. Decision and DevSecOps Wave 9c implementation (`3d2a933`) documented.
 - `requirements/glossary.md` — added `ADR` and `Worktree` entries (22 terms total).
