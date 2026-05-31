@@ -2,6 +2,16 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 11a BA — US-003 workspace-scoped-issues written (proposed). Pending: OQ-003 (UX Designer) + OQ-004 (Architect) + UX spec in `design/`.**
+
+- `requirements/user-stories/US-003-workspace-scoped-issues.md` — 5 ACs; owners UI Dev + BE Dev; OQ-003 (repo override) + OQ-004 (caching) open
+- `requirements/open-questions.md` — OQ-002 closed; OQ-003 + OQ-004 added
+- `requirements/INDEX.md` — US-003 row added; open-questions summary updated
+
+**Awaiting:** Architect input (OQ-004 caching rec) + UX Designer input (OQ-003 + spec in `design/`) before PO can synthesize Wave 11b plan for user confirmation.
+
+---
+
 **🎉 US-002 SHIPPED end-to-end through the new phased workflow.** First complete dogfood of ADR-002. Merge commit `6eaab70` on `origin/main`. `pnpm smoke` PASS.
 
 **Wave 10 net summary:**

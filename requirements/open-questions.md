@@ -8,10 +8,10 @@ Open questions are blockers or ambiguities that require an answer before affecte
 
 ## OQ-001 — Isolation model: feature branches vs git worktrees vs separate clones
 
-**Status:** ~~Open~~ **RESOLVED**  
-**Owner:** User  
-**Raised by:** Architect (ADR-002 §Consequences, Wave 9b)  
-**Resolved:** Wave 9c (2026-05-31)  
+**Status:** ~~Open~~ **RESOLVED**
+**Owner:** User
+**Raised by:** Architect (ADR-002 §Consequences, Wave 9b)
+**Resolved:** Wave 9c (2026-05-31)
 **Affects:** `IMPLEMENTATION_PHASE_PROTOCOL`, ADR-002, DevSecOps isolated-instance scripts
 
 **Decision:** **Feature branches + git worktrees.** Logical isolation via feature branches (`feature/<wave>-<short>`); physical filesystem isolation via `git worktree add` so multiple implementers can work in parallel without touching each other's uncommitted files.
@@ -22,21 +22,39 @@ Open questions are blockers or ambiguities that require an answer before affecte
 
 ## OQ-002 — CI/CD tooling: GitHub Actions vs Jenkins vs roll-our-own vs nothing
 
-**Status:** Open  
-**Owner:** Architect + DevSecOps  
-**Raised by:** BA (Wave 10a, US-002)  
-**Affects:** US-002 AC1, AC4 — build verification + dependency scan approach  
+**Status:** ~~Open~~ **RESOLVED**
+**Owner:** Architect + DevSecOps
+**Raised by:** BA (Wave 10a, US-002)
+**Resolved:** Wave 10a-d (2026-05-31)
+**Affects:** US-002 AC1, AC4
 
-**Question:** Which CI/CD approach is appropriate given apex-team's actual constraints (single user, single Mac, no remote infra, no ANTHROPIC_API_KEY, Claude subscription auth only)?
+**Decision:** **GitHub Actions + Dependabot + gitleaks + `pnpm smoke`.** Free hosted CI on PR + push to main; 5-line `dependabot.yml` for supply-chain CVEs; gitleaks pre-commit hook for secrets; post-deploy smoke script curls `/api/health`. No Jenkins, no IaC tooling. See `ops/README.md` "Pipeline & security tooling" and ADR-002 §Consequences.
 
-**Options under consideration:**
-- GitHub Actions — hosted runners, PR triggers; requires push to GitHub and workflow YAML
-- Jenkins — self-hosted CI server; significant overhead for a local dev tool
-- GitLab CI — requires migration away from GitHub; likely out of scope
-- Roll our own — extend existing `scripts/` with a pre-commit hook + `pnpm verify` script
-- Nothing beyond manual steps owned by DevSecOps
+---
 
-**Context:** Architect and DevSecOps are researching and providing recommendations in Wave 10a. BA will update US-002 ACs once the decision lands.
+## OQ-003 — Manual repo override in workspace-scoped Issues panel
+
+**Status:** Open
+**Owner:** UX Designer + BA
+**Raised by:** BA (Wave 11a, US-003)
+**Affects:** US-003 AC5 — wording may need adjustment if override is supported
+
+**Question:** Should the user be able to manually override the derived `owner/repo` (e.g. type `keyan-commits/other-repo` directly) to handle the case where the git origin is a private mirror but issues live on a public GitHub repo?
+
+**Context:** The default behavior (derive from `git remote get-url origin`) covers the common case. The override path addresses a power-user edge case. UX Designer to weigh in on whether an explicit override field adds complexity vs. value at current scope.
+
+---
+
+## OQ-004 — Caching strategy for `git remote` lookup in `/api/team-status`
+
+**Status:** Open
+**Owner:** Architect
+**Raised by:** BA (Wave 11a, US-003)
+**Affects:** BE implementation scope — determines whether a DB/memory cache layer is needed
+
+**Question:** Should the `git -C <workspace> remote get-url origin` lookup be (A) executed fresh on every `/api/team-status` request (~5ms, always fresh), (B) cached in SQLite keyed by workspace path (avoids repeated shell execs, risk of stale data), or (C) cached in memory with a short TTL?
+
+**Context:** apex-team is single-user, single-machine. The remote URL rarely changes. Architect to recommend — BA's default is Option A (no cache, simplest, correct-by-design) unless Architect identifies a performance concern.
 
 ---
 
