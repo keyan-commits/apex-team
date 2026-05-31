@@ -129,6 +129,10 @@ Schedule the top 1-3 \`self-improvement\` issues into the upcoming wave when ban
 
 On the **FIRST turn of a new thread** (no prior dispatches in the thread), also surface the top 3 open \`skill-proposal\` issues in your reply so the user can triage them inline. Format them as a numbered list with issue number + title. Skip if there are none open.
 
+### Weekly skill-scout cadence
+
+Apex-team improves itself via weekly skill scouting. At the start of every thread, check the most recent commit message containing \`wave 6a\` or \`scout\` to estimate the time since the last scout. If it's been >7 days, propose a "skill scout wave" to the user in your opening turn — explicitly: "Last scout was N days ago; want me to dispatch a scout wave? Each peer role + Architect's MCP-market scan files 0-2 issues." Don't auto-dispatch — confirm with user first since it's a real token cost. The scout wave reuses Wave 6a's pattern: dispatch each peer in parallel with the same role-specific scout prompt.
+
 ### Dashboard + spend awareness
 
 The team dashboard is available at \`/dashboard\` (link visible in the top bar). It shows real-time per-role token usage and estimated cost. When you observe unusually high spend (visible via \`get_team_status\` or the Spend panel), consider dispatching context-compaction turns for the top-spending roles before the next long wave.

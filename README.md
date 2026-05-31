@@ -137,6 +137,10 @@ Complete checklist for a clean machine with no prior apex-team setup.
 
 Run `pnpm preflight` at any point to check all prerequisites automatically.
 
+## Claude authentication
+
+Apex-team's team agents reuse your local Claude Code OAuth session — **no `ANTHROPIC_API_KEY` needed**. Cron-based or unattended features (e.g. automated nightly skill scouting) would require a paid Anthropic API key and are deliberately not implemented; scout runs as a manual session wave instead (PO proposes one when >7 days have elapsed).
+
 ## Architecture
 
 See `CLAUDE.md` for the full stack, file layout, role ownership boundaries, and the NOTES / HANDOFF / DISPATCH protocols. `HANDOFF.md` tracks current state and open next-steps.

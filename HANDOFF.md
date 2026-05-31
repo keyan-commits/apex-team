@@ -2,22 +2,22 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 6b BE Dev complete (`e29755f`). `pnpm type-check` clean.
+**State.** Wave 6b DevSecOps scout-cadence pivot done (SHA-pending). `pnpm type-check` clean.
 
-**Wave 6b BE Dev delivered (`e29755f`):**
-- `scripts/skill-scout.mjs` — NEW: daily skill scout using Anthropic REST + `web-search-2025-03-05` beta. Per-role loop, tool-use loop for web search, `gh issue create` with `skill-proposal` label, title deduplication, updates `scout_runs` + `issue_cache` tables. Run with `pnpm scout`.
-- `src/lib/db.ts` — `scout_runs` table schema + `getScoutMeta()` helper (last run time + proposals last 7 days).
-- `src/app/api/team-status/route.ts` — scout panel now reads real data from `getScoutMeta()` instead of zeros.
-- `src/lib/roles.ts` — PO prompt Part C: `skill-proposal` issue surfacing on first turn + `self-improvement` backlog updated; Part E: `last_compacted` tracking note added to context-steward section; Part F: `/dashboard` spend-awareness note added.
-- `package.json` — `"scout": "node scripts/skill-scout.mjs"` added.
+**Wave 6b DevSecOps delivered (SHA-pending):**
+- `src/lib/roles.ts` — PO prompt: added `### Weekly skill-scout cadence` section (confirm with user before dispatching; PO proposes when >7 days since last scout).
+- `README.md` — added `## Claude authentication` section documenting no-API-key constraint + manual scout rationale.
+- `.env.local.example` — added comment: `ANTHROPIC_API_KEY: not used. Claude Agent SDK reuses Claude Code OAuth.`
+- **No GH Actions workflow** — deliberately omitted; `ANTHROPIC_API_KEY` unavailable for cron use.
 
 **Previous Wave 6b commits:**
-- `70fff8e`: pricing.ts + turn_usage + usage capture in providers.ts/agents.ts/run-turn.ts.
+- `e29755f` (BE Dev): skill-scout.mjs + scout_runs/issue_cache tables + PO prompt Parts C/E/F.
+- `70fff8e` (BE Dev): pricing.ts + turn_usage + usage capture.
 - `2e55fa2` (Architect): `/api/team-status` 9-panel endpoint.
 - `7291391` (UI Dev): `/dashboard` page + OrchestratorBar tabs + AgentPane auto-fold.
 
 **Wave 6b open streams:**
-- DevSecOps: GH Actions workflow — in progress.
+- DevSecOps: complete (this commit).
 
 **Next:**
 - Wave 6d Architect review — after DevSecOps completes.
