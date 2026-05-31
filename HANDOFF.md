@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 21 — DevSecOps skill additions: `### Artifact provenance` (#15) + `### GitHub Actions hardening` (#16) added to `src/lib/skills/devsecops.ts`. 34/34 tests green. Feature branch: `feature/21-ops-skill-additions`.**
+
 **Wave 20 — QA skill additions: `### Visual verification via Playwright MCP` (#30) + `### Contract testing` (#13) + `### Mutation testing` (#14) + `### Gate verification workflow` (#39) added to `src/lib/skills/qa.ts`. 34/34 tests green. Feature branch: `feature/20-qa-skill-additions`.**
 
 **Wave 19 — BE Dev skill additions: `### OpenTelemetry trace correlation` (#11) + `### Rate limiting` (#12) + `### Pre-HANDOFF unit testing` (#38) added to `src/lib/skills/backend-developer.ts`. 34/34 tests green. Feature branch: `feature/19-be-skill-additions`.**

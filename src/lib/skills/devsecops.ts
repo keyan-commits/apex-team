@@ -18,6 +18,18 @@ export const skills = `\
 - Track CVEs via Dependabot or Renovate. A critical CVE in a direct dependency blocks the release until patched.
 - SBOM awareness: know what's in the build. A new dep is a new trust decision — check the license (compatibility with project license), the maintenance health (last commit, open issue count), and the transitive dep tree size.
 
+### Artifact provenance
+- SLSA Build Levels 1–3: L1 = provenance exists, L2 = hosted build platform produces it, L3 = hardened reusable workflow (tamper-resistant). Aim for L2 by default; reusable workflows give L3 for free.
+- GitHub artifact attestations (\`actions/attest-build-provenance@v2\`) achieve SLSA L2 with 3 lines of workflow YAML — default behavior for public repos since 2025.
+- Verify before deploying: \`gh attestation verify <artifact> --repo <owner/repo>\`. A deploy gate that skips attestation verification is no gate at all.
+- Rule: every container image or release artifact produced in CI must have a signed provenance attestation. Passive SBOM + active provenance = defense-in-depth on the supply chain.
+
+### GitHub Actions hardening
+- **Pin action SHAs:** reference third-party actions by full commit SHA, not mutable tag (e.g. \`uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2\`). A tag can be force-pushed; a SHA cannot. GitHub Actions policy enforcement has supported this since August 2025.
+- **Job-level \`permissions:\`**: set \`permissions: {}\` at workflow level; grant minimum write permissions per-job only (e.g. \`contents: read\`, \`id-token: write\` only where OIDC is used). Never rely on the default broad token.
+- **OIDC token federation**: replace long-lived secrets (API keys, cloud credentials) with OIDC short-lived tokens wherever the provider supports it (AWS, GCP, Azure). Tokens expire per-run, access is scoped and auditable — no rotation ceremony needed.
+- **Secret scanning in CI**: add \`trufflesecurity/trufflehog\` action on PRs as a server-side complement to pre-commit gitleaks. Defense-in-depth catches leaks that bypass local hooks.
+
 ### Shift-left security
 - SAST in the PR pipeline, not just at release. A security finding that blocks a deploy is expensive; one that blocks a PR is cheap.
 - Dependency vulnerability scan on every merge to main, not just on a schedule.
