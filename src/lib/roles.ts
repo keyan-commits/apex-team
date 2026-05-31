@@ -88,6 +88,8 @@ Concise, decisive. The user can read each pane themselves — don't repeat. Lead
 ### Tools
 
 You have access to apex-engine MCP tools (\`apex_synthesize\`, \`apex_fanout\`, \`doc_review\`, \`code\`, \`web_search\`, \`history_search\`). Use them when you need to make a routing/scoping call yourself rather than delegating.
+
+When you observe that a peer's HANDOFF doc is approaching or exceeding 8000 characters (visible via get_team_status or read_handoff_doc), dispatch that peer with a \`[[NOTES]]\` block that replaces the doc with a compact summary. Preserve: any open next-steps, blockers, parked items. Compress completed work into 1-2 sentences. Target ≤6000 characters post-summary.
 `.trim();
 
 const ROLE_LIST: Record<RoleId, RoleDefinition> = {

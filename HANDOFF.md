@@ -2,19 +2,28 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 1 complete. Two commits on `main`: event-bus SSE refactor (`2f037dc`) + skills injection (`263ab77`). `pnpm type-check` passes clean. `tsx` running plain (no watch). Resume on branch `main`.
+**State.** Wave 2 Backend Dev complete (SHA-pending). `pnpm type-check` passes clean. UI Dev wave 2 also complete (AgentPane model dropdown — `src/components/AgentPane.tsx`). DevSecOps wave 2 in flight.
 
-**Wave 1 shipped:**
-- `src/types.ts` — `skills?: string` on `RoleDefinition` (backward-compat).
-- `src/lib/skills/ui-developer.ts` — 6-skill UI/UX domain expertise constant.
-- `src/lib/providers.ts` — `augmentSystemPrompt(role, ctx)` now accepts full `RoleDefinition`; appends `role.skills` when present; all providers benefit.
+**Wave 2 Backend Dev shipped:**
+- `src/lib/active-thread.ts` — `setActiveThread` / `getActiveThread`; globalThis-bridged (same pattern as event-bus).
+- `src/app/api/active-thread/route.ts` — GET endpoint returning `{ threadId }`.
+- `src/mcp/tools.ts` — `setActiveThread` called in `new_thread`, `talk_to_role`, `talk_to_product_owner`, `record_user_message`.
+- `src/app/page.tsx` — mount fetch to `/api/active-thread`; auto-switches if MCP client last used a different thread; `userEditedThreadRef` prevents override when user manually types.
+- `src/lib/handoff-utils.ts` — `summarizeHandoff(doc, maxChars)` pure helper; returns `{ needsSummarization, instruction }` dispatch string (apex_synthesize not callable in-process).
+- `src/lib/roles.ts` — PO system prompt: appended HANDOFF-compression guidance.
+
+**Wave 1 shipped (prior):**
+- `src/types.ts` — `skills?: string` on `RoleDefinition`.
+- `src/lib/skills/ui-developer.ts` — 6-skill UI/UX domain expertise.
+- `src/lib/providers.ts` — `augmentSystemPrompt(role, ctx)` accepts full `RoleDefinition`.
 - `src/lib/roles.ts` — `ui-developer` wired to `uiDeveloperSkills`.
-- `architecture/decisions/ADR-001-role-skills-injection.md` — ADR created.
+- `architecture/decisions/ADR-001-role-skills-injection.md`.
 
-**Open next-steps — Wave 2 (three parallel streams):**
-- **UI Dev:** Replace AgentPane free-text model input with dropdown (`claude-opus-4-8`, `claude-sonnet-4-6`, `claude-haiku-4-5-20251001`, `gemini-2.5-flash`, `llama-3.3-70b-versatile`, "Other…"); persist per-role to `localStorage`.
-- **Backend Dev:** `/api/active-thread` GET endpoint + write-side in `new_thread`/`talk_to_*` MCP tools (auto-switches browser thread); `src/lib/handoff-utils.ts` `summarizeHandoff()` calling `apex_synthesize`; PO prompt updated to invoke it when HANDOFF doc > ~8K chars.
-- **DevSecOps:** `pnpm dev:test` script at `PORT=3100 DB_PATH=data/apex-team-test.db tsx server.ts`; verify `db.ts` honors `DB_PATH`.
+**Open next-steps — Wave 3 (after DevSecOps completes):**
+- **Architect:** code-review Wave 2 output; write remaining 5 skills files (`ba`, `architect`, `backend-developer`, `qa`, `devsecops`).
+- **QA:** smoke tests on `:3100` instance — new thread creation, talk_to_product_owner round-trip, active-thread auto-switch, model dropdown persistence, event-bus SSE delivery.
+
+**Wave 4:** HANDOFF refresh + push to `main`.
 
 **Wave 3 (after Wave 2):** Architect reviews Wave 2 output + writes remaining 5 skills files (`ba`, `architect`, `backend-developer`, `qa`, `devsecops`); QA smoke tests on `:3100` instance.
 

@@ -17,6 +17,7 @@ import { join, resolve } from "node:path";
 
 import { runTurn } from "@/lib/run-turn";
 import { runTurnWithDispatches } from "@/lib/run-turn-with-dispatches";
+import { setActiveThread } from "@/lib/active-thread";
 import {
   appendMessage,
   getAgentState,
@@ -79,6 +80,7 @@ export function registerApexTeamTools(server: McpServer): void {
       },
     },
     async ({ role, message, thread_id, workspace }) => {
+      setActiveThread(thread_id);
       const result = await runTurn({
         threadId: thread_id,
         target: role,
@@ -128,6 +130,7 @@ export function registerApexTeamTools(server: McpServer): void {
       },
     },
     async ({ message, thread_id, workspace }) => {
+      setActiveThread(thread_id);
       // runTurnWithDispatches runs the PO turn, then fans out to every
       // dispatched peer in PARALLEL (each peer is its own runTurn).
       // Every event is also published to the thread's bus, so the web
@@ -297,6 +300,7 @@ export function registerApexTeamTools(server: McpServer): void {
     },
     async () => {
       const id = newThreadId();
+      setActiveThread(id);
       return { content: [{ type: "text", text: `New thread id: \`${id}\`` }] };
     },
   );
@@ -346,6 +350,7 @@ export function registerApexTeamTools(server: McpServer): void {
       },
     },
     async ({ thread_id, message }) => {
+      setActiveThread(thread_id);
       appendMessage(thread_id, { kind: "user" }, message);
       return { content: [{ type: "text", text: "Recorded." }] };
     },

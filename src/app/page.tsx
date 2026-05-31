@@ -92,8 +92,24 @@ export default function Home() {
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
 
+  // Track whether the user has manually typed a thread ID. If so, we don't
+  // override it with the MCP-last-used thread on mount.
+  const userEditedThreadRef = useRef(false);
+
   useEffect(() => {
     setThreadId(newThreadId());
+
+    // Auto-switch to the last thread used by the MCP client (e.g. external Claude Code).
+    // Only fires once on mount and only if the user hasn't manually edited the thread input.
+    fetch("/api/active-thread", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data: { threadId: string | null }) => {
+        if (data.threadId && !userEditedThreadRef.current) {
+          setThreadId(data.threadId);
+        }
+      })
+      .catch(() => {});
+
     const stored = localStorage.getItem(WORKSPACE_STORAGE_KEY);
     if (stored && stored.trim()) {
       setWorkspace(stored);
@@ -348,6 +364,7 @@ export default function Home() {
     (next: string) => {
       const trimmed = next.trim();
       if (!trimmed) return;
+      userEditedThreadRef.current = true;
       setThreadId(trimmed);
       resetThreadLocalState();
     },
