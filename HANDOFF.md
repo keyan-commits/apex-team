@@ -2,18 +2,18 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 13a UX — design spec amendments committed. US-005 spec complete.**
+**Wave 13b-ops — CodeQL workflow removed. Requirements phase (Wave 13a) complete.**
 
-- `design/US-003-workspace-scoped-issues.md` — Wave 13 Amendments section added. 4 amendments fully resolved: (1) drop "Issues:" prefix → bare monospace link, (2) per-`repoStatus` copy table (none/not-git/non-github/bad-path), (3) `:visited` CSS fix, (4) stale-flicker fix (setData(null) before fetchData). Commit `4d76002`.
-- `design/INDEX.md` — US-003 row updated to reflect Wave 13 amendments.
-- Requirements phase complete: BA committed US-005 at `4e69429`, Architect designed `repoStatus` enum (exact diffs in conversation). Awaiting PO synthesis → Wave 13b implementation dispatch.
+- `.github/workflows/codeql.yml` removed — GHAS not available on personal-account private tier. Every run was failing with "Code scanning is not enabled for this repository" — pure noise. `ops/README.md` updated with deferred rationale + re-enablement conditions. Commit `(SHA-pending)`.
+- `design/US-003-workspace-scoped-issues.md` — Wave 13 Amendments section added (`4d76002`).
+- Requirements phase complete: BA committed US-005 at `4e69429`, Architect designed `repoStatus` enum. Awaiting PO synthesis → Wave 13b implementation dispatch.
 
 ---
 
 **Hotfix: CI failures (`runs/26710522894` and prior).** Two issues in the freshly-shipped CI:
 1. `pnpm/action-setup@v4` was given `version: 11` in `.github/workflows/ci.yml` while `package.json` declares `packageManager: pnpm@11.2.2`. Action errored `ERR_PNPM_BAD_PM_VERSION` on every run. Fix: dropped the `version:` field; package.json's `packageManager` is the single source of truth.
 2. Type-check would have failed too — BE Dev's earlier `3c7c71d` exported `deriveGithubRepo` from a Next route file (`team-status/route.ts`), violating Next's route-export contract (".next/types/..." complains `'deriveGithubRepo' is incompatible with index signature. Type ... is not assignable to type 'never'`). Extracted to `src/lib/derive-github-repo.ts`; updated imports in route.ts + the unit test. `pnpm type-check` clean, 24/24 tests still green.
-3. CodeQL failures (`runs/26710522880` and prior) are a one-time **GitHub repo setting** — Settings → Code security and analysis → Code scanning → Set up. No code change. Need user to flip it.
+3. CodeQL failures resolved by removing the workflow (see above).
 
 **Hotfix: dashboard "Loading…" forever after server restart.** Server restarts reset the in-memory `activeThreadId` to null. `/api/active-thread` returned null → dashboard never started polling `/api/team-status` → all panels stuck on "Loading…". Fixed `/api/active-thread` to fall back to the most-recent thread in the `messages` table when the in-memory value is unset (new `getMostRecentThreadId()` helper in `src/lib/db.ts`). Live verified — endpoint now returns `mcp_mpsoeous_bih2` on this machine. Committed as bootstrap exception (protocol overhead on a 10-line backend fix isn't worth the gate ceremony for a UX trust-eroder).
 
