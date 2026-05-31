@@ -2,6 +2,46 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Foundation complete (Wave 9b/c/d). Phased workflow protocol is live in the MCP graph; per-role isolation via worktrees provisioned; requirements scaffold seeded; all 4 implementer/verifier peers ran a skill self-audit and filed concrete gap proposals. Origin/main in sync. Active thread: `mcp_mpsoeous_bih2`.**
+
+**Shipped in this foundation push (all on origin/main):**
+
+| Commit | Role | What |
+|---|---|---|
+| `2a81587` | Architect | `src/lib/protocols.ts` (6 constants) + `architecture/decisions/ADR-002-multi-phase-workflow.md` + `architecture/INDEX.md` + roles.ts prompt updates (phased-workflow discipline + DevSecOps-only deploy) |
+| `5802292` | DevSecOps | Per-role `pnpm dev:test:ui` (3110) / `dev:test:be` (3120) / `dev:test:qa` (3100) / `dev:test:ux` (3130) scripts |
+| `3d2a933` | DevSecOps | `scripts/branch-start.mjs` (worktree-based) + `scripts/branch-cleanup.mjs` + `pnpm branch:start <role> <slug>` / `branch:cleanup` |
+| `f31ae5f` + `06ed4c1` | BA | `<workspace>/requirements/` scaffold (INDEX, scope, glossary, open-questions, user-stories template + US-001 multi-phase-workflow-foundation) |
+| `288c6c8` | UI Dev | Skill self-audit; filed #37 |
+| `82eb900` | BE Dev | Skill self-audit; filed #38 |
+| (HANDOFF only) | QA | Skill self-audit; filed #39 |
+| `ead641e` | UX Designer | Shipped #34 (responsive design section) + #35 (motion subsection); filed #40 |
+
+**4 new skill-proposal issues filed (queued for PO triage in next iteration):**
+- #37 UI Dev — pre-HANDOFF unit testing (Vitest + testing-library for React)
+- #38 BE Dev — pre-HANDOFF unit testing (Vitest for API routes + better-sqlite3 mocks)
+- #39 QA — gate verification workflow + structured PASS/FAIL evidence format
+- #40 UX Designer — gate verdict format (PASS / REVISE output template)
+
+Common theme across #37–#40: the protocols are in place; what's missing is the OPERATIONAL templates (test patterns + evidence formats) that make each gate consistent and machine-readable. Natural next iteration.
+
+**Open user-questions answered this wave:**
+- "Feature branches?" → yes, confirmed.
+- "Same filesystem dir for testing?" → resolved via worktrees on top of branches. Implementer creates `pnpm branch:start <role> <slug>` → worktree at `../apex-team-<role>-<slug>/` → `pnpm dev:test:<role>` runs that worktree's source on its own port + DB.
+
+**How a real wave runs now (operational summary):**
+1. User asks PO for a change.
+2. PO dispatches Architect + UX Designer + BA in parallel — BA writes the user story under `requirements/user-stories/`.
+3. PO dispatches UI Dev / BE Dev — each runs `pnpm branch:start <role> <slug>`, works in worktree, writes unit tests, runs `pnpm test:run`.
+4. On their own PASS, implementer HANDOFFs to UX Designer (if UI) and then QA.
+5. UX Designer reviews against design spec → PASS or REVISE.
+6. QA spins up `pnpm dev:test:qa` from the implementer's branch → PASS or FAIL with evidence.
+7. On both PASS, DevSecOps merges feature branch into main + pushes. The user's `pnpm dev` on :3000 picks up the change.
+
+**Skill-proposal backlog (PO surfaces at next session start per their prompt):** #5, #6, #7, #10, #11, #12, #13, #14, #15, #16, #30, #36, #37, #38, #39, #40.
+
+---
+
 **Wave 9d UX Designer — Wave 8c retry + skill self-audit complete.**
 
 - `src/lib/skills/ux-designer.ts` — added `### Responsive design` section (closes #34) + `#### Motion` subsection under `### Interaction states` (closes #35). Commit `ead641e`.
