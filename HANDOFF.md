@@ -9,7 +9,7 @@
 - `src/app/api/team-status/route.ts` — `_noIssues` + `fetchIssues` (×2 return paths) + GET handler updated; `repoStatus` propagates through
 - `tests/api/team-status-repo-derivation.test.ts` — 7 existing cases updated to `{ repo, repoStatus }` shape + 2 new cases (`not-git` + `bad-path` via stderr discrimination) = 9 total
 - `pnpm type-check` clean · `pnpm test:run` 26/26 green (6 files)
-- Commit SHA: (SHA-pending)
+- Commit SHA: `35533b0`
 
 **Next:** UI Dev builds their feature branch consuming `repoStatus` for per-case copy. Both branches → QA → DevSecOps.
 
