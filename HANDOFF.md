@@ -2,7 +2,17 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 7b BE Dev complete (`4ca6b43`). `src/lib/mcp-config.ts` — playwright-mcp added (QA-only). `pnpm type-check` clean. Pushed to origin/main.
+**State.** Wave 7b UI Dev complete (SHA-pending). `pnpm type-check` clean. Pushed to origin/main.
+
+**Wave 7b UI Dev shipped:**
+- `src/app/dashboard/page.tsx` — Expandable detail rows (▸/▾ chevron, Enter/Space, aria-expanded) on NOW/QUEUED/DONE/BLOCKED panels; (ⓘ) info tooltips on all 9 panel headers (click-toggle, hover, Escape/click-outside to close); CONTEXT panel per-role model badge from localStorage (`apex-model-<role>`, fallback: `claude-sonnet-4-6`).
+- `src/lib/skills/business-analyst.ts` — Fixed pre-existing syntax error (unescaped backticks in template literal introduced by BA wave 7c). Bundled since type-check was broken.
+
+**Wave 7b awaiting:** Architect PASS. Wave 7b BE Dev (`4ca6b43`) + QA (`8187298`) already on origin/main.
+
+**Wave 7a shipped:**
+- `src/app/api/po-dispatch/route.ts` — `POST /api/po-dispatch` (BE Dev, `d598c3e`)
+- `src/app/dashboard/page.tsx` — Issues panel dispatch affordances (UI Dev, `9ca54dc`)
 
 **Wave 7a shipped:**
 - `src/app/api/po-dispatch/route.ts` — NEW: `POST /api/po-dispatch`. Body: `{ threadId, issueNumbers: number[], workspace? }`. Fetches each issue via `gh issue view --json`, constructs a PO message, calls `runTurnWithDispatches` targeting `product-owner`, returns `{ ok, dispatched, issueCount }`. Long-running (30–60s); no timeout. Bus events stream live. (BE Dev, `d598c3e`)

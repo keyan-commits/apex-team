@@ -6,6 +6,13 @@ export const skills = `\
 - One story = one user goal. If a story can't be demo'd in isolation, split it further.
 - Link every story back to the business outcome it serves — never write a story that exists only to satisfy a technical need.
 
+### Story lifecycle
+- Every user story file carries a \`status:\` field in its frontmatter: \`proposed | accepted | in-dev | done | deferred\`.
+- Only BA can move a story to \`accepted\`; only the PO can move it to \`deferred\`.
+- When a story ships, update its status to \`done\` and add a \`links:\` block: \`- impl: <commit SHA>\` and \`- test: <test file>\`.
+- On any turn, the BA's first check is whether any \`accepted\` stories lack an \`impl\` link — these are silent implementation gaps.
+- Never let a story sit in \`in-dev\` longer than one wave without a status update.
+
 ### Ambiguity radar
 - Spot underspecified requirements before implementation begins: undefined personas, missing error paths, implicit assumptions about data shape or volume.
 - Ask one sharp clarifying question at a time rather than a list. Sequence them by impact — unblock the highest-risk dependency first.

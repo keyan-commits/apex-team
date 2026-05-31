@@ -9,6 +9,23 @@ const ROLE_ACCENT: Record<string, string> = {
   "ui-developer": "ui", "backend-developer": "be", qa: "qa", devsecops: "ops",
 };
 
+const ROLES = [
+  "product-owner","business-analyst","architect",
+  "ui-developer","backend-developer","qa","devsecops",
+] as const;
+
+const PANEL_INFO: Record<string, string> = {
+  now: "Roles currently working. Each row shows the task they were given and the state (thinking / streaming / dispatching).",
+  queued: "Tasks that have been dispatched but not yet started. Drag-and-drop to set your own priority order — stored locally.",
+  done: "Recently completed turns across all roles. Click a row to see the full task summary.",
+  blocked: "Roles whose most recent turn ended in error. Click to see the error.",
+  wave: "Excerpt from the Product Owner's most recent plan, showing what the team is collectively working on.",
+  issues: "Open GitHub issues by label. Select rows and click \"→ PO\" to ask the Product Owner to schedule them.",
+  scout: "Weekly self-improvement scan that files skill-proposal issues. Currently manual — Product Owner proposes a scout wave when 7+ days have passed.",
+  context: "Each role's working memory: HANDOFF doc size + message-history depth. \"Needs cleanup\" badge appears when oversized; Product Owner compacts on next turn.",
+  spend: "Token cost per role, based on reference public API pricing. Useful as a relative efficiency signal — you're on a Claude subscription, not pay-per-token.",
+};
+
 function fmtTime(ms: number | null | undefined): string {
   if (!ms) return "never";
   const d = new Date(ms);
@@ -48,18 +65,17 @@ export default function DashboardPage() {
   const [selectedIssues, setSelectedIssues] = useState<Set<number>>(new Set());
   const [dispatchState, setDispatchState] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [dispatchError, setDispatchError] = useState<string | null>(null);
+  const [expandedRow, setExpandedRow] = useState<Record<string, string | number>>({});
+  const [openTooltip, setOpenTooltip] = useState<string | null>(null);
+  const [roleModels, setRoleModels] = useState<Record<string, string>>({});
 
-  // Fetch active thread on mount.
   useEffect(() => {
     fetch("/api/active-thread", { cache: "no-store" })
       .then((r) => r.json())
-      .then((d: { threadId: string | null }) => {
-        if (d.threadId) setThreadId(d.threadId);
-      })
+      .then((d: { threadId: string | null }) => { if (d.threadId) setThreadId(d.threadId); })
       .catch(() => {});
   }, []);
 
-  // Load saved queue order when threadId is known.
   useEffect(() => {
     if (!threadId) return;
     try {
@@ -68,7 +84,28 @@ export default function DashboardPage() {
     } catch {}
   }, [threadId]);
 
-  // Visibility-aware polling every 10s.
+  useEffect(() => {
+    const m: Record<string, string> = {};
+    for (const r of ROLES) {
+      m[r] = localStorage.getItem(`apex-model-${r}`) ?? "claude-sonnet-4-6";
+    }
+    setRoleModels(m);
+  }, []);
+
+  useEffect(() => {
+    if (!openTooltip) return;
+    const onDown = (e: MouseEvent) => {
+      if (!(e.target as Element).closest(".panel-hd-wrap")) setOpenTooltip(null);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpenTooltip(null); };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [openTooltip]);
+
   useEffect(() => {
     if (!threadId) return;
     const fetchData = () => {
@@ -89,7 +126,6 @@ export default function DashboardPage() {
     return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
   }, [threadId]);
 
-  // QUEUED panel: apply saved ordering to incoming data.
   const sortedQueued = useMemo<TeamStatus["queued"]>(() => {
     if (!data?.queued) return [];
     if (!savedOrder.length) return data.queued;
@@ -118,6 +154,17 @@ export default function DashboardPage() {
     });
   };
 
+  const toggleRow = (panel: string, key: string | number) =>
+    setExpandedRow(prev => {
+      const next = { ...prev };
+      if (next[panel] === key) delete next[panel]; else next[panel] = key;
+      return next;
+    });
+
+  const rowKd = (panel: string, key: string | number) => (ev: React.KeyboardEvent) => {
+    if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); toggleRow(panel, key); }
+  };
+
   const dispatchToPo = async (issueNumbers: number[]) => {
     if (!threadId) return;
     setDispatchState("sending");
@@ -144,9 +191,25 @@ export default function DashboardPage() {
   const empty = (msg: string) => <p className="empty-msg">{msg}</p>;
   const notReady = empty("Endpoint building… (Wave 6b BE Dev)");
 
+  const panelHd = (title: string, key: string) => (
+    <div className="panel-hd-wrap">
+      <h2 className="panel-h">
+        {title}
+        <button
+          className="info-btn"
+          onClick={(e) => { e.stopPropagation(); setOpenTooltip(v => v === key ? null : key); }}
+          aria-label={`About ${title}`}
+          aria-expanded={openTooltip === key}
+        >ⓘ</button>
+      </h2>
+      {openTooltip === key && (
+        <div className="info-popover" role="tooltip">{PANEL_INFO[key] ?? ""}</div>
+      )}
+    </div>
+  );
+
   return (
     <div className="dash">
-      {/* Top bar */}
       <header className="dash-bar">
         <span className="logo">⌬</span>
         <span className="brand">apex-team</span>
@@ -161,20 +224,35 @@ export default function DashboardPage() {
         )}
       </header>
 
-      {/* Panels grid */}
       <div className="grid">
 
         {/* NOW */}
         <section className="panel span2">
-          <h2 className="panel-h">Now — In-Flight</h2>
+          {panelHd("Now — In-Flight", "now")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : data.now.length === 0 ? empty("No active turns.") : (
             <div className="row-list">
               {data.now.map((e) => (
-                <div key={e.role} className="row">
-                  {roleBadge(e.role)}
-                  <span className="state-pill">{e.state}</span>
-                  <span className="task-text">{e.taskSummary}</span>
-                  <span className="dim">{fmtTime(e.startedAt)}</span>
+                <div key={e.role} className="row-item">
+                  <div
+                    className="row expandable-row"
+                    onClick={() => toggleRow("now", e.role)}
+                    onKeyDown={rowKd("now", e.role)}
+                    tabIndex={0}
+                    role="button"
+                    aria-expanded={expandedRow["now"] === e.role}
+                  >
+                    <span className="row-chevron" aria-hidden="true">{expandedRow["now"] === e.role ? "▾" : "▸"}</span>
+                    {roleBadge(e.role)}
+                    <span className="state-pill">{e.state}</span>
+                    <span className="task-text">{e.taskSummary}</span>
+                    <span className="dim">{fmtTime(e.startedAt)}</span>
+                  </div>
+                  {expandedRow["now"] === e.role && (
+                    <div className="row-detail">
+                      <p className="row-detail-text">{e.taskSummary}</p>
+                      <div className="row-detail-meta">state: <strong>{e.state}</strong> · started: {fmtTime(e.startedAt)}</div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -183,23 +261,36 @@ export default function DashboardPage() {
 
         {/* QUEUED */}
         <section className="panel span2">
-          <h2 className="panel-h">Queued — Drag to prioritize</h2>
+          {panelHd("Queued — Drag to prioritize", "queued")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : sortedQueued.length === 0 ? empty("No queued tasks.") : (
             <div className="row-list">
               {sortedQueued.map((item, i) => (
-                <div
-                  key={item.id}
-                  draggable
-                  onDragStart={() => setDragFrom(i)}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={() => handleDrop(i)}
-                  onDragEnd={() => setDragFrom(null)}
-                  className={`row draggable${dragFrom === i ? " row-dragging" : ""}`}
-                >
-                  <span className="drag-handle" aria-hidden="true">⠿</span>
-                  {roleBadge(item.toRole)}
-                  <span className="task-text">{item.taskSummary}</span>
-                  <span className="dim">{fmtTime(item.createdAt)}</span>
+                <div key={item.id} className="row-item">
+                  <div
+                    draggable
+                    onDragStart={() => setDragFrom(i)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => handleDrop(i)}
+                    onDragEnd={() => setDragFrom(null)}
+                    onClick={() => toggleRow("queued", item.id)}
+                    onKeyDown={rowKd("queued", item.id)}
+                    tabIndex={0}
+                    role="button"
+                    aria-expanded={expandedRow["queued"] === item.id}
+                    className={`row draggable${dragFrom === i ? " row-dragging" : ""}`}
+                  >
+                    <span className="drag-handle" aria-hidden="true">⠿</span>
+                    <span className="row-chevron" aria-hidden="true">{expandedRow["queued"] === item.id ? "▾" : "▸"}</span>
+                    {roleBadge(item.toRole)}
+                    <span className="task-text">{item.taskSummary}</span>
+                    <span className="dim">{fmtTime(item.createdAt)}</span>
+                  </div>
+                  {expandedRow["queued"] === item.id && (
+                    <div className="row-detail">
+                      <p className="row-detail-text">{item.taskSummary}</p>
+                      <div className="row-detail-meta">from: {roleBadge(item.fromRole)} · queued: {fmtTime(item.createdAt)}</div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -208,14 +299,31 @@ export default function DashboardPage() {
 
         {/* DONE */}
         <section className="panel">
-          <h2 className="panel-h">Done — last 24h</h2>
+          {panelHd("Done — last 24h", "done")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : data.done.length === 0 ? empty("Nothing completed yet.") : (
             <div className="row-list">
               {data.done.map((e, i) => (
-                <div key={i} className="row">
-                  {roleBadge(e.role)}
-                  <span className="task-text">{e.taskSummary}</span>
-                  <span className="dim">{fmtTime(e.completedAt)}</span>
+                <div key={i} className="row-item">
+                  <div
+                    className="row expandable-row"
+                    onClick={() => toggleRow("done", i)}
+                    onKeyDown={rowKd("done", i)}
+                    tabIndex={0}
+                    role="button"
+                    aria-expanded={expandedRow["done"] === i}
+                  >
+                    <span className="row-chevron" aria-hidden="true">{expandedRow["done"] === i ? "▾" : "▸"}</span>
+                    {roleBadge(e.role)}
+                    <span className="task-text">{e.taskSummary}</span>
+                    <span className="dim">{fmtTime(e.completedAt)}</span>
+                  </div>
+                  {expandedRow["done"] === i && (
+                    <div className="row-detail">
+                      <p className="row-detail-text">{e.taskSummary}</p>
+                      {e.commitSha && <div className="row-detail-meta">commit: <code>{e.commitSha}</code></div>}
+                      <div className="row-detail-meta">completed: {fmtTime(e.completedAt)}</div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -224,14 +332,30 @@ export default function DashboardPage() {
 
         {/* BLOCKED */}
         <section className="panel">
-          <h2 className="panel-h">Blocked</h2>
+          {panelHd("Blocked", "blocked")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : data.blocked.length === 0 ? empty("No errors.") : (
             <div className="row-list">
               {data.blocked.map((e) => (
-                <div key={e.role} className="row row-error">
-                  {roleBadge(e.role)}
-                  <span className="error-text">{e.errorMessage}</span>
-                  <span className="dim">{fmtTime(e.sinceAt)}</span>
+                <div key={e.role} className="row-item">
+                  <div
+                    className="row row-error expandable-row"
+                    onClick={() => toggleRow("blocked", e.role)}
+                    onKeyDown={rowKd("blocked", e.role)}
+                    tabIndex={0}
+                    role="button"
+                    aria-expanded={expandedRow["blocked"] === e.role}
+                  >
+                    <span className="row-chevron" aria-hidden="true">{expandedRow["blocked"] === e.role ? "▾" : "▸"}</span>
+                    {roleBadge(e.role)}
+                    <span className="error-text">{e.errorMessage}</span>
+                    <span className="dim">{fmtTime(e.sinceAt)}</span>
+                  </div>
+                  {expandedRow["blocked"] === e.role && (
+                    <div className="row-detail row-detail-error">
+                      <p className="row-detail-text">{e.errorMessage}</p>
+                      <div className="row-detail-meta">since: {fmtTime(e.sinceAt)}</div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -240,7 +364,7 @@ export default function DashboardPage() {
 
         {/* ACTIVE WAVE */}
         <section className="panel span2">
-          <h2 className="panel-h">Active Wave</h2>
+          {panelHd("Active Wave", "wave")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : !data.activeWave ? empty("No wave context found in thread.") : (
             <pre className="wave-text">{data.activeWave.excerpt}</pre>
           )}
@@ -248,10 +372,9 @@ export default function DashboardPage() {
 
         {/* ISSUES */}
         <section className="panel issue-panel">
-          <h2 className="panel-h">Issues</h2>
+          {panelHd("Issues", "issues")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : (
             <div className="issue-panel-inner">
-              {/* Label-count summary rows */}
               <div className="issue-grid">
                 <a className="issue-row" href="https://github.com/keyan-commits/apex-team/issues?q=label%3Aself-improvement+is%3Aopen" target="_blank" rel="noreferrer">
                   <span className="issue-count">{data.issues.selfImprovement}</span>
@@ -267,7 +390,6 @@ export default function DashboardPage() {
                 </a>
               </div>
 
-              {/* Individual recent issues */}
               {data.issues.recent.length > 0 && (
                 <div className="recent-issues">
                   <p className="recent-issues-hd">Recent open</p>
@@ -305,7 +427,6 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              {/* Dispatch status messages */}
               {dispatchState === "success" && (
                 <div className="dispatch-success">
                   Dispatched to PO. Switch to Team view to watch.{" "}
@@ -316,7 +437,6 @@ export default function DashboardPage() {
                 <div className="dispatch-error">{dispatchError}</div>
               )}
 
-              {/* Multi-select footer */}
               {selectedIssues.size > 0 && (
                 <div className="issue-footer">
                   <span className="sel-count">{selectedIssues.size} selected</span>
@@ -342,7 +462,7 @@ export default function DashboardPage() {
 
         {/* SCOUT */}
         <section className="panel">
-          <h2 className="panel-h">Daily Scout</h2>
+          {panelHd("Daily Scout", "scout")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : (
             <dl className="kv-list">
               <dt>Last run</dt><dd>{fmtTime(data.scout.lastRunAt)}</dd>
@@ -354,7 +474,7 @@ export default function DashboardPage() {
 
         {/* CONTEXT */}
         <section className="panel span2">
-          <h2 className="panel-h">Context</h2>
+          {panelHd("Context", "context")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : data.context.length === 0 ? empty("No context data.") : (
             <div className="context-grid">
               {data.context.map((ctx) => (
@@ -365,6 +485,7 @@ export default function DashboardPage() {
                     <span>{fmtNum(ctx.handoffChars)} chars</span>
                     <span>{ctx.historyDepth} msgs</span>
                   </div>
+                  <div className="ctx-model">{roleModels[ctx.role] ?? "claude-sonnet-4-6"}</div>
                 </div>
               ))}
             </div>
@@ -373,7 +494,7 @@ export default function DashboardPage() {
 
         {/* SPEND */}
         <section className="panel span2">
-          <h2 className="panel-h">Spend</h2>
+          {panelHd("Spend", "spend")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : (
             <>
               <div className="spend-totals">
@@ -423,8 +544,7 @@ export default function DashboardPage() {
         .thread-id code { font-family: ui-monospace, monospace; }
 
         .grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 12px; padding: 12px;
         }
         .panel {
@@ -432,14 +552,55 @@ export default function DashboardPage() {
           padding: 12px;
         }
         .span2 { grid-column: span 2; }
-        .panel-h { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); margin: 0 0 10px; }
+
+        .panel-hd-wrap { position: relative; margin-bottom: 10px; }
+        .panel-h {
+          font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+          color: var(--text-dim); margin: 0; display: flex; align-items: center; gap: 6px;
+        }
+        .info-btn {
+          font-size: 11px; color: var(--text-dim); background: none; border: none;
+          cursor: pointer; padding: 0 2px; line-height: 1; flex-shrink: 0; border-radius: 2px;
+        }
+        .info-btn:hover { color: var(--text); }
+        .info-btn:focus-visible { outline: 1px solid var(--accent-po); color: var(--text); }
+        .info-popover {
+          position: absolute; top: 100%; left: 0; z-index: 100; margin-top: 4px;
+          max-width: 320px; padding: 10px 12px;
+          background: var(--surface-2); border: 1px solid var(--border);
+          border-left: 3px solid var(--accent-po);
+          border-radius: 0 6px 6px 6px; font-size: 11px; line-height: 1.55;
+          color: var(--text); font-weight: 400; letter-spacing: 0; text-transform: none;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
         .empty-msg { font-size: 12px; color: var(--text-dim); margin: 4px 0; }
 
         .row-list { display: flex; flex-direction: column; gap: 6px; }
+        .row-item { display: flex; flex-direction: column; }
         .row {
           display: flex; align-items: center; gap: 8px; padding: 5px 8px;
           background: var(--surface-2); border-radius: 6px; font-size: 12px;
         }
+        .expandable-row { cursor: pointer; }
+        .expandable-row:hover { background: color-mix(in srgb, var(--accent-po) 6%, var(--surface-2)); }
+        .expandable-row:focus-visible { outline: 1px solid var(--accent-po); border-radius: 6px; outline-offset: 1px; }
+        .row-chevron { font-size: 10px; color: var(--text-dim); flex-shrink: 0; width: 12px; }
+        .row-detail {
+          padding: 6px 10px 6px 22px;
+          border-left: 2px solid var(--border);
+          margin: 1px 0 0 14px;
+          background: color-mix(in srgb, var(--surface) 60%, var(--surface-2));
+          border-radius: 0 0 4px 4px;
+        }
+        .row-detail-text {
+          font-size: 11px; color: var(--text); white-space: pre-wrap; word-break: break-word; margin: 0 0 4px;
+        }
+        .row-detail-meta {
+          font-size: 10px; color: var(--text-dim); display: flex; align-items: center;
+          gap: 6px; flex-wrap: wrap; margin: 2px 0 0;
+        }
+        .row-detail-error .row-detail-text { color: var(--accent-qa); }
         .row-error { background: color-mix(in srgb, var(--accent-qa) 8%, var(--surface-2)); }
         .row.draggable { cursor: grab; }
         .row.row-dragging { opacity: 0.4; }
@@ -486,6 +647,7 @@ export default function DashboardPage() {
           width: fit-content;
         }
         .ctx-stats { display: flex; gap: 8px; font-size: 10px; color: var(--text-dim); font-family: ui-monospace, monospace; }
+        .ctx-model { font-size: 9px; color: var(--text-dim); font-family: ui-monospace, monospace; opacity: 0.65; }
 
         .spend-totals { display: flex; gap: 20px; margin-bottom: 12px; }
         .spend-stat { display: flex; flex-direction: column; align-items: center; }
@@ -545,8 +707,7 @@ export default function DashboardPage() {
         .footer-dispatch {
           display: flex; align-items: center; gap: 5px;
           font-size: 11px; font-weight: 700; padding: 3px 12px; border-radius: 4px;
-          border: 1px solid var(--accent-po);
-          background: var(--accent-po); color: #fff; cursor: pointer;
+          border: 1px solid var(--accent-po); background: var(--accent-po); color: #fff; cursor: pointer;
         }
         .footer-dispatch:hover:not(:disabled) { opacity: 0.88; }
         .footer-dispatch:disabled { opacity: 0.5; cursor: not-allowed; }
