@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 9b DevSecOps — per-role isolated dev instances + branch-start helper. Commit (SHA-pending).**
+**Wave 9b DevSecOps — per-role isolated dev instances + branch-start helper. Commit `5802292`.**
 
 - `package.json` — added `dev:test:qa` (3100, test-qa.db), `dev:test:ui` (3110, test-ui.db), `dev:test:be` (3120, test-be.db), `dev:test:ux` (3130, test-ux.db); `branch:start` script. Existing `dev:test` unchanged (backward compat).
 - `scripts/branch-start.mjs` — validates slug, checks clean working tree, verifies on main, refuses if branch exists, creates `feature/<slug>` from latest main, prints next-steps per role.
