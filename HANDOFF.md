@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 4a — live activity indicators + active-thread polling committed (SHA-pending). `pnpm type-check` clean.
+**State.** Wave 4a — live activity indicators + active-thread polling committed (`e6c93d1`). `pnpm type-check` clean.
 
 **Wave 3 QA shipped (`3df1112`):**
 - `vitest.config.ts` — root vitest config with `@/*` path alias.
