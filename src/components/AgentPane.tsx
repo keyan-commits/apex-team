@@ -40,6 +40,19 @@ const PROVIDER_LABEL: Record<Provider, string> = {
   groq: "Groq",
 };
 
+const KNOWN_MODELS = [
+  { label: "Claude Opus 4.7",    value: "claude-opus-4-7" },
+  { label: "Claude Sonnet 4.6",  value: "claude-sonnet-4-6" },
+  { label: "Claude Haiku 4.5",   value: "claude-haiku-4-5-20251001" },
+  { label: "Gemini 2.5 Flash",   value: "gemini-2.5-flash" },
+  { label: "Llama 3.3 70B",      value: "llama-3.3-70b-versatile" },
+  { label: "Other…",        value: "__other__" },
+] as const;
+
+const KNOWN_MODEL_VALUES = new Set<string>(
+  KNOWN_MODELS.filter((m) => m.value !== "__other__").map((m) => m.value),
+);
+
 export function AgentPane({
   role,
   title,
@@ -58,7 +71,24 @@ export function AgentPane({
   onEditHandoffDoc,
 }: Props) {
   const [input, setInput] = useState("");
+  const [isOther, setIsOther] = useState(false);
+  const [otherText, setOtherText] = useState("");
   const scrollerRef = useRef<HTMLDivElement | null>(null);
+  // Refs keep the mount effect stable without stale closures.
+  const configRef = useRef(config);
+  configRef.current = config;
+  const onConfigChangeRef = useRef(onConfigChange);
+  onConfigChangeRef.current = onConfigChange;
+
+  useEffect(() => {
+    const stored = localStorage.getItem(`apex-model-${role}`);
+    if (!stored) return;
+    if (!KNOWN_MODEL_VALUES.has(stored)) {
+      setIsOther(true);
+      setOtherText(stored);
+    }
+    onConfigChangeRef.current({ ...configRef.current, model: stored });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Filter the shared transcript for this pane's perspective.
   // PO sees everything; peers see their own slice.
@@ -117,13 +147,41 @@ export function AgentPane({
               </option>
             ))}
           </select>
-          <input
-            className="model-input"
-            value={config.model}
-            onChange={(e) => onConfigChange({ ...config, model: e.target.value })}
+          <select
+            value={isOther ? "__other__" : config.model}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === "__other__") {
+                setIsOther(true);
+                setOtherText("");
+                onConfigChange({ ...config, model: "" });
+              } else {
+                setIsOther(false);
+                onConfigChange({ ...config, model: val });
+                try { localStorage.setItem(`apex-model-${role}`, val); } catch {}
+              }
+            }}
             disabled={busy}
-            spellCheck={false}
-          />
+          >
+            {KNOWN_MODELS.map(({ label, value }) => (
+              <option key={value} value={value}>{label}</option>
+            ))}
+          </select>
+          {isOther && (
+            <input
+              className="model-input"
+              value={otherText}
+              placeholder="model id…"
+              onChange={(e) => {
+                const val = e.target.value;
+                setOtherText(val);
+                onConfigChange({ ...config, model: val });
+                try { if (val) localStorage.setItem(`apex-model-${role}`, val); } catch {}
+              }}
+              disabled={busy}
+              spellCheck={false}
+            />
+          )}
         </div>
       </header>
 
