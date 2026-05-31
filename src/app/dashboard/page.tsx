@@ -80,6 +80,7 @@ export default function DashboardPage() {
   const [roleModels, setRoleModels] = useState<Record<string, string>>({});
   const [workspace, setWorkspace] = useState<string>("");
   const [sendingRows, setSendingRows] = useState<Set<number>>(new Set());
+  const [fetchError, setFetchError] = useState(false);
 
   useEffect(() => {
     fetch("/api/active-thread", { cache: "no-store" })
@@ -129,8 +130,8 @@ export default function DashboardPage() {
           setEndpointReady(true);
           return r.json() as Promise<TeamStatus>;
         })
-        .then((d) => { if (d) setData(d); })
-        .catch(() => {});
+        .then((d) => { if (d) { setData(d); setFetchError(false); } })
+        .catch(() => setFetchError(true));
     };
     fetchData();
     const id = setInterval(fetchData, 10_000);
@@ -260,6 +261,12 @@ export default function DashboardPage() {
           try { localStorage.setItem(WORKSPACE_KEY, ws); } catch {}
         }}
       />
+
+      {fetchError && (
+        <div className="poll-error">
+          ⚠ Failed to reach /api/team-status — retrying in 10s
+        </div>
+      )}
 
       <div className="grid">
 
@@ -765,6 +772,16 @@ export default function DashboardPage() {
           font-size: 12px; padding: 8px 10px; border-radius: 6px;
           background: color-mix(in srgb, var(--accent-qa) 10%, var(--surface-2));
           color: var(--accent-qa); border: 1px solid color-mix(in srgb, var(--accent-qa) 30%, var(--border));
+        }
+
+        .poll-error {
+          background: color-mix(in srgb, var(--color-error, #e05252) 12%, transparent);
+          border-left: 3px solid var(--color-error, #e05252);
+          color: var(--text);
+          padding: 8px 14px;
+          font-size: 13px;
+          border-radius: 4px;
+          margin-bottom: 12px;
         }
 
         @media (max-width: 720px) {

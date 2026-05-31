@@ -2,6 +2,16 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**UI Dev — Wave 8c complete.** Poll error banner for issue #22. Commit `(SHA-pending)`.
+
+**Wave 8c UI Dev changes:**
+- `src/app/dashboard/page.tsx` — added `fetchError` state; `.catch(() => {})` → `.catch(() => setFetchError(true))`; `.then(d => ...)` chains `setFetchError(false)` on success; `{fetchError && <div className="poll-error">…</div>}` banner below OrchestratorBar; `.poll-error` CSS rule added. Closes #22.
+- `pnpm type-check` clean.
+
+**Awaiting:** Architect PASS for Wave 8c.
+
+---
+
 **BE Dev — Wave 8b complete.** `src/app/api/workflow/route.ts` + types shipped. Commit `36bb6ec`.
 
 **Wave 8b shipped:**
