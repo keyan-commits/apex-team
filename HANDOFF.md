@@ -2,13 +2,15 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 11a BA — US-003 workspace-scoped-issues written (proposed). Pending: OQ-003 (UX Designer) + OQ-004 (Architect) + UX spec in `design/`.**
+**Wave 12a BA — US-004 MCP transport reliability written (proposed). Fixes #31. Commit `(SHA-pending)` on main.**
 
-- `requirements/user-stories/US-003-workspace-scoped-issues.md` — 5 ACs; owners UI Dev + BE Dev; OQ-003 (repo override) + OQ-004 (caching) open
-- `requirements/open-questions.md` — OQ-002 closed; OQ-003 + OQ-004 added
-- `requirements/INDEX.md` — US-003 row added; open-questions summary updated
+- `requirements/user-stories/US-004-mcp-transport-reliability.md` — 4 ACs; owner BE Dev; references Architect's Wave 12a diagnosis (requestTimeout=0 + keepAliveTimeout=65s)
+- `requirements/open-questions.md` — OQ-005 added (SSE heartbeat, non-blocking)
+- `requirements/INDEX.md` — US-004 row added
 
-**Awaiting:** Architect input (OQ-004 caching rec) + UX Designer input (OQ-003 + spec in `design/`) before PO can synthesize Wave 11b plan for user confirmation.
+**Ready for Wave 12b:** BE Dev applies the 3-line patch to `server.ts` in a feature branch → QA verifies via a long-running test turn → DevSecOps merges. Awaiting PO synthesis + user confirmation before dispatch.
+
+**US-003 still pending:** OQ-003 (UX Designer) + OQ-004 (Architect) + UX spec in `design/` before Wave 11b can be scoped.
 
 ---
 

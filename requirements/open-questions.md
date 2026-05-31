@@ -58,4 +58,17 @@ Open questions are blockers or ambiguities that require an answer before affecte
 
 ---
 
+## OQ-005 — Application-level SSE heartbeat in `StreamableHTTPServerTransport`
+
+**Status:** Open
+**Owner:** Architect
+**Raised by:** BA (Wave 12a, US-004)
+**Affects:** US-004 — belt-and-braces option; NOT blocking AC1–AC4
+
+**Question:** Should we implement an application-level SSE comment heartbeat (e.g. `: keep-alive\n\n` emitted every N seconds) in the MCP transport as additional insurance against intermediate proxy or client timeouts? The `StreamableHTTPServerTransport` currently has no heartbeat option. If the SDK adds support, or if we wrap it, is it worth implementing for this local single-user context?
+
+**Context:** Architect confirmed in Wave 12a that no proxy sits between Claude Code and apex-team in the local setup, so SSE heartbeats are not needed to fix #31. This question is for future-proofing only.
+
+---
+
 _Future questions append below this line._
