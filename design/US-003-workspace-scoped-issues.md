@@ -158,3 +158,128 @@ loading state while the new fetch completes.
 ---
 
 _UX Designer · 2026-05-31_
+
+---
+
+## Wave 13 Amendments — US-005 carry-forwards
+
+**Story:** `requirements/user-stories/US-005-wave-11c-carry-forwards.md`  
+**Implemented by:** UI Dev (AC1/AC3/AC4) + BE Dev (AC2)
+
+These amendments resolve the 2 warns + 2 nits from the Wave 11c gate review.
+
+---
+
+### Amendment 1 — Drop "Issues:" attribution prefix (AC1)
+
+**Was:** `Issues: <a class="issue-repo-link">keyan-commits/apex-team</a>`  
+**Now:** bare monospace link only — no prefix text.
+
+**Rationale:** the panel heading already reads "ISSUES" in the row above. Repeating the word "Issues:" creates redundant labelling at 11px that adds noise without context. The link itself, rendered in monospace at `var(--text-dim)`, reads naturally as a repo reference inline under the heading.
+
+**New HTML structure (State 1 — repo present):**
+
+```html
+<p class="issue-repo-attr">
+  <a class="issue-repo-link" href="https://github.com/{repo}/issues" target="_blank" rel="noopener noreferrer">
+    {repo}
+  </a>
+</p>
+```
+
+No label text before the `<a>`. The `<p>` container keeps the existing `11px / var(--text-dim)` styling and `font-family: monospace` on the `<a>`.
+
+**Updated ASCII layout:**
+
+```
+ISSUES
+──────────────────────────────────────
+keyan-commits/apex-team                 ← bare monospace link (11px, text-dim)
+[1]  self-improvement
+[0]  skill-proposal
+[2]  mcp-proposal
+
+RECENT OPEN
+☐ #42  Some issue title          [label]
+```
+
+**Null state:** when `repo === null`, no attribution line renders at all — only the per-status empty-state copy (Amendment 2 below).
+
+---
+
+### Amendment 2 — Per-`repoStatus` empty-state copy (AC2)
+
+The backend adds `repoStatus: "ok" | "none" | "not-git" | "non-github" | "bad-path"` to `TeamStatus["issues"]`. The dashboard forks empty-state copy on this value.
+
+**Copy table:**
+
+| `repoStatus` | Condition | Copy |
+|---|---|---|
+| `none` | Valid git repo, no `origin` remote configured | `No origin remote configured — issues unavailable.` |
+| `not-git` | Path exists but is not a git repository | `This workspace isn't a git repo — issues unavailable.` |
+| `non-github` | Has an origin remote but it isn't GitHub (GitLab, Bitbucket, self-hosted) | `Workspace remote isn't on GitHub — issues unavailable.` |
+| `bad-path` | Path is missing, unreadable, or workspace field is empty | `Workspace path not found — set a valid directory above.` |
+
+**Copy principles applied:**
+- Non-blaming: "no origin remote configured" states a fact; doesn't say "you forgot to configure it."
+- `bad-path` includes a recovery hint ("set a valid directory above") since the fix is visible on the same screen.
+- All copies are one sentence, ≤ 60 characters, using sentence case.
+- `non-github` is accurate for users on GitLab/Bitbucket — it doesn't incorrectly imply "no remote."
+
+**HTML pattern (all 4 states):**
+
+```html
+<p class="empty-msg">{copy from table above}</p>
+```
+
+Same `.empty-msg` class as used by all other panel empty states (12px, `var(--text-dim)`). No icon, no additional affordance — the text alone is sufficient at this scope.
+
+**Loading state:** `repoStatus` is absent from the `!data` case. Existing "Loading…" text unchanged.
+
+---
+
+### Amendment 3 — `.issue-repo-link:visited` style (AC3)
+
+After clicking the attribution link, browser UA default visited styling (typically purple) overrides the monospace `var(--text-dim)` color.
+
+**Fix: add one CSS rule to the styled-jsx block in `dashboard/page.tsx`:**
+
+```css
+.issue-repo-link:visited {
+  color: var(--text-dim);
+}
+```
+
+This locks the visited color to match the default/hover-out state. The hover rule (`color: var(--text)`) still takes precedence on `:hover:visited` via CSS specificity.
+
+No other interaction states change.
+
+---
+
+### Amendment 4 — No stale-attribution during workspace-change transition (AC4)
+
+**Was:** during workspace change, `data.issues.repo` holds the old value for ~100ms while the new fetch is in flight. The old repo name briefly flickers under the new workspace.
+
+**Fix:** null out `data` immediately when `workspace` changes (before the new fetch resolves).
+
+**Specified interaction:**
+
+1. User edits the workspace field (types a new path or pastes one).
+2. The effect re-fires because `workspace` is in the dependency array.
+3. **Before calling `fetchData()`:** set `data` to `null` (or the equivalent reset).
+4. Panel immediately transitions to the loading state (no repo, no counts — matches `!data` render path).
+5. `fetchData()` completes → `setData(result)` → panel renders the new repo.
+
+**UX:** blank/loading between old and new state — no stale label visible. On localhost this transition is < 100ms so the blank flash is imperceptible in practice, but the correctness is important: the old repo name should NEVER appear next to the new workspace.
+
+**Implementation note:** a minimal fix is a single `setData(null)` call at the top of the effect before `fetchData()`. If the existing effect structure makes this awkward, an alternative is to key the effect on `workspace` and reset data as part of the cleanup function.
+
+---
+
+### Self-audit — new skills or MCPs needed?
+
+No. All 4 amendments are pure CSS/JSX/TypeScript fixes in existing files. No new MCP tools, no new dependencies, no external services.
+
+---
+
+_UX Designer · Wave 13 amendments — 2026-05-31_

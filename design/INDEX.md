@@ -4,7 +4,7 @@ UX Designer owns this directory. Every spec file is listed here with its linked 
 
 | File | Issue | Status | Notes |
 |---|---|---|---|
-| [US-003-workspace-scoped-issues.md](US-003-workspace-scoped-issues.md) | US-003 | reviewed | Post-hoc spec (Wave 11a dispatch dropped). 2 warns filed: attribution prefix redundancy + empty-state copy conflation. |
+| [US-003-workspace-scoped-issues.md](US-003-workspace-scoped-issues.md) | US-003 / US-005 | reviewed + Wave 13 amendments | Post-hoc spec (Wave 11a dispatch dropped). Wave 13 amendments added: drop "Issues:" prefix, per-`repoStatus` copy (4 cases), `:visited` fix, no-flicker spec. |
 
 ---
 

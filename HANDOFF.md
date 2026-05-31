@@ -2,11 +2,11 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 13a BA — US-005 committed (SHA-pending) on main. Requirements phase complete.**
+**Wave 13a UX — design spec amendments committed. US-005 spec complete.**
 
-- `requirements/user-stories/US-005-wave-11c-carry-forwards.md` — 4 ACs: AC1 (drop "Issues:" prefix), AC2 (per-`repoStatus` empty-state copy), AC3 (`:visited` style fix), AC4 (no stale-attribution flicker). Owner: UI Dev (AC1/AC3/AC4) + BE Dev (AC2 — `repoStatus` enum). References US-003 + Wave 11c HANDOFF. Commit `4e69429`.
-- `requirements/INDEX.md` — US-005 row added.
-- Awaiting PO synthesis (Architect + UX Designer running in parallel this wave); Wave 13b implementation dispatch TBD.
+- `design/US-003-workspace-scoped-issues.md` — Wave 13 Amendments section added. 4 amendments fully resolved: (1) drop "Issues:" prefix → bare monospace link, (2) per-`repoStatus` copy table (none/not-git/non-github/bad-path), (3) `:visited` CSS fix, (4) stale-flicker fix (setData(null) before fetchData). Commit SHA: (SHA-pending).
+- `design/INDEX.md` — US-003 row updated to reflect Wave 13 amendments.
+- Requirements phase complete: BA committed US-005 at `4e69429`, Architect designed `repoStatus` enum (exact diffs in conversation). Awaiting PO synthesis → Wave 13b implementation dispatch.
 
 ---
 
