@@ -4,7 +4,7 @@
 
 **Wave 10b DevSecOps — US-002 implementation complete. Feature branch: `feature/10b-pipeline-ownership`. Worktree: `../apex-team-devsecops-10b-pipeline-ownership/`. Awaiting QA PASS before merge to main.**
 
-**Deliverables shipped on `feature/10b-pipeline-ownership` (SHA pending):**
+**Deliverables shipped on `feature/10b-pipeline-ownership` (`88fd8d1`):**
 - `.github/workflows/ci.yml` — type-check + test:run + lint (continue-on-error) on PR + push
 - `.github/workflows/codeql.yml` — JS/TS SAST, weekly + push to main
 - `.github/dependabot.yml` — npm weekly, minor+patch grouped
