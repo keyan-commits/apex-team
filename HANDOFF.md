@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 26 — Pre-wave hygiene check (closes #32). `branch-start.mjs`: dirty-tree check refactored into named `validateMainCleanliness()` with explicit remediation hints (git stash / restore / clean). `branch-cleanup.mjs`: same pattern (`validateWorktreeCleanliness()`), plus `devsecops` added to `VALID_ROLES` (was missing). `tests/ops/branch-hygiene.test.ts`: 5 new tests. 39/39 green. Feature branch: `feature/26-pre-wave-hygiene`.**
+
 **Wave 25 — UI fix: 3 UX bugs (closes #20, #25, #26). (1) `AgentStatePanel.tsx`: `.toggle:focus-visible` rule restores keyboard focus ring stripped by `all:unset`. (2) `dashboard/page.tsx` line 274: user-facing notReady copy replaces stale milestone reference. (3) `dashboard/page.tsx`: 4s active-thread poll + `userEditedThreadRef` guard — dashboard now tracks MCP-driven thread switches without overwriting manual edits. 34/34 green. Feature branch: `feature/25-ux-bugs`.**
 
 **Wave 24 — CI: add `pnpm audit --audit-level moderate` step after install in `.github/workflows/ci.yml` (closes #41). `continue-on-error: true` so transient registry failures don't block PRs. `ops/README.md` pipeline table updated to reflect the new step. 34/34 green.**
