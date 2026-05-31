@@ -6,7 +6,7 @@ vi.mock("node:child_process", () => ({
 }));
 
 import { execFileSync } from "node:child_process";
-import { deriveGithubRepo } from "../../src/app/api/team-status/route";
+import { deriveGithubRepo } from "../../src/lib/derive-github-repo";
 
 const mockExec = execFileSync as ReturnType<typeof vi.fn>;
 

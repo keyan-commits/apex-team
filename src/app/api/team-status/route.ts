@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { execSync, execFileSync } from "node:child_process";
+import { execSync } from "node:child_process";
 import {
   listMessages,
   listAllAgentStates,
@@ -7,32 +7,11 @@ import {
   getScoutMeta,
 } from "@/lib/db";
 import { ALL_ROLES } from "@/lib/roles";
+import { deriveGithubRepo } from "@/lib/derive-github-repo";
 import type { RoleId, ChatMessage, TeamStatus } from "@/types";
 
 // Per-repo 60s in-memory issue cache keyed by "owner/repo"
 const _issueCache = new Map<string, { data: TeamStatus["issues"]; at: number }>();
-
-/** Derive "owner/repo" from the git remote of a workspace path. Returns null for
- *  non-GitHub remotes, missing remotes, non-git directories, or empty input. */
-export function deriveGithubRepo(workspace: string | null): string | null {
-  if (!workspace?.trim()) return null;
-  try {
-    const url = execFileSync("git", ["-C", workspace, "remote", "get-url", "origin"], {
-      timeout: 3000,
-      stdio: ["ignore", "pipe", "ignore"],
-      encoding: "utf8",
-    }).trim();
-    // SSH: git@github.com:owner/repo[.git]
-    const ssh = url.match(/^git@github\.com:([^/]+\/[^.]+?)(?:\.git)?$/);
-    if (ssh) return ssh[1];
-    // HTTPS: https://github.com/owner/repo[.git][?#...]
-    const https = url.match(/^https?:\/\/github\.com\/([^/]+\/[^.]+?)(?:\.git)?(?:[?#].*)?$/);
-    if (https) return https[1];
-    return null; // non-GitHub remote (GitLab, self-hosted, etc.)
-  } catch {
-    return null; // no remote, not a git repo, path missing
-  }
-}
 
 function fetchIssues(repo: string): TeamStatus["issues"] {
   const cached = _issueCache.get(repo);

@@ -11,9 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4  # v4
+      # Don't pass `version:` — it conflicts with `packageManager: pnpm@x.y.z`
+      # in package.json. The action reads that field as the source of truth.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 11
       - uses: actions/setup-node@v4  # v4
         with:
           node-version: 20

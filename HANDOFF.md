@@ -10,6 +10,11 @@
 
 ---
 
+**Hotfix: CI failures (`runs/26710522894` and prior).** Two issues in the freshly-shipped CI:
+1. `pnpm/action-setup@v4` was given `version: 11` in `.github/workflows/ci.yml` while `package.json` declares `packageManager: pnpm@11.2.2`. Action errored `ERR_PNPM_BAD_PM_VERSION` on every run. Fix: dropped the `version:` field; package.json's `packageManager` is the single source of truth.
+2. Type-check would have failed too — BE Dev's earlier `3c7c71d` exported `deriveGithubRepo` from a Next route file (`team-status/route.ts`), violating Next's route-export contract (".next/types/..." complains `'deriveGithubRepo' is incompatible with index signature. Type ... is not assignable to type 'never'`). Extracted to `src/lib/derive-github-repo.ts`; updated imports in route.ts + the unit test. `pnpm type-check` clean, 24/24 tests still green.
+3. CodeQL failures (`runs/26710522880` and prior) are a one-time **GitHub repo setting** — Settings → Code security and analysis → Code scanning → Set up. No code change. Need user to flip it.
+
 **Hotfix: dashboard "Loading…" forever after server restart.** Server restarts reset the in-memory `activeThreadId` to null. `/api/active-thread` returned null → dashboard never started polling `/api/team-status` → all panels stuck on "Loading…". Fixed `/api/active-thread` to fall back to the most-recent thread in the `messages` table when the in-memory value is unset (new `getMostRecentThreadId()` helper in `src/lib/db.ts`). Live verified — endpoint now returns `mcp_mpsoeous_bih2` on this machine. Committed as bootstrap exception (protocol overhead on a 10-line backend fix isn't worth the gate ceremony for a UX trust-eroder).
 
 **🎉 US-003 SHIPPED.** Workspace-scoped Issues panel live on origin/main. Merge `06e93f0`. Smoke PASS. Server PID 10437. Second complete dogfood of ADR-002 and FIRST wave after the US-004 transport meta-fix.
