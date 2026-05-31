@@ -32,7 +32,9 @@ The team page (`/` route) currently renders each AgentPane at unconstrained heig
 ## Out of Scope
 
 - Full click-to-expand collapsed pane (just the role label) — too large for this wave; deferred to US-009 if needed after AC5 is achieved.
-- Moving the activity log to `/dashboard` — deferred; Wave 28a spec says keep it.
+- Streaming pane auto-expand / auto-collapse on `turn-end` — already existing behavior in `AgentPane.tsx`; no new requirement.
+- Nested `[[HANDOFF: role]]` blocks rendered as a count badge (e.g. "+ 3 handoffs") inside MessageBubble — requires text-parsing logic, new badge UI, and tests; significantly more complex than the 4 CSS/constant changes in this story. Deferred to US-009. AC4 (outbound bubble collapsed by default) addresses the same readability problem at lower risk.
+- Moving the activity log to `/dashboard` — deferred; Wave 28a spec confirmed the 28px horizontal bar is acceptable as-is.
 - Any changes to `/dashboard` route — that page is the full-detail surface by design.
 
 ## Links
