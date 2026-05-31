@@ -2,7 +2,18 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 8a UI Dev complete — ux-designer role rendered in both pages. Commit `15e57b1`.
+**UX Designer — What I own:** Design specs (`<workspace>/design/`), UI/UX critique after each UI Dev wave, design-system token decisions. I do NOT write code — I write specs that UI Dev implements against.
+
+**State.** Wave 8a complete. UX Designer introductory turn done — `design/INDEX.md` created with design notes for top-3 open UX issues (#22, #24, #21). Two skill-proposal issues filed (#34, #35).
+
+**UX Designer Wave 8a intro — commit (SHA-pending).**
+- `design/INDEX.md` — created; design spec notes for issues #22 (poll error feedback), #24 (error pill expand), #21 (QUEUED keyboard reorder)
+- `#34` filed: `[skill:ux-designer] Add responsive/breakpoint design section`
+- `#35` filed: `[skill:ux-designer] Add motion/animation guidance to interaction-states section`
+
+---
+
+**State (prior).** Wave 8a UI Dev complete — ux-designer role rendered in both pages. Commit `15e57b1`.
 
 **Wave 8a UI Dev changes:**
 - `globals.css` — `--accent-uxd: #bf6dff` (violet)
