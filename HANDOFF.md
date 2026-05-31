@@ -2,9 +2,9 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 6b BE Dev token-usage stream done (`(SHA-pending)`). `pnpm type-check` clean.
+**State.** Wave 6b BE Dev token-usage stream done (`70fff8e`). `pnpm type-check` clean.
 
-**Wave 6b BE Dev delivered (`(SHA-pending)`):**
+**Wave 6b BE Dev delivered (`70fff8e`):**
 - `src/lib/pricing.ts` — NEW: `MODEL_PRICING` table + `estimateCostUsd()`. Reference public API $/MTok rates for 5 models; user is on subscriptions so cost is $0 actual, useful for benchmarking.
 - `src/lib/db.ts` — `turn_usage` table + indexes + `UsageCapture` interface + `recordTurnUsage()` + `getThreadSpend()` + `getTodaySpend()`. `getSpendSummary()` (added by Architect) now populates with real data.
 - `src/lib/providers.ts` — `onUsage?: (UsageCapture) => void` callback threaded through `streamAgent` → `streamClaude` + `streamAiSdk`. Claude captures from `msg.type === "result"` usage fields; Vercel AI SDK captures from `result.usage` after stream completes.
