@@ -14,7 +14,8 @@
     "type-check": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
-    "preflight": "node scripts/preflight.mjs"
+    "preflight": "node scripts/preflight.mjs",
+    "scout": "node scripts/skill-scout.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.79",

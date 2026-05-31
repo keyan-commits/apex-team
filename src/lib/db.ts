@@ -58,6 +58,13 @@ function db(): Database.Database {
     CREATE INDEX IF NOT EXISTS idx_turn_usage_thread ON turn_usage(thread_id);
     CREATE INDEX IF NOT EXISTS idx_turn_usage_role   ON turn_usage(role);
     CREATE INDEX IF NOT EXISTS idx_turn_usage_time   ON turn_usage(created_at);
+
+    CREATE TABLE IF NOT EXISTS scout_runs (
+      id                INTEGER PRIMARY KEY AUTOINCREMENT,
+      ran_at            INTEGER NOT NULL,
+      proposals_filed   INTEGER NOT NULL DEFAULT 0,
+      roles_scanned     INTEGER NOT NULL DEFAULT 0
+    );
   `);
   _db = conn;
   return conn;
@@ -314,6 +321,23 @@ export function getSpendSummary(threadId: string): SpendSummary {
     };
   } catch {
     return zero;
+  }
+}
+
+export function getScoutMeta(): { lastRunAt: number | null; proposalsLast7Days: number } {
+  try {
+    const conn = db();
+    const lastRow = conn
+      .prepare(`SELECT ran_at, proposals_filed FROM scout_runs ORDER BY ran_at DESC LIMIT 1`)
+      .get() as { ran_at: number; proposals_filed: number } | undefined;
+    if (!lastRow) return { lastRunAt: null, proposalsLast7Days: 0 };
+    const week = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const weekRow = conn
+      .prepare(`SELECT COALESCE(SUM(proposals_filed), 0) as total FROM scout_runs WHERE ran_at >= ?`)
+      .get(week) as { total: number };
+    return { lastRunAt: lastRow.ran_at, proposalsLast7Days: weekRow.total };
+  } catch {
+    return { lastRunAt: null, proposalsLast7Days: 0 };
   }
 }
 

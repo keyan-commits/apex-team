@@ -2,25 +2,25 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 6b BE Dev token-usage stream done (`70fff8e`). `pnpm type-check` clean.
+**State.** Wave 6b BE Dev complete (`(SHA-pending)`). `pnpm type-check` clean.
 
-**Wave 6b BE Dev delivered (`70fff8e`):**
-- `src/lib/pricing.ts` — NEW: `MODEL_PRICING` table + `estimateCostUsd()`. Reference public API $/MTok rates for 5 models; user is on subscriptions so cost is $0 actual, useful for benchmarking.
-- `src/lib/db.ts` — `turn_usage` table + indexes + `UsageCapture` interface + `recordTurnUsage()` + `getThreadSpend()` + `getTodaySpend()`. `getSpendSummary()` (added by Architect) now populates with real data.
-- `src/lib/providers.ts` — `onUsage?: (UsageCapture) => void` callback threaded through `streamAgent` → `streamClaude` + `streamAiSdk`. Claude captures from `msg.type === "result"` usage fields; Vercel AI SDK captures from `result.usage` after stream completes.
-- `src/lib/agents.ts` — `onUsage` added to `AgentTurnInput`; passed through to `streamAgent`.
-- `src/lib/run-turn.ts` — callback wired: calls `recordTurnUsage(threadId, role, model, usage)` after each turn; errors suppressed (best-effort).
+**Wave 6b BE Dev delivered (`(SHA-pending)`):**
+- `scripts/skill-scout.mjs` — NEW: daily skill scout using Anthropic REST + `web-search-2025-03-05` beta. Per-role loop, tool-use loop for web search, `gh issue create` with `skill-proposal` label, title deduplication, updates `scout_runs` + `issue_cache` tables. Run with `pnpm scout`.
+- `src/lib/db.ts` — `scout_runs` table schema + `getScoutMeta()` helper (last run time + proposals last 7 days).
+- `src/app/api/team-status/route.ts` — scout panel now reads real data from `getScoutMeta()` instead of zeros.
+- `src/lib/roles.ts` — PO prompt Part C: `skill-proposal` issue surfacing on first turn + `self-improvement` backlog updated; Part E: `last_compacted` tracking note added to context-steward section; Part F: `/dashboard` spend-awareness note added.
+- `package.json` — `"scout": "node scripts/skill-scout.mjs"` added.
+
+**Previous Wave 6b commits:**
+- `70fff8e`: pricing.ts + turn_usage + usage capture in providers.ts/agents.ts/run-turn.ts.
+- `2e55fa2` (Architect): `/api/team-status` 9-panel endpoint.
+- `7291391` (UI Dev): `/dashboard` page + OrchestratorBar tabs + AgentPane auto-fold.
 
 **Wave 6b open streams:**
-- BE Dev: `scripts/skill-scout.mjs` + PO prompt update (Parts B + C) — **still to do in this wave**.
 - DevSecOps: GH Actions workflow — in progress.
 
-**Wave 6b already done:**
-- Architect `2e55fa2`: `/api/team-status` 9-panel endpoint.
-- UI Dev `7291391`: `/dashboard` page + OrchestratorBar tabs + AgentPane auto-fold + ui-developer.ts skills.
-
-**Other open:**
-- Wave 6d Architect review — after all 6b streams complete.
+**Next:**
+- Wave 6d Architect review — after DevSecOps completes.
 - Issue #4 — `page.tsx:113-117` mount fetch race (< 100ms window).
 
 **Previous wave:**

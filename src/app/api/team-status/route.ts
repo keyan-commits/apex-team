@@ -4,6 +4,7 @@ import {
   listMessages,
   listAllAgentStates,
   getSpendSummary,
+  getScoutMeta,
 } from "@/lib/db";
 import { ALL_ROLES } from "@/lib/roles";
 import type { RoleId, ChatMessage, TeamStatus } from "@/types";
@@ -193,7 +194,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<TeamStatus>> {
     blocked: blockedPanel,
     activeWave,
     issues: fetchIssues(),
-    scout: { lastRunAt: null, nextScheduledAt: null, proposalsLast7Days: 0 },
+    scout: { ...getScoutMeta(), nextScheduledAt: null },
     context: contextPanel,
     spend,
   } satisfies TeamStatus);
