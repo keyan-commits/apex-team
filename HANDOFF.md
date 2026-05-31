@@ -2,13 +2,20 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 7b UI Dev complete (`23c089a`). `pnpm type-check` clean. Pushed to origin/main.
+**State.** Wave 7c UX audit complete. Issues #19–#23 filed. Waves 6e + 7a + 7b fully reviewed and gated PASS. Wave 7c UI Dev in progress (parallel).
 
-**Wave 7b UI Dev shipped:**
-- `src/app/dashboard/page.tsx` — Expandable detail rows (▸/▾ chevron, Enter/Space, aria-expanded) on NOW/QUEUED/DONE/BLOCKED panels; (ⓘ) info tooltips on all 9 panel headers (click-toggle, hover, Escape/click-outside to close); CONTEXT panel per-role model badge from localStorage (`apex-model-<role>`, fallback: `claude-sonnet-4-6`).
-- `src/lib/skills/business-analyst.ts` — Fixed pre-existing syntax error (unescaped backticks in template literal introduced by BA wave 7c). Bundled since type-check was broken.
+**Wave 7c UX audit findings — 5 issues filed:**
+- **#19** (warn) — `--accent-orch` undefined in `globals.css` → invisible logo + broken AgentStatePanel styling
+- **#20** (warn) — `AgentStatePanel` toggle: `all:unset` removes focus ring; no `:focus-visible` replacement
+- **#21** (warn) — QUEUED drag-and-drop: no keyboard alternative for reordering
+- **#22** (warn) — Dashboard poll errors silently swallowed; stale/loading state no feedback
+- **#23** (warn) — `/dashboard` lacks workspace input; can't change workspace without returning to `/`
 
-**Wave 7b awaiting:** Architect PASS. Wave 7b BE Dev (`4ca6b43`) + QA (`8187298`) already on origin/main.
+**Wave 7b gate verdicts (all PASS):**
+- Wave 6e UI Dev `4c0b1d9` — PASS (field name fix)
+- Wave 7a UI Dev `9ca54dc` — PASS (dispatch FSM correct; 8s setTimeout race superseded by Wave 7c redesign)
+- Wave 7b BE Dev `4ca6b43` — PASS (playwright-mcp QA-only, correct tool name format)
+- Wave 7b UI Dev `23c089a` — PASS (expandable rows + tooltips + model badge; #19–#23 noted, none block)
 
 **Wave 7a shipped:**
 - `src/app/api/po-dispatch/route.ts` — `POST /api/po-dispatch` (BE Dev, `d598c3e`)
