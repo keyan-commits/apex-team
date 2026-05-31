@@ -2,7 +2,24 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 10b DevSecOps — US-002 implementation in progress. Feature branch: `feature/10b-pipeline-ownership`. Worktree: `../apex-team-devsecops-10b-pipeline-ownership/`.**
+**Wave 10b DevSecOps — US-002 implementation complete. Feature branch: `feature/10b-pipeline-ownership`. Worktree: `../apex-team-devsecops-10b-pipeline-ownership/`. Awaiting QA PASS before merge to main.**
+
+**Deliverables shipped on `feature/10b-pipeline-ownership` (SHA pending):**
+- `.github/workflows/ci.yml` — type-check + test:run + lint (continue-on-error) on PR + push
+- `.github/workflows/codeql.yml` — JS/TS SAST, weekly + push to main
+- `.github/dependabot.yml` — npm weekly, minor+patch grouped
+- `scripts/post-deploy-smoke.mjs` — health check POST-deploy (`pnpm smoke`)
+- `scripts/post-deploy-smoke.d.mts` — TS declaration for testability
+- `tests/ops/post-deploy-smoke.test.ts` — 5 vitest cases, all passing
+- `package.json` — `"smoke"` script added
+- `scripts/git-hooks/pre-commit` — gitleaks protect --staged added (conditional on install)
+- `ops/README.md` — "Pipeline & security tooling" section appended
+
+**Pre-HANDOFF checklist: all PASS**
+- `pnpm type-check` clean
+- `pnpm test:run` — 4 files, 13 tests, all pass
+- YAML syntax valid (no tabs)
+- No secrets required in CI beyond GITHUB_TOKEN (auto-injected)
 
 **Wave 10a Architect — CI/CD research complete; ADR-002 §Consequences updated with confirmed worktree isolation model + script names. Self-audit: no skill gaps.**
 
