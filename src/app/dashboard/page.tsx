@@ -106,7 +106,15 @@ export default function DashboardPage() {
       m[r] = localStorage.getItem(`apex-model-${r}`) ?? "claude-sonnet-4-6";
     }
     setRoleModels(m);
-    try { const ws = localStorage.getItem(WORKSPACE_KEY); if (ws) setWorkspace(ws); } catch {}
+    try {
+      const ws = localStorage.getItem(WORKSPACE_KEY);
+      if (ws) { setWorkspace(ws); return; }
+    } catch {}
+    // No localStorage entry — seed from server's MCP-configured workspace
+    fetch("/api/health", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d: { defaultCwd?: string }) => { if (d.defaultCwd) setWorkspace(d.defaultCwd); })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -127,7 +135,7 @@ export default function DashboardPage() {
     if (!threadId) return;
     const fetchData = () => {
       if (document.visibilityState !== "visible") return;
-      fetch(`/api/team-status?threadId=${encodeURIComponent(threadId)}`, { cache: "no-store" })
+      fetch(`/api/team-status?threadId=${encodeURIComponent(threadId)}&workspace=${encodeURIComponent(workspace)}`, { cache: "no-store" })
         .then((r) => {
           if (r.status === 404) { setEndpointReady(false); return null; }
           setEndpointReady(true);
@@ -141,7 +149,7 @@ export default function DashboardPage() {
     const onVis = () => { if (document.visibilityState === "visible") fetchData(); };
     document.addEventListener("visibilitychange", onVis);
     return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
-  }, [threadId]);
+  }, [threadId, workspace]);
 
   const sortedQueued = useMemo<TeamStatus["queued"]>(() => {
     if (!data?.queued) return [];
@@ -451,86 +459,101 @@ export default function DashboardPage() {
           {panelHd("Issues", "issues")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : (
             <div className="issue-panel-inner">
-              <div className="issue-grid">
-                <a className="issue-row" href="https://github.com/keyan-commits/apex-team/issues?q=label%3Aself-improvement+is%3Aopen" target="_blank" rel="noreferrer">
-                  <span className="issue-count">{data.issues.selfImprovement}</span>
-                  <span className="issue-label">self-improvement</span>
-                </a>
-                <a className="issue-row" href="https://github.com/keyan-commits/apex-team/issues?q=label%3Askill-proposal+is%3Aopen" target="_blank" rel="noreferrer">
-                  <span className="issue-count">{data.issues.skillProposal}</span>
-                  <span className="issue-label">skill-proposal</span>
-                </a>
-                <a className="issue-row" href="https://github.com/keyan-commits/apex-team/issues?q=label%3Amcp-proposal+is%3Aopen" target="_blank" rel="noreferrer">
-                  <span className="issue-count">{data.issues.mcpProposal}</span>
-                  <span className="issue-label">mcp-proposal</span>
-                </a>
-              </div>
+              {data.issues.repo === null ? (
+                <p className="empty-msg">This workspace has no GitHub remote — Issues panel unavailable.</p>
+              ) : (
+                <>
+                  <p className="issue-repo-attr">
+                    Issues:{" "}
+                    <a
+                      href={`https://github.com/${data.issues.repo}/issues`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="issue-repo-link"
+                    >{data.issues.repo}</a>
+                  </p>
+                  <div className="issue-grid">
+                    <a className="issue-row" href={`https://github.com/${data.issues.repo}/issues?q=label%3Aself-improvement+is%3Aopen`} target="_blank" rel="noreferrer">
+                      <span className="issue-count">{data.issues.selfImprovement}</span>
+                      <span className="issue-label">self-improvement</span>
+                    </a>
+                    <a className="issue-row" href={`https://github.com/${data.issues.repo}/issues?q=label%3Askill-proposal+is%3Aopen`} target="_blank" rel="noreferrer">
+                      <span className="issue-count">{data.issues.skillProposal}</span>
+                      <span className="issue-label">skill-proposal</span>
+                    </a>
+                    <a className="issue-row" href={`https://github.com/${data.issues.repo}/issues?q=label%3Amcp-proposal+is%3Aopen`} target="_blank" rel="noreferrer">
+                      <span className="issue-count">{data.issues.mcpProposal}</span>
+                      <span className="issue-label">mcp-proposal</span>
+                    </a>
+                  </div>
 
-              {data.issues.recent.length > 0 && (
-                <div className="recent-issues">
-                  <p className="recent-issues-hd">Recent open</p>
-                  {data.issues.recent.map((iss) => (
-                    <div key={iss.number} className="recent-row">
-                      <input
-                        type="checkbox"
-                        className="iss-check"
-                        checked={selectedIssues.has(iss.number)}
-                        onChange={() => toggleIssue(iss.number)}
-                        aria-label={`Select issue #${iss.number}`}
-                        onClick={(e) => e.stopPropagation()}
-                        disabled={dispatchState === "sending"}
-                      />
-                      <a
-                        className="recent-row-body"
-                        href={iss.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        title={`#${iss.number} — ${iss.label}`}
-                      >
-                        <span className="iss-num">#{iss.number}</span>
-                        <span className="iss-title">{iss.title}</span>
-                        <span className="iss-label-badge">{iss.label}</span>
-                      </a>
-                      <button
-                        className="iss-po-btn"
-                        onClick={() => dispatchRowToPo(iss.number)}
-                        disabled={sendingRows.has(iss.number) || !threadId}
-                        aria-label={`Send issue #${iss.number} to PO`}
-                        title="Send to Product Owner"
-                      >{sendingRows.has(iss.number) ? "…" : "→ PO"}</button>
+                  {data.issues.recent.length > 0 && (
+                    <div className="recent-issues">
+                      <p className="recent-issues-hd">Recent open</p>
+                      {data.issues.recent.map((iss) => (
+                        <div key={iss.number} className="recent-row">
+                          <input
+                            type="checkbox"
+                            className="iss-check"
+                            checked={selectedIssues.has(iss.number)}
+                            onChange={() => toggleIssue(iss.number)}
+                            aria-label={`Select issue #${iss.number}`}
+                            onClick={(e) => e.stopPropagation()}
+                            disabled={dispatchState === "sending"}
+                          />
+                          <a
+                            className="recent-row-body"
+                            href={iss.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            title={`#${iss.number} — ${iss.label}`}
+                          >
+                            <span className="iss-num">#{iss.number}</span>
+                            <span className="iss-title">{iss.title}</span>
+                            <span className="iss-label-badge">{iss.label}</span>
+                          </a>
+                          <button
+                            className="iss-po-btn"
+                            onClick={() => dispatchRowToPo(iss.number)}
+                            disabled={sendingRows.has(iss.number) || !threadId}
+                            aria-label={`Send issue #${iss.number} to PO`}
+                            title="Send to Product Owner"
+                          >{sendingRows.has(iss.number) ? "…" : "→ PO"}</button>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              )}
+                  )}
 
-              {dispatchState === "success" && (
-                <div className="dispatch-success">
-                  Dispatched to PO. Switch to Team view to watch.{" "}
-                  <Link href="/" className="team-link">Team →</Link>
-                </div>
-              )}
-              {dispatchState === "error" && dispatchError && (
-                <div className="dispatch-error">{dispatchError}</div>
-              )}
+                  {dispatchState === "success" && (
+                    <div className="dispatch-success">
+                      Dispatched to PO. Switch to Team view to watch.{" "}
+                      <Link href="/" className="team-link">Team →</Link>
+                    </div>
+                  )}
+                  {dispatchState === "error" && dispatchError && (
+                    <div className="dispatch-error">{dispatchError}</div>
+                  )}
 
-              {selectedIssues.size > 0 && (
-                <div className="issue-footer">
-                  <span className="sel-count">{selectedIssues.size} selected</span>
-                  <button
-                    className="footer-cancel"
-                    onClick={() => setSelectedIssues(new Set())}
-                    disabled={dispatchState === "sending"}
-                  >Cancel</button>
-                  <button
-                    className="footer-dispatch"
-                    onClick={() => dispatchToPo([...selectedIssues])}
-                    disabled={dispatchState === "sending" || !threadId}
-                  >
-                    {dispatchState === "sending"
-                      ? <><span className="spinner" aria-hidden="true" /> Sending…</>
-                      : `→ Send ${selectedIssues.size} to PO`}
-                  </button>
-                </div>
+                  {selectedIssues.size > 0 && (
+                    <div className="issue-footer">
+                      <span className="sel-count">{selectedIssues.size} selected</span>
+                      <button
+                        className="footer-cancel"
+                        onClick={() => setSelectedIssues(new Set())}
+                        disabled={dispatchState === "sending"}
+                      >Cancel</button>
+                      <button
+                        className="footer-dispatch"
+                        onClick={() => dispatchToPo([...selectedIssues])}
+                        disabled={dispatchState === "sending" || !threadId}
+                      >
+                        {dispatchState === "sending"
+                          ? <><span className="spinner" aria-hidden="true" /> Sending…</>
+                          : `→ Send ${selectedIssues.size} to PO`}
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
@@ -739,6 +762,16 @@ export default function DashboardPage() {
 
         .issue-panel { position: relative; }
         .issue-panel-inner { display: flex; flex-direction: column; gap: 10px; }
+        .issue-repo-attr {
+          font-size: 11px; color: var(--text-dim); margin: 0;
+          display: flex; align-items: center; gap: 4px;
+        }
+        .issue-repo-link {
+          font-family: ui-monospace, monospace; color: var(--text-dim);
+          text-decoration: none;
+        }
+        .issue-repo-link:hover { color: var(--text); text-decoration: underline; }
+        .issue-repo-link:focus-visible { outline: 1px solid var(--accent-po); border-radius: 2px; }
 
         .recent-issues { display: flex; flex-direction: column; gap: 4px; }
         .recent-issues-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-dim); margin: 0 0 4px; }

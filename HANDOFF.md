@@ -2,6 +2,15 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 11b UI Dev — US-003 workspace-scoped Issues panel. Feature branch: `feature/11b-workspace-scoped-issues-ui`. Pre-HANDOFF complete — awaiting UX PASS.**
+
+- `src/app/dashboard/page.tsx` — three changes: (1) workspace init: added `/api/health` `defaultCwd` fallback when no localStorage entry; (2) team-status poll: appends `?workspace=<path>` and adds `workspace` to useEffect dep array so re-polls on change; (3) Issues panel: `repo === null` → `.empty-msg` empty state; `repo !== null` → attribution label (`issue-repo-attr`) + dynamic GitHub links keyed to derived repo
+- Pre-HANDOFF: `pnpm type-check` clean, `pnpm test:run` 24/24 green (6 files, includes BE's 7 repo-derivation tests)
+- Commit SHA: (SHA-pending)
+- **Awaiting:** UX Designer PASS → QA
+
+---
+
 **Wave 11b BE Dev — US-003 workspace-scoped Issues panel. Feature branch: `feature/11b-workspace-scoped-issues`. Pre-HANDOFF complete — awaiting QA PASS.**
 
 - `src/types.ts` — added `repo: string | null` to `TeamStatus["issues"]`
