@@ -4,7 +4,7 @@
 
 **State.** Wave 3 complete — QA smoke tests pass (SHA-pending). All 10/10 tests green. Wave 4 next: HANDOFF refresh + push to `main`.
 
-**Wave 3 QA shipped (SHA-pending):**
+**Wave 3 QA shipped (`3df1112`):**
 - `vitest.config.ts` — root vitest config with `@/*` path alias.
 - `tests/smoke/skills.test.ts` — 4 unit tests; all pass. Verifies all 6 peer roles have non-empty skills; PO has none; content spot-checks.
 - `tests/smoke/http.sh` — 6 HTTP smoke checks (health, active-thread null, DB isolation ×2, SSE content-type + initial frame); all pass against `:3100` instance; teardown confirmed.
