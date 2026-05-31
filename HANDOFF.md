@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 28a — US-008 Team page density redesign spec. `design/US-008-team-page-density.md` written: 4 targeted fixes (HANDOFF body max-height 200px; messages area clamp(260px,38vh,480px); bubble threshold 200c/3l; outbound bubbles collapsed by default). Skill-proposal issue #66 filed. `design/INDEX.md` updated. HANDOFF to UI Dev for implementation. Feature branch: `feature/28a-team-page-density`.**
+
 **Wave 27 — TypeScript 5.9 → 6.0 upgrade (closes #47). `package.json`: `typescript` bumped `^5.7.0` → `^6.0.3`. New `src/types/css-modules.d.ts`: `declare module "*.css"` satisfies TS 6's stricter side-effect import check. 39/39 green. Feature branch: `feature/27-ts-6-upgrade`.**
 
 **Wave 26 — Pre-wave hygiene check (closes #32). `branch-start.mjs`: dirty-tree check refactored into named `validateMainCleanliness()` with explicit remediation hints (git stash / restore / clean). `branch-cleanup.mjs`: same pattern (`validateWorktreeCleanliness()`), plus `devsecops` added to `VALID_ROLES` (was missing). `tests/ops/branch-hygiene.test.ts`: 5 new tests. 39/39 green. Feature branch: `feature/26-pre-wave-hygiene`.**

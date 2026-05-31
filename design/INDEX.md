@@ -5,6 +5,7 @@ UX Designer owns this directory. Every spec file is listed here with its linked 
 | File | Issue | Status | Notes |
 |---|---|---|---|
 | [US-003-workspace-scoped-issues.md](US-003-workspace-scoped-issues.md) | US-003 / US-005 | reviewed + Wave 13 amendments | Post-hoc spec (Wave 11a dispatch dropped). Wave 13 amendments added: drop "Issues:" prefix, per-`repoStatus` copy (4 cases), `:visited` fix, no-flicker spec. |
+| [US-008-team-page-density.md](US-008-team-page-density.md) | Wave 28 user feedback | ready | 4 bounded-height fixes: HANDOFF body max-height 200px, messages max-height clamp(260px,38vh,480px), bubble threshold 200c/3l, outbound bubbles collapsed by default. Skill-proposal #66 filed. HANDOFF to UI Dev. |
 
 ---
 
