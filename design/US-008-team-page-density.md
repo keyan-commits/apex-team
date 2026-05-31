@@ -141,6 +141,23 @@ Team pane textarea: 3 rows → 2 rows. Saves ~20px per expanded pane. Small but 
 
 PO pane textarea: 2 rows — unchanged (PO writes longer orchestration prompts).
 
+### 3e. Outbound HANDOFF / dispatch bubbles — collapsed by default
+
+`MessageBubble.tsx` renders handoff-out and dispatch-out messages at full height inline in the pane. These are **status / routing signals**, not reading material for the pane's owner. They should collapse by default even below the 3-line threshold.
+
+**Change:** For `tone === "handoff-out"` or `tone === "dispatch-out"`, force `expanded=false` as the initial state regardless of content length. The existing "Show more ▾" affordance expands them on click.
+
+**Visual:**
+```
+┌──────────────────────────────────────────┐
+│ ↳ Handoff to DevSecOps   [Show more ▾]  │  ← always collapsed, 1 line
+└──────────────────────────────────────────┘
+```
+
+**Copy:** The "Show more" CTA already reads correctly — no copy change needed.
+
+**Note:** `tone === "handoff-in"` and `"dispatch-in"` are NOT collapsed by default — incoming messages are the primary reading material for the pane.
+
 ---
 
 ## 4. Interaction state inventory
@@ -256,7 +273,7 @@ No copy changes required for this spec. All labels, empty states, and button tex
 |---|---|
 | `src/components/AgentPane.tsx` | Add `max-height: min(560px, 65vh)` to `.pane` in expanded state; `max-height: min(420px, 48vh)` passed from `page.tsx` for PO; `rows={2}` for team pane textarea |
 | `src/components/AgentStatePanel.tsx` | Add `max-height: 220px; overflow-y: auto;` to `.body`; gradient fade at bottom |
-| `src/components/MessageBubble.tsx` | `COLLAPSE_CHARS = 200`, `COLLAPSE_LINES = 3` |
+| `src/components/MessageBubble.tsx` | `COLLAPSE_CHARS = 200`, `COLLAPSE_LINES = 3`; outbound handoff/dispatch bubbles forced `expanded=false` initially |
 | `src/app/page.tsx` | Pass `isPO` hint or explicit `maxHeight` prop to `AgentPane` for the PO pane cap |
 | `src/app/globals.css` | Add `@media (prefers-reduced-motion: reduce)` override for pane/HANDOFF transitions if not already present |
 
