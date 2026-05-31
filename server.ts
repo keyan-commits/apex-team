@@ -7,9 +7,19 @@
 // MCP requests are intercepted here BEFORE Next.js sees them; everything
 // else goes to the Next.js request handler as normal.
 
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import { createServer, type Server, type IncomingMessage, type ServerResponse } from "node:http";
 import { parse } from "node:url";
 import next from "next";
+
+// US-004 / #31: Node's default requestTimeout (5 min) tears down long-running
+// agent turns that dispatch multiple peers sequentially. keepAliveTimeout (5s)
+// causes spurious resets on connection reuse between sequential MCP tool calls.
+// headersTimeout must exceed keepAliveTimeout per Node.js constraint.
+export function applyHttpTimeouts(server: Server): void {
+  server.requestTimeout = 0;        // disable 5-min limit; agent turns can exceed it
+  server.keepAliveTimeout = 65_000; // keep reused connections alive between tool calls
+  server.headersTimeout = 66_000;   // must exceed keepAliveTimeout (Node constraint)
+}
 
 // MCP handler is async-loaded so a stack-trace in MCP code doesn't crash
 // the Next.js bootstrap path. Imported once on first MCP request.
@@ -55,6 +65,8 @@ void app.prepare().then(() => {
 
     handle(req, res, url);
   });
+
+  applyHttpTimeouts(server);
 
   server.listen(PORT, HOST, () => {
     console.log(`> apex-team ready on http://${HOST}:${PORT}`);

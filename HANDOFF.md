@@ -2,13 +2,14 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 12a BA — US-004 MCP transport reliability written (proposed). Fixes #31. Commit `bc75f9e` on main.**
+**Wave 12b BE Dev — US-004 MCP transport fix implemented. Feature branch: `feature/12b-mcp-transport-fix`. Awaiting QA PASS.**
 
-- `requirements/user-stories/US-004-mcp-transport-reliability.md` — 4 ACs; owner BE Dev; references Architect's Wave 12a diagnosis (requestTimeout=0 + keepAliveTimeout=65s)
-- `requirements/open-questions.md` — OQ-005 added (SSE heartbeat, non-blocking)
-- `requirements/INDEX.md` — US-004 row added
+- `server.ts` — exported `applyHttpTimeouts(server)` helper; called between `createServer(...)` and `server.listen(...)`. Sets `requestTimeout=0`, `keepAliveTimeout=65_000`, `headersTimeout=66_000`.
+- `tests/server/timeouts.test.ts` — 4 vitest cases locking the constraint values. All 17 tests pass (5 files).
+- Pre-HANDOFF checklist: `pnpm type-check` clean, `pnpm test:run` 17/17 green.
+- Commit SHA: `464fe73`
 
-**Ready for Wave 12b:** BE Dev applies the 3-line patch to `server.ts` in a feature branch → QA verifies via a long-running test turn → DevSecOps merges. Awaiting PO synthesis + user confirmation before dispatch.
+**Next:** QA verifies US-004 ACs (AC1: 5-min turn survives, AC2: 30s silence gap OK, AC3: short turns unaffected). DevSecOps merges on PASS.
 
 **US-003 still pending:** OQ-003 (UX Designer) + OQ-004 (Architect) + UX spec in `design/` before Wave 11b can be scoped.
 
