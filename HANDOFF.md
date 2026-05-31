@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 15 — US-007 portable workspace bootstrap implemented on `feature/15-portable-bootstrap`.**
+**Wave 15 — US-007 portable workspace bootstrap implemented on `feature/15-portable-bootstrap`. US-007 flipped to `done` (merge SHA pending CI).**
 
 `scripts/devsecops/bootstrap-workspace.mjs` ships the apex-team enforcement recipe (hooks, CI template, branch protection) to any git workspace via `pnpm devsecops:bootstrap-workspace <path>`. All 5 steps implemented: validate, hooks install, CI workflow stub, branch protection (interactive, never auto-yes), ops/README.md drop. Fully idempotent. Tests: 34/34 green (7 files, 7 new bootstrap tests). `pnpm type-check` clean.
 
