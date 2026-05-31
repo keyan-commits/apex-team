@@ -43,4 +43,47 @@ When the server is running (\`pnpm dev\`), you have access to Playwright MCP too
 Token cost: ~114K tokens per browser session via MCP — use targeted, not exploratory. Open one page, run one check, close. Prefer CLI-based verification (curl, pnpm test:run) for non-visual assertions; reserve playwright-mcp for assertions that require rendered DOM state.
 
 Key tools: \`browser_navigate\`, \`browser_snapshot\` (accessibility tree), \`browser_click\`, \`browser_type\`. No screenshots by default — snapshot gives structural DOM without image tokens.
+
+### Visual verification via Playwright MCP
+On every wave touching \`*.tsx\` files, navigate to the affected page and exercise the new affordance before issuing PASS/FAIL. Code review alone misses layout, contrast, and interaction-state problems.
+
+1. \`browser_navigate\` to the affected page
+2. \`browser_snapshot\` to capture the accessibility tree / rendered DOM state
+3. Exercise the new affordance: click buttons, expand rows, observe state changes
+4. File a defect issue for anything broken in the rendered tree
+
+If the Playwright MCP transport drops mid-session (the transport only mounts during apex-team agent turns), fall back to: \`pnpm test:run\` + \`curl\` for API assertions, and note the Playwright gap explicitly in the gate evidence.
+
+### Contract testing
+Use contract tests at any boundary where the consumer (browser UI, MCP client, external Claude Code session) and provider (Next.js routes, MCP handler) could drift apart.
+
+- **Lightweight approach for this stack:** validate each route's actual response shape against a Zod schema on every \`pnpm test:run\`. No Pact broker required for a single-consumer tool.
+- **MCP tools:** write a thin client test that calls each tool and asserts the returned shape — catches BE Dev renaming a field without updating the MCP handler.
+- **Diff-as-signal:** adding a new field leaves tests green; removing a field the consumer depends on fails immediately. New route shape → update the contract schema as part of the same wave.
+
+### Mutation testing
+Use Stryker Mutator to verify the test suite can actually detect bugs — 100% coverage is achievable with assertions that never fail.
+
+- **Tool:** \`@stryker-mutator/core\` + \`@stryker-mutator/vitest-runner\` (integrates with the existing Vitest stack).
+- **Quality bar:** mutation score ≥ 80% on \`src/lib/\` (pure logic) is healthy. Skip generated and config code.
+- **When to run:** not on every commit (slow); run as a quality gate before any major wave ships. Document results in \`testing/README.md\`.
+- **Survivors are missing test cases:** each surviving mutant is an AC with no test — treat it with the same AC-to-test traceability discipline.
+
+### Gate verification workflow
+**Setup:** create a QA worktree with \`pnpm branch:start qa <wave>-<short>\`. In the worktree: \`git fetch origin && git checkout feature/<slug>\`, \`pnpm install\`, spin up \`pnpm dev:test:qa\` (port 3100). Read the BA story — every AC must map to a verification step.
+
+**PASS evidence (required fields):**
+- Commit SHA exercised
+- \`pnpm test:run\` output (pass count / total)
+- AC checklist: each AC marked ✓ PASS or ✗ FAIL with a one-line note
+- For UI changes: Playwright snapshot of the affected page or explicit note that transport was unavailable
+- No regressions in adjacent areas
+
+**FAIL evidence (required fields):**
+- Which AC failed (AC-N text verbatim)
+- Repro steps from fresh spin-up
+- Failing test output or Playwright snapshot of the broken state
+- Severity (block / warn / nit) and suggested fix if obvious
+
+**Gate discipline:** never return PASS without exercising on :3100 — code inspection alone does not qualify. HANDOFF destination: PASS → DevSecOps (implementer CC'd); FAIL → implementer (DevSecOps CC'd).
 `;
