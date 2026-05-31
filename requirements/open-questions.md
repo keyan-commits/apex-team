@@ -69,4 +69,30 @@ Open questions are blockers or ambiguities that require an answer before affecte
 
 ---
 
+## OQ-006 — Should the portable workspace bootstrap install gitleaks?
+
+**Status:** Open
+**Owner:** DevSecOps
+**Raised by:** BA (Wave 14a, US-007)
+**Affects:** US-007 AC1 scope — determines whether `gitleaks protect --staged` is added to the bootstrapped pre-commit hook
+
+**Question:** When `pnpm devsecops:bootstrap-workspace` installs hooks in an external workspace, should it also inject a `gitleaks protect --staged` check into the pre-commit hook? Apex-team's own pre-commit already does this. The question is whether it should be a universal default for all bootstrapped workspaces, given gitleaks availability may vary across machines.
+
+**Default intent:** Yes — same posture across workspaces. Fallback: if `which gitleaks` fails, skip the gitleaks step and print a warning rather than aborting the bootstrap.
+
+---
+
+## OQ-007 — Should the bootstrap require explicit user consent per workspace?
+
+**Status:** Open
+**Owner:** Product Owner + User
+**Raised by:** BA (Wave 14a, US-007)
+**Affects:** US-007 AC3 — applying branch protection to a GitHub repo is not easily reversible and deserves explicit consent
+
+**Question:** Should `pnpm devsecops:bootstrap-workspace` prompt for interactive confirmation before applying GitHub branch protection rules (US-007 AC3), or should DevSecOps be able to run it autonomously when dispatched by PO?
+
+**Default intent:** Explicit user approval required — applying branch protection is irreversible enough (especially AC1's "no bypass including admin") to warrant a `[y/N]` prompt or an explicit `--approve` flag before the `gh api` call. Hook installation (AC1) and ops/README update (AC5) can be non-interactive.
+
+---
+
 _Future questions append below this line._

@@ -2,7 +2,31 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 13e — deploying US-005 carry-forwards via PR (branch protection enforced).**
+**Wave 14f — CI hotfix: bump `node-version: 20 → 22` in `.github/workflows/ci.yml`.** pnpm 11.x requires Node ≥ 22.13; `node:sqlite` (used by better-sqlite3 bindings) also requires Node 22+. One-line change. PR opened; CI on the PR branch is the verification gate. No QA gate — CI itself is the check.
+
+**Wave 14e — protocol amendment: HANDOFF refresh ships INSIDE the same PR as the code change.** No more separate "chore: backfill SHA X in HANDOFF" follow-up commits. The pre-push hook (just installed in Wave 14b) blocks direct main pushes, so the old pattern of "merge code, then push HANDOFF doc separately" no longer works. The implementer updates HANDOFF on their feature branch BEFORE pushing. Encoded into `src/lib/protocols.ts` `DEPLOYMENT_PHASE_PROTOCOL`. Also flagged: `--no-verify` is never the default bypass — only with explicit per-incident user authorization. This very commit is the first PR to land via the new flow (feature/14e-handoff-in-pr-policy).
+
+**🎉 US-006 SHIPPED. Main-branch enforcement live on origin/main.** Merge `3e401aa`. `core.hooksPath` verified `scripts/git-hooks`; pre-push hook simulated PASS (refs/heads/main → exit 1; feature/foo → exit 0).
+
+**Wave 14 net:**
+
+| Phase | Wave | Output |
+|---|---|---|
+| Requirements | 14a | BA US-006 + US-007 (`8ca2507`); Architect design (full JSON payload + hook code + CODEOWNERS + bootstrap skeleton) |
+| Implementation | 14b | DevSecOps `443b379` — pre-push + type-check pre-commit + CODEOWNERS + payload JSON + ops/README |
+| Verification | 14c | QA PASS — 6/6 ACs, hook simulation green, type-check + tests clean |
+| Deployment | 14d | DevSecOps merge `3e401aa` + push + worktree cleanup |
+
+**⚠️ ONE USER ACTION PENDING (OQ-007 explicit consent):** server-side GitHub branch protection requires you to run this once, with `gh auth` carrying `admin:repo_hook` (and `repo`) scope:
+
+```bash
+gh api -X PUT /repos/keyan-commits/apex-team/branches/main/protection \
+  --input ops/branch-protection-payload.json
+```
+
+If `gh auth status` lacks the needed scopes: `gh auth refresh -h github.com -s admin:org`. After applying, even YOU (as admin) cannot push directly to main — only merges via PR through CI green.
+
+**Wave 13e — US-005 carry-forwards merging via PR #50 (branch protection now enforced — first merge through the gate).**
 
 **Wave 13b-d net — US-005 implementation complete, UX PASS + QA PASS received:**
 
@@ -14,24 +38,25 @@
 | Verification UX | 13c | — | UX Designer PASS — all 4 amendments verified verbatim against spec |
 | Verification QA | 13d | — | QA PASS — AC1 grep, AC2 live API on :3100, AC3 grep, AC4 code inspection; 26/26 green |
 
-**US-005 `requirements/user-stories/US-005-wave-11c-carry-forwards.md` → status: `done` (in this commit).**
+**US-005 status: `done`.**
 
-**CI fix needed:** feature branch predated Wave 14f — `ci.yml` still had `node-version: 20`. Added fixup commit bumping to 22.
+**Wave 14b-ops shipped:**
 
-**Next:** PR CI green → `gh pr merge` → cleanup worktrees + branches → smoke.
+- `scripts/git-hooks/pre-push` — new POSIX hook blocking direct pushes to `origin/main`
+- `scripts/git-hooks/pre-commit` — type-check inserted as first step (before gitleaks)
+- `.github/CODEOWNERS` — 8 entries, all lanes → `@keyan-commits` (advisory in single-identity repo)
+- `ops/branch-protection-payload.json` — exact JSON ready for the user's `gh api` apply
+- `ops/README.md` — "Branch protection" section documents the apply command
 
----
+**US-007 portable workspace bootstrap** is next-up — same pattern packaged as `pnpm devsecops:bootstrap-workspace <path>`. Ships after US-006's server-side apply is confirmed.
 
-**Wave 13b BE — US-005 repoStatus enum. Feature branch: `feature/13b-repo-status`. Pre-HANDOFF complete — awaiting QA gate.**
+**Wave 14a BA — US-006 + US-007 committed on main. Requirements phase.**
 
-- `src/types.ts` — added `RepoStatus = "ok" | "none" | "not-git" | "non-github" | "bad-path"` + `repoStatus: RepoStatus` on `TeamStatus["issues"]`
-- `src/lib/derive-github-repo.ts` — rewritten: returns `RepoInfo { repo, repoStatus }` instead of `string | null`; `stdio` fix (`"ignore"` → `"pipe"` for stderr capture); discriminates all 4 error causes from stderr substrings
-- `src/app/api/team-status/route.ts` — `_noIssues` + `fetchIssues` (×2 return paths) + GET handler updated; `repoStatus` propagates through
-- `tests/api/team-status-repo-derivation.test.ts` — 7 existing cases updated to `{ repo, repoStatus }` shape + 2 new cases (`not-git` + `bad-path` via stderr discrimination) = 9 total
-- `pnpm type-check` clean · `pnpm test:run` 26/26 green (6 files)
-- Commit SHA: `35533b0`
+**Wave 13c-ops — post-public-switch gitleaks history audit complete. CLEAN.**
 
----
+- `gitleaks detect --source . --redact` run against full 140-commit history (~865 KB).
+- Result: `[]` — no leaks. All clear. Safe to remain public.
+- `ops/README.md` updated with audit record (`9a30588`).
 
 **CodeQL restored.** Repo went public — Code Scanning is now free. Workflow file recreated identical to the original (`88fd8d1` shape); `ops/README.md` updated to note the brief private-tier removal + restoration. Code Scanning auto-enables on next push to main; no GitHub UI action required for public repos.
 

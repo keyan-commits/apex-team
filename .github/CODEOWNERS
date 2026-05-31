@@ -1,0 +1,12 @@
+# CODEOWNERS — documents lane ownership.
+# Single-identity repo: reviews can't be enforced from the same user, but this
+# file makes lanes visible in PR diffs and is a prerequisite for
+# CODEOWNERS-required-reviews if the repo moves to an org.
+*                    @keyan-commits
+.github/**           @keyan-commits
+ops/**               @keyan-commits
+src/lib/roles.ts     @keyan-commits
+src/lib/protocols.ts @keyan-commits
+requirements/**      @keyan-commits
+design/**            @keyan-commits
+architecture/**      @keyan-commits

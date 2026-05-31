@@ -1,0 +1,14 @@
+#!/bin/sh
+# Pre-push: block direct pushes to origin/main. Use a feature branch + PR instead.
+# POSIX-compatible — no bash-isms.
+# Bypass once: git push --no-verify  (CI is the second line of defense)
+remote="$1"
+while read local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_ref" = "refs/heads/main" ] && [ "$remote" = "origin" ]; then
+    echo "pre-push: direct push to origin/main is blocked." >&2
+    echo "  Use: pnpm branch:start <role> <slug>  →  open PR via: gh pr create" >&2
+    echo "  Bypass once: git push --no-verify" >&2
+    exit 1
+  fi
+done
+exit 0
