@@ -52,7 +52,7 @@ export function AgentStatePanel({
       </button>
 
       {open && (
-        <div className="body" tabIndex={0}>
+        <div className="body">
           {editing ? (
             <>
               <textarea
@@ -86,7 +86,7 @@ export function AgentStatePanel({
             </>
           ) : hasDoc ? (
             <>
-              <div className="doc-scroll">
+              <div className="doc-scroll" tabIndex={0}>
                 <div className="prose prose-invert prose-sm max-w-none">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>{handoffDoc}</ReactMarkdown>
                 </div>

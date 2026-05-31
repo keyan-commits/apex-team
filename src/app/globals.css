@@ -19,6 +19,10 @@
   --accent-ops: #ff9e64;   /* DevSecOps — amber/red */
   --accent-orch: #e0af68;  /* Orchestrator bar — aliases PO gold */
   --accent-uxd: #bf6dff;  /* UX Designer — violet */
+
+  /* Semantic status colours — not role-specific */
+  --status-green: #4caf50;
+  --status-amber: #ff9800;
 }
 
 html,

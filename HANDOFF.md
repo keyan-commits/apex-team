@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-06-01
 
+**Wave 33 — Three UX nit fixes (closes #79 #80 #81). `src/app/globals.css`: added `--status-green` + `--status-amber` CSS vars. `src/app/dashboard/page.tsx`: `aria-live="polite"` removed from `<button>` → replaced with `aria-busy={scoutRunning}`; `.sat-green`/`.sat-amber` now use CSS vars. `src/components/AgentStatePanel.tsx`: `tabIndex={0}` moved from `.body` to `.doc-scroll` (the overflow container). 56/56 green. Feature branch: `feature/33-ux-nits`. Awaiting UX gate → DevSecOps merge.**
+
 **Wave 28e — PR #72 (`feature/28b-density`) rebased onto main (Wave 32 conflict), merged SHA `72b987c`. Conflict: only `HANDOFF.md` (HEAD had Wave 32+ entries; feature had Wave 28b entry — kept both). `AgentPane.tsx` auto-merged correctly (maxHeight prop + Link wrapping both present). CI PASS (23s/33s). Smoke PASS. Worktree cleaned up. `design/US-009-010-011-agent-profile-and-dashboard-additions.md` + `design/INDEX.md` (UX Designer Wave 32c uncommitted docs) committed to main in this turn.**
 
 **Wave 32 — US-009 + US-010 + US-011 SHIPPED. PR #78 merge SHA `44d075d`. 56/56 green. Smoke PASS. Issues closed: US-009 (agent profile page), US-010 (manual scout trigger), US-011 (context saturation bar). Follow-up issues open: #79 (aria-live placement), #80 (hex color tokens), #81 (tabIndex on wrong element in AgentStatePanel).**
