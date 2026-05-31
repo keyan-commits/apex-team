@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "sections": {
+    "Design-spec discipline": "claude",
+    "Information architecture": "claude",
+    "Responsive design": "claude",
+    "Interaction states": "claude",
+    "Copywriting": "claude",
+    "Design-system thinking": "claude",
+    "Critique workflow": "claude",
+    "Gate verdict format": "user"
+  }
+}

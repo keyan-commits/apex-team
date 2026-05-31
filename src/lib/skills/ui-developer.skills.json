@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "sections": {
+    "Visual hierarchy": "claude",
+    "Component granularity": "claude",
+    "All interaction states — never skip any": "claude",
+    "Accessibility-first": "claude",
+    "Mobile-first responsive": "user",
+    "Performance budget": "claude",
+    "Pre-HANDOFF unit testing": "user",
+    "UI/UX self-review discipline": "claude"
+  }
+}

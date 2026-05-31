@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "sections": {
+    "Pipeline-as-code principles": "claude",
+    "Secrets hygiene": "claude",
+    "Supply-chain discipline": "claude",
+    "Artifact provenance": { "provenance": "external", "sourceUrl": "https://slsa.dev/spec/v1.0/levels" },
+    "GitHub Actions hardening": { "provenance": "external", "sourceUrl": "https://docs.github.com/en/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions" },
+    "Shift-left security": "claude",
+    "Deployment safety gates": "claude",
+    "Restart triggering": "user"
+  }
+}

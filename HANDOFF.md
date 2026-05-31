@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 32 BE — US-009 + US-010 backends. 7 provenance JSON sidecars (`src/lib/skills/<role>.skills.json`) — sections tagged claude/user/external per origin wave. 3 new API routes: `GET /api/agent/[role]` (profile + skills + provenance + model), `POST /api/agent/[role]/improvement` (gh issue create via execFileSync), `POST /api/scout/trigger` (spawns skill-scout.mjs, 503 on missing API key, 409 if running). `GET /api/scout/status` bonus (AC3). 11 new tests across 3 new test files. 56/56 green. Feature branch: `feature/32-be-agent-apis`.**
+
 **Wave 31 UI — Dashboard expand-state-resets-on-poll fix. Root cause: DONE panel used array index `i` as `expandedRow` key; new items prepended to `data.done` on poll shifted all indices, collapsing the open row. Fix: `${e.role}-${e.completedAt}` stable key throughout DONE block in `src/app/dashboard/page.tsx`. All other panels already stable (NOW: `e.role`, QUEUED: `item.id`, BLOCKED: `e.role`). 45/45 green. Feature branch: `feature/31-dashboard-expand-stable`.**
 
 **Wave 30 — MCP transport heartbeat + Now-panel fix. `src/mcp/handler.ts`: 30s SSE-style keepalive heartbeat wraps `transport.handleRequest` — resets undici bodyTimeout + intermediate TCP idle timeout during long agent turns. `src/app/api/team-status/route.ts`: Now-panel drops `agent_state.updatedAt` heuristic; trigger within last 10 min + unanswered → "now". Helper in `src/lib/derive-now-queued.ts`. `tests/api/team-status-now.test.ts`: 6 new tests. 45/45 green. Feature branch: `feature/30-transport-heartbeat-and-now-panel`.**
