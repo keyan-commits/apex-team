@@ -7,7 +7,7 @@
 - `src/app/dashboard/page.tsx` — 4 changes: (1) drop "Issues:" prefix on attribution (bare monospace link only); (2) switch on `data.issues.repoStatus` for per-cause empty state copy (none/not-git/non-github/bad-path); (3) `:visited` style fix (`color: var(--text-dim)` on `.issue-repo-link:visited`); (4) `setData(null)` at top of polling effect to clear stale attribution on workspace change
 - Imports `RepoStatus` from `@/types` (added by BE branch `35533b0`)
 - `pnpm type-check` clean · `pnpm test:run` 26/26 green (6 files)
-- Commit SHA: (SHA-pending)
+- Commit SHA: `e73bfa7`
 
 **Wave 13b BE — `feature/13b-repo-status` SHA `35533b0` — awaiting QA gate in parallel.**
 
