@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 1 complete. Two commits on `main`: event-bus SSE refactor (`2f037dc`) + skills injection (`SHA-pending`). `pnpm type-check` passes clean. `tsx` running plain (no watch). Resume on branch `main`.
+**State.** Wave 1 complete. Two commits on `main`: event-bus SSE refactor (`2f037dc`) + skills injection (`263ab77`). `pnpm type-check` passes clean. `tsx` running plain (no watch). Resume on branch `main`.
 
 **Wave 1 shipped:**
 - `src/types.ts` — `skills?: string` on `RoleDefinition` (backward-compat).
