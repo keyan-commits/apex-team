@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 2 Backend Dev complete (SHA-pending). `pnpm type-check` passes clean. UI Dev wave 2 also complete (AgentPane model dropdown — `src/components/AgentPane.tsx`). DevSecOps wave 2 in flight.
+**State.** Wave 2 Backend Dev complete (`a3dd9cb`). `pnpm type-check` passes clean. UI Dev wave 2 also complete (AgentPane model dropdown — `src/components/AgentPane.tsx`). DevSecOps wave 2 in flight.
 
 **Wave 2 Backend Dev shipped:**
 - `src/lib/active-thread.ts` — `setActiveThread` / `getActiveThread`; globalThis-bridged (same pattern as event-bus).
