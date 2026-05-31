@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**QA — Wave 8f complete.** Code + live browser verification of Wave 8e fixes + po-dispatch hotfix. New smoke test file `tests/smoke/po-dispatch.test.ts` (2 tests). `pnpm test:run` 8/8. Commit `(SHA-pending)`.
+**QA — Wave 8f complete.** Code + live browser verification of Wave 8e fixes + po-dispatch hotfix. New smoke test file `tests/smoke/po-dispatch.test.ts` (2 tests). `pnpm test:run` 8/8. Commit `6c804ab`.
 
 **Wave 8f QA findings — all PASS:**
 - #21 QUEUED keyboard reorder: boundary guards, localStorage persist, flash, aria-live, focus-follows — all confirmed in code + browser snapshot shows `aria-label` with position hint ✓
