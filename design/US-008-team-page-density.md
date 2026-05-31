@@ -1,302 +1,280 @@
-# US-008 — Team Page Information Density Redesign
+# US-008 — Team page density redesign
 
 **Status:** ready  
-**Linked issue:** user feedback Wave 28 ("Still too much information and UI/UX can be improved")  
-**UX Designer:** Wave 28a  
-**Spec date:** 2026-05-31
+**User story:** User feedback Wave 28 — "Still too much information and UI/UX can be improved"  
+**Linked issue:** #43 (tracked in GitHub)  
+**Spec author:** UX Designer  
+**Date:** 2026-05-31
 
 ---
 
-## Problem statement
+## 1. Diagnosis — root causes
 
-The Team page (`/` route) has unbounded vertical growth. A single active pane can exceed the viewport height by 4-10×, forcing simultaneous scroll inside the pane AND across the page. The root causes are four specific missing constraints in the current code:
+Reading `AgentPane.tsx`, `AgentStatePanel.tsx`, `MessageBubble.tsx`, and `page.tsx` reveals three independent density problems, each with a concrete fix.
 
-1. **`AgentStatePanel` `.body` has no `max-height`** — a full HANDOFF.md (200+ lines in this project) renders at full uncapped height when the panel is open.
-2. **`AgentPane` `.messages` has `min-height: 120px` but no `max-height`** — grows unboundedly with message history.
-3. **`MessageBubble` threshold is generous** — `COLLAPSE_CHARS=400, COLLAPSE_LINES=6` shows substantial markdown content before collapsing.
-4. **Outbound HANDOFF/dispatch bubbles render at full height** — handoff messages TO a peer are status info, not reading material; they shouldn't expand inline.
+### 1a. Pane has no height cap (primary — BLOCK)
 
----
+`.pane` in `AgentPane.tsx` is a flex column with `min-height: 0` but **no `max-height`**. The `.messages` area is `flex: 1; overflow-y: auto` — scroll is there but the pane itself grows to its natural content height. The CSS grid in `page.tsx` uses `grid-template-columns: repeat(3, minmax(0, 1fr))` with no `grid-auto-rows` or height constraint.
 
-## Design diagnosis
+**Effect:** one active pane with 20+ messages towers over six idle panes. The user must scroll the page to see other roles. On a standard 1080px viewport, a single streaming pane can push everything below the fold.
 
-### What's already working — do not change
+### 1b. HANDOFF doc body has no height cap (secondary — WARN)
 
-- **Collapsed pane** (`folded=true`): 40px single bar showing pill + title + inbox count + expand button. Perfect — keep exactly as-is.
-- **Auto-expand on busy / auto-fold at 60s idle**: Good behavior — keep.
-- **ActivityLog strip**: 28px, horizontal, max-5 entries, monospace. No change needed.
-- **HANDOFF panel toggle** (`AgentStatePanel`): Closed by default (`defaultOpen=false`). Good — keep.
-- **MessageBubble "Show more" affordance**: Mechanism is correct, threshold needs tightening only.
+`AgentStatePanel.tsx` `.body` has `padding: 4px 14px 12px` and renders full markdown. A typical HANDOFF doc is 80–200 lines. When the user opens it, the pane height doubles or triples. No `max-height` or `overflow-y: auto` on `.body`.
 
-### What needs changing
+### 1c. MessageBubble collapse threshold is too permissive (tertiary — WARN)
 
-| Culprit | Current | Problem | Fix |
-|---|---|---|---|
-| HANDOFF body | No `max-height` | Full doc renders (200+ lines) | `max-height: 200px; overflow-y: auto` |
-| Pane messages area | `min-height: 120px`, no max | Grows with full message history | `max-height: clamp(260px, 38vh, 480px); overflow-y: auto` |
-| Message bubble threshold | 400 chars / 6 lines | 6 lines of markdown = substantial text | 200 chars / 3 lines |
-| HANDOFF-out / dispatch-out bubbles | Full content rendered | Outbound messages shouldn't dominate | Collapsed-by-default: show 1-line summary + char count |
+`COLLAPSE_CHARS = 400`, `COLLAPSE_LINES = 6`. Six visible lines before "Show more" is appropriate for a conversational UI; it is too much for a monitoring/log-stream view. An agent reply with a multi-step plan shows six lines (~1200px of content) before collapsing — adding 200–300px of height to the pane.
 
 ---
 
-## Visual wireframes
+## 2. What does NOT need fixing
 
-### Expanded pane — idle state (no active turn)
-
-```
-┌────────────────────────────────────────────────────────────┐
-│ ● idle   Business Analyst                  Claude ▾  [▲]  │  ← header-row: 40px
-│ Last: "Write US-007 story with AC for boot…"               │  ← task-bar: 24px
-├────────────────────────────────────────────────────────────┤
-│ ▸ HANDOFF · updated 14:23                                  │  ← HANDOFF toggle (closed): 36px
-├────────────────────────────────────────────────────────────┤
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │ Business Analyst (you)                               │  │  ← 3 lines max
-│  │ US-007 written. ACs: 1. idempotent bootstrap         │  │
-│  │ command 2. no auto-yes on branch protection…         │  │
-│  │                                 Show more (+22) ▾    │  │
-│  └──────────────────────────────────────────────────────┘  │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │ ↳ Handoff to DevSecOps                  [expand ▾]   │  │  ← outbound: 1-line collapsed
-│  └──────────────────────────────────────────────────────┘  │
-│  ↑ messages area: max-height clamp(260px,38vh,480px),      │
-│    overflow-y: auto, scrollbar-thin                        │
-├────────────────────────────────────────────────────────────┤
-│  ┌────────────────────────────────────────┐  [Send]        │
-│  │ Message Business Analyst… (⌘+Enter)   │                │
-│  └────────────────────────────────────────┘                │
-└────────────────────────────────────────────────────────────┘
-```
-
-### Expanded pane — HANDOFF panel open
-
-```
-┌────────────────────────────────────────────────────────────┐
-│ ● idle   Business Analyst                  Claude ▾  [▲]  │
-│ Last: "Write US-007 story…"                                │
-├────────────────────────────────────────────────────────────┤
-│ ▾ HANDOFF · updated 14:23                                  │  ← toggle open
-│ ┌──────────────────────────────────────────────────────┐   │
-│ │ ## ⏭️ NOW — 2026-05-31                               │   │  ← HANDOFF body:
-│ │                                                      │   │    max-height: 200px
-│ │ Wave 28 — …                                          │   │    overflow-y: auto
-│ │                                                    ↕ │   │    scrollbar-thin
-│ └──────────────────────────────────────────────────────┘   │
-│                                          [Edit]            │
-├────────────────────────────────────────────────────────────┤
-│  messages area (capped height, scrollable)                 │
-├────────────────────────────────────────────────────────────┤
-│  composer                                                  │
-└────────────────────────────────────────────────────────────┘
-```
-
-### Collapsed pane (unchanged)
-
-```
-┌────────────────────────────────────────────────────────────┐
-│ ● idle   Business Analyst         ② inbox          [▼]    │  ← 40px
-└────────────────────────────────────────────────────────────┘
-```
+- **ActivityLog** — already a compact 28px horizontal bar. No change.
+- **AgentPane folded state** — already a 40px compact bar. No change.
+- **AgentStatePanel toggle** — defaults to `open=false`. HANDOFF doc is hidden by default. No change to default behavior.
+- **Grid column structure** — 3+3+1 layout is appropriate. Responsive breakpoints are correct.
+- **Auto-fold after 60s idle** — correct behavior. Keep.
+- **Auto-expand on `busy`** — correct behavior. Keep.
 
 ---
 
-## Component-level spec
+## 3. Proposed changes — complete spec
 
-### 1. `AgentStatePanel.tsx` — HANDOFF body max-height
+### 3a. Per-pane max-height with internal scroll
 
-**File:** `src/components/AgentStatePanel.tsx`  
-**Change:** Add to `.body` CSS rule:
+**Recommendation: fixed viewport-relative max-height on each expanded `.pane`.**
 
-```css
-.body {
-  padding: 4px 14px 12px;
-  max-height: 200px;
-  overflow-y: auto;
-}
-```
+Two options evaluated:
 
-- **Why 200px:** Shows ~10-12 lines of the HANDOFF NOW block — enough to scan status without scrolling for the common case. The HANDOFF doc header (`## ⏭️ NOW`) lands at line 1; the user sees the current-wave summary immediately.
-- **Scrollbar:** Use `scrollbar-thin` (Tailwind) or equivalent — `scrollbar-width: thin` — so the internal scroll doesn't clash with the pane's outer scroll.
-- **No animation on open/close transition:** Body appears/disappears instantly (already toggled via `{open && ...}` conditional render). Adding a transition here would conflict with the `max-height` scroll cap.
-
-**Interaction states:**
-- **default (closed):** toggle bar only, 36px, no scroll
-- **open, doc fits within 200px:** no scrollbar appears
-- **open, doc overflows 200px:** `scrollbar-thin` appears on right edge; user scrolls inside the panel
-- **open, empty doc:** "No HANDOFF doc yet. This agent will create one on its next turn..." (existing empty state, unchanged)
-- **open, editing mode:** textarea appears inside the body (existing behavior); textarea height still auto-sizes to content; overall body is now scrollable which means the Edit/Cancel buttons scroll with the textarea — acceptable for this use case
-
----
-
-### 2. `AgentPane.tsx` — Messages area max-height
-
-**File:** `src/components/AgentPane.tsx`  
-**Change:** Update `.messages` CSS rule:
-
-```css
-.messages {
-  flex: 1;
-  padding: 10px;
-  overflow-y: auto;
-  min-height: 80px;
-  max-height: clamp(260px, 38vh, 480px);
-}
-```
-
-- **Why clamp(260px, 38vh, 480px):** At 1440px viewport height (common desktop), 38vh ≈ 547px — capped at 480px. At 900px viewport height, 38vh ≈ 342px. At 600px (small screen), 38vh = 228px — floored at 260px to ensure at least 2-3 messages are visible.
-- **Why reduce min-height 120px → 80px:** 80px still shows 2-3 short messages while reducing the empty-state visual weight for idle panes.
-- **Auto-scroll to bottom on new messages:** Existing `scrollerRef.scrollTop = scrollerRef.scrollHeight` logic is unchanged — scrolls the messages area to the latest message.
-- **During streaming:** The messages area is always at max-height when the pane is expanded; the latest pending draft stays visible via the existing auto-scroll.
-
-**Interaction states:**
-- **empty (no messages):** "No messages yet. Talk to X below." centered at 80px height
-- **1-3 short messages:** messages fill naturally; no scrollbar
-- **many messages / overflow:** scrollbar-thin appears; auto-scroll keeps newest visible during streaming
-- **folded pane:** messages area not rendered (existing behavior)
-
----
-
-### 3. `MessageBubble.tsx` — Tighter collapse threshold
-
-**File:** `src/components/MessageBubble.tsx`  
-**Change:**
-
-```ts
-const COLLAPSE_CHARS = 200;   // was 400
-const COLLAPSE_LINES = 3;     // was 6
-```
-
-- **Why 200 chars / 3 lines:** The Team page is a monitoring surface — users scan for status, not read for detail. 3 lines shows: a heading + 1-2 content lines, or the first few bullets of a list. Enough to identify the message type and key outcome; "Show more" is the natural next step.
-- **"Show more (+ N lines) ▾" copy:** Unchanged. The `extraLines` count already reflects the correct delta.
-- **Already-expanded bubbles:** Collapsing by default is reset-state only — users who have clicked "Show more" stay expanded for that session (existing `useState(!isLong)` behavior is preserved).
-
-**Interaction states (all existing, threshold change only):**
-- **short message (≤200 chars and ≤3 lines):** no Show more button; renders in full
-- **long message:** 3-line preview with fade overlay + "Show more (+N lines) ▾"
-- **expanded:** full content + "Collapse ▴"
-- **streaming/pending:** `pending` prop → pending-dot in header; no collapse affordance while streaming (content grows in place)
-
----
-
-### 4. Outbound HANDOFF/dispatch bubbles — collapsed by default
-
-**File:** `src/components/MessageBubble.tsx`  
-**Change:** Outbound message types (`handoff-out`, `dispatch-out`) start collapsed regardless of length.
-
-Rationale: A HANDOFF or DISPATCH message that this agent SENT to a peer is routing infrastructure — not reading material for the pane's own role. It should be visible as a status indicator ("I sent something to QA") but not expand to consume vertical space by default.
-
-```ts
-// Replace the current isLong initializer:
-const isOutbound = tone === "handoff-out" || tone === "dispatch-out";
-const [expanded, setExpanded] = useState(isOutbound ? false : !isLong);
-```
-
-**Visual diff vs current:**
-
-Current (handoff-out):
-```
-┌─────────────────────────────────────────────┐
-│ ↳ Handoff to DevSecOps                       │  (dashed border, gold tint)
-│                                              │
-│ Wave 27 — Deploy US-005. QA PASS on          │
-│ `feature/13b-issues-ui-polish` SHA `e73bfa7` │  ← full content visible
-│ (base: `feature/13b-repo-status` SHA         │
-│ `35533b0`). Branch protection is now LIVE    │
-│ …                                Show more ▾ │
-└─────────────────────────────────────────────┘
-```
-
-After (handoff-out, collapsed by default):
-```
-┌─────────────────────────────────────────────┐
-│ ↳ Handoff to DevSecOps                       │  (dashed border, gold tint)
-│ Wave 27 — Deploy US-005. QA PASS on `feat… │  ← 1 line preview (200 chars still)
-│                                  Show more ▾ │
-└─────────────────────────────────────────────┘
-```
-
-**Interaction states:**
-- **handoff-out / dispatch-out, default:** collapsed (even if short — the `isOutbound` override makes all outbound messages start collapsed, though for very short messages the "Show more" affordance won't appear since `hasMore` is false — no visual change for short outbound messages)
-- **handoff-in / dispatch-in:** unchanged — inbound messages START collapsed only when they exceed the threshold (user is reading these, so the existing threshold applies)
-- **After user clicks "Show more":** full content, same as today
-
----
-
-### 5. Activity log strip — no change
-
-**File:** `src/components/ActivityLog.tsx`  
-Already well-constrained: 28px height, horizontal, overflow: hidden, max 5 entries. Its purpose (last routing decision, wave ID) is high-value at low cost. Keep exactly as-is.
-
----
-
-## Interaction state inventory
-
-Full enumeration per interactive surface in the redesigned pane:
-
-| Surface | State | Behavior |
+| Option | Approach | Verdict |
 |---|---|---|
-| Pane (expanded) | idle | Header (40px) + task-bar (24px) + HANDOFF toggle (36px) + messages (max 480px) + composer |
-| Pane (expanded) | busy/streaming | Same layout; messages auto-scroll; pending bubble at bottom; elapsed counter in header |
-| Pane (folded) | any | 40px bar only |
-| HANDOFF toggle | closed | 36px bar; "▸ HANDOFF · updated HH:MM" |
-| HANDOFF toggle | open, short doc | body up to 200px; no scrollbar |
-| HANDOFF toggle | open, long doc | body at 200px with scrollbar-thin |
-| HANDOFF toggle | open, editing | textarea inside body; Save/Cancel buttons scroll with content |
-| Messages area | empty | 80px height; "No messages yet…" centered |
-| Messages area | filling | grows to max-height; then scrolls; auto-scrolls to bottom on new message |
-| MessageBubble | short (≤200c/3l) | full content, no Show more |
-| MessageBubble | long | 3-line preview + fade + "Show more (+N) ▾" |
-| MessageBubble | expanded | full content + "Collapse ▴" |
-| MessageBubble (outbound) | any | starts collapsed; "Show more" if content exists |
-| Composer | idle | 3-row textarea (2 for PO); Send button disabled when empty |
-| Composer | busy | textarea + Send disabled |
-| Process inbox btn | inboxCount > 0 | full-width button above textarea |
+| A (recommended) | `max-height: min(560px, 65vh)` per pane | ✅ Idle panes stay short; busy pane scrolls internally |
+| B | `grid-auto-rows` equalization | ✗ Forces idle panes to match busy pane height — wastes space |
 
----
+**Spec:**
 
-## Copy strings (verbatim)
+- Team pane (expanded): `max-height: min(560px, 65vh)`
+- PO pane (full-width, expanded): `max-height: min(420px, 48vh)`
+- Pane folded state: `min-height: 0` (unchanged, 40px bar)
 
-All existing copy strings are unchanged. No new copy introduced.
+At 560px, the internal layout is approximately:
+```
+┌──────────────────────────────────────────┐  ← max-height: 560px
+│ header-row     [pill] Role Title  [▲]    │  ~40px
+│ task-bar    last task text…              │  ~22px
+├──────────────────────────────────────────┤
+│ ▸ HANDOFF  · updated 14:32              │  ~36px (closed)
+├──────────────────────────────────────────┤
+│ ┌──────────────────────────────────────┐ │
+│ │  You (user)                          │ │  \
+│ │  send a message to this role…        │ │   \
+│ └──────────────────────────────────────┘ │    ~360px
+│ ┌──────────────────────────────────────┐ │    overflow-y: auto
+│ │  Business Analyst (you)              │ │   /
+│ │  I've reviewed the requirements and  │ │  /
+│ │  Show more (+24 lines) ▾             │ │
+│ └──────────────────────────────────────┘ │
+├──────────────────────────────────────────┤
+│ [Process inbox (3)]                      │  ~30px (if inbox > 0)
+│ ┌───────────────────────────────────┐[→] │  ~102px
+│ │ Message Business Analyst…  (2 rows)│   │
+│ └───────────────────────────────────┘   │
+└──────────────────────────────────────────┘
+```
 
-- HANDOFF toggle: `"HANDOFF"` + `"· updated HH:MM"` / `"· empty"`
-- HANDOFF empty state: `"No HANDOFF doc yet. This agent will create one on its next turn (via a [[NOTES]] block)."`
-- MessageBubble show-more: `"Show more (${moreCopy}) ▾"` where `moreCopy = extraLines > 0 ? \`+${extraLines} lines\` : "more"`
-- MessageBubble collapse: `"Collapse ▴"`
+**Breakpoint behavior (from existing breakpoints):**
+- `>1100px`: 3-column grid, each pane `max-height: min(560px, 65vh)`
+- `768px–1100px`: 2-column grid, same max-height
+- `<768px`: 1-column grid, `max-height: min(480px, 60vh)`
 
----
+### 3b. HANDOFF doc body height cap
 
-## Responsive behavior
+When `.state-panel` is open, the `.body` div gets:
+- `max-height: 220px`
+- `overflow-y: auto`
 
-| Breakpoint | Behavior |
+This keeps the HANDOFF doc readable while preventing it from blowing up the pane. The Edit textarea is exempt (editor should show the full doc for editing; limit to 12 rows via the existing `Math.min(12, …)` logic, unchanged).
+
+**States:**
+
+| State | Behavior |
 |---|---|
-| > 1100px | 3-column team grid (unchanged) |
-| 768px–1100px | 2-column grid (existing `@media (max-width: 1100px)`) |
-| ≤ 768px | 1-column stack (note: code currently uses `720px` — this is a pre-existing mismatch with the 768px standard; out of scope for this wave) |
+| `open=false` (default) | Toggle bar only, 36px |
+| `open=true`, doc ≤ ~15 lines | Full doc visible, no scroll |
+| `open=true`, doc > ~15 lines | Scrolls at 220px; gradient fade at bottom edge (same `bubble-fade` pattern) |
+| editing mode | Textarea grows as-is (up to 12 rows); no max-height override |
 
-The `max-height: clamp(260px, 38vh, 480px)` on `.messages` naturally adapts to all breakpoints — the `38vh` component tracks viewport height, not width. No additional breakpoint rules needed for the messages area.
+ASCII — open + long doc:
+```
+┌──────────────────────────────────────────┐
+│ ▾ HANDOFF  · updated 14:32   [inbox 2]  │  ← toggle
+├──────────────────────────────────────────┤
+│ ## ⏭️ NOW — 2026-05-31                   │  \
+│                                          │   \
+│ Wave 28 - UX density spec in progress…  │    220px max
+│                                          │   /  overflow-y: auto
+│ **Awaiting:** QA PASS on feature/28a    │  /
+│ ~~~~~~~~~~~~~~~~~~~~~~~~~~~ [fade]       │  ← gradient fade at bottom
+├──────────────────────────────────────────┤
+│                [Edit]                    │
+└──────────────────────────────────────────┘
+```
+
+### 3c. MessageBubble collapse thresholds
+
+**Change:**
+- `COLLAPSE_CHARS`: `400` → `200`
+- `COLLAPSE_LINES`: `6` → `3`
+
+**Rationale:** This is a monitoring view, not a conversation. The user wants to see at a glance that a role completed a task, not read the whole reply. Full content is one click away. 3 lines (~120-180px per message) keeps the pane scannable.
+
+**Copy (unchanged):** "Show more (+N lines) ▾" / "Collapse ▴" — already correct.
+
+**Impact on streaming (pending draft):** The `pending` prop renders the in-flight streaming draft without collapse — this is correct and stays unchanged. Only committed messages collapse.
+
+### 3d. Composer textarea height
+
+**Change:** `rows={isPO ? 2 : 3}` → `rows={isPO ? 2 : 2}`
+
+Team pane textarea: 3 rows → 2 rows. Saves ~20px per expanded pane. Small but adds up across 7 panes.
+
+PO pane textarea: 2 rows — unchanged (PO writes longer orchestration prompts).
+
+### 3e. Outbound HANDOFF / dispatch bubbles — collapsed by default
+
+`MessageBubble.tsx` renders handoff-out and dispatch-out messages at full height inline in the pane. These are **status / routing signals**, not reading material for the pane's owner. They should collapse by default even below the 3-line threshold.
+
+**Change:** For `tone === "handoff-out"` or `tone === "dispatch-out"`, force `expanded=false` as the initial state regardless of content length. The existing "Show more ▾" affordance expands them on click.
+
+**Visual:**
+```
+┌──────────────────────────────────────────┐
+│ ↳ Handoff to DevSecOps   [Show more ▾]  │  ← always collapsed, 1 line
+└──────────────────────────────────────────┘
+```
+
+**Copy:** The "Show more" CTA already reads correctly — no copy change needed.
+
+**Note:** `tone === "handoff-in"` and `"dispatch-in"` are NOT collapsed by default — incoming messages are the primary reading material for the pane.
 
 ---
 
-## Implementation notes for UI Dev
+## 4. Interaction state inventory
 
-Four surgical changes across two files:
+### 4a. AgentPane — all states
 
-1. **`AgentStatePanel.tsx`** — one CSS property addition to `.body`
-2. **`AgentPane.tsx`** — two CSS value changes to `.messages` (`min-height` + add `max-height`)
-3. **`MessageBubble.tsx`** — two constant changes (`COLLAPSE_CHARS`, `COLLAPSE_LINES`) + one `useState` initializer change for outbound types
+| State | Default visible content |
+|---|---|
+| **folded (idle, 60s+ timeout)** | 40px bar: pill · role title · inbox badge (if >0) · expand ▼ |
+| **folded (busy)** | Auto-unfolds via existing `if (busy) setFolded(false)` |
+| **expanded, idle, no messages** | Header + HANDOFF toggle (closed) + empty state text + composer |
+| **expanded, idle, N messages** | Header + HANDOFF toggle + messages (max-height, scrolls) + composer |
+| **expanded, busy/streaming** | Same as above; streaming draft at bottom; elapsed timer in header |
+| **expanded, error** | Pill shows error state; click-to-expand error detail (existing) |
+| **expanded, HANDOFF open** | HANDOFF body (max 220px, scroll) visible between header and messages |
+| **focus on fold/unfold button** | `:focus-visible` outline (existing from Wave 25) |
 
-Total estimated LOC: ~8 changed lines. No new components. No new state. No API changes.
+### 4b. Pane grid at different viewports
 
-**Regression risks:**
-- `AgentStatePanel` editing mode: textarea inside a 200px scrolling body works but the Edit button row scrolls with the content — acceptable for an edge case (manual edit of HANDOFF doc is rare).
-- Streaming pane during active turn: the messages area cap means users may not see the full token stream without scrolling. Auto-scroll to bottom mitigates this — newest content is always visible; older content scrolls out of view above.
+```
+>1100px                  768px–1100px             <768px
+┌──────────────────┐    ┌──────────────────┐    ┌──────────────────┐
+│   Product Owner  │    │   Product Owner  │    │   Product Owner  │
+│   (full-width)   │    │   (full-width)   │    │   (full-width)   │
+└──────────────────┘    └──────────────────┘    └──────────────────┘
+┌──────┐┌──────┐┌──────┐ ┌────────┐┌────────┐ ┌──────────────────┐
+│  BA  ││  Arc ││  UI  │ │  BA    ││  Arc   │ │  Business Analyst│
+└──────┘└──────┘└──────┘ └────────┘└────────┘ └──────────────────┘
+┌──────┐┌──────┐┌──────┐ ┌────────┐┌────────┐ ┌──────────────────┐
+│  BE  ││  QA  ││  Ops │ │  UI    ││  BE    │ │  Architect       │
+└──────┘└──────┘└──────┘ └────────┘└────────┘ └──────────────────┘
+┌──────────────────────┐ ┌────────┐┌────────┐ … (stacked, 1-col)
+│  UX Designer         │ │  QA    ││  Ops   │
+└──────────────────────┘ └────────┘└────────┘
+                         ┌────────┐┌────────┐
+                         │  UXD   ││        │
+                         └────────┘└────────┘
+```
+
+Each pane independently capped at `min(560px, 65vh)`. Idle panes are short; busy pane scrolls internally.
+
+### 4c. Streaming pane — density control
+
+```
+Before fix:                        After fix:
+┌────────────────┐                 ┌────────────────┐ ←max: 560px
+│ DevSecOps      │                 │ DevSecOps      │
+├────────────────┤                 ├────────────────┤
+│ ▸ HANDOFF      │                 │ ▸ HANDOFF      │
+├────────────────┤                 ├────────────────┤
+│ Reading issue… │                 │ Reading issue… │  \
+│ Creating …     │                 │ Creating …     │   |
+│ ...            │                 │ ...            │   | scrolls
+│ (pane height   │                 │ ...            │   | internally
+│  grows to      │                 │ [scroll ↓]     │   |
+│  push all      │                 ├────────────────┤   |
+│  other roles   │                 │ streaming draft│  /
+│  below fold)   │                 ├────────────────┤
+│                │                 │ [composer]     │
+│ streaming…     │                 └────────────────┘
+├────────────────┤
+│ [composer]     │                 Adjacent panes stay at their
+└────────────────┘                 natural (short) height.
+```
+
+### 4d. Motion
+
+- Pane expand/collapse (fold ▲/▼): 150ms ease-out (existing behavior — unchanged)
+- HANDOFF body expand/collapse: 150ms ease-out
+- Max-height constraint: no animation — scrollbar appears/disappears instantly
+- `@media (prefers-reduced-motion: reduce)`: remove all transitions (add to existing reduced-motion block in the pane styles)
 
 ---
 
-## Skill gap — proposal filed
+## 5. Copy changes
 
-Filed as GitHub issue: `skill-proposal: information density audit checklist` — a structured checklist for scanning UI for unbounded heights, implicit overflow, uncapped list renders, and missing scroll containment. This would let the UX Designer catch the four issues diagnosed above during initial spec review rather than post-implementation.
+No copy changes required for this spec. All labels, empty states, and button text remain as-is.
 
 ---
 
-_UX Designer · Wave 28a · 2026-05-31_
+## 6. Accessibility
+
+- Max-height + internal scroll: screen readers navigate the message list normally; `overflow-y: auto` does not break AT traversal.
+- HANDOFF doc scrollable region: add `tabIndex={0}` to the `.body` div so keyboard users can focus it and scroll with arrow keys when content overflows 220px.
+- Streaming draft (`pending` prop): already rendered without collapse — AT hears the live region updates as before.
+
+---
+
+## 7. Design decisions — WHY
+
+| Decision | Rationale |
+|---|---|
+| `max-height: min(560px, 65vh)` not `grid-auto-rows` | Grid equalization would force idle panes to match busy pane height — wastes vertical space for the majority of panes that are idle |
+| 560px not viewport-fill | Team panes should feel like cards, not full-pane views. 560px shows ~5 messages + composer without overwhelming; the dashboard's job is monitoring, not reading |
+| Collapse at 3 lines/200 chars not 1 line | 1-line collapse hides too much context at a glance. 3 lines lets the user see the opening of a response before "Show more" |
+| Keep HANDOFF default-closed | Already correct. Opening it is an explicit user action; the HANDOFF doc is secondary to the message stream |
+| PO pane max-height 420px | PO is full-width and typically shorter (orchestration messages, not implementation narratives). Smaller cap keeps the team grid accessible without scrolling past PO |
+
+---
+
+## 8. Out of scope (defer)
+
+- Provider/model dropdowns hidden behind a gear icon (lower priority — this is a config affordance, not a density problem)
+- Per-role keyboard shortcuts for expand/collapse (nice-to-have, not blocking)
+- Message search / filter (separate feature)
+- Dashboard split-view (separate feature)
+
+---
+
+## 9. Files to change (implementation reference for UI Dev)
+
+| File | Change |
+|---|---|
+| `src/components/AgentPane.tsx` | Add `max-height: min(560px, 65vh)` to `.pane` in expanded state; `max-height: min(420px, 48vh)` passed from `page.tsx` for PO; `rows={2}` for team pane textarea |
+| `src/components/AgentStatePanel.tsx` | Add `max-height: 220px; overflow-y: auto;` to `.body`; gradient fade at bottom |
+| `src/components/MessageBubble.tsx` | `COLLAPSE_CHARS = 200`, `COLLAPSE_LINES = 3`; outbound handoff/dispatch bubbles forced `expanded=false` initially |
+| `src/app/page.tsx` | Pass `isPO` hint or explicit `maxHeight` prop to `AgentPane` for the PO pane cap |
+| `src/app/globals.css` | Add `@media (prefers-reduced-motion: reduce)` override for pane/HANDOFF transitions if not already present |
+
+> Implementation note: `max-height` on `.pane` is cleanest as a prop-driven CSS variable — `AgentPane` can accept an optional `maxHeight?: string` prop defaulting to `"min(560px, 65vh)"`, and `page.tsx` passes `"min(420px, 48vh)"` for the PO pane. No new component needed.
