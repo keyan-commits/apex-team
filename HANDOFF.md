@@ -2,6 +2,16 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 14b-ops — US-006 implementation on `feature/14b-main-enforcement` (SHA-pending). Awaiting QA gate.**
+
+- `scripts/git-hooks/pre-push` — new POSIX hook blocking direct pushes to `origin/main`
+- `scripts/git-hooks/pre-commit` — type-check inserted as first step (before gitleaks)
+- `.github/CODEOWNERS` — 8 entries, all lanes → `@keyan-commits`
+- `ops/branch-protection-payload.json` — exact JSON for GitHub branch protection (NOT yet applied; user must run `gh api` command after merge — OQ-007 explicit consent)
+- `ops/README.md` — `## Branch protection (US-006)` section documenting the `gh api` command + curl fallback
+- `pnpm type-check` clean · `pnpm test:run` 24/24 green
+- **Note:** branch protection itself is NOT applied. User must run after merge.
+
 **Wave 14a BA — US-006 + US-007 committed (SHA-pending) on main. Requirements phase.**
 
 - `requirements/user-stories/US-006-main-branch-enforcement.md` — 6 ACs: AC1 (no direct push incl. admin), AC2 (CI gate blocks PR merge), AC3 (local pre-push hook), AC4 (pre-commit type-check), AC5 (CODEOWNERS advisory), AC6 (--no-verify caught by CI). Owner: DevSecOps.
