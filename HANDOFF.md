@@ -2,19 +2,23 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 6a scout complete (issues #5–#16 filed). Wave 6b UI Dev stream done (`7291391`). `pnpm type-check` clean.
+**State.** Wave 6a scout complete (issues #5–#16 filed). Wave 6b UI Dev stream done; Architect `/api/team-status` done. `pnpm type-check` clean.
 
-**Wave 6b UI Dev delivered (this commit):**
-- `src/lib/skills/ui-developer.ts` — added INP/useTransition guidance to Performance budget; added `### UI/UX self-review discipline` section (7th skill).
-- `src/components/OrchestratorBar.tsx` — Team / Dashboard tab links via `Link` + `usePathname`; active tab highlighted by current pathname.
-- `src/components/AgentPane.tsx` — auto-fold: panes collapse to 40px after 60s idle; auto-expand on turn start; manual fold/expand toggle in header.
-- `src/app/dashboard/page.tsx` — NEW `/dashboard` route: 9 panels (Now / Queued / Done / Blocked / Active Wave / Issues / Scout / Context / Spend); 10s visibility-aware poll of `/api/team-status`; QUEUED panel drag-to-reorder with localStorage persistence. Graceful "endpoint building" state until Architect's endpoint lands.
+**Wave 6b Architect delivered (this commit):**
+- `src/app/api/team-status/route.ts` — NEW: GET `?threadId=<id>` returning all 9 panels (now/queued/done/blocked/activeWave/issues/scout/context/spend). Derives everything from existing DB tables + 60s in-memory issue cache (gh shell-out). Resilient to missing `turn_usage` table (BE Dev creates it in parallel — returns zeros until it exists).
+- `src/lib/db.ts` — added `listAllAgentStates(threadId)` + `getSpendSummary(threadId)` (catches missing `turn_usage`).
+- `src/types.ts` — added `TeamStatus` interface (shared contract with UI Dev).
 
-**QUEUED reorder:** HTML5 native DnD, no new deps, `apex-priority-<threadId>` localStorage key.
+**Wave 6b UI Dev delivered (`7291391`):**
+- `src/lib/skills/ui-developer.ts` — INP/useTransition guidance + `### UI/UX self-review discipline` section.
+- `src/components/OrchestratorBar.tsx` — Team / Dashboard tab links.
+- `src/components/AgentPane.tsx` — auto-fold after 60s idle, auto-expand on activity.
+- `src/app/dashboard/page.tsx` — NEW `/dashboard` route with 9 panels, 10s poll.
 
 **Open:**
-- `/api/team-status` endpoint — being built in parallel by Architect (Wave 6b). Dashboard shows graceful empty panels until it lands.
-- Wave 6b BE Dev + DevSecOps streams — still in progress.
+- Wave 6b BE Dev (scout.mjs + pricing.ts + turn_usage + providers.ts + PO prompt) — in progress.
+- Wave 6b DevSecOps (GH Actions workflow) — in progress.
+- Wave 6d Architect review — after all 6b streams complete.
 - Issue #4 — `page.tsx:113-117` mount fetch race (< 100ms window).
 
 **Previous wave:**

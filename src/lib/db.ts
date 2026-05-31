@@ -156,6 +156,77 @@ export function setThreadAgentModels(
     .run(threadId, JSON.stringify(models));
 }
 
+export function listAllAgentStates(threadId: string): AgentState[] {
+  const rows = db()
+    .prepare(
+      `SELECT thread_id, role, handoff_doc, updated_at FROM agent_state WHERE thread_id = ?`,
+    )
+    .all(threadId) as Array<{
+    thread_id: string;
+    role: string;
+    handoff_doc: string;
+    updated_at: number;
+  }>;
+  return rows.map((r) => ({
+    threadId: r.thread_id,
+    role: r.role as RoleId,
+    handoffDoc: r.handoff_doc,
+    updatedAt: r.updated_at,
+  }));
+}
+
+export interface SpendSummary {
+  todayUsd: number;
+  threadUsd: number;
+  perRole: Array<{ role: RoleId; usd: number; tokensIn: number; tokensOut: number }>;
+}
+
+export function getSpendSummary(threadId: string): SpendSummary {
+  const zero: SpendSummary = { todayUsd: 0, threadUsd: 0, perRole: [] };
+  try {
+    const conn = db();
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayMs = todayStart.getTime();
+    const todayRow = conn
+      .prepare(
+        `SELECT COALESCE(SUM(cost_usd), 0) as total FROM turn_usage WHERE created_at >= ?`,
+      )
+      .get(todayMs) as { total: number };
+    const threadRow = conn
+      .prepare(
+        `SELECT COALESCE(SUM(cost_usd), 0) as total FROM turn_usage WHERE thread_id = ?`,
+      )
+      .get(threadId) as { total: number };
+    const perRoleRows = conn
+      .prepare(
+        `SELECT role,
+           COALESCE(SUM(cost_usd), 0)       as usd,
+           COALESCE(SUM(input_tokens), 0)   as tokens_in,
+           COALESCE(SUM(output_tokens), 0)  as tokens_out
+         FROM turn_usage WHERE thread_id = ? GROUP BY role`,
+      )
+      .all(threadId) as Array<{
+      role: string;
+      usd: number;
+      tokens_in: number;
+      tokens_out: number;
+    }>;
+    return {
+      todayUsd: todayRow.total,
+      threadUsd: threadRow.total,
+      perRole: perRoleRows.map((r) => ({
+        role: r.role as RoleId,
+        usd: r.usd,
+        tokensIn: r.tokens_in,
+        tokensOut: r.tokens_out,
+      })),
+    };
+  } catch {
+    return zero;
+  }
+}
+
 // Pending inbox = handoff messages addressed to this role that arrived
 // after the role's most recent agent turn. We use the message id
 // ordering as the "did this role see it yet" cursor.

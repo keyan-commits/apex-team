@@ -94,3 +94,25 @@ export interface SseEvent {
   handoffDoc?: string;
   agentModels?: Record<RoleId, string>;
 }
+
+export interface TeamStatus {
+  now: Array<{ role: RoleId; taskSummary: string; startedAt: number; state: "thinking" | "streaming" | "dispatching" }>;
+  queued: Array<{ id: number; toRole: RoleId; fromRole: RoleId | "user"; taskSummary: string; createdAt: number }>;
+  done: Array<{ role: RoleId; taskSummary: string; completedAt: number; commitSha?: string }>;
+  blocked: Array<{ role: RoleId; errorMessage: string; sinceAt: number }>;
+  activeWave: { excerpt: string; emittedAt: number } | null;
+  issues: {
+    selfImprovement: number;
+    skillProposal: number;
+    mcpProposal: number;
+    recent: Array<{ number: number; title: string; label: string; url: string }>;
+  };
+  scout: { lastRunAt: number | null; nextScheduledAt: number | null; proposalsLast7Days: number };
+  context: Array<{ role: RoleId; handoffChars: number; historyDepth: number; inboxCount: number; needsCleanup: boolean }>;
+  spend: {
+    todayUsd: number;
+    threadUsd: number;
+    perRole: Array<{ role: RoleId; usd: number; tokensIn: number; tokensOut: number }>;
+    topSpender: { role: RoleId; usd: number } | null;
+  };
+}
