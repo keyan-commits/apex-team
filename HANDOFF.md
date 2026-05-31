@@ -2,7 +2,11 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 10a BA — US-002 devsecops-pipeline-ownership written (proposed). OQ-002 (CI/CD tooling) logged in open-questions.md. Awaiting Architect + DevSecOps inputs to update ACs and close OQ-002.**
+**Wave 10a Architect — CI/CD research complete; ADR-002 §Consequences updated with confirmed worktree isolation model + script names. Self-audit: no skill gaps.**
+
+**Wave 10a recommendation written (see below). Awaiting DevSecOps domain-expert input + BA US-002 before PO synthesizes for the user.**
+
+**ADR-002 updated (SHA pending this commit):** §Consequences now documents the resolved isolation model (feature branch + git worktree), confirmed per-role dev:test script names + ports, and closes the OQ-001 ambiguity note.
 
 **Wave 9b/c/d foundation complete. Phased workflow protocol is live; worktrees provisioned; requirements scaffold seeded; all peers ran skill self-audit. Origin/main in sync. Active thread: `mcp_mpsoeous_bih2`.**
 

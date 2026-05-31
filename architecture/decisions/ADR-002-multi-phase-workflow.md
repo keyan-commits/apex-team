@@ -60,8 +60,32 @@ If a role identifies a missing skill or MCP tool, they file a `skill-proposal` o
 
 **Negative:**
 - Requirements phase adds latency before implementation starts. For trivial 1-line fixes, this overhead may exceed the fix itself.
-- Per-role isolated instances require DevSecOps to provision the `pnpm dev:test:ui` / `pnpm dev:test:be` scripts (tracked in Wave 9b DevSecOps HANDOFF).
-- "Their own source code" was interpreted as **feature branches** (not git worktrees or separate clones). If the user intends stronger isolation (separate file-system clones), this ADR should be updated after clarification.
+
+**Isolation model — resolved (Wave 9b/9c):**
+
+Logical isolation: **feature branch** per implementer (`feature/<wave>-<short>`).
+Physical isolation: **git worktree** — each implementer's branch lives in a sibling directory outside the main checkout.
+
+Worktree creation: `pnpm branch:start <role> <wave>-<short>`
+→ creates `../apex-team-<role>-<short>/` via `git worktree add` from `origin/main`.
+
+Worktree cleanup (DevSecOps, post-deploy): `pnpm branch:cleanup <role> <wave>-<short>`
+
+Each worktree requires its own `pnpm install` (pnpm per-directory virtual store).
+Each worktree's `data/` dir holds its own DB — no cross-role DB contamination.
+
+**Confirmed per-role dev instances (Wave 9b DevSecOps, commit `5802292`):**
+
+| Script | Port | DB path |
+|---|---|---|
+| `pnpm dev:test:ui` | 3110 | `data/apex-team-test-ui.db` |
+| `pnpm dev:test:be` | 3120 | `data/apex-team-test-be.db` |
+| `pnpm dev:test:qa` | 3100 | `data/apex-team-test-qa.db` |
+| `pnpm dev:test:ux` | 3130 | `data/apex-team-test-ux.db` |
+
+Legacy `pnpm dev:test` (port 3100, `data/apex-team-test.db`) retained for backward compatibility.
+
+OQ-001 (feature branches vs. worktrees) — **resolved**: feature branches + git worktrees. See `requirements/open-questions.md`.
 
 ## Compatibility
 
