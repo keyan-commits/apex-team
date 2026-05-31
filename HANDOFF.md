@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 19 — BE Dev skill additions: `### OpenTelemetry trace correlation` (#11) + `### Rate limiting` (#12) + `### Pre-HANDOFF unit testing` (#38) added to `src/lib/skills/backend-developer.ts`. 34/34 tests green. Feature branch: `feature/19-be-skill-additions`.**
+
 **Wave 18 — UI Dev skill additions: `### Container queries` bullet added to `### Mobile-first responsive` (#10) + `### Pre-HANDOFF unit testing` section added (#37) in `src/lib/skills/ui-developer.ts`. 34/34 tests green. Feature branch: `feature/18-ui-skill-additions`.**
 
 **Wave 17 — Architect skill addition: `### Fitness functions` (#7) added to `src/lib/skills/architect.ts`. 34/34 tests green. Feature branch: `feature/17-arch-fitness-functions`.**
