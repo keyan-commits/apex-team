@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 9a — Deployment-gate policy encoded. Commit (SHA-pending) on main.**
+**Wave 9a — Deployment-gate policy encoded. Commit `a8fab5d` on main.**
 
 `src/lib/roles.ts` changes:
 - `DEPLOYMENT_GATES_PROTOCOL` constant (exported) — canonical policy spec
