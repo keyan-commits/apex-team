@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-06-01
 
+**Wave 34 — UX Designer skill additions. 2 new sections added to `src/lib/skills/ux-designer.ts`: `### Density audit checklist` (closes #66) + `### Feed density patterns` (closes #68). Both tagged `"user"` in `ux-designer.skills.json`. 56/56 green. Feature branch: `feature/34-ux-density-skills`. Awaiting CI + merge.**
+
 **Wave 33c — PR #83 (`feature/33-ux-nits`) merged SHA `6320d85`. CI PASS (26s/25s). Smoke PASS. Issues closed: #79 (aria-live → aria-busy on scout button), #80 (hex colors → CSS vars `--status-green`/`--status-amber`), #81 (tabIndex on `.doc-scroll` not `.body`). Main is clean. No pending inbox items.**
 
 **Wave 28e — PR #72 (`feature/28b-density`) rebased onto main (Wave 32 conflict), merged SHA `72b987c`. Conflict: only `HANDOFF.md` (HEAD had Wave 32+ entries; feature had Wave 28b entry — kept both). `AgentPane.tsx` auto-merged correctly (maxHeight prop + Link wrapping both present). CI PASS (23s/33s). Smoke PASS. Worktree cleaned up. `design/US-009-010-011-agent-profile-and-dashboard-additions.md` + `design/INDEX.md` (UX Designer Wave 32c uncommitted docs) committed to main in this turn.**
