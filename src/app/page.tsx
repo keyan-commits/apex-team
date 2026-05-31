@@ -169,7 +169,10 @@ export default function Home() {
       const next = { ...prev };
       for (const res of results) {
         if (res && res.r !== "product-owner") {
-          next[res.r as TeamRoleId] = res.data.pendingInbox.length;
+          // Defensive: /api/agent-state may return an error shape (e.g. for
+          // newly-added roles whose row hasn't been seeded yet, or 500s
+          // during dev HMR). Treat missing pendingInbox as "0 pending".
+          next[res.r as TeamRoleId] = res.data?.pendingInbox?.length ?? 0;
         }
       }
       return next;

@@ -1,0 +1,65 @@
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]: ⌬
+      - text: apex-team
+    - navigation "Main navigation" [ref=e7]:
+      - link "Team" [ref=e8] [cursor=pointer]:
+        - /url: /
+      - link "Dashboard" [ref=e9] [cursor=pointer]:
+        - /url: /dashboard
+    - generic [ref=e10]:
+      - generic [ref=e11]: workspace
+      - textbox "Working directory shared by the top Claude Code terminal and the BA/Dev agents." [ref=e12]:
+        - /placeholder: /absolute/path/to/project
+    - generic [ref=e13]:
+      - generic [ref=e14]: thread
+      - textbox "Paste a thread id (e.g. from an MCP-driven session) to subscribe to its events." [ref=e15]:
+        - /placeholder: thread id
+      - button "new" [ref=e16] [cursor=pointer]
+  - generic [ref=e17]:
+    - generic [ref=e18]:
+      - heading "Now — In-Flight About Now — In-Flight" [level=2] [ref=e20]:
+        - text: Now — In-Flight
+        - button "About Now — In-Flight" [ref=e21]: ⓘ
+      - paragraph [ref=e22]: Loading…
+    - generic [ref=e23]:
+      - heading "Queued — Drag to prioritize About Queued — Drag to prioritize" [level=2] [ref=e25]:
+        - text: Queued — Drag to prioritize
+        - button "About Queued — Drag to prioritize" [ref=e26]: ⓘ
+      - paragraph [ref=e27]: Loading…
+    - generic [ref=e28]:
+      - heading "Done — last 24h About Done — last 24h" [level=2] [ref=e30]:
+        - text: Done — last 24h
+        - button "About Done — last 24h" [ref=e31]: ⓘ
+      - paragraph [ref=e32]: Loading…
+    - generic [ref=e33]:
+      - heading "Blocked About Blocked" [level=2] [ref=e35]:
+        - text: Blocked
+        - button "About Blocked" [ref=e36]: ⓘ
+      - paragraph [ref=e37]: Loading…
+    - generic [ref=e38]:
+      - heading "Active Wave About Active Wave" [level=2] [ref=e40]:
+        - text: Active Wave
+        - button "About Active Wave" [ref=e41]: ⓘ
+      - paragraph [ref=e42]: Loading…
+    - generic [ref=e43]:
+      - heading "Issues About Issues" [level=2] [ref=e45]:
+        - text: Issues
+        - button "About Issues" [ref=e46]: ⓘ
+      - paragraph [ref=e47]: Loading…
+    - generic [ref=e48]:
+      - heading "Daily Scout About Daily Scout" [level=2] [ref=e50]:
+        - text: Daily Scout
+        - button "About Daily Scout" [ref=e51]: ⓘ
+      - paragraph [ref=e52]: Loading…
+    - generic [ref=e53]:
+      - heading "Context About Context" [level=2] [ref=e55]:
+        - text: Context
+        - button "About Context" [ref=e56]: ⓘ
+      - paragraph [ref=e57]: Loading…
+    - generic [ref=e58]:
+      - heading "Spend About Spend" [level=2] [ref=e60]:
+        - text: Spend
+        - button "About Spend" [ref=e61]: ⓘ
+      - paragraph [ref=e62]: Loading…

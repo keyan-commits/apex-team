@@ -16,6 +16,7 @@ const RoleEnum = z.enum([
   "backend-developer",
   "qa",
   "devsecops",
+  "ux-designer",
 ]);
 const ProviderEnum = z.enum(["claude", "gemini", "groq"]);
 
@@ -38,6 +39,7 @@ const BodySchema = z.object({
     "backend-developer": AgentConfigSchema,
     qa: AgentConfigSchema,
     devsecops: AgentConfigSchema,
+    "ux-designer": AgentConfigSchema,
   }),
 });
 

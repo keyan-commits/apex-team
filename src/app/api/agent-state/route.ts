@@ -16,6 +16,7 @@ const RoleEnum = z.enum([
   "backend-developer",
   "qa",
   "devsecops",
+  "ux-designer",
 ]);
 
 const QuerySchema = z.object({
