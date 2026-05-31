@@ -40,7 +40,22 @@ export async function handleMcpRequest(
     ],
   });
   await server.connect(transport);
-  await transport.handleRequest(req, res, raw);
+
+  // Keep the TCP connection alive during long agent turns. undici's bodyTimeout
+  // (5 min default) + intermediate network idle timeouts can kill the socket
+  // before a multi-agent tool call completes. Any bytes flowing reset both.
+  const heartbeat = setInterval(() => {
+    if (!res.writableEnded) {
+      try {
+        res.write(": keepalive\n\n");
+      } catch {}
+    }
+  }, 30_000);
+  try {
+    await transport.handleRequest(req, res, raw);
+  } finally {
+    clearInterval(heartbeat);
+  }
 }
 
 function readBody(req: IncomingMessage): Promise<unknown> {

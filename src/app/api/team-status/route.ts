@@ -8,6 +8,7 @@ import {
 } from "@/lib/db";
 import { ALL_ROLES } from "@/lib/roles";
 import { deriveGithubRepo } from "@/lib/derive-github-repo";
+import { deriveNowAndQueued } from "@/lib/derive-now-queued";
 import type { RoleId, ChatMessage, TeamStatus } from "@/types";
 
 // Per-repo 60s in-memory issue cache keyed by "owner/repo"
@@ -73,7 +74,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<TeamStatus>> {
   const stateMap = new Map(agentStates.map((s) => [s.role, s]));
   const spendRaw = getSpendSummary(threadId);
 
-  const now90sMs = Date.now() - 90_000;
+  const now10mMs = Date.now() - 600_000;
   const now24hMs = Date.now() - 86_400_000;
 
   // Single pass: track last trigger and last agent message per role
@@ -112,27 +113,11 @@ export async function GET(req: NextRequest): Promise<NextResponse<TeamStatus>> {
   }
 
   // --- now & queued ---
-  const nowPanel: TeamStatus["now"] = [];
-  const queuedPanel: TeamStatus["queued"] = [];
-
-  for (const role of ALL_ROLES) {
-    const trigger = lastTrigger.get(role);
-    if (!trigger) continue;
-    if (trigger.id <= (lastAgentId.get(role) ?? 0)) continue; // already replied
-    const taskSummary = trigger.content.slice(0, 80);
-    const state = stateMap.get(role);
-    if (state && state.updatedAt >= now90sMs) {
-      nowPanel.push({ role, taskSummary, startedAt: trigger.createdAt, state: "thinking" });
-    } else {
-      queuedPanel.push({
-        id: trigger.id,
-        toRole: role,
-        fromRole: trigger.kind === "user" ? "user" : "product-owner",
-        taskSummary,
-        createdAt: trigger.createdAt,
-      });
-    }
-  }
+  const { now: nowPanel, queued: queuedPanel } = deriveNowAndQueued(
+    lastTrigger,
+    lastAgentId,
+    now10mMs,
+  );
 
   // --- done (last 50 agent messages in last 24h, newest first) ---
   const donePanel: TeamStatus["done"] = [];
