@@ -4,7 +4,7 @@
 
 **Wave 13b-ops — CodeQL workflow removed. Requirements phase (Wave 13a) complete.**
 
-- `.github/workflows/codeql.yml` removed — GHAS not available on personal-account private tier. Every run was failing with "Code scanning is not enabled for this repository" — pure noise. `ops/README.md` updated with deferred rationale + re-enablement conditions. Commit `(SHA-pending)`.
+- `.github/workflows/codeql.yml` removed — GHAS not available on personal-account private tier. Every run was failing with "Code scanning is not enabled for this repository" — pure noise. `ops/README.md` updated with deferred rationale + re-enablement conditions. Commit `983e817`.
 - `design/US-003-workspace-scoped-issues.md` — Wave 13 Amendments section added (`4d76002`).
 - Requirements phase complete: BA committed US-005 at `4e69429`, Architect designed `repoStatus` enum. Awaiting PO synthesis → Wave 13b implementation dispatch.
 
