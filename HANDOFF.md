@@ -2,6 +2,16 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**UI Dev — Wave 8d complete.** WORKFLOW panel on dashboard. Commit `(SHA-pending)`.
+
+**Wave 8d UI Dev changes:**
+- `src/app/dashboard/page.tsx` — added `WorkflowResponse` import; `workflow` + `expandedWfStep` state; 10s visibility-aware poll for `/api/workflow`; `wfStatus()` helper for loose match/out-of-order/extra classification; WORKFLOW panel at top of grid (span-2) with Expected row, Actual row (per-step ✓/! marks + ×N badge), mismatch sentence, click-to-expand edge sub-list; CSS for `.wf-*` classes; `workflow` added to `PANEL_INFO`.
+- `pnpm type-check` clean.
+
+**Awaiting:** Architect PASS for Wave 8d.
+
+---
+
 **UI Dev — Wave 8c complete.** Poll error banner for issue #22. Commit `2f49c14`.
 
 **Wave 8c UI Dev changes:**
