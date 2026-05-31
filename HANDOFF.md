@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**BE Dev — Wave 8b complete.** `src/app/api/workflow/route.ts` + types shipped. Commit `(SHA-pending)`.
+**BE Dev — Wave 8b complete.** `src/app/api/workflow/route.ts` + types shipped. Commit `36bb6ec`.
 
 **Wave 8b shipped:**
 - `src/types.ts` — added `WorkflowEdge` + `WorkflowResponse` interfaces
