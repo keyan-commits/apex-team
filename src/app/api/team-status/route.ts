@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { execSync } from "node:child_process";
+import { execSync, execFileSync } from "node:child_process";
 import {
   listMessages,
   listAllAgentStates,
@@ -9,20 +9,44 @@ import {
 import { ALL_ROLES } from "@/lib/roles";
 import type { RoleId, ChatMessage, TeamStatus } from "@/types";
 
-// 60s in-memory issue cache (module-level, persists across requests in the same process)
-let _issueCache: { data: TeamStatus["issues"]; at: number } | null = null;
+// Per-repo 60s in-memory issue cache keyed by "owner/repo"
+const _issueCache = new Map<string, { data: TeamStatus["issues"]; at: number }>();
 
-function fetchIssues(): TeamStatus["issues"] {
-  if (_issueCache && Date.now() - _issueCache.at < 60_000) return _issueCache.data;
+/** Derive "owner/repo" from the git remote of a workspace path. Returns null for
+ *  non-GitHub remotes, missing remotes, non-git directories, or empty input. */
+export function deriveGithubRepo(workspace: string | null): string | null {
+  if (!workspace?.trim()) return null;
+  try {
+    const url = execFileSync("git", ["-C", workspace, "remote", "get-url", "origin"], {
+      timeout: 3000,
+      stdio: ["ignore", "pipe", "ignore"],
+      encoding: "utf8",
+    }).trim();
+    // SSH: git@github.com:owner/repo[.git]
+    const ssh = url.match(/^git@github\.com:([^/]+\/[^.]+?)(?:\.git)?$/);
+    if (ssh) return ssh[1];
+    // HTTPS: https://github.com/owner/repo[.git][?#...]
+    const https = url.match(/^https?:\/\/github\.com\/([^/]+\/[^.]+?)(?:\.git)?(?:[?#].*)?$/);
+    if (https) return https[1];
+    return null; // non-GitHub remote (GitLab, self-hosted, etc.)
+  } catch {
+    return null; // no remote, not a git repo, path missing
+  }
+}
+
+function fetchIssues(repo: string): TeamStatus["issues"] {
+  const cached = _issueCache.get(repo);
+  if (cached && Date.now() - cached.at < 60_000) return cached.data;
   const empty: TeamStatus["issues"] = {
     selfImprovement: 0,
     skillProposal: 0,
     mcpProposal: 0,
     recent: [],
+    repo,
   };
   try {
     const raw = execSync(
-      "gh issue list --repo keyan-commits/apex-team --state open --json number,title,labels,url --limit 50",
+      `gh issue list --repo ${repo} --state open --json number,title,labels,url --limit 50`,
       { timeout: 5000, stdio: ["ignore", "pipe", "ignore"] },
     ).toString();
     const items = JSON.parse(raw) as Array<{
@@ -43,16 +67,25 @@ function fetchIssues(): TeamStatus["issues"] {
       if (recent.length < 10)
         recent.push({ number: it.number, title: it.title, label: names[0] ?? "", url: it.url });
     }
-    const data = { selfImprovement: si, skillProposal: sp, mcpProposal: mp, recent };
-    _issueCache = { data, at: Date.now() };
+    const data: TeamStatus["issues"] = { selfImprovement: si, skillProposal: sp, mcpProposal: mp, recent, repo };
+    _issueCache.set(repo, { data, at: Date.now() });
     return data;
   } catch {
     return empty;
   }
 }
 
+const _noIssues: TeamStatus["issues"] = {
+  selfImprovement: 0,
+  skillProposal: 0,
+  mcpProposal: 0,
+  recent: [],
+  repo: null,
+};
+
 export async function GET(req: NextRequest): Promise<NextResponse<TeamStatus>> {
   const threadId = req.nextUrl.searchParams.get("threadId") ?? "";
+  const workspace = req.nextUrl.searchParams.get("workspace") ?? null;
 
   const messages: ChatMessage[] = threadId ? listMessages(threadId) : [];
   const agentStates = threadId ? listAllAgentStates(threadId) : [];
@@ -187,13 +220,17 @@ export async function GET(req: NextRequest): Promise<NextResponse<TeamStatus>> {
     topSpender: topSpender ? { role: topSpender.role, usd: topSpender.usd } : null,
   };
 
+  // Derive the GitHub repo from the workspace path; null → empty-state, no fallback
+  const repo = deriveGithubRepo(workspace);
+  const issues = repo ? fetchIssues(repo) : _noIssues;
+
   return NextResponse.json({
     now: nowPanel,
     queued: queuedPanel,
     done: donePanel,
     blocked: blockedPanel,
     activeWave,
-    issues: fetchIssues(),
+    issues,
     scout: { ...getScoutMeta(), nextScheduledAt: null },
     context: contextPanel,
     spend,
