@@ -12,6 +12,7 @@ const DISPATCH_RE = new RegExp(
   "gi",
 );
 const NOTES_RE = /\[\[NOTES\]\]([\s\S]*?)\[\[\/NOTES\]\]/i;
+const AGENT_MODELS_RE = /\[\[AGENT-MODELS\]\]([\s\S]*?)\[\[\/AGENT-MODELS\]\]/i;
 
 export interface ParsedReply {
   /** Text shown to the user (all blocks stripped). */
@@ -22,6 +23,8 @@ export interface ParsedReply {
   handoffs: Array<{ to: TeamRoleId | "product-owner"; message: string }>;
   /** Product Owner dispatches — auto-trigger the target peer's turn. */
   dispatches: Array<{ to: TeamRoleId; message: string }>;
+  /** Per-role model overrides emitted by PO on thread init; null if block absent. */
+  agentModels: Record<string, string> | null;
 }
 
 export function parseAgentReply(raw: string): ParsedReply {
@@ -30,6 +33,20 @@ export function parseAgentReply(raw: string): ParsedReply {
   const notesMatch = working.match(NOTES_RE);
   const newHandoffDoc = notesMatch ? notesMatch[1].trim() : null;
   if (notesMatch) working = working.replace(NOTES_RE, "");
+
+  const agentModelsMatch = working.match(AGENT_MODELS_RE);
+  let agentModels: Record<string, string> | null = null;
+  if (agentModelsMatch) {
+    agentModels = {};
+    for (const line of agentModelsMatch[1].trim().split("\n")) {
+      const colonIdx = line.indexOf(":");
+      if (colonIdx === -1) continue;
+      const role = line.slice(0, colonIdx).trim();
+      const model = line.slice(colonIdx + 1).trim();
+      if (role && model) agentModels[role] = model;
+    }
+    working = working.replace(AGENT_MODELS_RE, "");
+  }
 
   const handoffs: Array<{ to: TeamRoleId | "product-owner"; message: string }> = [];
   working = working.replace(HANDOFF_RE, (_full, role: string, message: string) => {
@@ -54,5 +71,6 @@ export function parseAgentReply(raw: string): ParsedReply {
     newHandoffDoc,
     handoffs,
     dispatches,
+    agentModels,
   };
 }

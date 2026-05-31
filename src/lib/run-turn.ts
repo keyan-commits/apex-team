@@ -4,7 +4,7 @@
 // every observable event onto the thread's event bus so any subscriber
 // (the dashboard, future watchers) sees it.
 
-import { appendMessage, setAgentHandoffDoc } from "@/lib/db";
+import { appendMessage, setAgentHandoffDoc, setThreadAgentModels } from "@/lib/db";
 import { runAgentTurn } from "@/lib/agents";
 import { parseAgentReply } from "@/lib/orchestrator";
 import { publish } from "@/lib/event-bus";
@@ -25,6 +25,7 @@ export interface RunTurnResult {
   newHandoffDoc: string | null;
   handoffs: Array<{ to: TeamRoleId | "product-owner"; message: string }>;
   dispatches: Array<{ to: TeamRoleId; message: string }>;
+  agentModels: Record<string, string> | null;
 }
 
 export async function runTurn(input: RunTurnInput): Promise<RunTurnResult> {
@@ -61,7 +62,7 @@ export async function runTurn(input: RunTurnInput): Promise<RunTurnResult> {
     throw err;
   }
 
-  const { visibleText, newHandoffDoc, handoffs, dispatches } = parseAgentReply(buffer);
+  const { visibleText, newHandoffDoc, handoffs, dispatches, agentModels } = parseAgentReply(buffer);
 
   appendMessage(
     input.threadId,
@@ -113,11 +114,20 @@ export async function runTurn(input: RunTurnInput): Promise<RunTurnResult> {
     }
   }
 
+  // PO-only: persist + broadcast per-role model overrides for this thread.
+  if (input.target === "product-owner" && agentModels) {
+    setThreadAgentModels(input.threadId, agentModels);
+    publish(input.threadId, {
+      type: "agent-models",
+      agentModels: agentModels as Record<RoleId, string>,
+    });
+  }
+
   publish(input.threadId, {
     type: "turn-end",
     role: input.target,
     text: visibleText,
   });
 
-  return { visibleText, rawBuffer: buffer, newHandoffDoc, handoffs, dispatches };
+  return { visibleText, rawBuffer: buffer, newHandoffDoc, handoffs, dispatches, agentModels };
 }

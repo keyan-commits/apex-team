@@ -36,6 +36,11 @@ function db(): Database.Database {
       updated_at  INTEGER NOT NULL,
       PRIMARY KEY (thread_id, role)
     );
+
+    CREATE TABLE IF NOT EXISTS thread_config (
+      thread_id    TEXT PRIMARY KEY,
+      agent_models TEXT NOT NULL DEFAULT '{}'
+    );
   `);
   _db = conn;
   return conn;
@@ -125,6 +130,30 @@ export function setAgentHandoffDoc(
     )
     .run(threadId, role, handoffDoc, updatedAt);
   return { threadId, role, handoffDoc, updatedAt };
+}
+
+export function getThreadAgentModels(threadId: string): Record<string, string> | null {
+  const row = db()
+    .prepare(`SELECT agent_models FROM thread_config WHERE thread_id = ?`)
+    .get(threadId) as { agent_models: string } | undefined;
+  if (!row) return null;
+  try {
+    return JSON.parse(row.agent_models) as Record<string, string>;
+  } catch {
+    return null;
+  }
+}
+
+export function setThreadAgentModels(
+  threadId: string,
+  models: Record<string, string>,
+): void {
+  db()
+    .prepare(
+      `INSERT INTO thread_config (thread_id, agent_models) VALUES (?, ?)
+       ON CONFLICT(thread_id) DO UPDATE SET agent_models = excluded.agent_models`,
+    )
+    .run(threadId, JSON.stringify(models));
 }
 
 // Pending inbox = handoff messages addressed to this role that arrived

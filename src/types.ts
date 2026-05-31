@@ -81,6 +81,7 @@ export type SseEventType =
   | "notes-updated"
   | "user-message"
   | "error"
+  | "agent-models"
   | "done";
 
 export interface SseEvent {
@@ -91,4 +92,5 @@ export interface SseEvent {
   to?: TeamRoleId;
   message?: string;
   handoffDoc?: string;
+  agentModels?: Record<RoleId, string>;
 }

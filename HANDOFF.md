@@ -2,28 +2,32 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 4a — live activity indicators + active-thread polling committed (`e6c93d1`). `pnpm type-check` clean.
+**State.** Wave 4a complete (SHA-pending). PO-initialized model defaults per thread fully wired. `pnpm type-check` clean.
 
-**Wave 3 QA shipped (`3df1112`):**
-- `vitest.config.ts` — root vitest config with `@/*` path alias.
-- `tests/smoke/skills.test.ts` — 4 unit tests; all pass. Verifies all 6 peer roles have non-empty skills; PO has none; content spot-checks.
-- `tests/smoke/http.sh` — 6 HTTP smoke checks (health, active-thread null, DB isolation ×2, SSE content-type + initial frame); all pass against `:3100` instance; teardown confirmed.
-- `testing/README.md` — test layer documentation + how-to-run.
+**Wave 4a shipped (this commit):**
+- `src/types.ts` — `agent-models` added to `SseEventType`; `agentModels` field on `SseEvent`.
+- `src/lib/orchestrator.ts` — `AGENT_MODELS_RE` + `agentModels` parsing in `parseAgentReply()`.
+- `src/lib/run-turn.ts` — PO-only: persist + publish `agent-models` SSE event when block present.
+- `src/lib/db.ts` — `thread_config` table; `getThreadAgentModels` / `setThreadAgentModels`.
+- `src/app/api/thread-config/route.ts` — GET returns stored agent-model map for a thread.
+- `src/lib/roles.ts` — PO system prompt: Model initialization section (emit `[[AGENT-MODELS]]` on first turn).
+- `src/app/page.tsx` — `agent-models` SSE handler + `/api/thread-config` fetch on thread switch (committed in `e6c93d1`).
 
-**Test results:**
-- `pnpm test:run`: 4/4 unit tests PASS
-- `bash tests/smoke/http.sh`: 6/6 HTTP smoke tests PASS, teardown clean
+**Wave 4a prior (`e6c93d1`):** live activity indicators + active-thread polling.
 
-**Wave 3 Architect (prior, `cea839c`):** code review PASS with WARNs; 5 remaining skills files + requirements/ snapshot.
+**Wave 3 QA shipped (`3df1112`):** 4/4 unit tests + 6/6 HTTP smoke tests PASS.
 
-**Wave 2 shipped (prior):**
+**Wave 3 Architect (`cea839c`):** code review PASS; 5 remaining skills files.
+
+**Wave 2 shipped:**
 - UI Dev: model dropdown (`2fd294f`). Backend Dev: active-thread + handoff-utils (`a3dd9cb`). DevSecOps: dev:test isolated instance (`f754ade`).
 
-**Wave 1 shipped (prior):**
+**Wave 1 shipped:**
 - Event-bus SSE refactor (`2f037dc`). Skills injection mechanism + ui-developer PoC (`263ab77`).
 
 **Open next-steps:**
-- **Wave 4:** DevSecOps refreshes HANDOFF + pushes to `main`.
+- Push to `main` (16+ commits ahead of origin).
+- Wave 4b candidates: `/api/health` MCP-transport field; `next lint` → ESLint CLI migration; client-side abort button.
 
 **Known gaps / deliberate omissions:**
 - MCP new_thread → active-thread auto-switch: skipped (requires full MCP session handshake in test; wiring verified by code review).
