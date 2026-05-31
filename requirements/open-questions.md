@@ -95,4 +95,37 @@ Open questions are blockers or ambiguities that require an answer before affecte
 
 ---
 
+## OQ-008 — Provenance metadata format for skill sections (US-009 AC4)
+
+**Status:** Open
+**Owner:** Architect
+**Raised by:** BA (Wave 29a, US-009)
+**Affects:** US-009 AC4 — determines implementation approach for skill-section provenance badges
+
+**Question:** Which metadata format should power the per-section provenance badge on the agent profile page?
+
+- **Option A (recommended default):** Sibling `src/lib/skills/<role>.skills.json` — one JSON object keyed by section slug (e.g. `"example-mapping": { "source": "claude" }`). Zero TS-parser changes; readable without building. Missing entry = `claude` default.
+- **Option B:** Front-matter comment block in the `.ts` file (e.g. `// @provenance: claude`). Co-locates provenance with the skill text but requires fragile line-by-line parsing.
+- **Option C:** `git blame` fallback — derive author from first commit that added the section. No extra files but brittle (section re-worded = author reset); not actionable for `external` sources needing a URL.
+
+**Default intent:** Option A — explicit JSON sidecar is the lightest to implement and the easiest to edit without touching TypeScript.
+
+---
+
+## OQ-009 — Scout trigger dispatch mechanism for `/api/scout/trigger` (US-010 AC2)
+
+**Status:** Open
+**Owner:** backend-developer
+**Raised by:** BA (Wave 29a, US-010)
+**Affects:** US-010 AC2 — determines whether the server endpoint calls PO via `talk_to_product_owner` or runs a leaner internal script
+
+**Question:** Should `/api/scout/trigger` dispatch via:
+
+- **Option A:** `talk_to_product_owner` — sends the PO a scout wave goal; PO orchestrates roles sequentially (full team wave, most thorough).
+- **Option B:** A lightweight `/api/scout/run` backend script that iterates roles and calls `run-turn` directly with a scout prompt (faster, no PO overhead, but bypasses PO orchestration).
+
+**Default intent:** Option A is simpler (reuses existing PO flow) but locks a dashboard button to the full PO latency (~60s per role). Option B is faster but adds a new code path. BE Dev to recommend based on scout latency requirements.
+
+---
+
 _Future questions append below this line._
