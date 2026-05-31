@@ -4,7 +4,7 @@
 
 **Wave 13a BA — US-005 committed (SHA-pending) on main. Requirements phase complete.**
 
-- `requirements/user-stories/US-005-wave-11c-carry-forwards.md` — 4 ACs: AC1 (drop "Issues:" prefix), AC2 (per-`repoStatus` empty-state copy), AC3 (`:visited` style fix), AC4 (no stale-attribution flicker). Owner: UI Dev (AC1/AC3/AC4) + BE Dev (AC2 — `repoStatus` enum). References US-003 + Wave 11c HANDOFF.
+- `requirements/user-stories/US-005-wave-11c-carry-forwards.md` — 4 ACs: AC1 (drop "Issues:" prefix), AC2 (per-`repoStatus` empty-state copy), AC3 (`:visited` style fix), AC4 (no stale-attribution flicker). Owner: UI Dev (AC1/AC3/AC4) + BE Dev (AC2 — `repoStatus` enum). References US-003 + Wave 11c HANDOFF. Commit `4e69429`.
 - `requirements/INDEX.md` — US-005 row added.
 - Awaiting PO synthesis (Architect + UX Designer running in parallel this wave); Wave 13b implementation dispatch TBD.
 
