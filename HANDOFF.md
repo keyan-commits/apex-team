@@ -6,7 +6,7 @@
 
 **Wave 10a recommendation written (see below). Awaiting DevSecOps domain-expert input + BA US-002 before PO synthesizes for the user.**
 
-**ADR-002 updated (SHA pending this commit):** §Consequences now documents the resolved isolation model (feature branch + git worktree), confirmed per-role dev:test script names + ports, and closes the OQ-001 ambiguity note.
+**ADR-002 updated (`3ebe889`):** §Consequences now documents the resolved isolation model (feature branch + git worktree), confirmed per-role dev:test script names + ports, and closes the OQ-001 ambiguity note.
 
 **Wave 9b/c/d foundation complete. Phased workflow protocol is live; worktrees provisioned; requirements scaffold seeded; all peers ran skill self-audit. Origin/main in sync. Active thread: `mcp_mpsoeous_bih2`.**
 
