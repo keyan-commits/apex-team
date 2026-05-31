@@ -2,22 +2,24 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 6a scout complete (issues #5–#16 filed). Wave 6b UI Dev stream done; Architect `/api/team-status` done. `pnpm type-check` clean.
+**State.** Wave 6b BE Dev token-usage stream done (`(SHA-pending)`). `pnpm type-check` clean.
 
-**Wave 6b Architect delivered (`2e55fa2`):**
-- `src/app/api/team-status/route.ts` — NEW: GET `?threadId=<id>` returning all 9 panels (now/queued/done/blocked/activeWave/issues/scout/context/spend). Derives everything from existing DB tables + 60s in-memory issue cache (gh shell-out). Resilient to missing `turn_usage` table (BE Dev creates it in parallel — returns zeros until it exists).
-- `src/lib/db.ts` — added `listAllAgentStates(threadId)` + `getSpendSummary(threadId)` (catches missing `turn_usage`).
-- `src/types.ts` — added `TeamStatus` interface (shared contract with UI Dev).
+**Wave 6b BE Dev delivered (`(SHA-pending)`):**
+- `src/lib/pricing.ts` — NEW: `MODEL_PRICING` table + `estimateCostUsd()`. Reference public API $/MTok rates for 5 models; user is on subscriptions so cost is $0 actual, useful for benchmarking.
+- `src/lib/db.ts` — `turn_usage` table + indexes + `UsageCapture` interface + `recordTurnUsage()` + `getThreadSpend()` + `getTodaySpend()`. `getSpendSummary()` (added by Architect) now populates with real data.
+- `src/lib/providers.ts` — `onUsage?: (UsageCapture) => void` callback threaded through `streamAgent` → `streamClaude` + `streamAiSdk`. Claude captures from `msg.type === "result"` usage fields; Vercel AI SDK captures from `result.usage` after stream completes.
+- `src/lib/agents.ts` — `onUsage` added to `AgentTurnInput`; passed through to `streamAgent`.
+- `src/lib/run-turn.ts` — callback wired: calls `recordTurnUsage(threadId, role, model, usage)` after each turn; errors suppressed (best-effort).
 
-**Wave 6b UI Dev delivered (`7291391`):**
-- `src/lib/skills/ui-developer.ts` — INP/useTransition guidance + `### UI/UX self-review discipline` section.
-- `src/components/OrchestratorBar.tsx` — Team / Dashboard tab links.
-- `src/components/AgentPane.tsx` — auto-fold after 60s idle, auto-expand on activity.
-- `src/app/dashboard/page.tsx` — NEW `/dashboard` route with 9 panels, 10s poll.
+**Wave 6b open streams:**
+- BE Dev: `scripts/skill-scout.mjs` + PO prompt update (Parts B + C) — **still to do in this wave**.
+- DevSecOps: GH Actions workflow — in progress.
 
-**Open:**
-- Wave 6b BE Dev (scout.mjs + pricing.ts + turn_usage + providers.ts + PO prompt) — in progress.
-- Wave 6b DevSecOps (GH Actions workflow) — in progress.
+**Wave 6b already done:**
+- Architect `2e55fa2`: `/api/team-status` 9-panel endpoint.
+- UI Dev `7291391`: `/dashboard` page + OrchestratorBar tabs + AgentPane auto-fold + ui-developer.ts skills.
+
+**Other open:**
 - Wave 6d Architect review — after all 6b streams complete.
 - Issue #4 — `page.tsx:113-117` mount fetch race (< 100ms window).
 

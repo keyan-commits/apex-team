@@ -6,6 +6,9 @@ import { groq } from "@ai-sdk/groq";
 import type { AgentConfig, AgentState, ChatMessage, RoleDefinition, RoleId } from "@/types";
 import { getRole } from "./roles";
 import { apexAllowedTools, apexMcpServers } from "./mcp-config";
+import type { UsageCapture } from "./db";
+
+export type { UsageCapture };
 
 export interface ModelMessage {
   role: "user" | "assistant";
@@ -87,19 +90,20 @@ export async function* streamAgent(
   history: ChatMessage[],
   ctx: AgentTurnContext,
   signal: AbortSignal,
+  onUsage?: (u: UsageCapture) => void,
 ): AsyncGenerator<string> {
   const role = getRole(cfg.role);
   const messages = buildConversation(cfg.role, history);
   const augmentedSystem = augmentSystemPrompt(role, ctx);
 
   if (cfg.provider === "claude") {
-    yield* streamClaude(cfg.model, augmentedSystem, messages, ctx.cwd, signal);
+    yield* streamClaude(cfg.model, augmentedSystem, messages, ctx.cwd, signal, onUsage);
     return;
   }
 
   // Non-Claude providers don't accept a cwd — their file tools don't exist.
   // We still pass the directory in the system prompt so the model knows the context.
-  yield* streamAiSdk(cfg, augmentedSystem, messages, signal);
+  yield* streamAiSdk(cfg, augmentedSystem, messages, signal, onUsage);
 }
 
 function augmentSystemPrompt(
@@ -153,6 +157,7 @@ async function* streamClaude(
   messages: ModelMessage[],
   cwd: string | undefined,
   signal: AbortSignal,
+  onUsage?: (u: UsageCapture) => void,
 ): AsyncGenerator<string> {
   const prompt = serializeForClaudePrompt(messages);
 
@@ -169,6 +174,15 @@ async function* streamClaude(
 
   for await (const msg of result) {
     if (signal.aborted) return;
+    if (msg.type === "result" && onUsage) {
+      onUsage({
+        inputTokens: msg.usage.input_tokens,
+        outputTokens: msg.usage.output_tokens,
+        cacheCreationTokens: msg.usage.cache_creation_input_tokens ?? 0,
+        cacheReadTokens: msg.usage.cache_read_input_tokens ?? 0,
+      });
+      continue;
+    }
     if (msg.type !== "assistant") continue;
     const content = msg.message?.content;
     if (!Array.isArray(content)) continue;
@@ -203,6 +217,7 @@ async function* streamAiSdk(
   systemPrompt: string,
   messages: ModelMessage[],
   signal: AbortSignal,
+  onUsage?: (u: UsageCapture) => void,
 ): AsyncGenerator<string> {
   const model =
     cfg.provider === "gemini" ? google(cfg.model) : groq(cfg.model);
@@ -222,5 +237,18 @@ async function* streamAiSdk(
     if (signal.aborted) return;
     yield chunk;
   }
+
+  if (onUsage && !captured && !signal.aborted) {
+    try {
+      const usage = await result.usage;
+      onUsage({
+        inputTokens: usage.inputTokens ?? 0,
+        outputTokens: usage.outputTokens ?? 0,
+        cacheCreationTokens: usage.inputTokenDetails?.cacheWriteTokens ?? 0,
+        cacheReadTokens: usage.inputTokenDetails?.cacheReadTokens ?? 0,
+      });
+    } catch { /* usage capture is best-effort */ }
+  }
+
   if (captured) throw captured;
 }

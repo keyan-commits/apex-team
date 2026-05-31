@@ -4,11 +4,12 @@
 // every observable event onto the thread's event bus so any subscriber
 // (the dashboard, future watchers) sees it.
 
-import { appendMessage, setAgentHandoffDoc, setThreadAgentModels } from "@/lib/db";
+import { appendMessage, setAgentHandoffDoc, setThreadAgentModels, recordTurnUsage } from "@/lib/db";
 import { runAgentTurn } from "@/lib/agents";
 import { parseAgentReply } from "@/lib/orchestrator";
 import { publish } from "@/lib/event-bus";
 import { ALL_ROLES } from "@/lib/roles";
+import { DEFAULT_MODELS } from "@/lib/providers";
 import type { AgentConfig, RoleId, TeamRoleId } from "@/types";
 
 export interface RunTurnInput {
@@ -42,6 +43,9 @@ export async function runTurn(input: RunTurnInput): Promise<RunTurnResult> {
 
   publish(input.threadId, { type: "turn-start", role: input.target });
 
+  const cfg = input.agents[input.target];
+  const model = cfg?.model ?? DEFAULT_MODELS.claude;
+
   let buffer = "";
   try {
     for await (const chunk of runAgentTurn({
@@ -50,6 +54,11 @@ export async function runTurn(input: RunTurnInput): Promise<RunTurnResult> {
       agents: input.agents,
       cwd: input.workspace,
       signal: input.signal,
+      onUsage: (usage) => {
+        try {
+          recordTurnUsage(input.threadId, input.target, model, usage);
+        } catch { /* best-effort — never fail a turn over usage tracking */ }
+      },
     })) {
       buffer += chunk;
       publish(input.threadId, { type: "delta", role: input.target, text: chunk });

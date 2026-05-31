@@ -7,6 +7,7 @@ import type {
   MessageAuthor,
   RoleId,
 } from "@/types";
+import { estimateCostUsd } from "./pricing";
 
 const DB_PATH = process.env.APEX_TEAM_DB_PATH
   ? resolve(process.cwd(), process.env.APEX_TEAM_DB_PATH)
@@ -41,6 +42,22 @@ function db(): Database.Database {
       thread_id    TEXT PRIMARY KEY,
       agent_models TEXT NOT NULL DEFAULT '{}'
     );
+
+    CREATE TABLE IF NOT EXISTS turn_usage (
+      id                    INTEGER PRIMARY KEY AUTOINCREMENT,
+      thread_id             TEXT    NOT NULL,
+      role                  TEXT    NOT NULL,
+      model                 TEXT    NOT NULL,
+      input_tokens          INTEGER NOT NULL DEFAULT 0,
+      output_tokens         INTEGER NOT NULL DEFAULT 0,
+      cache_creation_tokens INTEGER NOT NULL DEFAULT 0,
+      cache_read_tokens     INTEGER NOT NULL DEFAULT 0,
+      cost_usd              REAL    NOT NULL DEFAULT 0,
+      created_at            INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_turn_usage_thread ON turn_usage(thread_id);
+    CREATE INDEX IF NOT EXISTS idx_turn_usage_role   ON turn_usage(role);
+    CREATE INDEX IF NOT EXISTS idx_turn_usage_time   ON turn_usage(created_at);
   `);
   _db = conn;
   return conn;
@@ -173,6 +190,79 @@ export function listAllAgentStates(threadId: string): AgentState[] {
     handoffDoc: r.handoff_doc,
     updatedAt: r.updated_at,
   }));
+}
+
+export interface UsageCapture {
+  inputTokens: number;
+  outputTokens: number;
+  cacheCreationTokens: number;
+  cacheReadTokens: number;
+}
+
+export function recordTurnUsage(
+  threadId: string,
+  role: RoleId,
+  model: string,
+  usage: UsageCapture,
+): void {
+  const costUsd = estimateCostUsd(model, {
+    input: usage.inputTokens,
+    output: usage.outputTokens,
+    cacheCreation: usage.cacheCreationTokens,
+    cacheRead: usage.cacheReadTokens,
+  });
+  db()
+    .prepare(
+      `INSERT INTO turn_usage
+         (thread_id, role, model, input_tokens, output_tokens, cache_creation_tokens, cache_read_tokens, cost_usd, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+    .run(
+      threadId,
+      role,
+      model,
+      usage.inputTokens,
+      usage.outputTokens,
+      usage.cacheCreationTokens,
+      usage.cacheReadTokens,
+      costUsd,
+      Date.now(),
+    );
+}
+
+export function getThreadSpend(threadId: string): Array<{ role: RoleId; usd: number; tokensIn: number; tokensOut: number }> {
+  try {
+    const rows = db()
+      .prepare(
+        `SELECT role,
+           COALESCE(SUM(cost_usd), 0)      as usd,
+           COALESCE(SUM(input_tokens), 0)  as tokens_in,
+           COALESCE(SUM(output_tokens), 0) as tokens_out
+         FROM turn_usage WHERE thread_id = ? GROUP BY role`,
+      )
+      .all(threadId) as Array<{ role: string; usd: number; tokens_in: number; tokens_out: number }>;
+    return rows.map((r) => ({
+      role: r.role as RoleId,
+      usd: r.usd,
+      tokensIn: r.tokens_in,
+      tokensOut: r.tokens_out,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export function getTodaySpend(): number {
+  try {
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const row = db()
+      .prepare(`SELECT COALESCE(SUM(cost_usd), 0) as total FROM turn_usage WHERE created_at >= ?`)
+      .get(todayStart.getTime()) as { total: number };
+    return row.total;
+  } catch {
+    return 0;
+  }
 }
 
 export interface SpendSummary {

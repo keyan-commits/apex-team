@@ -1,5 +1,6 @@
 import type { AgentConfig, ChatMessage, RoleId } from "@/types";
 import { getAgentState, listMessages, listPendingInbox } from "./db";
+import type { UsageCapture } from "./db";
 import { defaultAgentConfig, streamAgent } from "./providers";
 import { TEAM_ROLES, isTeamRole } from "./roles";
 
@@ -10,6 +11,7 @@ export interface AgentTurnInput {
   /** Working directory the agent's file tools (Read/Edit/Bash) operate on. */
   cwd?: string;
   signal: AbortSignal;
+  onUsage?: (u: UsageCapture) => void;
 }
 
 // Loads the role's persistent state + thread history + pending inbox,
@@ -30,6 +32,7 @@ export async function* runAgentTurn(input: AgentTurnInput): AsyncGenerator<strin
       history,
       { handoffDoc: state.handoffDoc, pendingInbox: [], peerStates, cwd: input.cwd },
       input.signal,
+      input.onUsage,
     );
     return;
   }
@@ -42,5 +45,6 @@ export async function* runAgentTurn(input: AgentTurnInput): AsyncGenerator<strin
     history,
     { handoffDoc: state.handoffDoc, pendingInbox, cwd: input.cwd },
     input.signal,
+    input.onUsage,
   );
 }
