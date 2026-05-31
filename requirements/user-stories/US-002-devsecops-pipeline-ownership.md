@@ -1,8 +1,9 @@
 # US-002 — DevSecOps pipeline ownership
 
-**Status:** proposed
+**Status:** done
 **Owner role:** devsecops
 **Created:** 2026-05-31
+**Closed:** 2026-05-31
 **Story ID:** US-002
 
 ## Narrative
@@ -25,7 +26,7 @@ As the user, I want the DevSecOps role to own all pipeline, IaC, and standard De
 
 ## Open questions
 
-- **OQ-002:** Which CI/CD approach is appropriate for apex-team's single-user single-machine context — GitHub Actions (hosted runners), Jenkins (self-hosted), roll-our-own scripts, or nothing beyond manual steps? Status: **open**. Owner: Architect + DevSecOps. Blocking: AC1, AC4. See `requirements/open-questions.md`.
+- **OQ-002:** ~~Which CI/CD approach is appropriate for apex-team's single-user single-machine context~~ — **RESOLVED 2026-05-31**: GitHub Actions (free hosted) for PR-time CI + Dependabot + CodeQL; gitleaks pre-commit hook for secrets; `pnpm smoke` for post-deploy health. No Jenkins, no IaC tooling. See `ops/README.md` "Pipeline & security tooling" + ADR-002 §Consequences.
 
 ## Design spec
 
@@ -33,7 +34,7 @@ As the user, I want the DevSecOps role to own all pipeline, IaC, and standard De
 
 ## Links (filled after implementation)
 
-- impl: (pending OQ-002 resolution + implementation dispatch)
-- test: (pending)
-- qa-pass-by: (pending)
-- deployed-by: (pending)
+- impl: `88fd8d1` (DevSecOps Wave 10b — CI / CodeQL / Dependabot / smoke / gitleaks) + `93015c7` (Wave 10d — IaC N/A doc fix)
+- test: `tests/ops/post-deploy-smoke.test.ts` (5 vitest cases, all green)
+- qa-pass-by: QA Wave 10c — initial FAIL on AC5, RE-PASS at `93015c7` after IaC doc fix
+- deployed-by: `6eaab70` (DevSecOps merge to main, pushed origin/main 2026-05-31)

@@ -2,7 +2,21 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 10d DevSecOps — AC5 fix applied on `feature/10b-pipeline-ownership`. IaC N/A section added to `ops/README.md`. Re-verification requested from QA (AC5 only). Awaiting QA RE-PASS before merge to main.**
+**🎉 US-002 SHIPPED end-to-end through the new phased workflow.** First complete dogfood of ADR-002. Merge commit `6eaab70` on `origin/main`. `pnpm smoke` PASS.
+
+**Wave 10 net summary:**
+
+| Phase | Wave | Role(s) | Output |
+|---|---|---|---|
+| Requirements | 10a | PO + Architect + DevSecOps + BA (parallel) | Recommendation: GitHub Actions + Dependabot + gitleaks + smoke (no Jenkins, no IaC). US-002 written. ADR-002 §Consequences updated `3ebe889`. |
+| Implementation | 10b | DevSecOps (own worktree) | CI workflow + CodeQL + Dependabot + smoke script + gitleaks hook + ops/README updates. `88fd8d1`. 13 vitest cases green. |
+| Verification | 10c | QA (own worktree) | Gate FAIL on AC5 (IaC docs missing). Structured per-AC evidence table. |
+| Fix + Re-verify | 10d | DevSecOps → QA | IaC N/A section added `93015c7`. QA re-PASS. |
+| Deployment | 10e | DevSecOps | Merge to main `6eaab70` + push origin/main + worktree cleanup + remote branch deletion. |
+
+**Process worked exactly as designed:** QA caught a real gap before main; DevSecOps fixed; QA re-PASSed; DevSecOps merged. No protocol violations. US-002 now `done` in `requirements/user-stories/`.
+
+---
 
 **Wave 10b DevSecOps — US-002 implementation complete. Feature branch: `feature/10b-pipeline-ownership`. Worktree: `../apex-team-devsecops-10b-pipeline-ownership/`. Awaiting QA PASS before merge to main.**
 
