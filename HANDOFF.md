@@ -2,9 +2,9 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 6b BE Dev complete (`(SHA-pending)`). `pnpm type-check` clean.
+**State.** Wave 6b BE Dev complete (`e29755f`). `pnpm type-check` clean.
 
-**Wave 6b BE Dev delivered (`(SHA-pending)`):**
+**Wave 6b BE Dev delivered (`e29755f`):**
 - `scripts/skill-scout.mjs` — NEW: daily skill scout using Anthropic REST + `web-search-2025-03-05` beta. Per-role loop, tool-use loop for web search, `gh issue create` with `skill-proposal` label, title deduplication, updates `scout_runs` + `issue_cache` tables. Run with `pnpm scout`.
 - `src/lib/db.ts` — `scout_runs` table schema + `getScoutMeta()` helper (last run time + proposals last 7 days).
 - `src/app/api/team-status/route.ts` — scout panel now reads real data from `getScoutMeta()` instead of zeros.
