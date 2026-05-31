@@ -4,7 +4,7 @@
 
 **State.** Wave 6a scout complete (issues #5–#16 filed). Wave 6b UI Dev stream done; Architect `/api/team-status` done. `pnpm type-check` clean.
 
-**Wave 6b Architect delivered (this commit):**
+**Wave 6b Architect delivered (`2e55fa2`):**
 - `src/app/api/team-status/route.ts` — NEW: GET `?threadId=<id>` returning all 9 panels (now/queued/done/blocked/activeWave/issues/scout/context/spend). Derives everything from existing DB tables + 60s in-memory issue cache (gh shell-out). Resilient to missing `turn_usage` table (BE Dev creates it in parallel — returns zeros until it exists).
 - `src/lib/db.ts` — added `listAllAgentStates(threadId)` + `getSpendSummary(threadId)` (catches missing `turn_usage`).
 - `src/types.ts` — added `TeamStatus` interface (shared contract with UI Dev).
