@@ -2,7 +2,12 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 6 complete. `origin/main` at `4c0b1d9`, working tree clean (only `.restart-trigger` mtime). Resume on branch `main` with `pnpm dev:supervised`. Active thread: `mcp_mpsoeous_bih2`. User has granted durable push authorization — push at end of waves without asking.
+**State.** Wave 7a BE Dev complete (`(SHA-pending)`). `pnpm type-check` clean. Waiting to push.
+
+**Wave 7a shipped:**
+- `src/app/api/po-dispatch/route.ts` — NEW: `POST /api/po-dispatch`. Body: `{ threadId, issueNumbers: number[], workspace? }`. Fetches each issue via `gh issue view --json`, constructs a PO message, calls `runTurnWithDispatches` targeting `product-owner`, returns `{ ok, dispatched, issueCount }`. Long-running (30–60s); no timeout. Bus events stream live.
+
+**Wave 6 complete (all on origin/main):**
 
 **Wave 6 shipped (all on origin/main):**
 
