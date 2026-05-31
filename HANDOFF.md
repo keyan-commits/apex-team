@@ -2,47 +2,29 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 5a complete across all three streams. BE Dev (`737f154`): issue #3 + history truncation + health route. UI Dev (`188d2f5`): issues #1 + #2. DevSecOps (`eaf32e9`): fresh-Mac readiness — `.env.local.example` updated, README Fresh-Mac Setup added, `scripts/preflight.mjs` + `pnpm preflight`. `pnpm type-check` clean. Awaiting Wave 5b Architect review.
+**State.** Wave 5a complete (`eaf32e9`). All three Wave 5a streams done. Awaiting Wave 5c push authorization.
 
-**Wave 4 complete — commits on `main` ahead of `origin/main`:**
+**Wave 5a delivered:**
+- BE Dev (`737f154`) — issue #3 agentModels filter + history truncation + health route apex-engine probe
+- UI Dev (`188d2f5`) — issue #1 model empty-string race fix + issue #2 spurious EventSource fix
+- DevSecOps (`eaf32e9`) — fresh-Mac readiness: no hardcoded paths found, `.env.local.example` updated, README Fresh-Mac Setup section, `scripts/preflight.mjs` + `pnpm preflight`
 
-| SHA | Commit |
-|---|---|
-| `2fe1e5d` | chore: backfill SHA b7b90d0 in HANDOFF NOW block |
-| `b7b90d0` | fix(ba): auto-seed business-analyst on every user message via MCP |
-| `d2a8ff8` | chore: backfill SHA 8adf5a1 in HANDOFF NOW block |
-| `8adf5a1` | feat: dev-supervisor with sentinel-file graceful restart |
-| `47dc6bc` | chore: backfill SHA 780faa9 in HANDOFF NOW block |
-| `780faa9` | feat: QA self-improvement issue-filing loop |
-| `2f0b6dd` | chore: backfill SHA 97216d5 in HANDOFF NOW block |
-| `97216d5` | feat: PO-initialized model defaults per thread |
-| `0c7fefa` | chore: backfill SHA e6c93d1 in HANDOFF NOW block |
-| `e6c93d1` | feat: live activity indicators + active-thread polling |
-| `5097f80` | chore: backfill SHA 3df1112 in HANDOFF NOW block |
-| `3df1112` | test: wave 3 smoke tests against :3100 isolated instance |
-| `8d351bf` | chore: backfill SHA cea839c in HANDOFF NOW block |
-| `cea839c` | feat: wave 3 — remaining 5 role skills + apex-team requirements snapshot |
-| `8f74e74` | chore: backfill SHA 2fd294f in HANDOFF NOW block |
-| `2fd294f` | feat: per-role model dropdown with localStorage persistence |
-| `c276d8d` | chore: backfill SHA f754ade in HANDOFF NOW block |
-| `f754ade` | feat: dev:test isolated instance on :3100 with separate DB |
-| `2241ea7` | chore: backfill SHA a3dd9cb in HANDOFF NOW block |
-| `a3dd9cb` | feat: auto-thread-discovery + handoff context-management primitives |
-
-**Architect Wave 4b review:** PASS, no blocks. 2 warns + 3 nits. Issue #3 filed (`agentModels` cast without `ALL_ROLES` filter at `run-turn.ts:122`).
+**Wave 5b — Architect review:** PASS, no blocks. 1 warn + 2 nits. Issues #1, #2, #3 closed on GitHub.
 
 **Open self-improvement issues (GitHub `self-improvement` label):**
-- #1 — AgentPane "Other…" sends empty model string before typing (warn)
-- #2 — Spurious EventSource on locally-minted thread before active-thread fetch (nit)
-- #3 — `agentModels` cast to `Record<RoleId,string>` without `ALL_ROLES` filter (warn)
+- #4 — `page.tsx:113-117` mount fetch race: user-typed thread ID overwritten if fetch resolves after edit (warn, < 100ms window in practice)
 
-**MCP module-cache caveat:** `b7b90d0` and other MCP-side changes are on disk but NOT in the running server's cached module graph (if `pnpm dev` is running). Activate on next process restart. Use `pnpm dev:supervised` for future sessions — MCP-side changes activate cleanly via `.restart-trigger`.
+**`pnpm preflight` on this machine:** 4/4 PASS. Exit 0.
+
+**`pnpm type-check`:** clean.
+
+**MCP module-cache caveat:** Wave 5a's `run-turn.ts` + `agents.ts` changes (`737f154`) are on disk but NOT live in the cached MCP graph yet. Activate after push by touching `.restart-trigger` in a dedicated turn (or from outside the team).
 
 **Active thread for resume:** `mcp_mpsoeous_bih2`.
 
-**Next planned workspace:** point apex-team workspace field at `/Users/nikoe/Development/Study/my-finances` (iOS SwiftUI personal-finance app).
+**Pending:** `git push origin main` — awaiting explicit user authorization. 22+ commits ahead of origin/main.
 
-**Pending:** `git push origin main` — awaiting explicit user authorization.
+**User context:** will use apex-team on a second Mac soon; Fresh-Mac onboarding functional (preflight 4/4, README setup in place).
 
 **Parked:**
 - CI pipeline (not requested).
