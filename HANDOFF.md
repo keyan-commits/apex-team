@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 25 — UI fix: 3 UX bugs (closes #20, #25, #26). (1) `AgentStatePanel.tsx`: `.toggle:focus-visible` rule restores keyboard focus ring stripped by `all:unset`. (2) `dashboard/page.tsx` line 274: user-facing notReady copy replaces stale milestone reference. (3) `dashboard/page.tsx`: 4s active-thread poll + `userEditedThreadRef` guard — dashboard now tracks MCP-driven thread switches without overwriting manual edits. 34/34 green. Feature branch: `feature/25-ux-bugs`.**
+
 **Wave 24 — CI: add `pnpm audit --audit-level moderate` step after install in `.github/workflows/ci.yml` (closes #41). `continue-on-error: true` so transient registry failures don't block PRs. `ops/README.md` pipeline table updated to reflect the new step. 34/34 green.**
 
 **Wave 23 — UI fix: page.tsx mount race (closes #4). Guard both `else` branch and `catch` in the mount effect with `!userEditedThreadRef.current` so a user-typed thread id is never overwritten by the active-thread fetch. `src/app/page.tsx` lines 118-124. 34/34 green. Feature branch: `feature/23-mount-race-fix`.**
