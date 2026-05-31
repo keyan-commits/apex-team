@@ -1,0 +1,5 @@
+# Touch this file to ask the supervisor to restart the dev server.
+# Agents append a timestamp line here when they ship changes to MCP-side
+# modules (src/mcp/**, run-turn.ts, providers.ts, etc.) whose module graph
+# is frozen at process start and cannot be hot-reloaded without a restart.
+# The supervisor (pnpm dev:supervised) will SIGTERM + respawn cleanly.

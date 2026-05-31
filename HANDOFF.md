@@ -2,7 +2,16 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 4b QA complete (`780faa9`). Self-improvement issue-filing loop wired. `pnpm type-check` clean.
+**State.** Wave 4c DevSecOps complete (SHA-pending). Graceful-restart supervisor shipped. `pnpm type-check` clean.
+
+**Wave 4c shipped (this commit):**
+- `scripts/dev-supervisor.mjs` — NEW: sentinel-file watcher; spawns `tsx server.ts`; SIGTERMs + SIGKILLs (5s grace) + respawns on `.restart-trigger` change; cleans up on SIGINT/SIGTERM.
+- `.restart-trigger` — NEW: tracked sentinel file with inline docs.
+- `package.json` — `dev:supervised` script added.
+- `src/lib/skills/devsecops.ts` — 6th skill: Restart triggering (when + how to touch sentinel).
+- `README.md` — "Autonomous restart support" section.
+
+**Wave 4b QA complete (`780faa9`):** Self-improvement issue-filing loop wired. `pnpm type-check` clean.
 
 **Wave 4b shipped (this commit):**
 - `src/lib/skills/qa.ts` — 6th skill section: Defect filing (gh issue create pattern, workspace fallback, body format, severity guide).

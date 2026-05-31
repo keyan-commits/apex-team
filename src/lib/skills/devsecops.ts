@@ -27,4 +27,10 @@ export const skills = `\
 - Define the rollback condition and rollback procedure before deploying, not after an incident. "We'll figure it out if it breaks" is not a plan.
 - Blue/green or feature-flag awareness: a deploy that can be toggled off without a redeploy is safer than one that can't.
 - Smoke test fires within 2 minutes of deploy completing — if it doesn't pass within that window, rollback automatically or manually before users are affected.
+
+### Restart triggering
+- When shipping changes to \`src/mcp/**\` or any module imported by \`src/mcp/handler.ts\` (tools.ts, run-turn.ts, providers.ts, etc.), the MCP module graph is cached at process start. New code is not active until the process restarts.
+- To activate new code without killing in-progress turns on other agents: append a timestamp line to \`.restart-trigger\`. The supervisor (\`pnpm dev:supervised\`) will SIGTERM + respawn cleanly.
+- Do this from a turn dedicated to the restart, not from a turn that has other work pending — the agent writing to \`.restart-trigger\` will be killed mid-turn as part of the restart.
+- If running under plain \`pnpm dev\` (no supervisor), restart manually: Ctrl-C + \`pnpm dev\`.
 `;

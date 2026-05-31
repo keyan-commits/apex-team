@@ -81,6 +81,16 @@ Claude Code will use apex-team's tools, the PO will dispatch, peers will run, an
 - `GOOGLE_GENERATIVE_AI_API_KEY` — only for Gemini agents.
 - `GROQ_API_KEY` — only for Groq agents.
 
+## Autonomous restart support
+
+For self-modifying use (agents shipping changes to MCP-side modules), run with the supervisor instead of plain `pnpm dev`:
+
+```bash
+pnpm dev:supervised   # http://localhost:3000 + auto-restart on sentinel change
+```
+
+The team triggers a clean restart by appending a line to `.restart-trigger`. The supervisor catches the file change, SIGTERMs the server, waits up to 5s for graceful shutdown, then respawns. Use plain `pnpm dev` if you don't need this behavior.
+
 ## Architecture
 
 See `CLAUDE.md` for the full stack, file layout, role ownership boundaries, and the NOTES / HANDOFF / DISPATCH protocols. `HANDOFF.md` tracks current state and open next-steps.
