@@ -91,6 +91,16 @@ export function appendMessage(
   };
 }
 
+// Most recent thread that has any messages — used as a fallback for the
+// dashboard when the in-memory `activeThreadId` is unset (e.g. after a
+// server restart). Returns null on an empty DB.
+export function getMostRecentThreadId(): string | null {
+  const row = db()
+    .prepare(`SELECT thread_id FROM messages ORDER BY id DESC LIMIT 1`)
+    .get() as { thread_id: string } | undefined;
+  return row?.thread_id ?? null;
+}
+
 export function listMessages(threadId: string): ChatMessage[] {
   const rows = db()
     .prepare(
