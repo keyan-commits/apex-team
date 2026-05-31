@@ -73,7 +73,9 @@ export function AgentPane({
   const [input, setInput] = useState("");
   const [isOther, setIsOther] = useState(false);
   const [otherText, setOtherText] = useState("");
+  const [activeSec, setActiveSec] = useState(0);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
+  const lastBusyAtRef = useRef(0);
   // Refs keep the mount effect stable without stale closures.
   const configRef = useRef(config);
   configRef.current = config;
@@ -89,6 +91,34 @@ export function AgentPane({
     }
     onConfigChangeRef.current({ ...configRef.current, model: stored });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Elapsed-seconds ticker — starts/resets when busy transitions to true.
+  useEffect(() => {
+    if (busy) {
+      lastBusyAtRef.current = Date.now();
+      setActiveSec(0);
+      const id = setInterval(() => {
+        setActiveSec(Math.round((Date.now() - lastBusyAtRef.current) / 1000));
+      }, 1000);
+      return () => clearInterval(id);
+    } else {
+      setActiveSec(0);
+    }
+  }, [busy]);
+
+  const pillState =
+    status?.startsWith("error:") ? "error" :
+    status === "dispatching" ? "dispatching" :
+    busy && pendingDraft !== null ? "streaming" :
+    busy ? "thinking" :
+    "idle";
+
+  const pillLabel =
+    pillState === "error" ? (status ?? "error") :
+    pillState === "dispatching" ? "dispatching" :
+    pillState === "streaming" ? "streaming" :
+    pillState === "thinking" ? "thinking…" :
+    "idle";
 
   // Filter the shared transcript for this pane's perspective.
   // PO sees everything; peers see their own slice.
@@ -110,6 +140,16 @@ export function AgentPane({
     }
   });
 
+  // Last user/dispatch message addressed to this pane — shown as current task.
+  const lastTaskMsg = [...visible].reverse().find(
+    (m) => m.author.kind === "user" || m.author.kind === "dispatch",
+  );
+  const taskText = lastTaskMsg
+    ? lastTaskMsg.content.length > 80
+      ? lastTaskMsg.content.slice(0, 80) + "…"
+      : lastTaskMsg.content
+    : null;
+
   useEffect(() => {
     if (scrollerRef.current) {
       scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight;
@@ -128,12 +168,15 @@ export function AgentPane({
   return (
     <section className={`pane pane-${accent}`}>
       <header className="pane-header">
-        <div className="title">
-          <span className={`dot ${busy ? "thinking" : ""}`} aria-hidden />
-          {title}
-          <span className="status">{status ?? (busy ? "thinking…" : "idle")}</span>
-        </div>
-        <div className="config">
+        <div className="header-row">
+          <div className="title">
+            <span className={`pill pill-${pillState}`} aria-label={`Status: ${pillLabel}`}>
+              {pillLabel}
+            </span>
+            {title}
+            {busy && <span className="elapsed">{activeSec}s</span>}
+          </div>
+          <div className="config">
           <select
             value={config.provider}
             onChange={(e) =>
@@ -182,7 +225,13 @@ export function AgentPane({
               spellCheck={false}
             />
           )}
+          </div>
         </div>
+        {taskText && (
+          <div className="task-bar" title={lastTaskMsg?.content}>
+            {taskText}
+          </div>
+        )}
       </header>
 
       <AgentStatePanel
@@ -273,11 +322,15 @@ export function AgentPane({
         }
         .pane-header {
           display: flex;
+          flex-direction: column;
+          border-bottom: 1px solid var(--border);
+          background: color-mix(in srgb, var(--accent-${accent}) 4%, var(--surface));
+        }
+        .header-row {
+          display: flex;
           justify-content: space-between;
           align-items: center;
           padding: 8px 12px;
-          border-bottom: 1px solid var(--border);
-          background: color-mix(in srgb, var(--accent-${accent}) 4%, var(--surface));
           gap: 10px;
         }
         .title {
@@ -287,19 +340,41 @@ export function AgentPane({
           gap: 8px;
           font-size: 13px;
         }
-        .dot {
-          width: 10px;
-          height: 10px;
-          border-radius: 50%;
-          background: var(--accent-${accent});
+        .pill {
+          display: inline-flex;
+          align-items: center;
+          font-size: 9px;
+          font-weight: 700;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          padding: 2px 6px;
+          border-radius: 99px;
+          border: 1px solid currentColor;
+          font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+          white-space: nowrap;
+          max-width: 120px;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
-        .dot.thinking { animation: pulse 1.1s ease-in-out infinite; }
-        .status {
+        .pill-idle { color: var(--text-dim); border-color: var(--border); }
+        .pill-dispatching { color: var(--accent-po); animation: pill-pulse 1.4s ease-in-out infinite; }
+        .pill-thinking { color: var(--accent-arch); animation: pill-pulse 1.1s ease-in-out infinite; }
+        .pill-streaming { color: var(--accent-ui); animation: pill-pulse 0.6s ease-in-out infinite; }
+        .pill-error { color: var(--accent-qa); }
+        .elapsed {
           font-size: 10px;
           color: var(--text-dim);
           font-weight: 400;
-          margin-left: 4px;
           font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        }
+        .task-bar {
+          padding: 3px 12px 5px;
+          font-size: 11px;
+          color: var(--text-dim);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          border-top: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
         }
         .config { display: flex; gap: 4px; font-size: 11px; }
         .config select, .model-input {
@@ -369,8 +444,8 @@ export function AgentPane({
           cursor: pointer;
         }
         button:disabled { opacity: 0.5; cursor: not-allowed; }
-        @keyframes pulse {
-          0%, 100% { opacity: 0.35; }
+        @keyframes pill-pulse {
+          0%, 100% { opacity: 0.45; }
           50% { opacity: 1; }
         }
       `}</style>

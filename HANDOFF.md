@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 3 complete — QA smoke tests pass (SHA-pending). All 10/10 tests green. Wave 4 next: HANDOFF refresh + push to `main`.
+**State.** Wave 4a — live activity indicators + active-thread polling committed (SHA-pending). `pnpm type-check` clean.
 
 **Wave 3 QA shipped (`3df1112`):**
 - `vitest.config.ts` — root vitest config with `@/*` path alias.

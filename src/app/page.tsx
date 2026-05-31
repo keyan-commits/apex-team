@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { AgentPane } from "@/components/AgentPane";
+import { ActivityLog, type ActivityEntry } from "@/components/ActivityLog";
 import { OrchestratorBar } from "@/components/OrchestratorBar";
 import type {
   AccentKey,
@@ -88,6 +89,8 @@ export default function Home() {
   const [inboxCounts, setInboxCounts] = useState<Record<TeamRoleId, number>>(() =>
     Object.fromEntries(TEAM_ROLES.map((r) => [r, 0])) as Record<TeamRoleId, number>,
   );
+  const [activityLog, setActivityLog] = useState<ActivityEntry[]>([]);
+  const activitySeqRef = useRef(0);
 
   const messagesRef = useRef(messages);
   messagesRef.current = messages;
@@ -95,6 +98,10 @@ export default function Home() {
   // Track whether the user has manually typed a thread ID. If so, we don't
   // override it with the MCP-last-used thread on mount.
   const userEditedThreadRef = useRef(false);
+
+  // Stable ref to current threadId for use inside intervals.
+  const threadIdRef = useRef(threadId);
+  threadIdRef.current = threadId;
 
   useEffect(() => {
     setThreadId(newThreadId());
@@ -121,6 +128,13 @@ export default function Home() {
         if (data.defaultCwd) setWorkspace(data.defaultCwd);
       })
       .catch(() => {});
+  }, []);
+
+  const pushActivity = useCallback((text: string) => {
+    setActivityLog((prev) => {
+      const entry: ActivityEntry = { id: ++activitySeqRef.current, ts: Date.now(), text };
+      return [...prev.slice(-4), entry];
+    });
   }, []);
 
   const onWorkspaceChange = useCallback((next: string) => {
@@ -157,7 +171,25 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (threadId) refreshStates(threadId);
+    if (!threadId) return;
+    refreshStates(threadId);
+    fetch(`/api/thread-config?threadId=${threadId}`, { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data: { agentModels: Record<string, string> | null }) => {
+        if (!data.agentModels) return;
+        const models = data.agentModels;
+        setAgents((prev) => {
+          const next = { ...prev };
+          for (const [role, model] of Object.entries(models)) {
+            if (next[role as RoleId]) {
+              next[role as RoleId] = { ...next[role as RoleId], model };
+              try { localStorage.setItem(`apex-model-${role}`, model); } catch {}
+            }
+          }
+          return next;
+        });
+      })
+      .catch(() => {});
   }, [threadId, refreshStates]);
 
   const appendLocal = useCallback(
@@ -216,6 +248,7 @@ export default function Home() {
             setBusy((b) => ({ ...b, [r]: true }));
             setPending((p) => ({ ...p, [r]: "" }));
             setStatus((s) => ({ ...s, [r]: "thinking…" }));
+            pushActivity(`${r} started`);
           }
           break;
         case "delta":
@@ -227,10 +260,12 @@ export default function Home() {
         case "turn-end":
           if (ev.role) {
             const r = ev.role;
+            const charCount = (ev.text ?? "").length;
             appendLocal({ kind: "agent", role: r }, ev.text ?? "");
             setBusy((b) => ({ ...b, [r]: false }));
             setPending((p) => ({ ...p, [r]: null }));
             setStatus((s) => ({ ...s, [r]: "idle" }));
+            pushActivity(`${r} done (${charCount} chars)`);
             // Auto-refresh handoff / inbox counts after each turn.
             refreshStates(threadId);
           }
@@ -238,6 +273,7 @@ export default function Home() {
         case "handoff":
           if (ev.from && ev.to && ev.message) {
             appendLocal({ kind: "handoff", from: ev.from, to: ev.to }, ev.message);
+            pushActivity(`${ev.from} → ${ev.to} HANDOFF`);
           }
           break;
         case "dispatch":
@@ -246,6 +282,7 @@ export default function Home() {
             // PO dispatch fan-out is server-driven now; just reflect
             // status so the UI shows the peer queued up.
             setStatus((s) => ({ ...s, [ev.to!]: "dispatching" }));
+            pushActivity(`PO → ${ev.to} dispatching`);
           }
           break;
         case "notes-updated":
@@ -265,6 +302,21 @@ export default function Home() {
             setPending((p) => ({ ...p, [r]: null }));
           }
           break;
+        case "agent-models":
+          if (ev.agentModels) {
+            const models = ev.agentModels;
+            setAgents((prev) => {
+              const next = { ...prev };
+              for (const [role, model] of Object.entries(models)) {
+                if (next[role as RoleId]) {
+                  next[role as RoleId] = { ...next[role as RoleId], model };
+                  try { localStorage.setItem(`apex-model-${role}`, model); } catch {}
+                }
+              }
+              return next;
+            });
+          }
+          break;
       }
     };
 
@@ -278,7 +330,7 @@ export default function Home() {
       cancelled = true;
       es?.close();
     };
-  }, [threadId, appendLocal, refreshStates]);
+  }, [threadId, appendLocal, refreshStates, pushActivity]);
 
   const runTurn = useCallback(
     (target: RoleId, userMessage: string | null) => {
@@ -355,6 +407,23 @@ export default function Home() {
     setInboxCounts(Object.fromEntries(TEAM_ROLES.map((r) => [r, 0])) as Record<TeamRoleId, number>);
   }, []);
 
+  // Poll active-thread every 4s so the browser tracks MCP-driven thread switches.
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (userEditedThreadRef.current) return;
+      fetch("/api/active-thread", { cache: "no-store" })
+        .then((r) => r.json())
+        .then((data: { threadId: string | null }) => {
+          if (data.threadId && data.threadId !== threadIdRef.current && !userEditedThreadRef.current) {
+            setThreadId(data.threadId);
+            resetThreadLocalState();
+          }
+        })
+        .catch(() => {});
+    }, 4000);
+    return () => clearInterval(id);
+  }, [resetThreadLocalState]);
+
   const onNewThread = useCallback(() => {
     setThreadId(newThreadId());
     resetThreadLocalState();
@@ -406,6 +475,8 @@ export default function Home() {
         onWorkspaceChange={onWorkspaceChange}
       />
 
+      <ActivityLog entries={activityLog} />
+
       <div className="po-area">
         <AgentPane {...paneProps("product-owner")} />
       </div>
@@ -420,7 +491,7 @@ export default function Home() {
         .layout {
           min-height: 100vh;
           display: grid;
-          grid-template-rows: auto auto 1fr;
+          grid-template-rows: auto auto auto 1fr;
           gap: 0;
         }
         .po-area {
