@@ -121,10 +121,44 @@ No secrets are committed to source. The only non-default env vars are:
 
 All `.env*.local` files are gitignored. Never commit them.
 
-## CI/CD status
+## Pipeline & security tooling
 
-No GH Actions workflow is active. `ANTHROPIC_API_KEY` is unavailable for CI (Claude agents use local OAuth only). Manual wave cadence is the current deploy pattern.
+Implemented in Wave 10b (US-002, ADR-002). DevSecOps owns all artifacts below — the only path to change pipeline behavior is a PR touching `ops/` or `.github/`.
 
-## Security scan config
+| Artifact | Purpose |
+|---|---|
+| `.github/workflows/ci.yml` | Runs `pnpm type-check` + `pnpm test:run` + `pnpm lint` on every PR and push. Lint is `continue-on-error` pending next-lint → standalone ESLint migration. |
+| `.github/workflows/codeql.yml` | GitHub SAST for JS/TS — weekly cron + push to main. Findings appear in the Security tab. No secrets required beyond auto-injected `GITHUB_TOKEN`. |
+| `.github/dependabot.yml` | Weekly CVE scan of npm deps. Minor + patch updates grouped into one PR to reduce noise. Critical CVEs in direct deps block merge until patched. |
+| `scripts/post-deploy-smoke.mjs` | Post-deploy health check. Curls `localhost:3000/api/health`, validates `status=ok` and `mcpMounted=true`. Run via `pnpm smoke`. |
+| `scripts/git-hooks/pre-commit` | Gitleaks secrets scan on staged files (see below). Also enforces HANDOFF.md update + INDEX.yaml integrity. |
 
-See `ops/security/scan-config.md` (not yet created — pending Dependabot/Renovate setup).
+### Gitleaks setup (one-time, per machine)
+
+```bash
+brew install gitleaks
+```
+
+The pre-commit hook runs `gitleaks protect --staged --no-banner` automatically if gitleaks is installed. If it is NOT installed, the hook skips silently — install it to get the secret-leak protection guarantee. A commit containing a detected secret will be rejected.
+
+### Post-deploy smoke test
+
+After every merge + deploy, run:
+
+```bash
+pnpm smoke
+```
+
+Exits 0 if the server is healthy, 1 with a descriptive error message if not. If it fails: check `pnpm dev` terminal output; rollback with `git revert HEAD && git push origin main` if the deploy is the cause.
+
+### CI secrets
+
+The CI workflows use only `GITHUB_TOKEN` (auto-injected by GitHub Actions). No additional secrets are required.
+
+## Infrastructure as Code (IaC)
+
+**Not applicable for apex-team.** This project runs entirely on a single Mac with no cloud infrastructure, no remote servers, no VPCs, and no managed databases. There is nothing to provision with Terraform, Pulumi, CDK, or equivalent tooling. The "infrastructure" is: one Mac, one repo, one SQLite file.
+
+If apex-team ever acquires remote infra (a staging server, a hosted deployment, a managed database), DevSecOps will open an ADR to select an IaC tool and provision it under `ops/infra/`. Until that happens, this section serves as the explicit record that IaC was considered and deliberately deferred.
+
+*Decision recorded per US-002 AC5 and ADR-002.*

@@ -21,7 +21,8 @@
     "test": "vitest",
     "test:run": "vitest run",
     "preflight": "node scripts/preflight.mjs",
-    "scout": "node scripts/skill-scout.mjs"
+    "scout": "node scripts/skill-scout.mjs",
+    "smoke": "node scripts/post-deploy-smoke.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.79",

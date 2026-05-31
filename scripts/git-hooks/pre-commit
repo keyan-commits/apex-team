@@ -4,6 +4,12 @@
 # Bypass once with: git commit --no-verify
 root="$(git rev-parse --show-toplevel)"
 
+# --- Secrets scan (gitleaks): prevent accidental secret commits ---
+# Requires: brew install gitleaks   (see ops/README.md "Pipeline & security tooling")
+if command -v gitleaks > /dev/null 2>&1; then
+  gitleaks protect --staged --no-banner || exit 1
+fi
+
 # --- Enforce: every commit must update HANDOFF.md (its NOW block reflects this work) ---
 # Disable in a repo with:  git config handoff.requireOnCommit false
 if [ "$(git config --bool handoff.requireOnCommit 2>/dev/null || echo true)" = "true" ] && [ -f "$root/HANDOFF.md" ]; then
