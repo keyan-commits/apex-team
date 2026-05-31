@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 6d Architect review complete. Gate: UI Dev FAIL (block #17); all other streams PASS.
+**State.** Wave 6e — issue #17 fixed. `pnpm type-check` clean. Pending: Architect PASS + push.
 
 **Wave 6d review findings:**
 

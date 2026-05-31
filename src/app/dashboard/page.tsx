@@ -2,28 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-
-// Types will reconcile with Architect's /api/team-status spec when that endpoint lands.
-interface NowEntry { role: string; task: string; started_at: number; state: string; }
-interface QueueEntry { id: number; role: string; task: string; queued_at: number; }
-interface DoneEntry { role: string; task: string; completed_at: number; }
-interface BlockedEntry { role: string; error: string; since: number; }
-
-interface TeamStatusData {
-  now: NowEntry[];
-  queued: QueueEntry[];
-  done: DoneEntry[];
-  blocked: BlockedEntry[];
-  active_wave: string | null;
-  issues: { self_improvement: number; skill_proposal: number; mcp_proposal: number };
-  scout: { last_run_at: number | null; proposals_filed: number } | null;
-  context: Record<string, { handoff_size: number; history_depth: number }>;
-  spend: {
-    today_usd: number;
-    thread_usd: number;
-    per_role: Record<string, { input_tokens: number; output_tokens: number; cost_usd: number; model: string }>;
-  } | null;
-}
+import type { TeamStatus } from "@/types";
 
 const ROLE_ACCENT: Record<string, string> = {
   "product-owner": "po", "business-analyst": "ba", architect: "arch",
@@ -62,7 +41,7 @@ function roleBadge(role: string) {
 
 export default function DashboardPage() {
   const [threadId, setThreadId] = useState<string>("");
-  const [data, setData] = useState<TeamStatusData | null>(null);
+  const [data, setData] = useState<TeamStatus | null>(null);
   const [endpointReady, setEndpointReady] = useState(true);
   const [savedOrder, setSavedOrder] = useState<number[]>([]);
   const [dragFrom, setDragFrom] = useState<number | null>(null);
@@ -95,7 +74,7 @@ export default function DashboardPage() {
         .then((r) => {
           if (r.status === 404) { setEndpointReady(false); return null; }
           setEndpointReady(true);
-          return r.json() as Promise<TeamStatusData>;
+          return r.json() as Promise<TeamStatus>;
         })
         .then((d) => { if (d) setData(d); })
         .catch(() => {});
@@ -108,7 +87,7 @@ export default function DashboardPage() {
   }, [threadId]);
 
   // QUEUED panel: apply saved ordering to incoming data.
-  const sortedQueued = useMemo<QueueEntry[]>(() => {
+  const sortedQueued = useMemo<TeamStatus["queued"]>(() => {
     if (!data?.queued) return [];
     if (!savedOrder.length) return data.queued;
     const pos = new Map(savedOrder.map((id, i) => [id, i]));
@@ -160,8 +139,8 @@ export default function DashboardPage() {
                 <div key={e.role} className="row">
                   {roleBadge(e.role)}
                   <span className="state-pill">{e.state}</span>
-                  <span className="task-text">{e.task}</span>
-                  <span className="dim">{fmtTime(e.started_at)}</span>
+                  <span className="task-text">{e.taskSummary}</span>
+                  <span className="dim">{fmtTime(e.startedAt)}</span>
                 </div>
               ))}
             </div>
@@ -184,9 +163,9 @@ export default function DashboardPage() {
                   className={`row draggable${dragFrom === i ? " row-dragging" : ""}`}
                 >
                   <span className="drag-handle" aria-hidden="true">⠿</span>
-                  {roleBadge(item.role)}
-                  <span className="task-text">{item.task}</span>
-                  <span className="dim">{fmtTime(item.queued_at)}</span>
+                  {roleBadge(item.toRole)}
+                  <span className="task-text">{item.taskSummary}</span>
+                  <span className="dim">{fmtTime(item.createdAt)}</span>
                 </div>
               ))}
             </div>
@@ -201,8 +180,8 @@ export default function DashboardPage() {
               {data.done.map((e, i) => (
                 <div key={i} className="row">
                   {roleBadge(e.role)}
-                  <span className="task-text">{e.task}</span>
-                  <span className="dim">{fmtTime(e.completed_at)}</span>
+                  <span className="task-text">{e.taskSummary}</span>
+                  <span className="dim">{fmtTime(e.completedAt)}</span>
                 </div>
               ))}
             </div>
@@ -217,8 +196,8 @@ export default function DashboardPage() {
               {data.blocked.map((e) => (
                 <div key={e.role} className="row row-error">
                   {roleBadge(e.role)}
-                  <span className="error-text">{e.error}</span>
-                  <span className="dim">{fmtTime(e.since)}</span>
+                  <span className="error-text">{e.errorMessage}</span>
+                  <span className="dim">{fmtTime(e.sinceAt)}</span>
                 </div>
               ))}
             </div>
@@ -228,8 +207,8 @@ export default function DashboardPage() {
         {/* ACTIVE WAVE */}
         <section className="panel span2">
           <h2 className="panel-h">Active Wave</h2>
-          {!endpointReady ? notReady : !data ? empty("Loading…") : !data.active_wave ? empty("No wave context found in thread.") : (
-            <pre className="wave-text">{data.active_wave}</pre>
+          {!endpointReady ? notReady : !data ? empty("Loading…") : !data.activeWave ? empty("No wave context found in thread.") : (
+            <pre className="wave-text">{data.activeWave.excerpt}</pre>
           )}
         </section>
 
@@ -239,15 +218,15 @@ export default function DashboardPage() {
           {!endpointReady ? notReady : !data ? empty("Loading…") : (
             <div className="issue-grid">
               <a className="issue-row" href="https://github.com/keyan-commits/apex-team/issues?q=label%3Aself-improvement+is%3Aopen" target="_blank" rel="noreferrer">
-                <span className="issue-count">{data.issues.self_improvement}</span>
+                <span className="issue-count">{data.issues.selfImprovement}</span>
                 <span className="issue-label">self-improvement</span>
               </a>
               <a className="issue-row" href="https://github.com/keyan-commits/apex-team/issues?q=label%3Askill-proposal+is%3Aopen" target="_blank" rel="noreferrer">
-                <span className="issue-count">{data.issues.skill_proposal}</span>
+                <span className="issue-count">{data.issues.skillProposal}</span>
                 <span className="issue-label">skill-proposal</span>
               </a>
               <a className="issue-row" href="https://github.com/keyan-commits/apex-team/issues?q=label%3Amcp-proposal+is%3Aopen" target="_blank" rel="noreferrer">
-                <span className="issue-count">{data.issues.mcp_proposal}</span>
+                <span className="issue-count">{data.issues.mcpProposal}</span>
                 <span className="issue-label">mcp-proposal</span>
               </a>
             </div>
@@ -257,11 +236,11 @@ export default function DashboardPage() {
         {/* SCOUT */}
         <section className="panel">
           <h2 className="panel-h">Daily Scout</h2>
-          {!endpointReady ? notReady : !data ? empty("Loading…") : !data.scout ? empty("Scout has not run yet.") : (
+          {!endpointReady ? notReady : !data ? empty("Loading…") : (
             <dl className="kv-list">
-              <dt>Last run</dt><dd>{fmtTime(data.scout.last_run_at)}</dd>
-              <dt>Proposals filed</dt><dd>{data.scout.proposals_filed}</dd>
-              <dt>Next run</dt><dd>08:00 UTC (daily cron)</dd>
+              <dt>Last run</dt><dd>{fmtTime(data.scout.lastRunAt)}</dd>
+              <dt>Proposals filed</dt><dd>{data.scout.proposalsLast7Days}</dd>
+              <dt>Next run</dt><dd>{data.scout.nextScheduledAt ? fmtTime(data.scout.nextScheduledAt) : "manual only"}</dd>
             </dl>
           )}
         </section>
@@ -269,21 +248,18 @@ export default function DashboardPage() {
         {/* CONTEXT */}
         <section className="panel span2">
           <h2 className="panel-h">Context</h2>
-          {!endpointReady ? notReady : !data ? empty("Loading…") : Object.keys(data.context).length === 0 ? empty("No context data.") : (
+          {!endpointReady ? notReady : !data ? empty("Loading…") : data.context.length === 0 ? empty("No context data.") : (
             <div className="context-grid">
-              {Object.entries(data.context).map(([role, ctx]) => {
-                const needsCleanup = ctx.handoff_size > 8000 || ctx.history_depth > 50;
-                return (
-                  <div key={role} className={`ctx-card${needsCleanup ? " ctx-warn" : ""}`}>
-                    {roleBadge(role)}
-                    {needsCleanup && <span className="cleanup-badge">needs cleanup</span>}
-                    <div className="ctx-stats">
-                      <span>{fmtNum(ctx.handoff_size)} chars</span>
-                      <span>{ctx.history_depth} msgs</span>
-                    </div>
+              {data.context.map((ctx) => (
+                <div key={ctx.role} className={`ctx-card${ctx.needsCleanup ? " ctx-warn" : ""}`}>
+                  {roleBadge(ctx.role)}
+                  {ctx.needsCleanup && <span className="cleanup-badge">needs cleanup</span>}
+                  <div className="ctx-stats">
+                    <span>{fmtNum(ctx.handoffChars)} chars</span>
+                    <span>{ctx.historyDepth} msgs</span>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           )}
         </section>
@@ -291,25 +267,25 @@ export default function DashboardPage() {
         {/* SPEND */}
         <section className="panel span2">
           <h2 className="panel-h">Spend</h2>
-          {!endpointReady ? notReady : !data ? empty("Loading…") : !data.spend ? empty("Token usage not yet captured (Wave 6b BE Dev).") : (
+          {!endpointReady ? notReady : !data ? empty("Loading…") : (
             <>
               <div className="spend-totals">
-                <div className="spend-stat"><span className="spend-val">{fmtUsd(data.spend.today_usd)}</span><span className="spend-lbl">today</span></div>
-                <div className="spend-stat"><span className="spend-val">{fmtUsd(data.spend.thread_usd)}</span><span className="spend-lbl">this thread</span></div>
+                <div className="spend-stat"><span className="spend-val">{fmtUsd(data.spend.todayUsd)}</span><span className="spend-lbl">today</span></div>
+                <div className="spend-stat"><span className="spend-val">{fmtUsd(data.spend.threadUsd)}</span><span className="spend-lbl">this thread</span></div>
               </div>
               <div className="spend-roles">
-                {Object.entries(data.spend.per_role)
-                  .sort((a, b) => b[1].cost_usd - a[1].cost_usd)
-                  .map(([role, u]) => {
-                    const pct = data.spend!.thread_usd > 0 ? (u.cost_usd / data.spend!.thread_usd) * 100 : 0;
+                {[...data.spend.perRole]
+                  .sort((a, b) => b.usd - a.usd)
+                  .map((r) => {
+                    const pct = data.spend.threadUsd > 0 ? (r.usd / data.spend.threadUsd) * 100 : 0;
                     return (
-                      <div key={role} className="spend-row">
-                        {roleBadge(role)}
+                      <div key={r.role} className="spend-row">
+                        {roleBadge(r.role)}
                         <div className="spend-bar-wrap">
                           <div className="spend-bar" style={{ width: `${pct.toFixed(1)}%` }} />
                         </div>
-                        <span className="spend-cost">{fmtUsd(u.cost_usd)}</span>
-                        <span className="dim">{fmtNum(u.input_tokens + u.output_tokens)} tok</span>
+                        <span className="spend-cost">{fmtUsd(r.usd)}</span>
+                        <span className="dim">{fmtNum(r.tokensIn + r.tokensOut)} tok</span>
                       </div>
                     );
                   })}
