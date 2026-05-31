@@ -49,6 +49,8 @@ export function OrchestratorBar({
         <span className="logo">⌬</span> apex-team
       </div>
 
+      <span className="sep" aria-hidden />
+
       <nav className="nav-tabs" aria-label="Main navigation">
         <Link href="/" className={`tab${pathname === "/" ? " tab-active" : ""}`}>Team</Link>
         <Link href="/dashboard" className={`tab${pathname === "/dashboard" ? " tab-active" : ""}`}>Dashboard</Link>
@@ -115,27 +117,32 @@ export function OrchestratorBar({
           font-weight: 700;
           letter-spacing: 0.02em;
           display: flex; align-items: center; gap: 6px;
+          flex-shrink: 0;
         }
         .logo { color: var(--accent-orch); font-size: 18px; }
+        .sep { width: 1px; height: 24px; background: var(--border); flex-shrink: 0; }
         .nav-tabs {
           display: flex;
-          gap: 4px;
+          gap: 6px;
+          flex-shrink: 0;
         }
         .tab {
-          padding: 4px 12px;
-          border-radius: 4px;
+          padding: 6px 16px;
+          border-radius: 6px;
           border: 1px solid var(--border);
-          font-size: 12px;
+          font-size: 13px;
           font-weight: 500;
           color: var(--text-dim);
           text-decoration: none;
-          transition: color 0.15s, background 0.15s;
+          transition: color 0.15s, background 0.15s, border-color 0.15s;
         }
-        .tab:hover { color: var(--text); background: var(--surface-2); }
+        .tab:hover { color: var(--text); background: var(--surface-2); border-color: color-mix(in srgb, var(--accent-po) 50%, var(--border)); }
+        .tab:focus-visible { outline: 2px solid var(--accent-po); outline-offset: 2px; }
         .tab-active {
           color: var(--text);
-          background: var(--surface-2);
+          background: color-mix(in srgb, var(--accent-po) 14%, var(--surface-2));
           border-color: var(--accent-po);
+          font-weight: 700;
         }
         .workspace {
           flex: 1;

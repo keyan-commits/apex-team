@@ -2,7 +2,14 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 7d QA — code-based UI/UX audit + smoke test regression fix. `pnpm test:run` 6/6. Pushed to origin/main.
+**State.** Wave 7d UI Dev complete — bounded content width + `--accent-orch` defined + nav tabs restyle. Commit `(SHA-pending)`. `pnpm type-check` clean.
+
+**Wave 7d UI Dev changes:**
+- `globals.css` — defined `--accent-orch: #e0af68` (closes #19; logo and AgentStatePanel styling now visible)
+- `MessageBubble.tsx` — `max-width: 820px` on `.bubble` (closes #28; PO pane text no longer spans full viewport)
+- `OrchestratorBar.tsx` — sep divider between brand and nav-tabs; tabs restyled: `6px 16px` padding, `13px`, `font-weight: 700` active, tinted background on active, `:focus-visible` ring
+
+**Wave 7d QA — code-based UI/UX audit + smoke test regression fix.** `pnpm test:run` 6/6. Pushed to origin/main.
 
 **Important limitation:** `mcp__playwright__browser_*` tools are only mounted when running as an apex-team agent turn (via the turn runner), NOT in a direct Claude Code session. This turn used code analysis + live API calls instead of browser snapshots.
 

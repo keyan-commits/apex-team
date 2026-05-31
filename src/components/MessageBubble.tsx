@@ -90,6 +90,7 @@ export function MessageBubble({ message, perspective, pending }: Props) {
           border-radius: 10px;
           padding: 10px 12px;
           background: var(--surface);
+          max-width: 820px;
         }
         .bubble + .bubble { margin-top: 10px; }
         .bubble-header {
