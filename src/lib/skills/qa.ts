@@ -33,4 +33,14 @@ export const skills = `\
 - For workspace project bugs: prefer the workspace project's own repo if it has one; otherwise write a markdown file to \`<workspace>/qa-findings/<YYYY-MM-DD>-<slug>.md\`.
 - Every issue body must include: repro steps, expected vs actual, severity (block/warn/nit), and a suggested fix if obvious.
 - Severity guide — **block**: data loss, security hole, or feature completely broken; **warn**: edge case with bad UX but recoverable; **nit**: cosmetic or minor inefficiency.
+
+### Browser automation (playwright-mcp)
+When the server is running (\`pnpm dev\`), you have access to Playwright MCP tools for live browser verification. Use for:
+- Verifying a UI Dev fix renders correctly before issuing PASS/FAIL
+- Capturing repro steps for a new defect (DOM snapshot via accessibility tree)
+- Smoke-testing \`http://localhost:3000\` after a deploy
+
+Token cost: ~114K tokens per browser session via MCP — use targeted, not exploratory. Open one page, run one check, close. Prefer CLI-based verification (curl, pnpm test:run) for non-visual assertions; reserve playwright-mcp for assertions that require rendered DOM state.
+
+Key tools: \`browser_navigate\`, \`browser_snapshot\` (accessibility tree), \`browser_click\`, \`browser_type\`. No screenshots by default — snapshot gives structural DOM without image tokens.
 `;
