@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 7a BE Dev complete (`(SHA-pending)`). `pnpm type-check` clean. Waiting to push.
+**State.** Wave 7a BE Dev complete (`d598c3e`). `pnpm type-check` clean. Pushed to origin/main.
 
 **Wave 7a shipped:**
 - `src/app/api/po-dispatch/route.ts` — NEW: `POST /api/po-dispatch`. Body: `{ threadId, issueNumbers: number[], workspace? }`. Fetches each issue via `gh issue view --json`, constructs a PO message, calls `runTurnWithDispatches` targeting `product-owner`, returns `{ ok, dispatched, issueCount }`. Long-running (30–60s); no timeout. Bus events stream live.
