@@ -84,12 +84,31 @@ export default function DashboardPage() {
   const [flashedRowId, setFlashedRowId] = useState<number | null>(null);
   const [liveMsg, setLiveMsg] = useState("");
   const queuedRowRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const userEditedThreadRef = useRef(false);
+  const threadIdRef = useRef(threadId);
+  threadIdRef.current = threadId;
 
   useEffect(() => {
     fetch("/api/active-thread", { cache: "no-store" })
       .then((r) => r.json())
-      .then((d: { threadId: string | null }) => { if (d.threadId) setThreadId(d.threadId); })
+      .then((d: { threadId: string | null }) => { if (d.threadId && !userEditedThreadRef.current) setThreadId(d.threadId); })
       .catch(() => {});
+  }, []);
+
+  // Poll active-thread every 4s so the dashboard tracks MCP-driven thread switches.
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (userEditedThreadRef.current) return;
+      fetch("/api/active-thread", { cache: "no-store" })
+        .then((r) => r.json())
+        .then((d: { threadId: string | null }) => {
+          if (d.threadId && d.threadId !== threadIdRef.current && !userEditedThreadRef.current) {
+            setThreadId(d.threadId);
+          }
+        })
+        .catch(() => {});
+    }, 4000);
+    return () => clearInterval(id);
   }, []);
 
   useEffect(() => {
@@ -271,7 +290,7 @@ export default function DashboardPage() {
   };
 
   const empty = (msg: string) => <p className="empty-msg">{msg}</p>;
-  const notReady = empty("Endpoint building… (Wave 6b BE Dev)");
+  const notReady = empty("Dashboard data not available — is the server fully started?");
 
   const panelHd = (title: string, key: string) => (
     <div className="panel-hd-wrap">
@@ -295,7 +314,7 @@ export default function DashboardPage() {
       <OrchestratorBar
         threadId={threadId}
         onNewThread={() => setThreadId(`t_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`)}
-        onThreadIdChange={setThreadId}
+        onThreadIdChange={(next) => { userEditedThreadRef.current = true; setThreadId(next); }}
         busy={false}
         workspace={workspace}
         onWorkspaceChange={(ws) => {

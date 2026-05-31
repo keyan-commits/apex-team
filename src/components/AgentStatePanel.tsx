@@ -131,6 +131,11 @@ export function AgentStatePanel({
           letter-spacing: 0.05em;
           color: var(--text-dim);
         }
+        .toggle:focus-visible {
+          outline: 1px solid var(--accent-orch);
+          outline-offset: 2px;
+          border-radius: 2px;
+        }
         .caret { width: 12px; color: var(--text-dim); }
         .meta { color: var(--text-dim); font-weight: 400; text-transform: none; letter-spacing: 0; }
         .inbox-badge {
