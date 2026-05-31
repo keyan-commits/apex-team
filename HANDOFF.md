@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 5a complete (`eaf32e9`). All three Wave 5a streams done. Awaiting Wave 5c push authorization.
+**State.** Wave 5a complete (`eaf32e9`). All three Wave 5a streams done. Awaiting Wave 5c push authorization. HANDOFF refresh: `86365fc`.
 
 **Wave 5a delivered:**
 - BE Dev (`737f154`) — issue #3 agentModels filter + history truncation + health route apex-engine probe
