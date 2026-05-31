@@ -2,7 +2,14 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 4c DevSecOps complete (`8adf5a1`). Graceful-restart supervisor shipped. `pnpm type-check` clean.
+**State.** BA inbox seeding fix complete (SHA-pending). `pnpm type-check` clean.
+
+**Fix shipped (this commit):**
+- `src/types.ts` — `from: TeamRoleId` → `from: RoleId` on `handoff` MessageAuthor (minimal widening; PO can legitimately HANDOFF peers per the protocol).
+- `src/mcp/tools.ts` — `talk_to_role` + `talk_to_product_owner`: seed BA's inbox with every user message before `runTurn` fires; skip when target IS `business-analyst`.
+- `src/lib/roles.ts` — PO prompt: `### Requirement capture` section (always dispatch BA in parallel for product-relevant messages). BA prompt: `### Requirement capture discipline` section (processing-watermark pattern in HANDOFF doc).
+
+**Wave 4c DevSecOps complete (`8adf5a1`):** Graceful-restart supervisor shipped. `pnpm type-check` clean.
 
 **Wave 4c shipped (this commit):**
 - `scripts/dev-supervisor.mjs` — NEW: sentinel-file watcher; spawns `tsx server.ts`; SIGTERMs + SIGKILLs (5s grace) + respawns on `.restart-trigger` change; cleans up on SIGINT/SIGTERM.

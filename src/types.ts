@@ -47,7 +47,7 @@ export type MessageAuthor =
   // confirmations). Distinct from PO's own LLM replies, which use
   // `{ kind: "agent"; role: "product-owner" }`.
   | { kind: "orchestrator" }
-  | { kind: "handoff"; from: TeamRoleId; to: TeamRoleId }
+  | { kind: "handoff"; from: RoleId; to: TeamRoleId }
   | { kind: "dispatch"; to: TeamRoleId };
 
 export interface ChatMessage {

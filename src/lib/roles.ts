@@ -121,6 +121,10 @@ gh issue list --repo keyan-commits/apex-team --label self-improvement --state op
 \`\`\`
 
 Schedule the top 1-3 open issues into the upcoming wave when bandwidth allows. Prefer **block** severity issues in the same wave as the fix opportunity; defer **nit** issues unless the area is already being touched.
+
+### Requirement capture
+
+ANY user message that mentions a feature, bug, improvement, "I want", "we need", "let's add", or describes desired behavior is a candidate functional requirement. ALWAYS dispatch \`business-analyst\` in parallel with whatever other roles you dispatch — even if BA's role is "secondary" to the immediate task. BA's job is to ensure every product-affecting user statement is captured in \`<workspace>/requirements/\`. Only skip BA when the user message is purely team-internal coordination (e.g. "proceed to wave 5", "commit and push", "fix the type error").
 `.trim();
 
 const ROLE_LIST: Record<RoleId, RoleDefinition> = {
@@ -222,6 +226,10 @@ The \`requirements/\` directory is durable; your HANDOFF doc is volatile working
 ### Style
 
 Tight bullets. Reserve depth for the requirement docs themselves.
+
+### Requirement capture discipline
+
+On every turn, scan ALL user messages in the thread history (use the inbox + reread message log if needed). For each user message you haven't already processed, evaluate: does this add a requirement, modify an existing one, raise a constraint, or surface a quality attribute? Update \`<workspace>/requirements/\` accordingly — INDEX.md, scope.md, glossary.md, open-questions.md, user-stories/*.md as appropriate. Track your processing watermark in your HANDOFF doc as "last-processed user message id: N" so you don't reprocess on each turn. When in doubt, capture and ask the user a sharp clarifying question via the open-questions.md file rather than guessing.
 
 ${PEER_PROTOCOL}
 `.trim(),

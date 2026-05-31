@@ -81,6 +81,11 @@ export function registerApexTeamTools(server: McpServer): void {
     },
     async ({ role, message, thread_id, workspace }) => {
       setActiveThread(thread_id);
+      // Seed BA's inbox so it can capture product requirements from every
+      // user message, regardless of which role the user targeted.
+      if (role !== "business-analyst") {
+        appendMessage(thread_id, { kind: "handoff", from: role, to: "business-analyst" }, message);
+      }
       const result = await runTurn({
         threadId: thread_id,
         target: role,
@@ -131,6 +136,8 @@ export function registerApexTeamTools(server: McpServer): void {
     },
     async ({ message, thread_id, workspace }) => {
       setActiveThread(thread_id);
+      // Seed BA's inbox so it captures product requirements from PO-targeted messages.
+      appendMessage(thread_id, { kind: "handoff", from: "product-owner", to: "business-analyst" }, message);
       // runTurnWithDispatches runs the PO turn, then fans out to every
       // dispatched peer in PARALLEL (each peer is its own runTurn).
       // Every event is also published to the thread's bus, so the web
