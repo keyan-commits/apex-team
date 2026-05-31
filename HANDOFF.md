@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 5a UI Dev complete (SHA-pending). Fixed issues #1 + #2. `pnpm type-check` clean.
+**State.** Wave 5a UI Dev complete (`188d2f5`). Fixed issues #1 + #2. `pnpm type-check` clean.
 
 **Wave 4 complete — commits on `main` ahead of `origin/main`:**
 
