@@ -15,6 +15,27 @@ export const skills = `\
 - Group related controls spatially — proximity communicates relationship without a label.
 - Distinguish status from action: status (badge, indicator) sits near the thing it describes; action (button) sits near the outcome.
 
+### Density audit checklist
+
+Before approving any spec or issuing a PASS verdict, scan every container for:
+- [ ] **Unbound height**: any \`div\` whose height depends on dynamic content — does it have a \`max-height\` + \`overflow-y: auto\`?
+- [ ] **Uncapped list**: any \`map()\` render — is there a max-item cap or pagination for long lists?
+- [ ] **Implicit overflow**: any pane or panel that could contain user-generated or LLM-generated text — is the overflow contained?
+- [ ] **Default-open panels**: any collapsible panel that defaults to open — is its content bounded?
+- [ ] **Outbound/status bubbles**: any message that is routing infrastructure (handoff-out, dispatch-out) — should it start collapsed?
+- [ ] **Threshold review**: any "show more" affordance — is the preview threshold appropriate for the page's information density goal (monitoring vs. reading)?
+
+A spec is not complete until this checklist is clear for every dynamic container on the screen.
+
+### Feed density patterns
+
+Rules for card-based monitoring views (multi-pane dashboards, agent feeds, log viewers):
+- **Max-height budgeting for cards/panes:** never let a card grow unbounded in a multi-card layout. Rule: each card gets a viewport-relative max-height (\`min(<fixed>px, <N>vh)\`). Internal scroll beats page scroll for monitoring views.
+- **Internal vs page scroll:** monitoring views should have page scroll disabled by default; the viewport shows all cards at once; individual cards scroll internally when content overflows.
+- **Content truncation thresholds for agent output:** 3 lines / 200 chars for a monitoring card; 6 lines / 400 chars for a conversational pane. Monitoring views get tighter defaults because the user is scanning, not reading.
+- **Streaming / live-update regions:** the active (streaming) pane must not reflow the page; max-height + internal auto-scroll is the correct pattern. Without this, one active agent dominates the entire viewport.
+- **Secondary panel height caps:** collapsible panels within a card (e.g. HANDOFF doc) need their own independent max-height to prevent a secondary disclosure from inflating the card.
+
 ### Responsive design
 - Every spec must call out breakpoint behavior at all three tiers: 1100px (tablet-landscape / narrow desktop), 768px (tablet-portrait), 480px (mobile). State what collapses, wraps, or hides at each tier.
 - The codebase uses \`@media (max-width: 1100px)\` and \`@media (max-width: 768px)\` — use these exact breakpoint names in specs. Don't invent new ones.

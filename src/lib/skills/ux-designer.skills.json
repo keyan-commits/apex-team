@@ -3,6 +3,8 @@
   "sections": {
     "Design-spec discipline": "claude",
     "Information architecture": "claude",
+    "Density audit checklist": "user",
+    "Feed density patterns": "user",
     "Responsive design": "claude",
     "Interaction states": "claude",
     "Copywriting": "claude",
