@@ -2,20 +2,33 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 7c UI Dev complete (`e561885`). `pnpm type-check` clean. Pushed to origin/main.
+**State.** Wave 7c Architect UX audit complete. `pnpm type-check` clean. Full audit below.
 
-**Wave 7c UX audit findings — 5 issues filed:**
-- **#19** (warn) — `--accent-orch` undefined in `globals.css` → invisible logo + broken AgentStatePanel styling
-- **#20** (warn) — `AgentStatePanel` toggle: `all:unset` removes focus ring; no `:focus-visible` replacement
-- **#21** (warn) — QUEUED drag-and-drop: no keyboard alternative for reordering
-- **#22** (warn) — Dashboard poll errors silently swallowed; stale/loading state no feedback
-- **#23** (warn) — `/dashboard` lacks workspace input; can't change workspace without returning to `/`
+**Wave 7c UI Dev `e561885` — PASS.**
+Delivered: OrchestratorBar on dashboard (workspace input), inline model select in Context, per-row `sendingRows` dispatch (concurrent). `pnpm type-check` clean.
 
-**Wave 7b gate verdicts (all PASS):**
-- Wave 6e UI Dev `4c0b1d9` — PASS (field name fix)
-- Wave 7a UI Dev `9ca54dc` — PASS (dispatch FSM correct; 8s setTimeout race superseded by Wave 7c redesign)
-- Wave 7b BE Dev `4ca6b43` — PASS (playwright-mcp QA-only, correct tool name format)
-- Wave 7b UI Dev `23c089a` — PASS (expandable rows + tooltips + model badge; #19–#23 noted, none block)
+**Wave 7c UX audit — full findings (9 issues across all files):**
+
+| Issue | Severity | File:line | Status |
+|---|---|---|---|
+| #19 | warn | `OrchestratorBar.tsx:119`, `AgentStatePanel.tsx:119` | **open** — `--accent-orch` undefined, logo/panel styling broken |
+| #20 | warn | `AgentStatePanel.tsx:122` | **open** — `all:unset` on toggle removes focus ring |
+| #21 | warn | `dashboard/page.tsx` QUEUED panel | **open** — DnD no keyboard alternative |
+| #22 | warn | `dashboard/page.tsx:132` | **open** — poll errors silently swallowed |
+| #23 | warn | `dashboard/page.tsx` | **CLOSED** — fixed in `e561885` (OrchestratorBar added) |
+| #24 | warn | `AgentPane.tsx:432-439` | **open** — error pill truncated 120px, no expand path |
+| #25 | warn | `dashboard/page.tsx:230` | **open** — `"Endpoint building… (Wave 6b BE Dev)"` dev note in notReady |
+| #26 | warn | `dashboard/page.tsx:83-88` | **open** — active-thread only fetched on mount, no 4s re-poll |
+| #27 | — | `dashboard/page.tsx` | **CLOSED** — fixed in `e561885` (per-row sendingRows) |
+
+**UX process change:** Starting this wave, every code review includes an explicit UI/UX rubric pass as a distinct step. For any wave touching UI files, I will apply the 5-point rubric (density, feedback latency, error visibility, keyboard a11y, zero-states) and file `[ux:*]` issues for every finding — not bundled as informal notes. Gate verdicts will cite UX issues explicitly.
+
+**All wave gate verdicts:**
+- Wave 6e UI Dev `4c0b1d9` — **PASS**
+- Wave 7a UI Dev `9ca54dc` — **PASS**
+- Wave 7b BE Dev `4ca6b43` — **PASS**
+- Wave 7b UI Dev `23c089a` — **PASS** (expandable rows + tooltips + model badge)
+- Wave 7c UI Dev `e561885` — **PASS** (nav + model select + per-row dispatch)
 
 **Wave 7a shipped:**
 - `src/app/api/po-dispatch/route.ts` — `POST /api/po-dispatch` (BE Dev, `d598c3e`)
