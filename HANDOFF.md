@@ -23,7 +23,7 @@
 | Click-once on Issues panel | ✗ FIXED | `e561885` switched to `sendingRows: Set<number>` per-row; per-row buttons independent |
 | Dashboard loads at all | ✓ CONFIRMED | `/api/team-status` and `/api/active-thread` both return correct data |
 
-**Smoke test regression fixed (commit SHA-pending):**
+**Smoke test regression fixed (commit `744ef9e`):**
 - `tests/smoke/http.sh:67` — changed `'"ok":true'` → `'"status":"ok"'`; also added `mcpMounted:true` check
 - `tests/smoke/api.test.ts` — NEW: 2 Vitest unit tests for `/api/health` response shape (regression guard for issue #29)
 - `pnpm test:run`: 6/6 passing (was 4/4; +2 new API shape tests)
