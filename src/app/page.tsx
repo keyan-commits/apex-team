@@ -31,6 +31,7 @@ const ALL_ROLES: RoleId[] = [
   "backend-developer",
   "qa",
   "devsecops",
+  "ux-designer",
 ];
 const TEAM_ROLES: TeamRoleId[] = [
   "business-analyst",
@@ -39,6 +40,7 @@ const TEAM_ROLES: TeamRoleId[] = [
   "backend-developer",
   "qa",
   "devsecops",
+  "ux-designer",
 ];
 
 const ROLE_META: Record<RoleId, { title: string; accent: AccentKey }> = {
@@ -49,6 +51,7 @@ const ROLE_META: Record<RoleId, { title: string; accent: AccentKey }> = {
   "backend-developer": { title: "Backend Developer", accent: "be" },
   qa: { title: "QA", accent: "qa" },
   devsecops: { title: "DevSecOps", accent: "ops" },
+  "ux-designer": { title: "UX Designer", accent: "uxd" },
 };
 
 function defaultAgents(): Record<RoleId, AgentConfig> {

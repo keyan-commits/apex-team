@@ -36,6 +36,7 @@ const RoleEnum = z.enum([
   "backend-developer",
   "qa",
   "devsecops",
+  "ux-designer",
 ]);
 
 function defaultAgents(): Record<RoleId, AgentConfig> {

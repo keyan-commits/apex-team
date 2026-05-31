@@ -18,6 +18,7 @@
   --accent-qa: #f7768e;    /* QA — pink */
   --accent-ops: #ff9e64;   /* DevSecOps — amber/red */
   --accent-orch: #e0af68;  /* Orchestrator bar — aliases PO gold */
+  --accent-uxd: #bf6dff;  /* UX Designer — violet */
 }
 
 html,

@@ -2,7 +2,20 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 7d retry QA complete. Wave 7e UI Dev awaiting Architect PASS.
+**State.** Wave 8a UI Dev complete — ux-designer role rendered in both pages. Commit (SHA-pending).
+
+**Wave 8a UI Dev changes:**
+- `globals.css` — `--accent-uxd: #bf6dff` (violet)
+- `src/app/page.tsx` — `ux-designer` added to `ALL_ROLES`, `TEAM_ROLES`, `ROLE_META` (accent: uxd, title: "UX Designer"); 7-peer team grid now 7 cards (3+3+1 at 3-col)
+- `src/app/dashboard/page.tsx` — `ux-designer` added to `ROLE_ACCENT` + `ROLES`
+- `AgentPane.tsx` / `AgentStatePanel.tsx` — no changes needed (role-agnostic)
+- `pnpm type-check` clean
+
+**Awaiting:** Architect PASS for Wave 7e + Wave 8a.
+
+---
+
+**State (prior).** Wave 7d retry QA complete. Wave 7e UI Dev awaiting Architect PASS.
 
 **Wave 7d retry QA — code-analysis + curl. Playwright MCP still not available in direct Claude Code session.**
 

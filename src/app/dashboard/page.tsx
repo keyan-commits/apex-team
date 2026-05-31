@@ -8,6 +8,7 @@ import { OrchestratorBar } from "@/components/OrchestratorBar";
 const ROLE_ACCENT: Record<string, string> = {
   "product-owner": "po", "business-analyst": "ba", architect: "arch",
   "ui-developer": "ui", "backend-developer": "be", qa: "qa", devsecops: "ops",
+  "ux-designer": "uxd",
 };
 
 const WORKSPACE_KEY = "apex-team:workspace";
@@ -20,7 +21,7 @@ const KNOWN_MODELS = [
 ];
 const ROLES = [
   "product-owner","business-analyst","architect",
-  "ui-developer","backend-developer","qa","devsecops",
+  "ui-developer","backend-developer","qa","devsecops","ux-designer",
 ] as const;
 
 const PANEL_INFO: Record<string, string> = {

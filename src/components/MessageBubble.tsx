@@ -14,6 +14,7 @@ const ROLE_LABEL: Record<RoleId, string> = {
   "backend-developer": "Backend Developer",
   qa: "QA",
   devsecops: "DevSecOps",
+  "ux-designer": "UX Designer",
 };
 
 const COLLAPSE_CHARS = 400;

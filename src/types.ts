@@ -6,7 +6,8 @@ export type TeamRoleId =
   | "ui-developer"
   | "backend-developer"
   | "qa"
-  | "devsecops";
+  | "devsecops"
+  | "ux-designer";
 
 // All addressable agents. The product-owner is the in-app orchestrator
 // — it uses DISPATCH (auto-trigger) to drive the team; peers use HANDOFF
@@ -32,7 +33,8 @@ export type AccentKey =
   | "ui"
   | "be"
   | "qa"
-  | "ops";
+  | "ops"
+  | "uxd";
 
 export interface AgentConfig {
   role: RoleId;
