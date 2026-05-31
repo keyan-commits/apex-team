@@ -2,16 +2,21 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 13b UI — US-005 carry-forward polish. Feature branch: `feature/13b-issues-ui-polish`. Pre-HANDOFF complete — awaiting UX review.**
+**Wave 13e — deploying US-005 carry-forwards via PR (branch protection enforced).**
 
-- `src/app/dashboard/page.tsx` — 4 changes: (1) drop "Issues:" prefix on attribution (bare monospace link only); (2) switch on `data.issues.repoStatus` for per-cause empty state copy (none/not-git/non-github/bad-path); (3) `:visited` style fix (`color: var(--text-dim)` on `.issue-repo-link:visited`); (4) `setData(null)` at top of polling effect to clear stale attribution on workspace change
-- Imports `RepoStatus` from `@/types` (added by BE branch `35533b0`)
-- `pnpm type-check` clean · `pnpm test:run` 26/26 green (6 files)
-- Commit SHA: `e73bfa7`
+**Wave 13b-d net — US-005 implementation complete, UX PASS + QA PASS received:**
 
-**Wave 13b BE — `feature/13b-repo-status` SHA `35533b0` — awaiting QA gate in parallel.**
+| Phase | Wave | SHA | Output |
+|---|---|---|---|
+| Requirements | 13a | `4e69429` / `4d76002` / `8ca2507` | BA US-005, UX spec amendments, Architect repoStatus design |
+| Impl BE | 13b | `35533b0` | RepoStatus enum + deriveGithubRepo rewrite + 9 test cases |
+| Impl UI | 13b | `e73bfa7` | Drop prefix + per-status copy + :visited + setData(null) flicker fix |
+| Verification UX | 13c | — | UX Designer PASS — all 4 amendments verified verbatim against spec |
+| Verification QA | 13d | — | QA PASS — AC1 grep, AC2 live API on :3100, AC3 grep, AC4 code inspection; 26/26 green |
 
-**Next:** UX Designer reviews UI branch → QA verifies AC1–AC4 on both branches → DevSecOps merges.
+**US-005 `requirements/user-stories/US-005-wave-11c-carry-forwards.md` → status: `done` (in this commit).**
+
+**Next:** PR CI green → `gh pr merge` → cleanup worktrees + branches → smoke.
 
 ---
 

@@ -1,6 +1,6 @@
 # US-005 — Issues panel polish: attribution prefix, per-status copy, visited style, no-flicker
 
-**Status:** proposed
+**Status:** done
 **Owner role:** ui-developer (AC1, AC3, AC4) + backend-developer (AC2 — `repoStatus` enum)
 **Created:** 2026-05-31
 **Story ID:** US-005
@@ -57,11 +57,8 @@ UX Designer to update `design/US-003-workspace-scoped-issues.md` this wave with:
 
 ## Links
 
-_(Filled in during and after implementation)_
-
-- impl-be: _(pending — `repoStatus` enum in `src/types.ts` + `deriveGithubRepo` refactor in `route.ts`)_
-- impl-ui: _(pending — attribution label + per-status empty states + `:visited` fix + flicker fix)_
-- test: _(pending)_
-- design-pass-by: _(pending — UX Designer spec update this wave)_
-- qa-pass-by: _(pending)_
-- deployed-by: _(pending)_
+- impl-be: `35533b0` — `RepoStatus` type + `RepoInfo` return + `deriveGithubRepo` rewrite + `_noIssues`/`fetchIssues`/GET handler updates + 9 test cases
+- impl-ui: `e73bfa7` — drop attribution prefix + per-`repoStatus` copy switch + `:visited` fix + `setData(null)` flicker fix
+- design-pass-by: Wave 13c — UX Designer PASS (all 4 amendments verified against `design/US-003-workspace-scoped-issues.md`)
+- qa-pass-by: Wave 13d — QA PASS (all 4 ACs: AC1 grep, AC2 live API on :3100, AC3 grep, AC4 code inspection; 26/26 tests green)
+- deployed-by: _(pending — Wave 13e merge)_
