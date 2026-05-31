@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 12a BA — US-004 MCP transport reliability written (proposed). Fixes #31. Commit `(SHA-pending)` on main.**
+**Wave 12a BA — US-004 MCP transport reliability written (proposed). Fixes #31. Commit `bc75f9e` on main.**
 
 - `requirements/user-stories/US-004-mcp-transport-reliability.md` — 4 ACs; owner BE Dev; references Architect's Wave 12a diagnosis (requestTimeout=0 + keepAliveTimeout=65s)
 - `requirements/open-questions.md` — OQ-005 added (SSE heartbeat, non-blocking)
