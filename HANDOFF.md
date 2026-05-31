@@ -2,7 +2,9 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Foundation complete (Wave 9b/c/d). Phased workflow protocol is live in the MCP graph; per-role isolation via worktrees provisioned; requirements scaffold seeded; all 4 implementer/verifier peers ran a skill self-audit and filed concrete gap proposals. Origin/main in sync. Active thread: `mcp_mpsoeous_bih2`.**
+**Wave 10a BA — US-002 devsecops-pipeline-ownership written (proposed). OQ-002 (CI/CD tooling) logged in open-questions.md. Awaiting Architect + DevSecOps inputs to update ACs and close OQ-002.**
+
+**Wave 9b/c/d foundation complete. Phased workflow protocol is live; worktrees provisioned; requirements scaffold seeded; all peers ran skill self-audit. Origin/main in sync. Active thread: `mcp_mpsoeous_bih2`.**
 
 **Shipped in this foundation push (all on origin/main):**
 
