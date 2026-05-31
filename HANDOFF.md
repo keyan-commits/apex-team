@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 10b DevSecOps — US-002 implementation in progress. Feature branch: `feature/10b-pipeline-ownership`. Worktree: `../apex-team-devsecops-10b-pipeline-ownership/`.**
+
 **Wave 10a Architect — CI/CD research complete; ADR-002 §Consequences updated with confirmed worktree isolation model + script names. Self-audit: no skill gaps.**
 
 **Wave 10a recommendation written (see below). Awaiting DevSecOps domain-expert input + BA US-002 before PO synthesizes for the user.**

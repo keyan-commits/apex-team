@@ -7,13 +7,14 @@ import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 
-const VALID_ROLES = ["ui-developer", "backend-developer", "qa", "ux-designer"];
+const VALID_ROLES = ["ui-developer", "backend-developer", "qa", "ux-designer", "devsecops"];
 const SLUG_RE = /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/;
 const ROLE_SCRIPT = {
   "ui-developer": "dev:test:ui",
   "backend-developer": "dev:test:be",
   qa: "dev:test:qa",
   "ux-designer": "dev:test:ux",
+  devsecops: "dev:test",
 };
 
 function run(cmd, args, opts = {}) {
