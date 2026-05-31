@@ -8,22 +8,15 @@ Open questions are blockers or ambiguities that require an answer before affecte
 
 ## OQ-001 — Isolation model: feature branches vs git worktrees vs separate clones
 
-**Status:** Open  
+**Status:** ~~Open~~ **RESOLVED**  
 **Owner:** User  
 **Raised by:** Architect (ADR-002 §Consequences, Wave 9b)  
+**Resolved:** Wave 9c (2026-05-31)  
 **Affects:** `IMPLEMENTATION_PHASE_PROTOCOL`, ADR-002, DevSecOps isolated-instance scripts
 
-**Question:**
-ADR-002 interprets "their own source code" as **feature branches** — one repo, each implementer works on a separate branch from main. A stronger interpretation would be **git worktrees** (separate working directories but same `.git` object store) or **separate filesystem clones** (completely isolated repos).
+**Decision:** **Feature branches + git worktrees.** Logical isolation via feature branches (`feature/<wave>-<short>`); physical filesystem isolation via `git worktree add` so multiple implementers can work in parallel without touching each other's uncommitted files.
 
-Feature branches are the current implementation default. Worktrees or clones would prevent an implementer from accidentally viewing or touching the other's uncommitted files.
-
-**What the user needs to decide:**
-- Feature branches (current) — simpler, lower overhead, correct for most cases
-- Git worktrees — stronger file-level isolation, still one `.git` object store; DevSecOps would provision via `git worktree add`
-- Separate clones — maximum isolation; requires separate clone + sync protocol; significant DevSecOps overhead
-
-**Action required:** User confirms preferred isolation level. If worktrees or clones, Architect updates ADR-002 §Consequences and DevSecOps updates the provisioning scripts.
+**Implementation:** DevSecOps Wave 9c (`3d2a933`) — `pnpm branch:start <role> <slug>` creates `../apex-team-<role>-<short>/` worktree. `pnpm branch:cleanup <role> <slug>` removes it post-deploy. ADR-002 §Consequences update pending Architect.
 
 ---
 

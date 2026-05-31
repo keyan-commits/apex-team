@@ -7,6 +7,7 @@ Terms are listed alphabetically. A term used two ways is a bug in the spec — f
 | Term | Definition |
 |------|-----------|
 | **AC (Acceptance Criterion)** | A single testable condition that defines when a user story is done. Must be independently verifiable. Format: Given / When / Then. |
+| **ADR (Architecture Decision Record)** | A document in `architecture/decisions/` recording a significant architectural choice, its rationale, and consequences. Referenced by story ACs when a decision constrains implementation. |
 | **DISPATCH** | Orchestrator-to-team channel. Auto-triggers the target role's turn. Used only by Product Owner. |
 | **FAIL** | Gate verdict returned by QA or UX Designer indicating a change did NOT meet the required standard. Includes evidence and specific defect list. Implementer must revise before DevSecOps merges. |
 | **Feature branch** | A git branch created from main for one implementation wave, named `feature/<wave>-<short>`. Implementers (UI Dev, BE Dev) work here; DevSecOps merges to main after QA + UX PASS. |
@@ -26,4 +27,5 @@ Terms are listed alphabetically. A term used two ways is a bug in the spec — f
 | **Thread** | A conversation session scoped by `thread_id`. Each role maintains its own state + history per thread. |
 | **Turn** | One LLM call for a role — loads state + history + inbox, runs the model, persists NOTES / HANDOFF / DISPATCH blocks. |
 | **Wave** | A named batch of parallel implementation tasks dispatched by PO in one orchestration turn. Example: "Wave 9b — Foundation work". |
+| **Worktree** | A separate working directory created via `git worktree add`, sharing the same `.git` object store as the main checkout. Used to give each implementer (UI Dev, BE Dev, QA, UX Designer) physical filesystem isolation while keeping a single repo. Created by `pnpm branch:start <role> <slug>`; removed by `pnpm branch:cleanup`. |
 | **Workspace** | The directory on disk that agents' file tools (Read, Edit, Write, Bash) target. Configured in the top bar and persisted in `localStorage`. |

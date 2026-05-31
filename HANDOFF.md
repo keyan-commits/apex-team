@@ -2,6 +2,16 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 9c BA — requirements/ updates for resolved OQ-001 + glossary additions. Commit (SHA-pending).**
+
+- `requirements/open-questions.md` — OQ-001 marked RESOLVED: user confirmed feature branches + git worktrees. Decision and DevSecOps Wave 9c implementation (`3d2a933`) documented.
+- `requirements/glossary.md` — added `ADR` and `Worktree` entries (22 terms total).
+- `requirements/INDEX.md` — updated summaries for glossary + open-questions.
+
+**No new open questions. No skill gaps beyond skill-proposal #36 (already filed).**
+
+---
+
 **Wave 9c DevSecOps — worktree-based per-role isolation. Commit `3d2a933`.**
 
 - `scripts/branch-start.mjs` — rewritten: now takes `<role> <wave>-<short>`; uses `git worktree add` → creates `../apex-team-<role>-<short>/` on `feature/<slug>` from `origin/main`; role validated against `VALID_ROLES`; worktree path collision check; branch duplicate check; per-role next-steps in output.
