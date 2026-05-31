@@ -4,7 +4,7 @@ UX Designer owns this directory. Every spec file is listed here with its linked 
 
 | File | Issue | Status | Notes |
 |---|---|---|---|
-| _(no specs yet — see design notes below)_ | — | — | — |
+| [US-003-workspace-scoped-issues.md](US-003-workspace-scoped-issues.md) | US-003 | reviewed | Post-hoc spec (Wave 11a dispatch dropped). 2 warns filed: attribution prefix redundancy + empty-state copy conflation. |
 
 ---
 

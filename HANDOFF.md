@@ -2,6 +2,33 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**🎉 US-003 SHIPPED.** Workspace-scoped Issues panel live on origin/main. Merge `06e93f0`. Smoke PASS. Server PID 10437. Second complete dogfood of ADR-002 and FIRST wave after the US-004 transport meta-fix.
+
+**Wave 11 net:**
+
+| Phase | Wave | Output |
+|---|---|---|
+| Requirements | 11a | Architect design + BA US-003 `bc75f9e` (later expanded); user clarified worktrees vs branches |
+| Implementation BE | 11b | BE Dev `3c7c71d` — `deriveGithubRepo` + multi-key cache + `repo` field |
+| Implementation UI | 11b | UI Dev `14c317c` — attribution + empty state + workspace mount fallback + workspace in poll deps |
+| Verification UX | 11c | UX Designer PASS — post-hoc spec at `design/US-003-workspace-scoped-issues.md`; 2 warns + 2 nits for follow-up |
+| Verification QA | 11d | QA PASS — 5/5 ACs verified via live `:3100` server + curl + 24/24 tests |
+| Deployment | 11e | DevSecOps merge `06e93f0` + push + worktree cleanup + restart-trigger |
+
+**OQ-004 closed.** OQ-003 (manual repo override) deferred — not MVP.
+
+**UX warns to file as follow-up issues** (UX Designer 11c findings):
+- Copy redundancy: "Issues: keyan-commits/apex-team" repeats panel heading "ISSUES"
+- Empty-state copy conflates 4 distinct null-repo causes (no remote / no git / non-GitHub / bad path)
+
+**UX nits** (acceptable in v1):
+- `.issue-repo-link:visited` style drift
+- ~100ms stale-attribution during workspace transition
+
+**On your other Mac:** `git pull origin main` → restart `pnpm dev:supervised` → the dashboard's Issues panel now shows the b2b-* project's issues, not apex-team's.
+
+---
+
 **Wave 11b UI Dev — US-003 workspace-scoped Issues panel. Feature branch: `feature/11b-workspace-scoped-issues-ui`. Pre-HANDOFF complete — awaiting UX PASS.**
 
 - `src/app/dashboard/page.tsx` — three changes: (1) workspace init: added `/api/health` `defaultCwd` fallback when no localStorage entry; (2) team-status poll: appends `?workspace=<path>` and adds `workspace` to useEffect dep array so re-polls on change; (3) Issues panel: `repo === null` → `.empty-msg` empty state; `repo !== null` → attribution label (`issue-repo-attr`) + dynamic GitHub links keyed to derived repo

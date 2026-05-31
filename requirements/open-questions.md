@@ -47,14 +47,12 @@ Open questions are blockers or ambiguities that require an answer before affecte
 
 ## OQ-004 — Caching strategy for `git remote` lookup in `/api/team-status`
 
-**Status:** Open
+**Status:** Resolved 2026-05-31
 **Owner:** Architect
 **Raised by:** BA (Wave 11a, US-003)
 **Affects:** BE implementation scope — determines whether a DB/memory cache layer is needed
 
-**Question:** Should the `git -C <workspace> remote get-url origin` lookup be (A) executed fresh on every `/api/team-status` request (~5ms, always fresh), (B) cached in SQLite keyed by workspace path (avoids repeated shell execs, risk of stale data), or (C) cached in memory with a short TTL?
-
-**Context:** apex-team is single-user, single-machine. The remote URL rarely changes. Architect to recommend — BA's default is Option A (no cache, simplest, correct-by-design) unless Architect identifies a performance concern.
+**Decision (Architect Wave 11a, implemented in `3c7c71d`):** Option A — per-request `git -C <workspace> remote get-url origin` (~2ms shell exec, no caching of the derivation itself). The 60s in-memory cache that already exists for the expensive `gh issue list` call was REPLACED from a singleton with a `Map<string, …>` keyed by `owner/repo`, so multiple workspaces can be served from one process without cross-contamination. Stale-remote edge case (user changes git origin mid-session) self-heals on the next 60s cache miss.
 
 ---
 
