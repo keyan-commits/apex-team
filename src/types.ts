@@ -108,6 +108,7 @@ export interface TeamStatus {
     skillProposal: number;
     mcpProposal: number;
     recent: Array<{ number: number; title: string; label: string; url: string }>;
+    repo: string | null;
   };
   scout: { lastRunAt: number | null; nextScheduledAt: number | null; proposalsLast7Days: number };
   context: Array<{ role: RoleId; handoffChars: number; historyDepth: number; inboxCount: number; needsCleanup: boolean }>;

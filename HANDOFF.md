@@ -2,6 +2,23 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 11b UI Dev — US-003 workspace-scoped Issues panel. Feature branch: `feature/11b-workspace-scoped-issues-ui`. Pre-HANDOFF complete — awaiting UX PASS.**
+
+- `src/app/dashboard/page.tsx` — three changes: (1) workspace init: added `/api/health` `defaultCwd` fallback when no localStorage entry; (2) team-status poll: appends `?workspace=<path>` and adds `workspace` to useEffect dep array so re-polls on change; (3) Issues panel: `repo === null` → `.empty-msg` empty state; `repo !== null` → attribution label (`issue-repo-attr`) + dynamic GitHub links keyed to derived repo
+- Pre-HANDOFF: `pnpm type-check` clean, `pnpm test:run` 24/24 green (6 files, includes BE's 7 repo-derivation tests)
+- Commit SHA: `14c317c`
+- **Awaiting:** UX Designer PASS → QA
+
+---
+
+**Wave 11b BE Dev — US-003 workspace-scoped Issues panel. Feature branch: `feature/11b-workspace-scoped-issues`. Pre-HANDOFF complete — awaiting QA PASS.**
+
+- `src/types.ts` — added `repo: string | null` to `TeamStatus["issues"]`
+- `src/app/api/team-status/route.ts` — added `deriveGithubRepo(workspace)` exported helper (execFileSync, SSH + HTTPS regex, null on all failure modes); converted singleton `_issueCache` to `Map<string, …>` keyed by repo; `fetchIssues(repo)` takes explicit repo; GET handler reads `?workspace=` query param and derives repo — null workspace → `_noIssues` (repo: null), never falls back to apex-team hardcode
+- `tests/api/team-status-repo-derivation.test.ts` — 7 vitest cases covering SSH, HTTPS, HTTPS+.git, GitLab (null), no remote (throws → null), empty string (null), null (null)
+- Pre-HANDOFF: `pnpm type-check` clean, `pnpm test:run` 24/24 green (6 files)
+- Commit SHA: `3c7c71d`
+
 **🎉 US-004 SHIPPED. THE META-FIX. `#31` closed.** MCP transport drops are now solved at the source — Node `requestTimeout=0` removes the only server-side timer that was tearing down long-running agent turns. Merge `03b086f` on `origin/main`. Server respawned (new PID 5527). `pnpm smoke` PASS.
 
 **Wave 12 net:**
