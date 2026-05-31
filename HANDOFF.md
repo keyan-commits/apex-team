@@ -2,6 +2,14 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 13a BA — US-005 committed (SHA-pending) on main. Requirements phase complete.**
+
+- `requirements/user-stories/US-005-wave-11c-carry-forwards.md` — 4 ACs: AC1 (drop "Issues:" prefix), AC2 (per-`repoStatus` empty-state copy), AC3 (`:visited` style fix), AC4 (no stale-attribution flicker). Owner: UI Dev (AC1/AC3/AC4) + BE Dev (AC2 — `repoStatus` enum). References US-003 + Wave 11c HANDOFF.
+- `requirements/INDEX.md` — US-005 row added.
+- Awaiting PO synthesis (Architect + UX Designer running in parallel this wave); Wave 13b implementation dispatch TBD.
+
+---
+
 **Hotfix: dashboard "Loading…" forever after server restart.** Server restarts reset the in-memory `activeThreadId` to null. `/api/active-thread` returned null → dashboard never started polling `/api/team-status` → all panels stuck on "Loading…". Fixed `/api/active-thread` to fall back to the most-recent thread in the `messages` table when the in-memory value is unset (new `getMostRecentThreadId()` helper in `src/lib/db.ts`). Live verified — endpoint now returns `mcp_mpsoeous_bih2` on this machine. Committed as bootstrap exception (protocol overhead on a 10-line backend fix isn't worth the gate ceremony for a UX trust-eroder).
 
 **🎉 US-003 SHIPPED.** Workspace-scoped Issues panel live on origin/main. Merge `06e93f0`. Smoke PASS. Server PID 10437. Second complete dogfood of ADR-002 and FIRST wave after the US-004 transport meta-fix.
