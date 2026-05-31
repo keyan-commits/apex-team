@@ -2,6 +2,16 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 9d UI Dev — skill self-audit complete.**
+
+- Filed skill-proposal **#37** — "Pre-HANDOFF unit testing — Vitest + testing-library patterns for React components"
+- Gap identified: `ui-developer.ts` skills file has no guidance on writing unit tests. Under `IMPLEMENTATION_PHASE_PROTOCOL`, UI Dev must write tests in `tests/ui/` and pass `pnpm test:run` before HANDOFF. The skill proposal covers: what to test (behavior/aria/keyboard flows), what not to test (CSS classes, snapshots), and the concrete pre-HANDOFF checklist.
+- No other gaps. Worktree workflow (`pnpm branch:start`) and isolated instance (`pnpm dev:test:ui`) are standard CLI + existing scripts. UX HANDOFF-first + no-direct-push obligations are covered by existing protocol awareness.
+
+**Awaiting:** Architect PASS for Wave 8e (commit `a41ef22`). Skill-proposal #37 triage.
+
+---
+
 **Wave 9c BA (retry) — US-001 updated to reflect resolved OQ-001 + worktree model. Commit `06ed4c1`.**
 
 - `requirements/user-stories/US-001-multi-phase-workflow-foundation.md` — AC2 updated: explicitly references `pnpm branch:start <role> <slug>` + worktree path convention; Open Questions OQ-001 marked RESOLVED; impl links added for `5802292` + `3d2a933`.
