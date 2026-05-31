@@ -413,22 +413,24 @@ export default function DashboardPage() {
           {panelHd("Done — last 24h", "done")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : data.done.length === 0 ? empty("Nothing completed yet.") : (
             <div className="row-list">
-              {data.done.map((e, i) => (
-                <div key={i} className="row-item">
+              {data.done.map((e) => {
+                const doneKey = `${e.role}-${e.completedAt}`;
+                return (
+                <div key={doneKey} className="row-item">
                   <div
                     className="row expandable-row"
-                    onClick={() => toggleRow("done", i)}
-                    onKeyDown={rowKd("done", i)}
+                    onClick={() => toggleRow("done", doneKey)}
+                    onKeyDown={rowKd("done", doneKey)}
                     tabIndex={0}
                     role="button"
-                    aria-expanded={expandedRow["done"] === i}
+                    aria-expanded={expandedRow["done"] === doneKey}
                   >
-                    <span className="row-chevron" aria-hidden="true">{expandedRow["done"] === i ? "▾" : "▸"}</span>
+                    <span className="row-chevron" aria-hidden="true">{expandedRow["done"] === doneKey ? "▾" : "▸"}</span>
                     {roleBadge(e.role)}
                     <span className="task-text">{e.taskSummary}</span>
                     <span className="dim">{fmtTime(e.completedAt)}</span>
                   </div>
-                  {expandedRow["done"] === i && (
+                  {expandedRow["done"] === doneKey && (
                     <div className="row-detail">
                       <p className="row-detail-text">{e.taskSummary}</p>
                       {e.commitSha && <div className="row-detail-meta">commit: <code>{e.commitSha}</code></div>}
@@ -436,7 +438,8 @@ export default function DashboardPage() {
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
