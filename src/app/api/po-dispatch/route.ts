@@ -88,27 +88,25 @@ export async function POST(req: NextRequest): Promise<Response> {
     );
   }
 
+  // Fire-and-forget: PO turn + peer dispatches can take 5+ minutes for a
+  // multi-issue batch. Awaiting it blocks the browser request and any HTTP
+  // transport timeout (proxy / fetch default) would abort the in-flight turn
+  // via req.signal — killing the work the user just asked for. Instead, kick
+  // it off detached. Bus events drive UI updates from this point.
   const ctrl = new AbortController();
-  req.signal.addEventListener("abort", () => ctrl.abort(), { once: true });
+  runTurnWithDispatches({
+    threadId,
+    target: "product-owner",
+    userMessage: buildPoMessage(issues),
+    workspace: workspace ?? process.cwd(),
+    agents: defaultAgents(),
+    signal: ctrl.signal,
+  }).catch((err) => {
+    console.error("[po-dispatch] turn failed:", err);
+  });
 
-  try {
-    const result = await runTurnWithDispatches({
-      threadId,
-      target: "product-owner",
-      userMessage: buildPoMessage(issues),
-      workspace: workspace ?? process.cwd(),
-      agents: defaultAgents(),
-      signal: ctrl.signal,
-    });
-
-    return new Response(
-      JSON.stringify({ ok: true, dispatched: result.dispatches.length, issueCount: issues.length }),
-      { headers: { "Content-Type": "application/json" } },
-    );
-  } catch (err) {
-    return new Response(
-      JSON.stringify({ error: err instanceof Error ? err.message : String(err) }),
-      { status: 500, headers: { "Content-Type": "application/json" } },
-    );
-  }
+  return new Response(
+    JSON.stringify({ ok: true, accepted: issues.length, issueNumbers }),
+    { status: 202, headers: { "Content-Type": "application/json" } },
+  );
 }

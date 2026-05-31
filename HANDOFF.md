@@ -11,6 +11,8 @@
 
 **Awaiting:** Architect PASS for Wave 8e.
 
+**Hotfix on top of Wave 8e:** `/api/po-dispatch` made fire-and-forget. Endpoint was awaiting `runTurnWithDispatches`, which for a 10-issue batch is 5+ minutes — the browser saw "Sending…" indefinitely and the HTTP transport timeout aborted the in-flight PO turn via `req.signal`. Now returns 202 immediately after kicking off the turn detached; bus events drive the UI. Closes user-reported "selections keep getting ignored."
+
 ---
 
 **UI Dev — Wave 8d complete.** WORKFLOW panel on dashboard. Commit `04a5f7c`.
