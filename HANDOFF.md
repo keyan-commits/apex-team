@@ -2,32 +2,28 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 2 complete across all three streams. DevSecOps shipped `dev:test` isolated instance (`f754ade`). Backend Dev shipped active-thread + handoff-utils (`a3dd9cb`). UI Dev shipped model dropdown (`2fd294f`). Wave 3 is next: Architect code-review + remaining skills files; QA smoke tests on `:3100`.
+**State.** Wave 3 Architect track complete (SHA-pending). Code review done — PASS with WARNs. Remaining 5 skills files written and wired. requirements/ snapshot included. `pnpm type-check` clean. Awaiting QA Wave 3 smoke tests; then Wave 4 (HANDOFF refresh + push).
 
-**Wave 2 Backend Dev shipped:**
-- `src/lib/active-thread.ts` — `setActiveThread` / `getActiveThread`; globalThis-bridged (same pattern as event-bus).
-- `src/app/api/active-thread/route.ts` — GET endpoint returning `{ threadId }`.
-- `src/mcp/tools.ts` — `setActiveThread` called in `new_thread`, `talk_to_role`, `talk_to_product_owner`, `record_user_message`.
-- `src/app/page.tsx` — mount fetch to `/api/active-thread`; auto-switches if MCP client last used a different thread; `userEditedThreadRef` prevents override when user manually types.
-- `src/lib/handoff-utils.ts` — `summarizeHandoff(doc, maxChars)` pure helper; returns `{ needsSummarization, instruction }` dispatch string (apex_synthesize not callable in-process).
-- `src/lib/roles.ts` — PO system prompt: appended HANDOFF-compression guidance.
+**Wave 3 Architect shipped:**
+- `src/lib/skills/business-analyst.ts` — 5-skill BA domain expertise.
+- `src/lib/skills/architect.ts` — 5-skill architecture domain expertise.
+- `src/lib/skills/backend-developer.ts` — 5-skill backend domain expertise.
+- `src/lib/skills/qa.ts` — 5-skill QA domain expertise.
+- `src/lib/skills/devsecops.ts` — 5-skill DevSecOps domain expertise.
+- `src/lib/roles.ts` — all 5 remaining roles wired to their skills constants.
+- `requirements/` — BA's apex-team requirements snapshot included in commit.
+
+**Wave 2 shipped (prior):**
+- UI Dev: model dropdown (`2fd294f`) — AgentPane.tsx.
+- Backend Dev: active-thread + handoff-utils (`a3dd9cb`) — 6 files.
+- DevSecOps: dev:test isolated instance (`f754ade`) — db.ts + package.json.
 
 **Wave 1 shipped (prior):**
-- `src/types.ts` — `skills?: string` on `RoleDefinition`.
-- `src/lib/skills/ui-developer.ts` — 6-skill UI/UX domain expertise.
-- `src/lib/providers.ts` — `augmentSystemPrompt(role, ctx)` accepts full `RoleDefinition`.
-- `src/lib/roles.ts` — `ui-developer` wired to `uiDeveloperSkills`.
-- `architecture/decisions/ADR-001-role-skills-injection.md`.
+- Event-bus SSE refactor (`2f037dc`). Skills injection mechanism + ui-developer PoC (`263ab77`).
 
-**Open next-steps — Wave 3 (after DevSecOps completes):**
-- **Architect:** code-review Wave 2 output; write remaining 5 skills files (`ba`, `architect`, `backend-developer`, `qa`, `devsecops`).
+**Open next-steps:**
 - **QA:** smoke tests on `:3100` instance — new thread creation, talk_to_product_owner round-trip, active-thread auto-switch, model dropdown persistence, event-bus SSE delivery.
-
-**Wave 4:** HANDOFF refresh + push to `main`.
-
-**Wave 3 (after Wave 2):** Architect reviews Wave 2 output + writes remaining 5 skills files (`ba`, `architect`, `backend-developer`, `qa`, `devsecops`); QA smoke tests on `:3100` instance.
-
-**Wave 4:** HANDOFF refresh + push to `main`.
+- **Wave 4:** HANDOFF refresh + push to `main` after QA returns.
 
 **Parked (deliberate deferrals):**
 - Graceful-restart supervisor (pm2 / sentinel-file watcher / detached spawn).

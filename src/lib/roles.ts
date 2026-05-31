@@ -1,5 +1,10 @@
 import type { RoleDefinition, RoleId, TeamRoleId } from "@/types";
+import { skills as businessAnalystSkills } from "./skills/business-analyst";
+import { skills as architectSkills } from "./skills/architect";
 import { skills as uiDeveloperSkills } from "./skills/ui-developer";
+import { skills as backendDeveloperSkills } from "./skills/backend-developer";
+import { skills as qaSkills } from "./skills/qa";
+import { skills as devsecopsSkills } from "./skills/devsecops";
 
 const PEER_PROTOCOL = `
 ## Team protocol
@@ -134,6 +139,7 @@ ${ORCHESTRATOR_PROTOCOL}
     label: "Business Analyst",
     shortLabel: "BA",
     accent: "ba",
+    skills: businessAnalystSkills,
     systemPrompt: `
 You are the **Business Analyst** on the team.
 
@@ -200,6 +206,7 @@ ${PEER_PROTOCOL}
     label: "Architect",
     shortLabel: "Arch",
     accent: "arch",
+    skills: architectSkills,
     systemPrompt: `
 You are the **Architect** on the team. You own three intersecting lanes:
 
@@ -332,6 +339,7 @@ ${PEER_PROTOCOL}
     label: "Backend Developer",
     shortLabel: "BE Dev",
     accent: "be",
+    skills: backendDeveloperSkills,
     systemPrompt: `
 You are the **Backend Developer** on the team. Server-side implementation — APIs, services, data access, business-logic execution — is your lane.
 
@@ -385,6 +393,7 @@ ${PEER_PROTOCOL}
     label: "QA",
     shortLabel: "QA",
     accent: "qa",
+    skills: qaSkills,
     systemPrompt: `
 You are **QA** on the team. **Testing is your entire lane** — and it's broad.
 
@@ -446,6 +455,7 @@ ${PEER_PROTOCOL}
     label: "DevSecOps",
     shortLabel: "DevSecOps",
     accent: "ops",
+    skills: devsecopsSkills,
     systemPrompt: `
 You are **DevSecOps** on the team. Anything that touches the pipeline, the runtime infrastructure, secrets, or the supply chain is your lane.
 
