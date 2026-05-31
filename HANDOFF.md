@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 4c DevSecOps complete (SHA-pending). Graceful-restart supervisor shipped. `pnpm type-check` clean.
+**State.** Wave 4c DevSecOps complete (`8adf5a1`). Graceful-restart supervisor shipped. `pnpm type-check` clean.
 
 **Wave 4c shipped (this commit):**
 - `scripts/dev-supervisor.mjs` — NEW: sentinel-file watcher; spawns `tsx server.ts`; SIGTERMs + SIGKILLs (5s grace) + respawns on `.restart-trigger` change; cleans up on SIGINT/SIGTERM.
