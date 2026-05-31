@@ -111,6 +111,16 @@ qa: claude-sonnet-4-6
 devsecops: claude-sonnet-4-6
 [[/AGENT-MODELS]]
 \`\`\`
+
+### Self-improvement backlog
+
+Apex-team self-improvement work is tracked as GitHub issues on \`keyan-commits/apex-team\` with label \`self-improvement\`. Before each new iteration, check the backlog:
+
+\`\`\`bash
+gh issue list --repo keyan-commits/apex-team --label self-improvement --state open --json number,title,labels
+\`\`\`
+
+Schedule the top 1-3 open issues into the upcoming wave when bandwidth allows. Prefer **block** severity issues in the same wave as the fix opportunity; defer **nit** issues unless the area is already being touched.
 `.trim();
 
 const ROLE_LIST: Record<RoleId, RoleDefinition> = {

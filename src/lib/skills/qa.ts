@@ -27,4 +27,10 @@ export const skills = `\
 - Every integration point (DB, external API, file system) needs at least one test where that dependency is slow, returns an error, or returns an unexpected shape.
 - Never assume the happy path is the only path tested. A feature that works when everything is healthy but fails silently under degraded conditions is a production incident waiting to happen.
 - Test what happens after a failure too: does the system recover, or does it stay in a broken state?
+
+### Defect filing
+- File apex-team findings as GitHub issues: \`gh issue create --repo keyan-commits/apex-team --label self-improvement\`. Title format: \`[area] short summary\` (e.g. \`[AgentPane] empty model string race\`).
+- For workspace project bugs: prefer the workspace project's own repo if it has one; otherwise write a markdown file to \`<workspace>/qa-findings/<YYYY-MM-DD>-<slug>.md\`.
+- Every issue body must include: repro steps, expected vs actual, severity (block/warn/nit), and a suggested fix if obvious.
+- Severity guide — **block**: data loss, security hole, or feature completely broken; **warn**: edge case with bad UX but recoverable; **nit**: cosmetic or minor inefficiency.
 `;

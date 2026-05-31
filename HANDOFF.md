@@ -2,7 +2,14 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 4a complete (`97216d5`). PO-initialized model defaults per thread fully wired. `pnpm type-check` clean.
+**State.** Wave 4b QA complete (SHA-pending). Self-improvement issue-filing loop wired. `pnpm type-check` clean.
+
+**Wave 4b shipped (this commit):**
+- `src/lib/skills/qa.ts` — 6th skill section: Defect filing (gh issue create pattern, workspace fallback, body format, severity guide).
+- `src/lib/roles.ts` — PO system prompt: Self-improvement backlog section (gh issue list command, scheduling heuristic).
+- GitHub issues filed: #1 AgentPane empty model string race (warn), #2 Spurious EventSource on mount (nit). Label: `self-improvement`.
+
+**Wave 4a complete (`97216d5`):** PO-initialized model defaults per thread fully wired. `pnpm type-check` clean.
 
 **Wave 4a shipped (this commit):**
 - `src/types.ts` — `agent-models` added to `SseEventType`; `agentModels` field on `SseEvent`.
