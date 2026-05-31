@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 9b — Mandatory phased workflow encoded. Commit SHA pending.**
+**Wave 9b — Mandatory phased workflow encoded. Commit `2a81587` on main.**
 
 `src/lib/protocols.ts` (NEW):
 - `REQUIREMENTS_PHASE_PROTOCOL` — PO convenes Arch + UX + BA before any implementer
