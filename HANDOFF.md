@@ -4,7 +4,7 @@
 
 **Wave 9d UX Designer — Wave 8c retry + skill self-audit complete.**
 
-- `src/lib/skills/ux-designer.ts` — added `### Responsive design` section (closes #34) + `#### Motion` subsection under `### Interaction states` (closes #35). Commit (SHA-pending).
+- `src/lib/skills/ux-designer.ts` — added `### Responsive design` section (closes #34) + `#### Motion` subsection under `### Interaction states` (closes #35). Commit `ead641e`.
 - Filed skill-proposal **#40** — "Gate verdict format — structured PASS/REVISE output for the UX design gate"
 - Gap: critique workflow describes process but not the structured output artifact (PASS/REVISE verdict format DevSecOps + UI Dev act on). Proposal covers: PASS required fields (SHA, spec consulted, no-block confirmation, nit issues filed), REVISE required fields (blocking items with spec→delta→change, who receives HANDOFF), missing-spec path, port 3130 usage guidance.
 
