@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 3 Architect track complete (SHA-pending). Code review done — PASS with WARNs. Remaining 5 skills files written and wired. requirements/ snapshot included. `pnpm type-check` clean. Awaiting QA Wave 3 smoke tests; then Wave 4 (HANDOFF refresh + push).
+**State.** Wave 3 Architect track complete (`cea839c`). Code review done — PASS with WARNs. Remaining 5 skills files written and wired. requirements/ snapshot included. `pnpm type-check` clean. Awaiting QA Wave 3 smoke tests; then Wave 4 (HANDOFF refresh + push).
 
 **Wave 3 Architect shipped:**
 - `src/lib/skills/business-analyst.ts` — 5-skill BA domain expertise.
