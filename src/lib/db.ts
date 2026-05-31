@@ -8,7 +8,9 @@ import type {
   RoleId,
 } from "@/types";
 
-const DB_PATH = resolve(process.cwd(), "data", "apex-team.db");
+const DB_PATH = process.env.APEX_TEAM_DB_PATH
+  ? resolve(process.cwd(), process.env.APEX_TEAM_DB_PATH)
+  : resolve(process.cwd(), "data", "apex-team.db");
 
 let _db: Database.Database | null = null;
 

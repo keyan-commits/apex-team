@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 2 Backend Dev complete (`a3dd9cb`). `pnpm type-check` passes clean. UI Dev wave 2 also complete (AgentPane model dropdown — `src/components/AgentPane.tsx`). DevSecOps wave 2 in flight.
+**State.** Wave 2 complete across all three streams. DevSecOps shipped `dev:test` isolated instance (`SHA-pending`). Backend Dev shipped active-thread + handoff-utils (`a3dd9cb`). UI Dev shipped model dropdown (committed with Backend Dev wave). Wave 3 is next: Architect code-review + remaining skills files; QA smoke tests on `:3100`.
 
 **Wave 2 Backend Dev shipped:**
 - `src/lib/active-thread.ts` — `setActiveThread` / `getActiveThread`; globalThis-bridged (same pattern as event-bus).
