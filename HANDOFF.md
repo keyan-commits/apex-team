@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 30 — MCP transport heartbeat + Now-panel fix. `src/mcp/handler.ts`: 30s SSE-style keepalive heartbeat wraps `transport.handleRequest` — resets undici bodyTimeout + intermediate TCP idle timeout during long agent turns. `src/app/api/team-status/route.ts`: Now-panel drops `agent_state.updatedAt` heuristic; trigger within last 10 min + unanswered → "now". Helper in `src/lib/derive-now-queued.ts`. `tests/api/team-status-now.test.ts`: 6 new tests. 45/45 green. Feature branch: `feature/30-transport-heartbeat-and-now-panel`.**
+
 **Wave 29a BA — US-009, US-010, US-011 written. OQ-008 (provenance format) + OQ-009 (scout trigger mechanism) filed. `requirements/INDEX.md` updated. Feature branch: `feature/29a-ba-user-stories`.**
 
 **Wave 28a BA (gap fix) — US-008 Out of Scope section updated: added explicit deferral for nested HANDOFF count badge (PO AC4 → US-009) + streaming auto-collapse (existing behavior, not a new requirement). Feature branch: `feature/28a-ba-us008-gap-fix`.**
