@@ -64,10 +64,16 @@ echo ""
 # ── Test 1: Process up ───────────────────────────────────────────────────────
 echo "Test 1: Process up"
 HEALTH=$(curl -sf "$BASE/api/health" || echo "")
-if echo "$HEALTH" | grep -q '"ok":true'; then
-  pass "GET /api/health returns {ok:true}"
+# Shape: { status: "ok"|"degraded", apexEngine: "up"|"down", defaultCwd: string, mcpMounted: bool }
+if echo "$HEALTH" | grep -q '"status":"ok"'; then
+  pass "GET /api/health returns {status:\"ok\"}"
 else
-  fail "GET /api/health did not return {ok:true} — got: $HEALTH"
+  fail "GET /api/health did not return {status:\"ok\"} — got: $HEALTH"
+fi
+if echo "$HEALTH" | grep -q '"mcpMounted":true'; then
+  pass "GET /api/health returns {mcpMounted:true}"
+else
+  fail "GET /api/health missing mcpMounted:true — got: $HEALTH"
 fi
 
 # ── Test 2: Active thread null on fresh start ────────────────────────────────

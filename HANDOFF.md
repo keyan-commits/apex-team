@@ -2,7 +2,40 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 7c Architect UX audit complete. `pnpm type-check` clean. Full audit below.
+**State.** Wave 7d QA — code-based UI/UX audit + smoke test regression fix. `pnpm test:run` 6/6. Pushed to origin/main.
+
+**Important limitation:** `mcp__playwright__browser_*` tools are only mounted when running as an apex-team agent turn (via the turn runner), NOT in a direct Claude Code session. This turn used code analysis + live API calls instead of browser snapshots.
+
+**New issues filed:**
+| # | Severity | Summary |
+|---|---|---|
+| #28 | warn | `[ux:agent-pane]` PO pane no max-width → full-viewport line length on wide monitors |
+| #29 | **block** | `[qa]` Smoke test Test 1 always fails — `"ok":true` check vs `"status":"ok"` response (FIXED in this commit) |
+| #30 | — | `[skill:qa]` skill-proposal: Add visual verification via Playwright MCP section |
+
+**User-reported issues validated by code analysis:**
+| Claim | Verdict | Evidence |
+|---|---|---|
+| PO pane full-viewport width | ✓ CONFIRMED | `MessageBubble:84` `max-w-none`, `page.tsx:500-502` no max-width on `.po-area` |
+| Team/Dashboard tabs invisible | ✗ NOT confirmed | `OrchestratorBar` tabs have border + active state (`--accent-po` background). BUT logo `⌬` is invisible because `--accent-orch` undefined (#19) |
+| AgentPane auto-fold not working | ✗ NOT confirmed | Lines 117–125 implement 60s idle fold + busy auto-expand. Working in code. |
+| Logo styling broken (#19) | ✓ CONFIRMED | `globals.css` has no `--accent-orch`; used in OrchestratorBar:119 and 5× in AgentStatePanel |
+| Click-once on Issues panel | ✗ FIXED | `e561885` switched to `sendingRows: Set<number>` per-row; per-row buttons independent |
+| Dashboard loads at all | ✓ CONFIRMED | `/api/team-status` and `/api/active-thread` both return correct data |
+
+**Smoke test regression fixed (commit SHA-pending):**
+- `tests/smoke/http.sh:67` — changed `'"ok":true'` → `'"status":"ok"'`; also added `mcpMounted:true` check
+- `tests/smoke/api.test.ts` — NEW: 2 Vitest unit tests for `/api/health` response shape (regression guard for issue #29)
+- `pnpm test:run`: 6/6 passing (was 4/4; +2 new API shape tests)
+
+**Carry-forward coverage gaps (unblocked, not yet written):**
+- Health degraded path with wrong `APEX_MCP_URL` — now covered in `api.test.ts` ✓
+- `agentModels` unknown-key filter in run-turn.ts — deferred
+- AgentPane: Other… model selection regression — deferred
+- EventSource single-connection on fresh load — deferred
+- #22: dashboard poll error feedback — open issue, no test written (would require component test)
+
+**Wave 7c UX audit — full findings (9 issues across all files):**
 
 **Wave 7c UI Dev `e561885` — PASS.**
 Delivered: OrchestratorBar on dashboard (workspace input), inline model select in Context, per-row `sendingRows` dispatch (concurrent). `pnpm type-check` clean.
