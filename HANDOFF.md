@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**Wave 9c DevSecOps — worktree-based per-role isolation. Commit `6af1075`.**
+**Wave 9c DevSecOps — worktree-based per-role isolation. Commit `3d2a933`.**
 
 - `scripts/branch-start.mjs` — rewritten: now takes `<role> <wave>-<short>`; uses `git worktree add` → creates `../apex-team-<role>-<short>/` on `feature/<slug>` from `origin/main`; role validated against `VALID_ROLES`; worktree path collision check; branch duplicate check; per-role next-steps in output.
 - `scripts/branch-cleanup.mjs` (NEW) — removes worktree + deletes merged feature branch; refuses if uncommitted changes in worktree.
