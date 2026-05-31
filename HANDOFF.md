@@ -7,7 +7,7 @@
 - `requirements/user-stories/US-006-main-branch-enforcement.md` — 6 ACs: AC1 (no direct push incl. admin), AC2 (CI gate blocks PR merge), AC3 (local pre-push hook), AC4 (pre-commit type-check), AC5 (CODEOWNERS advisory), AC6 (--no-verify caught by CI). Owner: DevSecOps.
 - `requirements/user-stories/US-007-portable-workspace-bootstrap.md` — 5 ACs: AC1 (install hooks), AC2 (CI stub, non-destructive), AC3 (branch protection via gh CLI + fallback), AC4 (non-Node graceful degradation), AC5 (ops/README record). Owner: DevSecOps. Depends on US-006.
 - `requirements/open-questions.md` — OQ-006 (bootstrap install gitleaks? default: yes w/ fallback) + OQ-007 (require user consent for branch-protection? default: yes interactive).
-- `requirements/INDEX.md` — US-006 + US-007 rows added.
+- `requirements/INDEX.md` — US-006 + US-007 rows added. Commit `8ca2507`.
 
 **Wave 13c-ops — post-public-switch gitleaks history audit complete. CLEAN.**
 
