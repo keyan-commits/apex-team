@@ -2,95 +2,63 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State:** Event-bus SSE refactor committed. Skills injection (Wave 1 Commit 2) in progress.
+**State.** Event-bus SSE refactor + permission widening committed (`9a6f6a4`). Skills-injection Wave-1 commit-2 still in-flight on disk (uncommitted). `tsx watch` was tried as the auto-restart mechanism and reverted — it kills the in-process agent that just edited a source file, so future restarts go back to manual until a graceful-restart supervisor is built. Resume on branch `main`; HEAD = `9a6f6a4`.
 
-**Just committed (Commit 1 — event-bus SSE refactor):**
-- `src/lib/event-bus.ts` — in-process pub/sub for per-thread events
-- `/api/thread-events` — SSE route streaming turn/dispatch/error events to browser
-- `src/lib/run-turn-with-dispatches.ts` — PO dispatch pipeline wired to event bus
-- `src/app/page.tsx` — subscribes to EventSource, handles all event types live
-- `src/components/OrchestratorBar.tsx` — thread ID is now an editable input
-- Deleted `src/lib/sse-client.ts` (replaced by native EventSource)
-- `package.json` — dev script uses `tsx watch` with ignore patterns
+**Mid-flight (uncommitted — recover after one final manual `pnpm dev` restart):**
+- `package.json` — `dev` script reverted from `tsx watch` back to plain `tsx server.ts`. Running process still under `tsx watch` (it doesn't re-read package.json), so user must restart once more to drop it.
+- `src/types.ts` — `skills?: string` added to `RoleDefinition`. (Architect edit, partial.)
+- `src/lib/providers.ts` — `augmentSystemPrompt()` patched to inject `role.skills`. (Architect edit, partial.)
+- `src/lib/skills/ui-developer.ts` — new file, 6-section UI/UX domain-expertise constant. (Architect created, partial.)
+- **Not yet on disk:** `src/lib/roles.ts` wire-up of `ui-developer` skills; `architecture/decisions/ADR-001-role-skills-injection.md`; the Commit-2 `git commit`.
 
-**In progress (Commit 2 — skills injection):**
-- `skills?: string` on `RoleDefinition` in `types.ts`
-- `src/lib/skills/ui-developer.ts` — UI/UX domain expertise block (6 sections)
-- `providers.ts` augmentSystemPrompt() injects `role.skills` when present
-- `roles.ts` — ui-developer wired to skills constant
-- `architecture/decisions/ADR-001-role-skills-injection.md`
+**Shipped today (post-event-bus session):**
+- `mcp-config.ts` — `ALLOWED_BUILTIN_TOOLS` added (Read/Write/Edit/Glob/Grep/Bash/WebSearch/WebFetch) so headless team agents can act on the workspace without permission prompts (was previously blocked).
+- `/api/thread-events` and event-bus verified end-to-end via a curl SSE listener; UI confirms live PO+peer streaming.
+- `OrchestratorBar` thread input lets the dashboard subscribe to any thread (incl. MCP-minted) — workaround until auto-thread-discovery ships in Wave 2.
+- `event-bus.ts` keys its `Map` on `globalThis` (`Symbol.for("apex-team.event-bus.emitters")`) so the `tsx`-loaded MCP module and the Next.js-bundled SSE route share state. Without this, MCP-side `publish()` and Next-side `subscribe()` hit separate Maps and the UI sees nothing from MCP turns.
+- Approved PO's wave plan for the remaining backlog (Skills + Auto-thread-discovery + Model dropdown + QA test instance + Context mgmt + HANDOFF refresh). User has handed full control to PO with an autonomous-iteration mandate.
 
-**Open next-steps after Wave 1:**
-- Wave 2: UI Dev (model dropdown), Backend Dev (/api/active-thread + context mgmt), DevSecOps (dev:test instance) — parallel streams
-- Wave 3: Architect reviews Wave 2 + writes remaining 5 skills files; QA smoke tests
-- Wave 4: HANDOFF refresh, commit, push to main
+**Open next-steps (priority order):**
+1. **User does ONE final manual `pnpm dev` restart** — drops `tsx watch` from the running process. Future agent edits no longer kill the agent mid-turn.
+2. Re-dispatch PO → Architect to finish Wave 1 Commit 2 (roles.ts wire-up + ADR-001 + commit the skills feature).
+3. **Wave 2 — three parallel streams:**
+   - UI Dev: replace AgentPane's free-text model input with a dropdown (`claude-opus-4-7`, `claude-sonnet-4-6`, `claude-haiku-4-5-20251001`, `gemini-2.5-flash`, `llama-3.3-70b-versatile`, plus "Other…"); persist per-role choice to `localStorage`.
+   - Backend Dev: `/api/active-thread` GET + write-side in `new_thread`/`talk_to_*` MCP tools so the browser auto-switches thread (no copy/paste); `src/lib/handoff-utils.ts` `summarizeHandoff(doc, maxChars)` calling `apex_synthesize`; PO prompt update to invoke it when a HANDOFF doc exceeds ~8K chars.
+   - DevSecOps: `pnpm dev:test` script on `PORT=3100` with `DB_PATH=data/apex-team-test.db`; verify `db.ts` honors `DB_PATH`.
+4. **Wave 3:** Architect reviews Wave 2 + drafts remaining 5 skills files (`ba`, `architect`, `backend-developer`, `qa`, `devsecops`); QA smoke tests on the `:3100` instance covering new-thread creation, `talk_to_product_owner` round-trip, active-thread auto-switch, model dropdown persistence, single-turn SSE delivery.
+5. **Wave 4:** HANDOFF refresh + push to `main`.
 
-**Backlog (unchanged from previous):**
-- End-to-end smoke test (apex-engine + apex-team + MCP registration)
-- Reconcile sequential MCP vs parallel web-UI dispatch
-- SDK `mcp__apex-engine__` allowlist naming verification
-- `/api/health` MCP-transport field
-- `next lint` → ESLint CLI migration
-- Client-side abort button
-- Provider/model persistence across reload
+**Parked (deliberate deferrals):**
+- Graceful-restart supervisor — agents currently can't restart the parent process safely. Options: pm2 / forever / external sentinel-file watcher / detached spawn + SIGTERM. Deferred until the team is functioning end-to-end on a real external workspace.
+- Role-boundary discipline — PO assigned Wave-1 implementation work to Architect (Architect's lane is design + reviews). Tolerable for tiny mechanism + PoC, revisit if pattern recurs.
+- Symptom watched: BA misread a DISPATCH addressed to DevSecOps in Round 3 of the greeting test. Likely a PO authoring slip, not a routing bug. Revisit if it recurs.
+- Streaming-input mode for Claude Agent SDK; thread list / resume sidebar; LLM-driven inbox watcher; SDK-native `skills: ['code-review' / 'verify' / 'security-review']` per-role (Wave 3 of original plan).
+- Pre-existing backlog still open: end-to-end smoke test against an external workspace (e.g. `my-finances`); SDK `mcp__apex-engine__<tool>` allowlist naming verification under real apex-engine tool invocation; `/api/health` MCP-transport field; `next lint` → ESLint CLI migration; client-side abort button per pane.
+
+**Active thread (so you can resume in the dashboard):** `mcp_mpsoeous_bih2`.
 
 **Repo:** https://github.com/keyan-commits/apex-team
-
-**The 7 roles:**
-
-| Role | Owns |
-|---|---|
-| Product Owner | In-app orchestrator — uses `[[DISPATCH: role]]` to auto-trigger peers |
-| Business Analyst | Functional requirements; manages `<workspace>/requirements/` |
-| Architect | Non-functional requirements, system design, **all code reviews**, coding standards |
-| UI Developer | Frontend |
-| Backend Developer | Backend / APIs |
-| QA | All testing (unit / smoke / regression / UI / backend / security); test-tech choices |
-| DevSecOps | CI/CD, secrets, deployments, supply chain |
-
-**Just done (this 2026-05-31 session):**
-- Replaced 2-role MVP (BA + Dev) with the 7-role architecture above. Each role has its own pane, HANDOFF doc, system prompt, provider/model config.
-- Removed the embedded `claude` CLI (TerminalPane + xterm.js + node-pty + ws + the WebSocket PTY handler in `server.ts`).
-- Built apex-team's own MCP server at `/mcp`: `src/mcp/handler.ts` (Streamable HTTP, stateless per-request, DNS-rebinding protection) + `src/mcp/tools.ts` (8 tools). Mounted in `server.ts` before the Next.js handler.
-- MCP tools: `talk_to_role`, `talk_to_product_owner` (runs PO + all peers PO dispatches), `get_team_status`, `read_handoff_doc`, `list_requirements`, `read_requirement`, `new_thread`, `get_workspace`, `list_team_roles`, `record_user_message`.
-- Extracted `src/lib/run-turn.ts` so both `/api/chat` (streaming) and MCP tools (non-streaming) share the same turn-persistence logic.
-- PO uses `[[DISPATCH: role]]` (auto-trigger); peers use `[[HANDOFF: role]]` (async inbox, no auto-trigger). Both protocols active.
-- Layout: PO pane on top full-width, six peer panes in a responsive 3-col / 2-col / 1-col grid. New accent colors per role (PO orange, BA blue, Arch purple, UI green, BE cyan, QA pink, DevSecOps amber).
-- Removed deps: `node-pty`, `@xterm/xterm`, `@xterm/addon-fit`, `ws`, `@types/ws`. Removed `postinstall` script + `scripts/fix-node-pty-perms.mjs`. Added `@modelcontextprotocol/sdk`.
-- Deleted dead code: `TerminalPane.tsx`, `OrchestratorPane.tsx`, `slash-commands.ts`, `routing.ts`, `/api/route-task/`, `scripts/pty-probe.mjs`.
-
-**Open next-steps (in priority order):**
-1. End-to-end smoke test:
-   - Start apex-engine MCP (`cd ../apex-engine && pnpm setup`).
-   - Start apex-team (`pnpm dev`).
-   - Register: `claude mcp add apex-team --transport http http://localhost:3000/mcp`.
-   - In a fresh `claude` session: `Use apex-team. Mint a new thread, then talk_to_product_owner about building a markdown todo list app. Workspace: /Users/nikoe/Development/Study/my-finances`.
-   - Watch the web dashboard — PO should dispatch, peers should stream replies, BA should create `<workspace>/requirements/`.
-2. **The PO's dispatched peers fire sequentially inside `talk_to_product_owner`, but in the web UI they fire in parallel.** Reconcile: probably keep MCP sequential (Claude Code expects to see all replies in one tool result), but verify no race conditions when the same thread has parallel turns running.
-3. Verify Claude Agent SDK's `mcp__apex-engine__<tool>` allowlist naming works when an agent actually invokes an apex-engine tool. Adjust `apexAllowedTools()` if needed.
-4. BA's `requirements/` directory has no pre-existing template — BA creates it on first turn. Watch the first run; may need to tighten the BA prompt if it gets the structure wrong.
-5. Add an `/api/health` field reporting whether the MCP transport is mounted (cheap sanity).
-6. Migrate `next lint` → ESLint CLI (Next 15.5 deprecation warning).
-7. Client-side abort button per pane (server already honours `req.signal`).
-8. Persist per-agent provider/model choice (currently resets to Sonnet on reload).
-
-**Parked:**
-- Streaming-input mode for Claude Agent SDK (each turn re-serializes transcript into a fresh `query()`).
-- Thread list / resume sidebar (DB supports it).
-- LLM-driven inbox watcher (PO actively notices peer HANDOFFs and decides whether to re-dispatch).
 
 **Resume commands:**
 
 ```bash
 cd /Users/nikoe/Development/Study/apex-team
-pnpm dev                                  # http://localhost:3000  + MCP at /mcp
+pnpm dev                                  # http://localhost:3000  + MCP at /mcp  (plain tsx now, no watch)
 
-# in another shell:
+# in another shell, if not already running:
 cd /Users/nikoe/Development/Study/apex-engine && pnpm setup
 
 # register apex-team's MCP with your Claude Code (once):
 claude mcp add apex-team --transport http http://localhost:3000/mcp
 ```
+
+---
+
+## 2026-05-31 — afternoon: event-bus refactor + skills wave-1 start
+
+Option-(b) refactor that gives every thread a single SSE delivery channel. MCP-driven and UI-driven turns now publish identical events through `event-bus.ts`; the browser opens one long-lived `EventSource` per thread via `/api/thread-events`. `/api/chat` lost its SSE response — it just kicks off `runTurnWithDispatches` and returns. PO dispatches now fan out **in parallel** (matches user's preference; was sequential under MCP path). Bus keyed on `globalThis` to bridge tsx-loaded MCP modules and Next-bundled routes. `mcp-config.ts` extended with built-in tool allowlist so headless team agents can do real work. Tried `tsx watch` for autonomous restarts — reverted; agents editing source kill themselves. Wave 1 (skills) started: Architect committed the bus refactor as `9a6f6a4`, then half-finished the skills feature before tsx watch interrupted.
+
+## 2026-05-30 → 2026-05-31 — initial build + parallel rework + Claude CLI embed (now superseded)
 
 ---
 
