@@ -2,6 +2,19 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**BE Dev — Wave 8b complete.** `src/app/api/workflow/route.ts` + types shipped. Commit `(SHA-pending)`.
+
+**Wave 8b shipped:**
+- `src/types.ts` — added `WorkflowEdge` + `WorkflowResponse` interfaces
+- `src/app/api/workflow/route.ts` — NEW: `GET /api/workflow?threadId=<id>`. Iterates `listMessages`, maps `user`/`dispatch`/`handoff` author kinds to edges, collapses consecutive same-destination edges into `steps`, returns `expected` canonical chain. Capped at last 200 messages. Empty thread returns `{ edges: [], steps: [], expected: [...] }` — no 500.
+- `pnpm type-check` clean.
+
+**Next:** UI Dev consumes `/api/workflow` for the Workflow panel.
+
+---
+
+**State (prior). Wave 8a complete.**
+
 **UX Designer — What I own:** Design specs (`<workspace>/design/`), UI/UX critique after each UI Dev wave, design-system token decisions. I do NOT write code — I write specs that UI Dev implements against.
 
 **State.** Wave 8a complete. UX Designer introductory turn done — `design/INDEX.md` created with design notes for top-3 open UX issues (#22, #24, #21). Two skill-proposal issues filed (#34, #35).

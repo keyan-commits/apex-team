@@ -97,6 +97,27 @@ export interface SseEvent {
   agentModels?: Record<RoleId, string>;
 }
 
+export interface WorkflowEdge {
+  from: RoleId | "user";
+  to: RoleId;
+  kind: "user" | "dispatch" | "handoff";
+  messageId: number;
+  createdAt: number;
+  excerpt: string;
+}
+
+export interface WorkflowResponse {
+  threadId: string;
+  edges: WorkflowEdge[];
+  steps: Array<{
+    role: RoleId;
+    visits: number;
+    firstAt: number;
+    lastAt: number;
+  }>;
+  expected: RoleId[];
+}
+
 export interface TeamStatus {
   now: Array<{ role: RoleId; taskSummary: string; startedAt: number; state: "thinking" | "streaming" | "dispatching" }>;
   queued: Array<{ id: number; toRole: RoleId; fromRole: RoleId | "user"; taskSummary: string; createdAt: number }>;
