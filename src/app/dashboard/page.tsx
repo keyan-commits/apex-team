@@ -24,6 +24,15 @@ const ROLES = [
   "ui-developer","backend-developer","qa","devsecops","ux-designer",
 ] as const;
 
+const CONTEXT_MAX_CHARS = 8000;
+const CONTEXT_AMBER = 0.5;
+const CONTEXT_RED = 0.8;
+
+function satLevel(chars: number): "green" | "amber" | "red" {
+  const pct = chars / CONTEXT_MAX_CHARS;
+  return pct > CONTEXT_RED ? "red" : pct > CONTEXT_AMBER ? "amber" : "green";
+}
+
 const PANEL_INFO: Record<string, string> = {
   now: "Roles currently working. Each row shows the task they were given and the state (thinking / streaming / dispatching).",
   queued: "Tasks that have been dispatched but not yet started. Drag-and-drop to set your own priority order — stored locally.",
@@ -83,6 +92,9 @@ export default function DashboardPage() {
   const [fetchError, setFetchError] = useState(false);
   const [flashedRowId, setFlashedRowId] = useState<number | null>(null);
   const [liveMsg, setLiveMsg] = useState("");
+  const [scoutRunning, setScoutRunning] = useState(false);
+  const [scoutError, setScoutError] = useState<string | null>(null);
+  const scoutBaseRunAtRef = useRef<number | null | undefined>(undefined);
   const queuedRowRefs = useRef<(HTMLDivElement | null)[]>([]);
   const userEditedThreadRef = useRef(false);
   const threadIdRef = useRef(threadId);
@@ -281,6 +293,37 @@ export default function DashboardPage() {
     setRoleModels((prev) => ({ ...prev, [role]: model }));
     try { localStorage.setItem(`apex-model-${role}`, model); } catch {}
   };
+
+  const triggerScout = async () => {
+    setScoutError(null);
+    scoutBaseRunAtRef.current = data?.scout.lastRunAt;
+    try {
+      const res = await fetch("/api/scout/trigger", { method: "POST" });
+      if (res.status === 503) {
+        const body = await res.json().catch(() => ({})) as { error?: { message?: string } };
+        setScoutError(body.error?.message ?? "ANTHROPIC_API_KEY not configured — scout disabled");
+        return;
+      }
+      setScoutRunning(true);
+    } catch {
+      setScoutError("Failed to trigger scout — check server logs");
+    }
+  };
+
+  useEffect(() => {
+    if (!scoutRunning) return;
+    const id = setInterval(() => {
+      fetch("/api/scout/status", { cache: "no-store" })
+        .then((r) => r.json())
+        .then((d: { running: boolean; lastRunAt: number | null }) => {
+          if (!d.running && d.lastRunAt !== scoutBaseRunAtRef.current) {
+            setScoutRunning(false);
+          }
+        })
+        .catch(() => {});
+    }, 5000);
+    return () => clearInterval(id);
+  }, [scoutRunning]);
 
   const REPO_STATUS_COPY: Record<Exclude<RepoStatus, "ok">, string> = {
     none: "No origin remote configured — issues unavailable.",
@@ -592,11 +635,26 @@ export default function DashboardPage() {
         <section className="panel">
           {panelHd("Daily Scout", "scout")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : (
-            <dl className="kv-list">
-              <dt>Last run</dt><dd>{fmtTime(data.scout.lastRunAt)}</dd>
-              <dt>Proposals filed</dt><dd>{data.scout.proposalsLast7Days}</dd>
-              <dt>Next run</dt><dd>{data.scout.nextScheduledAt ? fmtTime(data.scout.nextScheduledAt) : "manual only"}</dd>
-            </dl>
+            <>
+              <dl className="kv-list">
+                <dt>Last run</dt><dd>{fmtTime(data.scout.lastRunAt)}</dd>
+                <dt>Proposals filed</dt><dd>{data.scout.proposalsLast7Days}</dd>
+                <dt>Next run</dt><dd>{data.scout.nextScheduledAt ? fmtTime(data.scout.nextScheduledAt) : "manual only"}</dd>
+              </dl>
+              {scoutError && (
+                <p className="scout-error">{scoutError}</p>
+              )}
+              <button
+                className="scout-run-btn"
+                onClick={() => { void triggerScout(); }}
+                disabled={scoutRunning}
+                aria-live="polite"
+              >
+                {scoutRunning
+                  ? <><span className="spinner" aria-hidden="true" /> Running…</>
+                  : "Run now"}
+              </button>
+            </>
           )}
         </section>
 
@@ -605,13 +663,21 @@ export default function DashboardPage() {
           {panelHd("Context", "context")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : data.context.length === 0 ? empty("No context data.") : (
             <div className="context-grid">
-              {data.context.map((ctx) => (
+              {data.context.map((ctx) => {
+                const sat = satLevel(ctx.handoffChars);
+                return (
                 <div key={ctx.role} className={`ctx-card${ctx.needsCleanup ? " ctx-warn" : ""}`}>
-                  {roleBadge(ctx.role)}
+                  <Link href={`/agents/${ctx.role}`} className="ctx-role-link">{roleBadge(ctx.role)}</Link>
                   {ctx.needsCleanup && <span className="cleanup-badge">needs cleanup</span>}
                   <div className="ctx-stats">
                     <span>{fmtNum(ctx.handoffChars)} chars</span>
                     <span>{ctx.historyDepth} msgs</span>
+                  </div>
+                  <div className="sat-bar-wrap" title={`Context: ${Math.round((ctx.handoffChars / CONTEXT_MAX_CHARS) * 100)}%`}>
+                    <div
+                      className={`sat-bar sat-${sat}`}
+                      style={{ width: `${Math.min(100, (ctx.handoffChars / CONTEXT_MAX_CHARS) * 100).toFixed(1)}%` }}
+                    />
                   </div>
                   <select
                     className="ctx-model-select"
@@ -625,7 +691,8 @@ export default function DashboardPage() {
                     ))}
                   </select>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
@@ -753,11 +820,22 @@ export default function DashboardPage() {
         .issue-count { font-size: 20px; font-weight: 700; min-width: 32px; text-align: center; color: var(--accent-po); }
         .issue-label { font-size: 12px; color: var(--text-dim); }
 
-        .kv-list { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 12px; margin: 0; }
+        .kv-list { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 12px; margin: 0 0 10px; }
         dt { color: var(--text-dim); }
         dd { margin: 0; font-family: ui-monospace, monospace; font-size: 11px; }
+        .scout-run-btn {
+          padding: 5px 14px; border-radius: 6px; font-size: 12px; font-weight: 600;
+          border: 1px solid var(--border); cursor: pointer;
+          background: color-mix(in srgb, var(--accent-po) 14%, var(--surface));
+          color: var(--text); display: inline-flex; align-items: center; gap: 6px;
+        }
+        .scout-run-btn:hover { background: color-mix(in srgb, var(--accent-po) 24%, var(--surface)); }
+        .scout-run-btn:focus-visible { outline: 2px solid var(--accent-po); outline-offset: 2px; }
+        .scout-run-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .scout-error { font-size: 11px; color: var(--accent-qa); margin: 6px 0 6px; padding: 5px 8px; border-radius: 5px; border: 1px solid color-mix(in srgb, var(--accent-qa) 30%, var(--border)); background: color-mix(in srgb, var(--accent-qa) 7%, var(--surface)); }
 
         .context-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+        .ctx-role-link { text-decoration: none; display: contents; }
         .ctx-card {
           display: flex; flex-direction: column; gap: 4px; padding: 8px;
           background: var(--surface-2); border-radius: 6px; border: 1px solid var(--border);
@@ -771,6 +849,11 @@ export default function DashboardPage() {
           width: fit-content;
         }
         .ctx-stats { display: flex; gap: 8px; font-size: 10px; color: var(--text-dim); font-family: ui-monospace, monospace; }
+        .sat-bar-wrap { height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
+        .sat-bar { height: 100%; border-radius: 99px; min-width: 2px; }
+        .sat-green { background: #4caf50; }
+        .sat-amber { background: #ff9800; }
+        .sat-red { background: var(--accent-qa); }
         .ctx-model-select {
           font-size: 10px; color: var(--text-dim);
           background: var(--surface); border: 1px solid var(--border); border-radius: 4px;

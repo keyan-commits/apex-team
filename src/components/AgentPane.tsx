@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
 import type {
   AccentKey,
@@ -217,7 +218,7 @@ export function AgentPane({
       <section className={`pane pane-${accent} pane-folded`}>
         <div className="folded-bar">
           <span className={`pill pill-${pillState}`} aria-label={`Status: ${pillLabel}`} title={pillLabel}>{pillLabel}</span>
-          <span className="folded-title">{title}</span>
+          <Link href={`/agents/${role}`} className="folded-title folded-title-link" title={`${title} profile`}>{title}</Link>
           {inboxCount > 0 && (
             <span className="inbox-badge" title={`${inboxCount} pending`}>{inboxCount}</span>
           )}
@@ -237,6 +238,9 @@ export function AgentPane({
             background: color-mix(in srgb, var(--accent-${accent}) 4%, var(--surface));
           }
           .folded-title { font-size: 13px; font-weight: 600; flex: 1; }
+          .folded-title-link { color: var(--text); text-decoration: none; }
+          .folded-title-link:hover { text-decoration: underline; }
+          .folded-title-link:focus-visible { outline: 1px solid var(--accent-${accent}); border-radius: 2px; }
           .inbox-badge {
             font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 99px;
             background: color-mix(in srgb, var(--accent-po) 25%, var(--surface-2));
@@ -273,7 +277,7 @@ export function AgentPane({
             >
               {pillLabel}
             </span>
-            {title}
+            <Link href={`/agents/${role}`} className="title-link" title={`${title} profile`}>{title}</Link>
             {busy && <span className="elapsed">{activeSec}s</span>}
           </div>
           <div className="config">
@@ -456,6 +460,9 @@ export function AgentPane({
           gap: 8px;
           font-size: 13px;
         }
+        .title-link { color: var(--text); text-decoration: none; }
+        .title-link:hover { text-decoration: underline; }
+        .title-link:focus-visible { outline: 1px solid var(--accent-${accent}); border-radius: 2px; outline-offset: 2px; }
         .pill {
           display: inline-flex;
           align-items: center;
