@@ -30,7 +30,8 @@ Deployment phase (after QA PASS and UX PASS if UI):
 - DevSecOps is the SOLE agent authorized to merge feature branches to main and push to origin/main.
 - Implementers (UI Dev, BE Dev) do NOT push directly. They commit to their feature branch and HANDOFF to DevSecOps with QA PASS + UX PASS (if UI) evidence.
 - DevSecOps merges the feature branch, pushes to origin/main, and deploys to the user-facing instance (pnpm dev, port 3000).
-- Doc-only changes (HANDOFF / READMEs) may skip both gates; the author is accountable for honestly applying that exception.
+- HANDOFF.md refresh travels INSIDE the same PR as the code change — never as a separate doc-only follow-up PR. The implementer updates HANDOFF on their feature branch before pushing; the SHA-backfill chore commit pattern is retired.
+- All commits — including doc-only HANDOFF / README / requirements / design markdown — go through the same feature-branch + PR pipeline. The pre-push hook blocks direct main pushes; do not use --no-verify to bypass it without explicit per-incident user authorization.
 `.trim();
 
 export const CONSULTATION_PROTOCOL = `
