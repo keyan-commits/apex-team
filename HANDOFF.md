@@ -2,28 +2,33 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 3 Architect track complete (`cea839c`). Code review done — PASS with WARNs. Remaining 5 skills files written and wired. requirements/ snapshot included. `pnpm type-check` clean. Awaiting QA Wave 3 smoke tests; then Wave 4 (HANDOFF refresh + push).
+**State.** Wave 3 complete — QA smoke tests pass (SHA-pending). All 10/10 tests green. Wave 4 next: HANDOFF refresh + push to `main`.
 
-**Wave 3 Architect shipped:**
-- `src/lib/skills/business-analyst.ts` — 5-skill BA domain expertise.
-- `src/lib/skills/architect.ts` — 5-skill architecture domain expertise.
-- `src/lib/skills/backend-developer.ts` — 5-skill backend domain expertise.
-- `src/lib/skills/qa.ts` — 5-skill QA domain expertise.
-- `src/lib/skills/devsecops.ts` — 5-skill DevSecOps domain expertise.
-- `src/lib/roles.ts` — all 5 remaining roles wired to their skills constants.
-- `requirements/` — BA's apex-team requirements snapshot included in commit.
+**Wave 3 QA shipped (SHA-pending):**
+- `vitest.config.ts` — root vitest config with `@/*` path alias.
+- `tests/smoke/skills.test.ts` — 4 unit tests; all pass. Verifies all 6 peer roles have non-empty skills; PO has none; content spot-checks.
+- `tests/smoke/http.sh` — 6 HTTP smoke checks (health, active-thread null, DB isolation ×2, SSE content-type + initial frame); all pass against `:3100` instance; teardown confirmed.
+- `testing/README.md` — test layer documentation + how-to-run.
+
+**Test results:**
+- `pnpm test:run`: 4/4 unit tests PASS
+- `bash tests/smoke/http.sh`: 6/6 HTTP smoke tests PASS, teardown clean
+
+**Wave 3 Architect (prior, `cea839c`):** code review PASS with WARNs; 5 remaining skills files + requirements/ snapshot.
 
 **Wave 2 shipped (prior):**
-- UI Dev: model dropdown (`2fd294f`) — AgentPane.tsx.
-- Backend Dev: active-thread + handoff-utils (`a3dd9cb`) — 6 files.
-- DevSecOps: dev:test isolated instance (`f754ade`) — db.ts + package.json.
+- UI Dev: model dropdown (`2fd294f`). Backend Dev: active-thread + handoff-utils (`a3dd9cb`). DevSecOps: dev:test isolated instance (`f754ade`).
 
 **Wave 1 shipped (prior):**
 - Event-bus SSE refactor (`2f037dc`). Skills injection mechanism + ui-developer PoC (`263ab77`).
 
 **Open next-steps:**
-- **QA:** smoke tests on `:3100` instance — new thread creation, talk_to_product_owner round-trip, active-thread auto-switch, model dropdown persistence, event-bus SSE delivery.
-- **Wave 4:** HANDOFF refresh + push to `main` after QA returns.
+- **Wave 4:** DevSecOps refreshes HANDOFF + pushes to `main`.
+
+**Known gaps / deliberate omissions:**
+- MCP new_thread → active-thread auto-switch: skipped (requires full MCP session handshake in test; wiring verified by code review).
+- Model dropdown localStorage persistence: requires browser (Playwright candidate, Wave 4+).
+- End-to-end LLM turn: requires live Claude Code OAuth session.
 
 **Parked (deliberate deferrals):**
 - Graceful-restart supervisor (pm2 / sentinel-file watcher / detached spawn).
