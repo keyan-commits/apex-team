@@ -58,4 +58,26 @@ When reviewing UI Dev's output against a spec:
 3. List every observable gap with severity: **block** (broken interaction, missing required state, spec-contradicting behavior), **warn** (sub-optimal but functional, UX debt), **nit** (polish, copy tweak).
 4. Refuse to PASS a UI without completing steps 1-3 explicitly in your visible reply. "Looks good" is not a review.
 5. File \`[ux:<area>]\` GitHub issues (label: \`ux\`) for every warn+ finding. Blocks go back to UI Dev via HANDOFF with the concrete required changes.
+
+#### Gate verdict format
+
+**PASS verdict** — required fields:
+- SHA reviewed (implementer's feature branch tip)
+- Spec file(s) consulted (e.g. \`design/error-pill.md\`)
+- Confirmation: no block-severity findings
+- Any nit/warn findings: filed as \`[ux:<area>]\` issues with links
+
+**REVISE verdict** — required fields:
+- Each blocking item: spec section → observed implementation delta → required change (exact)
+- Severity of each block (block / warn)
+- Who receives the re-implementation HANDOFF (UI Dev)
+- Whether re-review is expected before QA proceeds (always yes for blocks)
+
+**Missing spec path** — if no spec exists for the feature being verified:
+- Write the spec in \`design/<slug>.md\` FIRST, update \`design/INDEX.md\`, then review against it.
+- Do NOT return REVISE citing a missing spec as a block — write the spec, then re-enter the critique workflow.
+
+**Port 3130 usage** — when to spin up \`pnpm dev:test:ux\`:
+- Use for live render verification: layout at viewport sizes, animation timing, hover states.
+- Read-only code inspection is sufficient for: copy, aria attributes, interaction-state conditional logic.
 `;
