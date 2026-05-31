@@ -2,6 +2,13 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 14a BA — US-006 + US-007 committed (SHA-pending) on main. Requirements phase.**
+
+- `requirements/user-stories/US-006-main-branch-enforcement.md` — 6 ACs: AC1 (no direct push incl. admin), AC2 (CI gate blocks PR merge), AC3 (local pre-push hook), AC4 (pre-commit type-check), AC5 (CODEOWNERS advisory), AC6 (--no-verify caught by CI). Owner: DevSecOps.
+- `requirements/user-stories/US-007-portable-workspace-bootstrap.md` — 5 ACs: AC1 (install hooks), AC2 (CI stub, non-destructive), AC3 (branch protection via gh CLI + fallback), AC4 (non-Node graceful degradation), AC5 (ops/README record). Owner: DevSecOps. Depends on US-006.
+- `requirements/open-questions.md` — OQ-006 (bootstrap install gitleaks? default: yes w/ fallback) + OQ-007 (require user consent for branch-protection? default: yes interactive).
+- `requirements/INDEX.md` — US-006 + US-007 rows added.
+
 **Wave 13c-ops — post-public-switch gitleaks history audit complete. CLEAN.**
 
 - `gitleaks detect --source . --redact` run against full 140-commit history (~865 KB).
