@@ -2,6 +2,19 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 13b UI — US-005 carry-forward polish. Feature branch: `feature/13b-issues-ui-polish`. Pre-HANDOFF complete — awaiting UX review.**
+
+- `src/app/dashboard/page.tsx` — 4 changes: (1) drop "Issues:" prefix on attribution (bare monospace link only); (2) switch on `data.issues.repoStatus` for per-cause empty state copy (none/not-git/non-github/bad-path); (3) `:visited` style fix (`color: var(--text-dim)` on `.issue-repo-link:visited`); (4) `setData(null)` at top of polling effect to clear stale attribution on workspace change
+- Imports `RepoStatus` from `@/types` (added by BE branch `35533b0`)
+- `pnpm type-check` clean · `pnpm test:run` 26/26 green (6 files)
+- Commit SHA: (SHA-pending)
+
+**Wave 13b BE — `feature/13b-repo-status` SHA `35533b0` — awaiting QA gate in parallel.**
+
+**Next:** UX Designer reviews UI branch → QA verifies AC1–AC4 on both branches → DevSecOps merges.
+
+---
+
 **Wave 13b BE — US-005 repoStatus enum. Feature branch: `feature/13b-repo-status`. Pre-HANDOFF complete — awaiting QA gate.**
 
 - `src/types.ts` — added `RepoStatus = "ok" | "none" | "not-git" | "non-github" | "bad-path"` + `repoStatus: RepoStatus` on `TeamStatus["issues"]`
@@ -10,8 +23,6 @@
 - `tests/api/team-status-repo-derivation.test.ts` — 7 existing cases updated to `{ repo, repoStatus }` shape + 2 new cases (`not-git` + `bad-path` via stderr discrimination) = 9 total
 - `pnpm type-check` clean · `pnpm test:run` 26/26 green (6 files)
 - Commit SHA: `35533b0`
-
-**Next:** UI Dev builds their feature branch consuming `repoStatus` for per-case copy. Both branches → QA → DevSecOps.
 
 ---
 
