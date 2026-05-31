@@ -1,8 +1,10 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-05-31
+## ⏭️ NOW — 2026-06-01
 
-**Wave 32 UI — US-009 + US-010 + US-011 UI implementation. New page: `src/app/agents/[role]/page.tsx` (profile: header card, skill sections with provenance badges, improvements form). `src/components/AgentPane.tsx`: role title wrapped in `<Link href="/agents/${role}">` in both folded + expanded states. `src/app/dashboard/page.tsx`: Scout panel gets "Run now" button + 5s status poll + 503 error display; Context panel gets 4px saturation bar (green/amber/red, CONTEXT_MAX_CHARS=8000, thresholds 50%/80%) + role badge links to profile. 56/56 green. Feature branch: `feature/32-ui-agent-profile-and-saturation`. Awaiting UX Designer review (PASS/REVISE).**
+**Wave 28e — PR #72 (`feature/28b-density`) rebased onto main (Wave 32 conflict), merged SHA `72b987c`. Conflict: only `HANDOFF.md` (HEAD had Wave 32+ entries; feature had Wave 28b entry — kept both). `AgentPane.tsx` auto-merged correctly (maxHeight prop + Link wrapping both present). CI PASS (23s/33s). Smoke PASS. Worktree cleaned up. `design/US-009-010-011-agent-profile-and-dashboard-additions.md` + `design/INDEX.md` (UX Designer Wave 32c uncommitted docs) committed to main in this turn.**
+
+**Wave 32 — US-009 + US-010 + US-011 SHIPPED. PR #78 merge SHA `44d075d`. 56/56 green. Smoke PASS. Issues closed: US-009 (agent profile page), US-010 (manual scout trigger), US-011 (context saturation bar). Follow-up issues open: #79 (aria-live placement), #80 (hex color tokens), #81 (tabIndex on wrong element in AgentStatePanel).**
 
 **Wave 32 BE — US-009 + US-010 backends. 7 provenance JSON sidecars (`src/lib/skills/<role>.skills.json`) — sections tagged claude/user/external per origin wave. 3 new API routes: `GET /api/agent/[role]` (profile + skills + provenance + model), `POST /api/agent/[role]/improvement` (gh issue create via execFileSync), `POST /api/scout/trigger` (spawns skill-scout.mjs, 503 on missing API key, 409 if running). `GET /api/scout/status` bonus (AC3). 11 new tests across 3 new test files. 56/56 green. Feature branch: `feature/32-be-agent-apis`.**
 
