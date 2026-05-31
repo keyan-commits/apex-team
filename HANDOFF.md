@@ -2,6 +2,21 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**QA — Wave 8f complete.** Code + live browser verification of Wave 8e fixes + po-dispatch hotfix. New smoke test file `tests/smoke/po-dispatch.test.ts` (2 tests). `pnpm test:run` 8/8. Commit `(SHA-pending)`.
+
+**Wave 8f QA findings — all PASS:**
+- #21 QUEUED keyboard reorder: boundary guards, localStorage persist, flash, aria-live, focus-follows — all confirmed in code + browser snapshot shows `aria-label` with position hint ✓
+- #24 Expandable error pill: both views have `title={pillLabel}`; error-only click handler + `aria-expanded`; detail block renders `{status}` verbatim; Escape + outside-click dismiss ✓
+- `8fecea0` po-dispatch fire-and-forget: no `await`, `.catch(console.error)`, immediate 202 with `{ok,accepted,issueNumbers}` ✓
+
+**Browser snapshot (http://localhost:3000/dashboard):**
+- All 8 roles in CONTEXT panel ✓
+- QUEUED item aria-label includes "Use arrow keys to reorder" ✓
+- Console error: harmless 404 favicon.ico (nit — not filed)
+- No WORKFLOW panel (removed `fb7e0f4`) ✓
+
+---
+
 **UI Dev — Wave 8e complete.** QUEUED keyboard reorder (#21) + expandable error pill (#24). Commit `a41ef22`.
 
 **Wave 8e UI Dev changes:**
