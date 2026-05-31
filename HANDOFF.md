@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** All waves complete. HANDOFF refresh only (`6b19b67`). `pnpm type-check` clean. Push to `main` awaiting explicit user authorization.
+**State.** Wave 5a UI Dev complete (SHA-pending). Fixed issues #1 + #2. `pnpm type-check` clean.
 
 **Wave 4 complete — commits on `main` ahead of `origin/main`:**
 

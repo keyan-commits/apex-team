@@ -197,7 +197,8 @@ export function AgentPane({
               if (val === "__other__") {
                 setIsOther(true);
                 setOtherText("");
-                onConfigChange({ ...config, model: "" });
+                // Keep the current model value until the user actually types a
+                // custom ID — sending "" to the backend causes an opaque failure.
               } else {
                 setIsOther(false);
                 onConfigChange({ ...config, model: val });
@@ -218,8 +219,10 @@ export function AgentPane({
               onChange={(e) => {
                 const val = e.target.value;
                 setOtherText(val);
-                onConfigChange({ ...config, model: val });
-                try { if (val) localStorage.setItem(`apex-model-${role}`, val); } catch {}
+                if (val) {
+                  onConfigChange({ ...config, model: val });
+                  try { localStorage.setItem(`apex-model-${role}`, val); } catch {}
+                }
               }}
               disabled={busy}
               spellCheck={false}

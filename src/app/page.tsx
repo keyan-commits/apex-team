@@ -104,18 +104,21 @@ export default function Home() {
   threadIdRef.current = threadId;
 
   useEffect(() => {
-    setThreadId(newThreadId());
-
-    // Auto-switch to the last thread used by the MCP client (e.g. external Claude Code).
-    // Only fires once on mount and only if the user hasn't manually edited the thread input.
+    // Defer minting a local thread ID until we know whether the MCP client
+    // already has an active thread. Minting immediately and then overriding
+    // on the fetch result opens a spurious EventSource to the discarded ID.
     fetch("/api/active-thread", { cache: "no-store" })
       .then((r) => r.json())
       .then((data: { threadId: string | null }) => {
         if (data.threadId && !userEditedThreadRef.current) {
           setThreadId(data.threadId);
+        } else {
+          setThreadId(newThreadId());
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        setThreadId(newThreadId());
+      });
 
     const stored = localStorage.getItem(WORKSPACE_STORAGE_KEY);
     if (stored && stored.trim()) {
