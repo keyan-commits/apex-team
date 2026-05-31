@@ -137,6 +137,16 @@ Implemented in Wave 10b (US-002, ADR-002). DevSecOps owns all artifacts below â€
 
 Originally shipped in `88fd8d1`, briefly removed in `983e817` (the repo was private and lacked GHAS), restored after the user made the repo public. Free for public repos; if the repo ever goes private again, this workflow will fail until GHAS is enabled or the workflow is removed again.
 
+### Post-public-switch gitleaks history audit
+
+Full git history scan run **2026-05-31** after the repo was made public.
+
+- Tool: `gitleaks detect --source . --redact` (v8.x)
+- Scope: 140 commits, ~865 KB
+- Result: **CLEAN â€” no leaks found** (`[]` JSON report, exit 0)
+
+No secrets, API keys, tokens, or credentials detected anywhere in commit history. Safe to remain public.
+
 ### Gitleaks setup (one-time, per machine)
 
 ```bash

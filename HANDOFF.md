@@ -2,6 +2,12 @@
 
 ## ⏭️ NOW — 2026-05-31
 
+**Wave 13c-ops — post-public-switch gitleaks history audit complete. CLEAN.**
+
+- `gitleaks detect --source . --redact` run against full 140-commit history (~865 KB).
+- Result: `[]` — no leaks. All clear. Safe to remain public.
+- `ops/README.md` updated with audit record (SHA-pending).
+
 **CodeQL restored.** Repo went public — Code Scanning is now free. Workflow file recreated identical to the original (`88fd8d1` shape); `ops/README.md` updated to note the brief private-tier removal + restoration. Code Scanning auto-enables on next push to main; no GitHub UI action required for public repos.
 
 **Wave 13b-ops — CodeQL workflow removed (now restored, see above). Requirements phase (Wave 13a) complete.**
