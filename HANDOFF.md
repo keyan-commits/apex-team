@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 7b UI Dev complete (SHA-pending). `pnpm type-check` clean. Pushed to origin/main.
+**State.** Wave 7b UI Dev complete (`23c089a`). `pnpm type-check` clean. Pushed to origin/main.
 
 **Wave 7b UI Dev shipped:**
 - `src/app/dashboard/page.tsx` — Expandable detail rows (▸/▾ chevron, Enter/Space, aria-expanded) on NOW/QUEUED/DONE/BLOCKED panels; (ⓘ) info tooltips on all 9 panel headers (click-toggle, hover, Escape/click-outside to close); CONTEXT panel per-role model badge from localStorage (`apex-model-<role>`, fallback: `claude-sonnet-4-6`).
