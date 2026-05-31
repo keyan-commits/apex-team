@@ -2,49 +2,44 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 6e — issue #17 fixed. `pnpm type-check` clean. Pending: Architect PASS + push.
+**State.** Wave 6 complete. `origin/main` at `4c0b1d9`, working tree clean (only `.restart-trigger` mtime). Resume on branch `main` with `pnpm dev:supervised`. Active thread: `mcp_mpsoeous_bih2`. User has granted durable push authorization — push at end of waves without asking.
 
-**Wave 6d review findings:**
+**Wave 6 shipped (all on origin/main):**
 
-| Commit | File:line | Severity | Issue |
-|---|---|---|---|
-| `7291391` | `dashboard/page.tsx:7-26` | **BLOCK** | `TeamStatusData` interface uses snake_case + wrong shapes; all panels render empty. Issue #17 filed. |
-| `e29755f` | `.env.local.example` | **warn** | "ANTHROPIC_API_KEY: not used" is inaccurate — `skill-scout.mjs` requires it. Fix: document as optional/for-scout-use. |
-| `e29755f` | `skill-scout.mjs:58-89` | **warn** | Empty `tool_result` content for managed web-search beta is unvalidated — happy path exits round 0 (stop_reason=end_turn), error path behavior uncertain. |
-| `7291391` | `AgentPane.tsx:118-125` | **nit** | Auto-fold collapses grid row height, shrinking sibling panes in same row. Acceptable V1 behavior. |
-| `7291391` | `dashboard/page.tsx:263` | **nit** | Scout panel hard-codes "08:00 UTC (daily cron)" — cron was dropped. Use `nextScheduledAt ?? "manual only"`. |
+| Commit | Stream | What |
+|---|---|---|
+| `4c0b1d9` | UI Dev | fix(dashboard): align panel shape with `/api/team-status` — closes #17 |
+| `7291391` | UI Dev | `/dashboard` 9 panels + QUEUED HTML5 drag-drop prioritization + AgentPane auto-fold (60s idle) + OrchestratorBar Team/Dashboard tabs + UI/UX self-review skill in `ui-developer.ts` |
+| `2e55fa2` | Architect | `/api/team-status?threadId=<id>` — 9-panel JSON, safe defaults |
+| `70fff8e` | BE Dev | Token-usage capture in `providers.ts` + `turn_usage` table + `src/lib/pricing.ts` (per-model $/MTok incl. cache) |
+| `e29755f` | BE Dev | Scout DB helpers + PO prompt Parts C/E/F + `skill-scout.mjs` (opt-in; needs API key not currently set) |
+| `4f39199` | DevSecOps | Scout pivot — drop GH-Actions cron (no `ANTHROPIC_API_KEY`); PO has weekly scout-cadence prompt; `.env.local.example` + README updated |
 
-**PASS streams:** Architect `2e55fa2`, BE Dev `70fff8e` + `e29755f`, DevSecOps `4f39199`.  
-**FAIL stream:** UI Dev `7291391` — dashboard field name mismatch (issue #17, block).
+Wave 6a fired 6 parallel role scouts + Architect MCP scan; produced 12 `skill-proposal` / `mcp-proposal` issues.
 
-**Issue #9 closed** — INP guidance addressed in `7291391`.
+**Wave 6d review verdict:** PASS overall. Block (#17, fixed). Two carry-forward warns:
+- `.env.local.example` comment "ANTHROPIC_API_KEY not used" is incorrect — `skill-scout.mjs` does use it.
+- `skill-scout.mjs:58-89` empty `tool_result` error path unvalidated.
 
-**Wave 6b all streams complete:**
-- `e29755f` (BE Dev): skill-scout.mjs + scout_runs/issue_cache tables + PO prompt Parts C/E/F.
-- `70fff8e` (BE Dev): pricing.ts + turn_usage + usage capture.
-- `2e55fa2` (Architect): `/api/team-status` 9-panel endpoint.
-- `7291391` (UI Dev): `/dashboard` page + OrchestratorBar tabs + AgentPane auto-fold.
-- `4f39199` (DevSecOps): pivot scout from API-cron to PO-scheduled wave.
+**Open issue backlog (PO triages on session start per `roles.ts` opener):**
+- `self-improvement` open: #4 (page.tsx mount race warn).
+- `skill-proposal` open from wave 6a: #5–#7, #9–#16.
+- `mcp-proposal` open: #8 (microsoft/playwright-mcp).
 
-**Next:**
-- UI Dev: fix dashboard field names per issue #17 (block). Then Wave 6e push.
-- Issue #4 — `page.tsx:113-117` mount fetch race — still open.
-- Issues #5–#8, #10–#16 — Wave 6a proposals — open, not yet implemented.
+**Open next-steps (priority order):**
+1. PO surfaces the skill-proposal backlog at next session start and proposes 2–3 to schedule.
+2. Verify BA-capture loop end-to-end: send a feature-ask via `talk_to_product_owner`; inspect `<workspace>/requirements/` for the new capture.
+3. Verify token-spend panel populates after first new agent turn (capture in `providers.ts` is wired but unverified live).
+4. Fix the two carry-forward warns from Wave 6d.
+5. Eventually: graceful-restart enhancement so `.restart-trigger` doesn't kill mid-turn agents (currently acceptable trade since the team owns when to touch it).
 
-**Previous waves:**
-- Wave 5a: UI Dev `188d2f5`, BE Dev `737f154`, DevSecOps `eaf32e9`.
-- Wave 5b Architect PASS, issues #1–#3 closed.
-- Wave 6a: 12 skill-proposal/mcp-proposal issues filed (#5–#16).
+**Parked (carry forward):**
+- SDK-native `skills: ['code-review']` for Architect / `['verify']` for QA (Wave 3 of original plan).
+- LLM-driven inbox watcher; thread list / resume sidebar; client-side abort button.
+- Streaming-input mode for Claude Agent SDK.
+- CI pipeline, Dependabot/Renovate — future wave.
 
-**Pending:** `git push origin main` — awaiting user authorization (after UI Dev fixes #17).
-
-**User context:** will use apex-team on a second Mac; Fresh-Mac onboarding functional.
-
-**Parked:**
-- CI pipeline (not requested).
-- Secrets management (no secrets beyond `.env*.local` which is gitignored).
-- Supply-chain scanning (Dependabot/Renovate — future wave).
-- SDK-native `skills: ['code-review']` for Architect / `skills: ['verify']` for QA.
+**User context:** session focus is **apex-team self-improvement only**. User will run apex-team on a second Mac (20x Claude subscription there; 5x here). No `ANTHROPIC_API_KEY` — cron features deliberately not built; team agents use Claude Code OAuth.
 
 **Repo:** https://github.com/keyan-commits/apex-team
 
@@ -52,12 +47,12 @@
 
 ```bash
 cd /Users/nikoe/Development/Study/apex-team
-pnpm dev                                  # http://localhost:3000  + MCP at /mcp  (plain tsx, no watch)
+pnpm dev:supervised                       # http://localhost:3000  + MCP at /mcp  (supervisor watches .restart-trigger)
 
 # in another shell, if not already running:
 cd /Users/nikoe/Development/Study/apex-engine && pnpm setup
 
-# register apex-team's MCP with your Claude Code (once):
+# register apex-team's MCP with your Claude Code (once per machine):
 claude mcp add apex-team --transport http http://localhost:3000/mcp
 ```
 
