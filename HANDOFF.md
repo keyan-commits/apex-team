@@ -26,9 +26,9 @@ gh api -X PUT /repos/keyan-commits/apex-team/branches/main/protection \
 
 If `gh auth status` lacks the needed scopes: `gh auth refresh -h github.com -s admin:org`. After applying, even YOU (as admin) cannot push directly to main — only merges via PR through CI green.
 
-**Wave 13e — US-005 carry-forwards merging via PR #50 (branch protection now enforced — first merge through the gate).**
+**🎉 US-005 SHIPPED. Wave 13e merge SHA `9cad210` (PR #50) — first merge through the branch-protection gate.**
 
-**Wave 13b-d net — US-005 implementation complete, UX PASS + QA PASS received:**
+**Wave 13b-d net — US-005 implementation complete:**
 
 | Phase | Wave | SHA | Output |
 |---|---|---|---|
@@ -36,9 +36,8 @@ If `gh auth status` lacks the needed scopes: `gh auth refresh -h github.com -s a
 | Impl BE | 13b | `35533b0` | RepoStatus enum + deriveGithubRepo rewrite + 9 test cases |
 | Impl UI | 13b | `e73bfa7` | Drop prefix + per-status copy + :visited + setData(null) flicker fix |
 | Verification UX | 13c | — | UX Designer PASS — all 4 amendments verified verbatim against spec |
-| Verification QA | 13d | — | QA PASS — AC1 grep, AC2 live API on :3100, AC3 grep, AC4 code inspection; 26/26 green |
-
-**US-005 status: `done`.**
+| Verification QA | 13d | — | QA PASS — all 4 ACs; 26/26 tests green |
+| Deployment | 13e | `9cad210` | DevSecOps PR #50 merge; smoke PASS |
 
 **Wave 14b-ops shipped:**
 

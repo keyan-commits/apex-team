@@ -61,4 +61,4 @@ UX Designer to update `design/US-003-workspace-scoped-issues.md` this wave with:
 - impl-ui: `e73bfa7` — drop attribution prefix + per-`repoStatus` copy switch + `:visited` fix + `setData(null)` flicker fix
 - design-pass-by: Wave 13c — UX Designer PASS (all 4 amendments verified against `design/US-003-workspace-scoped-issues.md`)
 - qa-pass-by: Wave 13d — QA PASS (all 4 ACs: AC1 grep, AC2 live API on :3100, AC3 grep, AC4 code inspection; 26/26 tests green)
-- deployed-by: _(pending — Wave 13e merge)_
+- deployed-by: `9cad210` — Wave 13e PR #50 merge (first merge through branch-protection gate)
