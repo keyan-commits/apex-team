@@ -127,7 +127,7 @@ Implemented in Wave 10b (US-002, ADR-002). DevSecOps owns all artifacts below â€
 
 | Artifact | Purpose |
 |---|---|
-| `.github/workflows/ci.yml` | Runs `pnpm type-check` + `pnpm test:run` + `pnpm lint` on every PR and push. Lint is `continue-on-error` pending next-lint â†’ standalone ESLint migration. |
+| `.github/workflows/ci.yml` | Runs `pnpm audit --audit-level moderate` + `pnpm type-check` + `pnpm test:run` + `pnpm lint` on every PR and push. Audit and lint are `continue-on-error` so transient registry or lint failures don't block PRs. |
 | `.github/workflows/codeql.yml` | CodeQL SAST for JS/TS. Runs on push to main + weekly Monday 05:30 UTC. Free because the repo is public. |
 | `.github/dependabot.yml` | Weekly CVE scan of npm deps. Minor + patch updates grouped into one PR to reduce noise. Critical CVEs in direct deps block merge until patched. |
 | `scripts/post-deploy-smoke.mjs` | Post-deploy health check. Curls `localhost:3000/api/health`, validates `status=ok` and `mcpMounted=true`. Run via `pnpm smoke`. |
