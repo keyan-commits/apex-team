@@ -7,7 +7,7 @@
 - `server.ts` — exported `applyHttpTimeouts(server)` helper; called between `createServer(...)` and `server.listen(...)`. Sets `requestTimeout=0`, `keepAliveTimeout=65_000`, `headersTimeout=66_000`.
 - `tests/server/timeouts.test.ts` — 4 vitest cases locking the constraint values. All 17 tests pass (5 files).
 - Pre-HANDOFF checklist: `pnpm type-check` clean, `pnpm test:run` 17/17 green.
-- Commit SHA: (SHA-pending)
+- Commit SHA: `464fe73`
 
 **Next:** QA verifies US-004 ACs (AC1: 5-min turn survives, AC2: 30s silence gap OK, AC3: short turns unaffected). DevSecOps merges on PASS.
 
