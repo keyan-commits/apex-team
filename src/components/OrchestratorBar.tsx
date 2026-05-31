@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface Props {
   threadId: string;
@@ -19,6 +21,7 @@ export function OrchestratorBar({
   workspace,
   onWorkspaceChange,
 }: Props) {
+  const pathname = usePathname();
   const [draft, setDraft] = useState(workspace);
   const [threadDraft, setThreadDraft] = useState(threadId);
 
@@ -45,6 +48,11 @@ export function OrchestratorBar({
       <div className="brand">
         <span className="logo">⌬</span> apex-team
       </div>
+
+      <nav className="nav-tabs" aria-label="Main navigation">
+        <Link href="/" className={`tab${pathname === "/" ? " tab-active" : ""}`}>Team</Link>
+        <Link href="/dashboard" className={`tab${pathname === "/dashboard" ? " tab-active" : ""}`}>Dashboard</Link>
+      </nav>
 
       <div className="workspace">
         <span className="label">workspace</span>
@@ -109,6 +117,26 @@ export function OrchestratorBar({
           display: flex; align-items: center; gap: 6px;
         }
         .logo { color: var(--accent-orch); font-size: 18px; }
+        .nav-tabs {
+          display: flex;
+          gap: 4px;
+        }
+        .tab {
+          padding: 4px 12px;
+          border-radius: 4px;
+          border: 1px solid var(--border);
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--text-dim);
+          text-decoration: none;
+          transition: color 0.15s, background 0.15s;
+        }
+        .tab:hover { color: var(--text); background: var(--surface-2); }
+        .tab-active {
+          color: var(--text);
+          background: var(--surface-2);
+          border-color: var(--accent-po);
+        }
         .workspace {
           flex: 1;
           min-width: 280px;

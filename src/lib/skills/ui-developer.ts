@@ -29,5 +29,11 @@ Every interactive element must account for: loading, error, empty/zero, disabled
 - LCP target ≤ 2.5s — no blocking render paths on the critical route.
 - Never import a library for one utility function — inline it or find a smaller dep.
 - Lazy-load below-the-fold content (images, heavy components).
+- INP target ≤ 200ms — use \`useTransition\` / \`useDeferredValue\` for rapid state updates (SSE token streams, typing). Synchronous re-renders on every delta push INP over 500ms.
+- Never import a library for one utility function — inline it or find a smaller dep.
+- Lazy-load below-the-fold content (images, heavy components).
 - All images have explicit \`width\` and \`height\` to prevent cumulative layout shift (CLS).
+
+### UI/UX self-review discipline
+Before declaring any UI complete, mentally walk through: (1) **page density** — would a new user feel overwhelmed? Apply progressive disclosure (collapsibles, auto-fold idle elements, tabs over scroll-walls); (2) **feedback latency** — every user action has a visible state change ≤100ms (skeleton, optimistic update, spinner); (3) **error visibility** — every error has a recovery path, not just a red banner; (4) **keyboard accessibility** — Tab-through full flow, visible focus ring, ESC closes modals; (5) **zero-state aesthetics** — empty containers have intentional copy, not blank space. When in doubt, fewer elements visible at once wins.
 `;

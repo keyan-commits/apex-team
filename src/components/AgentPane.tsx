@@ -74,8 +74,10 @@ export function AgentPane({
   const [isOther, setIsOther] = useState(false);
   const [otherText, setOtherText] = useState("");
   const [activeSec, setActiveSec] = useState(0);
+  const [folded, setFolded] = useState(false);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const lastBusyAtRef = useRef(0);
+  const lastActivityAtRef = useRef(Date.now());
   // Refs keep the mount effect stable without stale closures.
   const configRef = useRef(config);
   configRef.current = config;
@@ -105,6 +107,29 @@ export function AgentPane({
       setActiveSec(0);
     }
   }, [busy]);
+
+  // Track activity and auto-expand when a turn fires.
+  useEffect(() => {
+    lastActivityAtRef.current = Date.now();
+    if (busy) setFolded(false);
+  }, [busy]);
+
+  // Auto-fold after 60s idle; check every 10s.
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (!busy && !pendingDraft && Date.now() - lastActivityAtRef.current > 60_000) {
+        setFolded(true);
+      }
+    }, 10_000);
+    return () => clearInterval(id);
+  }, [busy, pendingDraft]);
+
+  // Scroll to bottom when pane expands.
+  useEffect(() => {
+    if (!folded && scrollerRef.current) {
+      scrollerRef.current.scrollTop = scrollerRef.current.scrollHeight;
+    }
+  }, [folded]);
 
   const pillState =
     status?.startsWith("error:") ? "error" :
@@ -164,6 +189,53 @@ export function AgentPane({
   };
 
   const isPO = role === "product-owner";
+
+  if (folded) {
+    return (
+      <section className={`pane pane-${accent} pane-folded`}>
+        <div className="folded-bar">
+          <span className={`pill pill-${pillState}`} aria-label={`Status: ${pillLabel}`}>{pillLabel}</span>
+          <span className="folded-title">{title}</span>
+          {inboxCount > 0 && (
+            <span className="inbox-badge" title={`${inboxCount} pending`}>{inboxCount}</span>
+          )}
+          <button
+            className="fold-btn"
+            onClick={() => setFolded(false)}
+            aria-label={`Expand ${title} pane`}
+            title="Expand"
+          >▼</button>
+        </div>
+        <style jsx>{`
+          .pane { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+          .pane-${accent} { border-color: color-mix(in srgb, var(--accent-${accent}) 30%, var(--border)); }
+          .pane-folded { min-height: 0; }
+          .folded-bar {
+            display: flex; align-items: center; gap: 8px; padding: 0 12px; height: 40px;
+            background: color-mix(in srgb, var(--accent-${accent}) 4%, var(--surface));
+          }
+          .folded-title { font-size: 13px; font-weight: 600; flex: 1; }
+          .inbox-badge {
+            font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 99px;
+            background: color-mix(in srgb, var(--accent-po) 25%, var(--surface-2));
+            color: var(--accent-po); border: 1px solid var(--accent-po);
+          }
+          .fold-btn {
+            background: transparent; border: 1px solid var(--border); border-radius: 4px;
+            color: var(--text-dim); padding: 2px 6px; font-size: 10px; cursor: pointer; line-height: 1;
+          }
+          .fold-btn:hover { color: var(--text); }
+          .pill { display: inline-flex; align-items: center; font-size: 9px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 6px; border-radius: 99px; border: 1px solid currentColor; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; }
+          .pill-idle { color: var(--text-dim); border-color: var(--border); }
+          .pill-dispatching { color: var(--accent-po); animation: pill-pulse 1.4s ease-in-out infinite; }
+          .pill-thinking { color: var(--accent-arch); animation: pill-pulse 1.1s ease-in-out infinite; }
+          .pill-streaming { color: var(--accent-ui); animation: pill-pulse 0.6s ease-in-out infinite; }
+          .pill-error { color: var(--accent-qa); }
+          @keyframes pill-pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+        `}</style>
+      </section>
+    );
+  }
 
   return (
     <section className={`pane pane-${accent}`}>
@@ -229,6 +301,12 @@ export function AgentPane({
             />
           )}
           </div>
+          <button
+            className="fold-btn"
+            onClick={() => setFolded(true)}
+            aria-label={`Collapse ${title} pane`}
+            title="Collapse"
+          >▲</button>
         </div>
         {taskText && (
           <div className="task-bar" title={lastTaskMsg?.content}>
@@ -379,7 +457,13 @@ export function AgentPane({
           text-overflow: ellipsis;
           border-top: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
         }
-        .config { display: flex; gap: 4px; font-size: 11px; }
+        .config { display: flex; gap: 4px; font-size: 11px; align-items: center; }
+        .fold-btn {
+          background: transparent; border: 1px solid var(--border); border-radius: 4px;
+          color: var(--text-dim); padding: 2px 6px; font-size: 10px; cursor: pointer; line-height: 1;
+          margin-left: 4px; flex-shrink: 0;
+        }
+        .fold-btn:hover { color: var(--text); }
         .config select, .model-input {
           background: var(--surface-2);
           color: var(--text);

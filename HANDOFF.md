@@ -2,29 +2,29 @@
 
 ## ⏭️ NOW — 2026-05-31
 
-**State.** Wave 5a complete (`eaf32e9`). All three Wave 5a streams done. Awaiting Wave 5c push authorization. HANDOFF refresh: `86365fc`.
+**State.** Wave 6a scout complete (issues #5–#16 filed). Wave 6b UI Dev stream done (`SHA-pending`). `pnpm type-check` clean.
 
-**Wave 5a delivered:**
-- BE Dev (`737f154`) — issue #3 agentModels filter + history truncation + health route apex-engine probe
-- UI Dev (`188d2f5`) — issue #1 model empty-string race fix + issue #2 spurious EventSource fix
-- DevSecOps (`eaf32e9`) — fresh-Mac readiness: no hardcoded paths found, `.env.local.example` updated, README Fresh-Mac Setup section, `scripts/preflight.mjs` + `pnpm preflight`
+**Wave 6b UI Dev delivered (this commit):**
+- `src/lib/skills/ui-developer.ts` — added INP/useTransition guidance to Performance budget; added `### UI/UX self-review discipline` section (7th skill).
+- `src/components/OrchestratorBar.tsx` — Team / Dashboard tab links via `Link` + `usePathname`; active tab highlighted by current pathname.
+- `src/components/AgentPane.tsx` — auto-fold: panes collapse to 40px after 60s idle; auto-expand on turn start; manual fold/expand toggle in header.
+- `src/app/dashboard/page.tsx` — NEW `/dashboard` route: 9 panels (Now / Queued / Done / Blocked / Active Wave / Issues / Scout / Context / Spend); 10s visibility-aware poll of `/api/team-status`; QUEUED panel drag-to-reorder with localStorage persistence. Graceful "endpoint building" state until Architect's endpoint lands.
 
-**Wave 5b — Architect review:** PASS, no blocks. 1 warn + 2 nits. Issues #1, #2, #3 closed on GitHub.
+**QUEUED reorder:** HTML5 native DnD, no new deps, `apex-priority-<threadId>` localStorage key.
 
-**Open self-improvement issues (GitHub `self-improvement` label):**
-- #4 — `page.tsx:113-117` mount fetch race: user-typed thread ID overwritten if fetch resolves after edit (warn, < 100ms window in practice)
+**Open:**
+- `/api/team-status` endpoint — being built in parallel by Architect (Wave 6b). Dashboard shows graceful empty panels until it lands.
+- Wave 6b BE Dev + DevSecOps streams — still in progress.
+- Issue #4 — `page.tsx:113-117` mount fetch race (< 100ms window).
 
-**`pnpm preflight` on this machine:** 4/4 PASS. Exit 0.
+**Previous wave:**
+- Wave 5a: UI Dev `188d2f5`, BE Dev `737f154`, DevSecOps `eaf32e9`.
+- Wave 5b Architect PASS, issues #1–#3 closed.
+- Wave 6a: 12 skill-proposal/mcp-proposal issues filed (#5–#16) across all 6 roles.
 
-**`pnpm type-check`:** clean.
+**Pending:** `git push origin main` — awaiting user authorization.
 
-**MCP module-cache caveat:** Wave 5a's `run-turn.ts` + `agents.ts` changes (`737f154`) are on disk but NOT live in the cached MCP graph yet. Activate after push by touching `.restart-trigger` in a dedicated turn (or from outside the team).
-
-**Active thread for resume:** `mcp_mpsoeous_bih2`.
-
-**Pending:** `git push origin main` — awaiting explicit user authorization. 22+ commits ahead of origin/main.
-
-**User context:** will use apex-team on a second Mac soon; Fresh-Mac onboarding functional (preflight 4/4, README setup in place).
+**User context:** will use apex-team on a second Mac; Fresh-Mac onboarding functional.
 
 **Parked:**
 - CI pipeline (not requested).
