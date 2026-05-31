@@ -12,6 +12,8 @@
 
 **Wave 29a BA — US-009, US-010, US-011 written. OQ-008 (provenance format) + OQ-009 (scout trigger mechanism) filed. `requirements/INDEX.md` updated. Feature branch: `feature/29a-ba-user-stories`.**
 
+**Wave 28b — US-008 density redesign implemented. 5 spec changes across 4 files: `AgentPane.tsx` (maxHeight prop + min-height 120→80 + rows 3→2 + reduced-motion guard), `AgentStatePanel.tsx` (doc-scroll 220px cap + gradient fade + tabIndex), `MessageBubble.tsx` (COLLAPSE_CHARS 400→200, COLLAPSE_LINES 6→3, isOutbound → collapsed default for handoff-out/dispatch-out), `page.tsx` (PO pane maxHeight="min(420px, 48vh)"). 39/39 green. UX PASS (Wave 28c) + QA PASS (Wave 28d). Feature branch: `feature/28b-density`.**
+
 **Wave 28a BA (gap fix) — US-008 Out of Scope section updated: added explicit deferral for nested HANDOFF count badge (PO AC4 → US-009) + streaming auto-collapse (existing behavior, not a new requirement). Feature branch: `feature/28a-ba-us008-gap-fix`.**
 
 **Wave 28a BA — US-008 written: `requirements/user-stories/US-008-team-page-density.md` (proposed, owner: ui-developer). 6 ACs: HANDOFF body max-height 200px, messages area clamp(260px,38vh,480px), bubble threshold 200c/3l, outbound bubbles collapsed by default, 1080p viewport fits all 8 idle panes, activity log regression-free. `requirements/INDEX.md` updated. Feature branch: `feature/28a-ba-us-008`.**

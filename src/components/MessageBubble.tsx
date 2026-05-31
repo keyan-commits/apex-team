@@ -17,8 +17,8 @@ const ROLE_LABEL: Record<RoleId, string> = {
   "ux-designer": "UX Designer",
 };
 
-const COLLAPSE_CHARS = 400;
-const COLLAPSE_LINES = 6;
+const COLLAPSE_CHARS = 200;
+const COLLAPSE_LINES = 3;
 
 function getPreview(content: string) {
   const lines = content.split("\n");
@@ -42,7 +42,12 @@ interface Props {
 export function MessageBubble({ message, perspective, pending }: Props) {
   const { author, content } = message;
   const isLong = (content?.length ?? 0) > COLLAPSE_CHARS;
-  const [expanded, setExpanded] = useState(!isLong);
+  // Outbound routing bubbles (handoff-out / dispatch-out) are status signals, not reading material.
+  // Derive from author before useState so hooks order stays stable.
+  const isOutbound =
+    (author.kind === "handoff" && author.to !== perspective) ||
+    (author.kind === "dispatch" && author.to !== perspective);
+  const [expanded, setExpanded] = useState(isOutbound ? false : !isLong);
 
   let label = "";
   let tone:
