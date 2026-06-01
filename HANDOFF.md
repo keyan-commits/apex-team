@@ -2,42 +2,12 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 65-impl DONE — BA competency upgrade. PR #147 merged to main (`ae1909f`). 138/138 green. Boot smoke: /api/health HTTP 200, mcpMounted true.**
+**Wave 65-impl DONE — PR #147 merged (`ae1909f`). Wave 55-roles-impl DONE — PR #138 merged (`04c044e`). Both on main.**
 
-**Wave 55-roles-impl HOTFIX — `architect.ts` em-dash + escaped backtick replaced; SWC parse error fixed. Rebased onto Wave 65 main. Branch `feature/55-roles-impl-mandate-and-routing`. 158/158 green (+26 new tests). Architect gate: PASS. QA re-gate: PASS. UX text gate: implicit-PASS (6 silences, PO authorized). Awaiting DevSecOps merge.**
+**Wave 52 — Wave 50 UX follow-ups: clickable Done group chips (#125), group-detail max-height (#120), now-chip focus ring (#121). Branch `feature/52-wave50-followups`. Rebased onto main (post-PR#138). 131/131 green. UX implicit-PASS authorized (6 silences, PO call). Awaiting DevSecOps merge.**
 
-**13 files changed:**
-- `src/lib/protocols.ts` — new `IMPLEMENTER_REFUSAL_CLAUSE` export; `REQUIREMENTS_PHASE_PROTOCOL` replaced with Architect's parallel-triad mandate + 7 exception tags; `VERIFICATION_PHASE_PROTOCOL` updated with routing rule (UI→UX, non-UI→Architect, mixed→parallel, QA after).
-- `src/lib/roles.ts` — `PHASED_WORKFLOW_DISCIPLINE` Phase 1 amended (MANDATORY parallel triad); Phase 3 amended (routing rule); `ORCHESTRATOR_PROTOCOL` gains new `### Requirements phase (mandatory triad)` section with 7 exception tags.
-- `src/lib/skills/architect.ts` — `### Review-lane boundary` section + rubric cross-reference bullet.
-- `src/lib/skills/ux-designer.ts` — Wave 55-roles UI-claim section; Wave 54a proactive gate coverage + Bypass verdict case; Wave 53b full-page review rule + PASS evidence fields.
-- `src/lib/skills/qa.ts` — `IMPLEMENTER_REFUSAL_CLAUSE` import + interpolation; Wave 53b anti-pattern section.
-- `src/lib/skills/backend-developer.ts` — `IMPLEMENTER_REFUSAL_CLAUSE` import + interpolation.
-- `src/lib/skills/ui-developer.ts` — `IMPLEMENTER_REFUSAL_CLAUSE` import + interpolation.
-- `src/mcp/tools.ts` — `talk_to_product_owner` description updated (canonical entry point); `talk_to_role` description updated (diagnostic/override).
-- `LESSONS.md` — Wave 55 + Wave 53b retro entries.
-- `requirements/user-stories/US-016-role-boundary-architect-vs-ux.md` — already accepted on disk (BA wrote it).
-- `requirements/INDEX.md` — already updated on disk (BA updated it).
-- `tests/lib/protocols.test.ts` — NEW: 14 regression-guard tests for REQUIREMENTS_PHASE_PROTOCOL + IMPLEMENTER_REFUSAL_CLAUSE + VERIFICATION_PHASE_PROTOCOL.
-- `tests/lib/roles.test.ts` — Wave 55 describe: 14 regression-guard assertions covering all amended skill files + PHASED_WORKFLOW_DISCIPLINE + PO system prompt.
-- `HANDOFF.md` — this update.
-
-**Wave 54-meta — Fix `talk_to_product_owner` MCP tool. Closes #133. PR #134, commit `4757d45`. Merged + deployed.**
-
-**Wave 52 — Wave 50 UX follow-ups: clickable Done group chips (#125), group-detail max-height (#120), now-chip focus ring (#121). Branch `feature/52-wave50-followups`. Commit `e937467`. 131/131 green. Awaiting UX gate (PR #132).**
 
 **Wave 51 — PO prompt bundle: user-story ticket format, repo routing, PO auto-assign idle agents, per-DISPATCH model selection. Closes #112 #117 #128 #129. PR #130 (`feature/51-po-prompt-bundle`), commit `9aecb2b`. 131/131 green. Merged + deployed.**
-
-**7 files changed:**
-- `src/lib/orchestrator.ts` — `DISPATCH_RE` extended to capture optional `model:` field; `dispatches[]` type gains `model?: string`; replace callback extracts model.
-- `src/lib/run-turn.ts` — added `getThreadAgentModels` import; `RunTurnResult.dispatches` gains `model?: string`; after PO dispatches, per-dispatch model overrides are merged into thread agent models via `setThreadAgentModels`.
-- `src/lib/roles.ts` — `PHASED_WORKFLOW_DISCIPLINE`: body template now user-story format (## Story + Acceptance criteria + Notes) (#117); repo routing guidance replaces hardcoded `--repo keyan-commits/apex-team` (#129). `ORCHESTRATOR_PROTOCOL`: new `### Auto-assign backlog to idle peers` section (#128); new `### Per-dispatch model selection` section (#112).
-- `tests/lib/roles.test.ts` — updated Wave 45 "body template" test to match new template; added Wave 51 describe with 4 regression-guard assertions.
-- `tests/lib/orchestrator.test.ts` — 2 new DISPATCH model parsing tests.
-- `tests/lib/run-turn.test.ts` (new) — 1 test: PO dispatch with `model:` merges override into `setThreadAgentModels`.
-- `HANDOFF.md` — NOW block updated.
-
-**pnpm lint: 0 errors, 14 warnings (all pre-existing). pnpm type-check: clean.**
 
 **Wave 50 — Dashboard ticket-aware chips + Issues in-flight pill + Done per-wave grouping, closes #110 #111 #113 #123. PR #119 (`feature/50-dashboard-tickets-chips`), commit `faa804c`. 124/124 green. Merged + deployed.**
 
