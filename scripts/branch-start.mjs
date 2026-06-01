@@ -21,21 +21,6 @@ function run(cmd, args, opts = {}) {
   return execFileSync(cmd, args, { encoding: "utf8", ...opts }).trim();
 }
 
-function validateMainCleanliness(cwd = process.cwd()) {
-  const dirty = run("git", ["-C", cwd, "status", "--porcelain"]);
-  if (!dirty) return;
-  console.error("[hygiene] Main checkout has uncommitted changes — refusing to create a worktree.");
-  console.error("[hygiene] Uncommitted files:");
-  dirty.split("\n").forEach((line) => console.error(`  ${line}`));
-  console.error("");
-  console.error("[hygiene] Remediate with one of:");
-  console.error("  git stash                    — stash all changes (recoverable)");
-  console.error("  git checkout -- <file>       — discard changes to a specific tracked file");
-  console.error("  git restore <file>           — same (modern form)");
-  console.error("  git clean -fd                — delete untracked files + dirs");
-  process.exit(1);
-}
-
 const [role, slug] = process.argv.slice(2);
 
 if (!role || !slug) {
