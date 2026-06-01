@@ -32,6 +32,3 @@ jobs:
       - name: Tests
         run: pnpm test:run
 
-      - name: Lint
-        run: pnpm lint
-        continue-on-error: true  # next-lint → standalone ESLint migration pending
