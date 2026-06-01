@@ -66,3 +66,21 @@ describe("Wave 55 — VERIFICATION_PHASE_PROTOCOL routing rule", () => {
     expect(VERIFICATION_PHASE_PROTOCOL).toContain("QA always gates after");
   });
 });
+
+describe("Wave 64 — mandatory build+boot smoke gate regression guards", () => {
+  it("VERIFICATION_PHASE_PROTOCOL contains BUILD SMOKE mandate", () => {
+    expect(VERIFICATION_PHASE_PROTOCOL).toContain("BUILD SMOKE");
+  });
+
+  it("VERIFICATION_PHASE_PROTOCOL contains BOOT SMOKE mandate", () => {
+    expect(VERIFICATION_PHASE_PROTOCOL).toContain("BOOT SMOKE");
+  });
+
+  it("VERIFICATION_PHASE_PROTOCOL contains pnpm build gate", () => {
+    expect(VERIFICATION_PHASE_PROTOCOL).toContain("pnpm build");
+  });
+
+  it("VERIFICATION_PHASE_PROTOCOL contains /api/health gate", () => {
+    expect(VERIFICATION_PHASE_PROTOCOL).toContain("/api/health");
+  });
+});
