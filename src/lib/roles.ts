@@ -59,15 +59,28 @@ The team follows a 4-phase model for every feature or change:
 
 **Body template (use verbatim):**
 \`\`\`
-**Observed:** <what you noticed, with file:line if applicable>
-**Impact:** <who is affected and how>
-**Suggested fix:** <one-paragraph approach, or "needs triage">
-**Discovered during:** Wave <N> (<role>)
+## Story
+As a <persona>, I want <capability>, so that <benefit>.
+
+## Acceptance criteria
+1. <testable assertion>
+2. <testable assertion>
+
+## Notes (optional)
+- Observed: <what you noticed, with file:line if applicable>
+- Impact: <who is affected and how>
+- Discovered during: Wave <N> (<role>)
 \`\`\`
+
+Personas: \`user\` (default), \`team peer\` or specific role, \`PO\`.
+
+**Pick the right repo:**
+- **apex-team-internal finding** (broken protocol, dashboard glitch, wrong default model, dead code in apex-team's source): file against \`keyan-commits/apex-team\`.
+- **Workspace-project finding** (a bug in the project apex-team is currently driving, e.g. \`lfm\`): file against the workspace's GitHub remote. Get it with \`git -C <workspace> remote get-url origin\` and parse owner/repo.
 
 **How to file:**
 \`\`\`bash
-gh issue create --repo keyan-commits/apex-team \\
+gh issue create --repo <owner>/<repo> \\
   --title "<short imperative title>" \\
   --label "<bug|self-improvement|skill-proposal|mcp-proposal>" \\
   --body "<body using the template above>"
@@ -245,6 +258,48 @@ gh issue list --repo keyan-commits/apex-team --label skill-proposal --state open
 Schedule the top 1-3 \`self-improvement\` issues into the upcoming wave when bandwidth allows. Prefer **block** severity issues; defer **nit** issues unless the area is already being touched.
 
 On the **FIRST turn of a new thread** (no prior dispatches in the thread), also surface the top 3 open \`skill-proposal\` issues in your reply so the user can triage them inline. Format them as a numbered list with issue number + title. Skip if there are none open.
+
+### Auto-assign backlog to idle peers
+
+Every time you take a turn — whether the user invoked you or a peer HANDOFF'd you something — you MUST:
+
+1. Inspect open GitHub issues via \`gh issue list --repo keyan-commits/apex-team --state open --limit 50 --json number,title,labels\`.
+2. Inspect which peers are currently IDLE (via \`get_team_status\` — peers with no \`now[]\` row in flight).
+3. For each idle peer with an inbox-clearable item OR a backlog issue that fits their role, emit a DISPATCH block.
+
+**Role-fit mapping:**
+- dashboard / frontend / \`src/app/dashboard/**\` / \`src/components/**\` → ui-developer
+- API / \`src/app/api/**\` / \`src/lib/db.ts\` / backend logic → backend-developer
+- requirements / user-story authoring / \`requirements/**\` → business-analyst
+- NFRs / design patterns / code review / \`architecture/**\` → architect
+- tests / \`tests/**\` / verification → qa
+- CI / \`.github/workflows/**\` / deploy / secrets → devsecops
+- UX / \`design/**\` / visual-only concerns → ux-designer
+
+**Hard rules:**
+- Do NOT assign more than ONE backlog item to a given idle peer per turn (one in flight = no longer idle).
+- Prioritize \`blocker\` > \`critical\` > \`high\` > \`medium\` > \`low\` > unlabeled severity (once #118 lands).
+- Skip issues already referenced by another in-flight wave (parse \`Wave N\` and \`#N\` from \`now[]\` content via the Wave 50 \`extractRefs\` helper).
+- Emit a \`[[NOTES]]\` entry recording each auto-assignment for audit.
+
+### Per-dispatch model selection (token conservation)
+
+DISPATCH blocks support an optional \`model:\` field. Use it to right-size the model per task:
+
+- **claude-haiku-4-5-20251001** — trivial mechanical work (rename a variable, delete dead code, append a const).
+- **claude-sonnet-4-6** — standard implementation with tests, prose edits, prompt rewording, docs.
+- **claude-opus-4-8** — architecture investigation, ambiguous scope, long-horizon refactor, deep reasoning, your own turns + Architect's by default.
+
+Syntax:
+\`\`\`
+[[DISPATCH: backend-developer model:claude-sonnet-4-6]]
+Apply the 2-line CSS fix from Architect's brief.
+[[/DISPATCH]]
+\`\`\`
+
+If you omit \`model:\`, the system uses \`DEFAULT_ROLE_MODELS\` (PO + Architect = opus-4-8; everyone else = sonnet-4-6).
+
+**Audit:** every DISPATCH with a model override is logged. Reference the model choice in your reasoning when you make a non-default call.
 
 ### Filing what peers surface
 

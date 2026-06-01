@@ -2,17 +2,20 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 50 — Dashboard ticket-aware chips + Issues in-flight pill + Done per-wave grouping, closes #110 #111 #113. Branch `feature/50-dashboard-tickets-chips`. 124/124 green. UX PASS (B1 resolved). Regression #123 fixed: inner Done-group rows now clickable (expandable-row pattern + stopPropagation, "done-item" panel namespace). Awaiting UX re-review on regression fix, then QA.**
+**Wave 51 — PO prompt bundle: user-story ticket format, repo routing, PO auto-assign idle agents, per-DISPATCH model selection. Closes #112 #117 #128 #129. Branch `feature/51-po-prompt-bundle`. 131/131 green (124 prior + 7 new). Awaiting QA.**
 
-**8 files added/changed:**
-- `src/lib/extract-refs.ts` (new) — pure parser: ticket regex `/(?<![\w&])#(\d+)\b/g` + wave regex `/\bWave\s+(\d+)\b/gi`; dedup, sort, cap at 6 each.
-- `src/types.ts` — added optional `tickets?`, `waves?` to `now[]` and `done[]`; added optional `inFlight?` to `issues.recent[]`.
-- `src/app/api/team-status/route.ts` — enriches `nowPanel` with `extractRefs(trigger.content)` (full, not 80-char summary); enriches `donePanel` by merging refs from agent + trigger content; adds `inFlight` to `issues.recent` at route layer (after cache lookup).
-- `src/app/dashboard/page.tsx` — Now panel: chip strip between role badge and state pill (waves first, then tickets, cap 3 + overflow, ticket chips link to GH issues); Issues panel: `iss-inflight-pill` before label badge; Done panel: `groupedDone` useMemo collapses adjacent same-wave rows, summary row with chips + deduped role strip + chevron expand.
-- `tests/lib/extract-refs.test.ts` (new) — 7 parser unit tests.
-- `tests/api/team-status-refs.test.ts` (new) — 3 route integration tests (now enrichment, in-flight join, done enrichment).
+**7 files changed:**
+- `src/lib/orchestrator.ts` — `DISPATCH_RE` extended to capture optional `model:` field; `dispatches[]` type gains `model?: string`; replace callback extracts model.
+- `src/lib/run-turn.ts` — added `getThreadAgentModels` import; `RunTurnResult.dispatches` gains `model?: string`; after PO dispatches, per-dispatch model overrides are merged into thread agent models via `setThreadAgentModels`.
+- `src/lib/roles.ts` — `PHASED_WORKFLOW_DISCIPLINE`: body template now user-story format (## Story + Acceptance criteria + Notes) (#117); repo routing guidance replaces hardcoded `--repo keyan-commits/apex-team` (#129). `ORCHESTRATOR_PROTOCOL`: new `### Auto-assign backlog to idle peers` section (#128); new `### Per-dispatch model selection` section (#112).
+- `tests/lib/roles.test.ts` — updated Wave 45 "body template" test to match new template; added Wave 51 describe with 4 regression-guard assertions.
+- `tests/lib/orchestrator.test.ts` — 2 new DISPATCH model parsing tests.
+- `tests/lib/run-turn.test.ts` (new) — 1 test: PO dispatch with `model:` merges override into `setThreadAgentModels`.
+- `HANDOFF.md` — NOW block updated.
 
 **pnpm lint: 0 errors, 14 warnings (all pre-existing). pnpm type-check: clean.**
+
+**Wave 50 — Dashboard ticket-aware chips + Issues in-flight pill + Done per-wave grouping, closes #110 #111 #113 #123. PR #119 (`feature/50-dashboard-tickets-chips`), commit `faa804c`. 124/124 green. Merged + deployed.**
 
 **Wave 49 — ESLint flat-config migration, closes #106. PR #109 (`feature/49-eslint-flat-config`), commit `27eabcc`. 114/114 green. Merged + deployed.**
 
