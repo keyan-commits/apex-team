@@ -100,16 +100,16 @@ export interface SseEvent {
 export type RepoStatus = "ok" | "none" | "not-git" | "non-github" | "bad-path";
 
 export interface TeamStatus {
-  now: Array<{ role: RoleId; taskSummary: string; startedAt: number; state: "thinking" | "streaming" | "dispatching" }>;
+  now: Array<{ role: RoleId; taskSummary: string; startedAt: number; state: "thinking" | "streaming" | "dispatching"; tickets?: number[]; waves?: number[] }>;
   queued: Array<{ id: number; toRole: RoleId; fromRole: RoleId | "user"; taskSummary: string; createdAt: number }>;
-  done: Array<{ role: RoleId; taskSummary: string; completedAt: number; commitSha?: string }>;
+  done: Array<{ role: RoleId; taskSummary: string; completedAt: number; commitSha?: string; tickets?: number[]; waves?: number[] }>;
   blocked: Array<{ role: RoleId; errorMessage: string; sinceAt: number }>;
   activeWave: { excerpt: string; emittedAt: number } | null;
   issues: {
     selfImprovement: number;
     skillProposal: number;
     mcpProposal: number;
-    recent: Array<{ number: number; title: string; label: string; url: string }>;
+    recent: Array<{ number: number; title: string; label: string; url: string; inFlight?: boolean }>;
     repo: string | null;
     repoStatus: RepoStatus;
   };
