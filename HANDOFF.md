@@ -2,17 +2,19 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 49 — ESLint flat-config migration, closes #106. Branch `feature/49-eslint-flat-config`. 114/114 green (113 prior + 1 new). Awaiting QA PASS + DevSecOps merge.**
+**Wave 50 — Dashboard ticket-aware chips + Issues in-flight pill + Done per-wave grouping, closes #110 #111 #113. Branch `feature/50-dashboard-tickets-chips`. 124/124 green. UX PASS (B1 resolved). Regression #123 fixed: inner Done-group rows now clickable (expandable-row pattern + stopPropagation, "done-item" panel namespace). Awaiting UX re-review on regression fix, then QA.**
 
-**6 files added/changed:**
-- `eslint.config.mjs` (new) — minimal flat config: `@eslint/js` recommended + `typescript-eslint` recommended; relaxes `no-explicit-any` (off), `no-unused-vars` (warn), `no-undef` (off), `no-empty` (warn).
-- `package.json` — added `"lint": "eslint ."` script; added `@eslint/js` + `typescript-eslint` devDeps.
-- `.github/workflows/ci.yml` — re-added `Lint` step (`pnpm lint`) WITHOUT `continue-on-error: true`.
-- `src/app/api/health/route.ts` — removed redundant `apexEngineUp = false` in catch block (was flagged as `no-useless-assignment`).
-- `src/components/AgentPane.tsx:102` — changed `// eslint-disable-line react-hooks/exhaustive-deps` → `// eslint-disable-line` (plugin not loaded; stale rule name caused "definition not found" error).
-- `tests/ops/lint-script.test.ts` (new) — 1 test: package.json `lint` script equals `"eslint ."`.
+**8 files added/changed:**
+- `src/lib/extract-refs.ts` (new) — pure parser: ticket regex `/(?<![\w&])#(\d+)\b/g` + wave regex `/\bWave\s+(\d+)\b/gi`; dedup, sort, cap at 6 each.
+- `src/types.ts` — added optional `tickets?`, `waves?` to `now[]` and `done[]`; added optional `inFlight?` to `issues.recent[]`.
+- `src/app/api/team-status/route.ts` — enriches `nowPanel` with `extractRefs(trigger.content)` (full, not 80-char summary); enriches `donePanel` by merging refs from agent + trigger content; adds `inFlight` to `issues.recent` at route layer (after cache lookup).
+- `src/app/dashboard/page.tsx` — Now panel: chip strip between role badge and state pill (waves first, then tickets, cap 3 + overflow, ticket chips link to GH issues); Issues panel: `iss-inflight-pill` before label badge; Done panel: `groupedDone` useMemo collapses adjacent same-wave rows, summary row with chips + deduped role strip + chevron expand.
+- `tests/lib/extract-refs.test.ts` (new) — 7 parser unit tests.
+- `tests/api/team-status-refs.test.ts` (new) — 3 route integration tests (now enrichment, in-flight join, done enrichment).
 
-**pnpm lint: 0 errors, 14 warnings (all @typescript-eslint/no-unused-vars in existing code — warnings only, do not block CI).**
+**pnpm lint: 0 errors, 14 warnings (all pre-existing). pnpm type-check: clean.**
+
+**Wave 49 — ESLint flat-config migration, closes #106. PR #109 (`feature/49-eslint-flat-config`), commit `27eabcc`. 114/114 green. Merged + deployed.**
 
 **Wave 48 — Pre-commit hook for HANDOFF.md-in-PR rule, closes #101. PR #108 (`feature/48-pre-commit-hook`), commit `ea82da9`. 113/113 green. Merged + deployed.**
 

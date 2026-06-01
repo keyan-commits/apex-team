@@ -10,6 +10,7 @@ import {
 import { ALL_ROLES } from "@/lib/roles";
 import { deriveGithubRepo } from "@/lib/derive-github-repo";
 import { deriveNowAndQueued } from "@/lib/derive-now-queued";
+import { extractRefs } from "@/lib/extract-refs";
 import type { RoleId, ChatMessage, TeamStatus } from "@/types";
 
 // Per-repo 60s in-memory issue cache keyed by "owner/repo"
@@ -118,11 +119,16 @@ export async function GET(req: NextRequest): Promise<NextResponse<TeamStatus>> {
   }
 
   // --- now & queued ---
-  const { now: nowPanel, queued: queuedPanel } = deriveNowAndQueued(
+  const { now: rawNow, queued: queuedPanel } = deriveNowAndQueued(
     lastTrigger,
     lastAgentId,
     now10mMs,
   );
+  // Enrich now panel with ticket/wave refs from full trigger content (not the 80-char summary)
+  const nowPanel = rawNow.map((item) => {
+    const refs = extractRefs(lastTrigger.get(item.role)?.content ?? "");
+    return { ...item, tickets: refs.tickets, waves: refs.waves };
+  });
 
   // --- done (last 50 agent messages in last 24h, newest first) ---
   const donePanel: TeamStatus["done"] = [];
@@ -144,7 +150,11 @@ export async function GET(req: NextRequest): Promise<NextResponse<TeamStatus>> {
       );
     const taskSummary = triggerMsg ? triggerMsg.content.slice(0, 80) : m.content.slice(0, 80);
     const shaMatch = m.content.match(/[`']([0-9a-f]{7,12})[`']/);
-    donePanel.push({ role, taskSummary, completedAt: m.createdAt, commitSha: shaMatch?.[1] });
+    const agentRefs = extractRefs(m.content);
+    const triggerRefs = extractRefs(triggerMsg?.content ?? "");
+    const mergedTickets = [...new Set([...agentRefs.tickets, ...triggerRefs.tickets])].sort((a, b) => a - b).slice(0, 6);
+    const mergedWaves = [...new Set([...agentRefs.waves, ...triggerRefs.waves])].sort((a, b) => a - b).slice(0, 6);
+    donePanel.push({ role, taskSummary, completedAt: m.createdAt, commitSha: shaMatch?.[1], tickets: mergedTickets, waves: mergedWaves });
   }
 
   // --- blocked ---
@@ -194,9 +204,16 @@ export async function GET(req: NextRequest): Promise<NextResponse<TeamStatus>> {
   // Derive the GitHub repo from the workspace path; null → empty-state, no fallback.
   // repoStatus discriminates the 4 failure causes for accurate UI copy.
   const { repo, repoStatus } = deriveGithubRepo(workspace);
-  const issues: TeamStatus["issues"] = repo
+  const rawIssues: TeamStatus["issues"] = repo
     ? fetchIssues(repo)
     : { ..._noIssues, repoStatus };
+
+  // Enrich issues.recent with inFlight flag — done at route layer, not in the cache
+  const inFlightTickets = new Set(nowPanel.flatMap((n) => n.tickets ?? []));
+  const issues: TeamStatus["issues"] = {
+    ...rawIssues,
+    recent: rawIssues.recent.map((iss) => ({ ...iss, inFlight: inFlightTickets.has(iss.number) })),
+  };
 
   return NextResponse.json({
     now: nowPanel,

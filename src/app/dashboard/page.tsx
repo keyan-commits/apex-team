@@ -195,6 +195,46 @@ export default function DashboardPage() {
     return [...data.queued].sort((a, b) => (pos.get(a.id) ?? 9999) - (pos.get(b.id) ?? 9999));
   }, [data?.queued, savedOrder]);
 
+  interface DoneGroup {
+    key: string;
+    rows: TeamStatus["done"];
+    waves: number[];
+    tickets: number[];
+    roles: string[];
+    latestAt: number;
+  }
+
+  const groupedDone = useMemo<DoneGroup[]>(() => {
+    if (!data?.done) return [];
+    const groups: DoneGroup[] = [];
+    for (const row of data.done) {
+      const rowWaves = row.waves ?? [];
+      const rowTickets = row.tickets ?? [];
+      const last = groups[groups.length - 1];
+      const sharesWave = last && rowWaves.length > 0 && last.waves.some((w) => rowWaves.includes(w));
+      const sharesTicketFallback =
+        last && last.waves.length === 0 && rowWaves.length === 0 &&
+        rowTickets.length > 0 && last.tickets.some((t) => rowTickets.includes(t));
+      if (sharesWave || sharesTicketFallback) {
+        last.rows.push(row);
+        for (const w of rowWaves) if (!last.waves.includes(w)) last.waves.push(w);
+        for (const t of rowTickets) if (!last.tickets.includes(t)) last.tickets.push(t);
+        if (!last.roles.includes(row.role)) last.roles.push(row.role);
+        if (row.completedAt > last.latestAt) last.latestAt = row.completedAt;
+      } else {
+        const sortedW = [...rowWaves].sort((a, b) => a - b);
+        const sortedT = [...rowTickets].sort((a, b) => a - b);
+        const key = sortedW.length > 0
+          ? `wave-${sortedW[0]}`
+          : sortedT.length > 0
+          ? `tickets-${sortedT.join("-")}`
+          : `single-${row.role}-${row.completedAt}`;
+        groups.push({ key, rows: [row], waves: [...rowWaves], tickets: [...rowTickets], roles: [row.role], latestAt: row.completedAt });
+      }
+    }
+    return groups;
+  }, [data?.done]);
+
   const handleDrop = (toIdx: number) => {
     if (dragFrom === null || dragFrom === toIdx) return;
     const arr = [...sortedQueued];
@@ -397,6 +437,26 @@ export default function DashboardPage() {
                   >
                     <span className="row-chevron" aria-hidden="true">{expandedRow["now"] === e.role ? "▾" : "▸"}</span>
                     {roleBadge(e.role)}
+                    {((e.waves?.length ?? 0) + (e.tickets?.length ?? 0)) > 0 && (() => {
+                      const allChips = [
+                        ...(e.waves ?? []).map((w) => ({ kind: "wave" as const, label: `Wave ${w}`, key: `w${w}` })),
+                        ...(e.tickets ?? []).map((t) => ({ kind: "ticket" as const, num: t, key: `t${t}` })),
+                      ];
+                      const visible = allChips.slice(0, 3);
+                      const overflow = allChips.length - visible.length;
+                      return (
+                        <span className="chip-strip" onClick={(ev) => ev.stopPropagation()}>
+                          {visible.map((chip) =>
+                            chip.kind === "wave"
+                              ? <span key={chip.key} className="now-chip now-chip-wave">{chip.label}</span>
+                              : data?.issues.repoStatus === "ok"
+                              ? <a key={chip.key} className="now-chip now-chip-ticket" href={`https://github.com/${data.issues.repo}/issues/${chip.num}`} target="_blank" rel="noreferrer" onClick={(ev) => ev.stopPropagation()}>#{chip.num}</a>
+                              : <span key={chip.key} className="now-chip now-chip-ticket">#{chip.num}</span>
+                          )}
+                          {overflow > 0 && <span className="now-chip now-chip-overflow">+{overflow}</span>}
+                        </span>
+                      );
+                    })()}
                     <span className="state-pill">{e.state}</span>
                     <span className="task-text">{e.taskSummary}</span>
                     <span className="dim">{fmtTime(e.startedAt)}</span>
@@ -461,31 +521,106 @@ export default function DashboardPage() {
           {panelHd("Done — last 24h", "done")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : data.done.length === 0 ? empty("Nothing completed yet.") : (
             <div className="row-list">
-              {data.done.map((e) => {
-                const doneKey = `${e.role}-${e.completedAt}`;
-                return (
-                <div key={doneKey} className="row-item">
-                  <div
-                    className="row expandable-row"
-                    onClick={() => toggleRow("done", doneKey)}
-                    onKeyDown={rowKd("done", doneKey)}
-                    tabIndex={0}
-                    role="button"
-                    aria-expanded={expandedRow["done"] === doneKey}
-                  >
-                    <span className="row-chevron" aria-hidden="true">{expandedRow["done"] === doneKey ? "▾" : "▸"}</span>
-                    {roleBadge(e.role)}
-                    <span className="task-text">{e.taskSummary}</span>
-                    <span className="dim">{fmtTime(e.completedAt)}</span>
-                  </div>
-                  {expandedRow["done"] === doneKey && (
-                    <div className="row-detail">
-                      <p className="row-detail-text">{e.taskSummary}</p>
-                      {e.commitSha && <div className="row-detail-meta">commit: <code>{e.commitSha}</code></div>}
-                      <div className="row-detail-meta">completed: {fmtTime(e.completedAt)}</div>
+              {groupedDone.map((group) => {
+                if (group.rows.length === 1) {
+                  const e = group.rows[0];
+                  const doneKey = group.key;
+                  return (
+                    <div key={doneKey} className="row-item">
+                      <div
+                        className="row expandable-row"
+                        onClick={() => toggleRow("done", doneKey)}
+                        onKeyDown={rowKd("done", doneKey)}
+                        tabIndex={0}
+                        role="button"
+                        aria-expanded={expandedRow["done"] === doneKey}
+                      >
+                        <span className="row-chevron" aria-hidden="true">{expandedRow["done"] === doneKey ? "▾" : "▸"}</span>
+                        {roleBadge(e.role)}
+                        <span className="task-text">{e.taskSummary}</span>
+                        <span className="dim">{fmtTime(e.completedAt)}</span>
+                      </div>
+                      {expandedRow["done"] === doneKey && (
+                        <div className="row-detail">
+                          <p className="row-detail-text">{e.taskSummary}</p>
+                          {e.commitSha && <div className="row-detail-meta">commit: <code>{e.commitSha}</code></div>}
+                          <div className="row-detail-meta">completed: {fmtTime(e.completedAt)}</div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
+                  );
+                }
+                // Multi-row group — collapsed summary with expand
+                const allChips = [
+                  ...group.waves.map((w) => ({ kind: "wave" as const, label: `Wave ${w}`, key: `w${w}` })),
+                  ...group.tickets.map((t) => ({ kind: "ticket" as const, num: t, key: `t${t}` })),
+                ];
+                const visibleChips = allChips.slice(0, 4);
+                const chipOverflow = allChips.length - visibleChips.length;
+                return (
+                  <div key={group.key} className="row-item">
+                    <div
+                      className="row expandable-row"
+                      onClick={() => toggleRow("done", group.key)}
+                      onKeyDown={rowKd("done", group.key)}
+                      tabIndex={0}
+                      role="button"
+                      aria-expanded={expandedRow["done"] === group.key}
+                    >
+                      <span className="row-chevron" aria-hidden="true">{expandedRow["done"] === group.key ? "▾" : "▸"}</span>
+                      <span className="chip-strip">
+                        {visibleChips.map((chip) =>
+                          chip.kind === "wave"
+                            ? <span key={chip.key} className="now-chip now-chip-wave">{chip.label}</span>
+                            : <span key={chip.key} className="now-chip now-chip-ticket">#{chip.num}</span>
+                        )}
+                        {chipOverflow > 0 && <span className="now-chip now-chip-overflow">+{chipOverflow}</span>}
+                      </span>
+                      {(() => {
+                        const visibleRoles = group.roles.slice(0, 4);
+                        const roleOverflow = group.roles.length - visibleRoles.length;
+                        return (
+                          <span className="done-role-strip">
+                            {visibleRoles.map((r) => roleBadge(r))}
+                            {roleOverflow > 0 && <span className="now-chip now-chip-overflow">+{roleOverflow}</span>}
+                          </span>
+                        );
+                      })()}
+                      <span className="dim">{fmtTime(group.latestAt)}</span>
+                    </div>
+                    {expandedRow["done"] === group.key && (
+                      <div className="row-detail">
+                        {group.rows.map((e) => {
+                          const rowKey = `${e.role}-${e.completedAt}`;
+                          const isItemExpanded = expandedRow["done-item"] === rowKey;
+                          return (
+                            <div key={rowKey} className="group-row-item">
+                              <div
+                                className="row expandable-row"
+                                onClick={(ev) => { ev.stopPropagation(); toggleRow("done-item", rowKey); }}
+                                onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); ev.stopPropagation(); toggleRow("done-item", rowKey); } }}
+                                tabIndex={0}
+                                role="button"
+                                aria-expanded={isItemExpanded}
+                              >
+                                <span className="row-chevron" aria-hidden="true">{isItemExpanded ? "▾" : "▸"}</span>
+                                {roleBadge(e.role)}
+                                <span className="task-text">{e.taskSummary}</span>
+                                <span className="dim">{fmtTime(e.completedAt)}</span>
+                              </div>
+                              {isItemExpanded && (
+                                <div className="row-detail">
+                                  <p className="row-detail-text">{e.taskSummary}</p>
+                                  {e.commitSha && <div className="row-detail-meta">commit: <code>{e.commitSha}</code></div>}
+                                  <div className="row-detail-meta">completed: {fmtTime(e.completedAt)}</div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 );
               })}
             </div>
@@ -587,6 +722,7 @@ export default function DashboardPage() {
                           >
                             <span className="iss-num">#{iss.number}</span>
                             <span className="iss-title">{iss.title}</span>
+                            {iss.inFlight && <span className="iss-inflight-pill">in-flight</span>}
                             <span className="iss-label-badge">{iss.label}</span>
                           </a>
                           <button
@@ -919,6 +1055,43 @@ export default function DashboardPage() {
         }
         .iss-po-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--accent-po) 22%, var(--surface)); }
         .iss-po-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .iss-inflight-pill {
+          font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
+          background: color-mix(in srgb, var(--accent-arch) 14%, var(--surface-2));
+          color: var(--accent-arch); border: 1px solid color-mix(in srgb, var(--accent-arch) 40%, var(--border));
+          white-space: nowrap; flex-shrink: 0; letter-spacing: 0.03em;
+        }
+
+        .chip-strip { display: inline-flex; align-items: center; gap: 3px; flex-shrink: 0; }
+        .now-chip {
+          display: inline-block; font-size: 9px; font-weight: 700; padding: 1px 5px;
+          border-radius: 99px; font-family: ui-monospace, monospace; letter-spacing: 0.02em;
+          white-space: nowrap; text-decoration: none;
+        }
+        .now-chip-wave {
+          background: color-mix(in srgb, var(--accent-arch) 14%, var(--surface-2));
+          color: var(--accent-arch);
+          border: 1px solid color-mix(in srgb, var(--accent-arch) 40%, var(--border));
+        }
+        .now-chip-ticket {
+          background: color-mix(in srgb, var(--accent-po) 12%, var(--surface-2));
+          color: var(--accent-po);
+          border: 1px solid color-mix(in srgb, var(--accent-po) 35%, var(--border));
+        }
+        .now-chip-ticket:hover { opacity: 0.8; }
+        .now-chip-overflow {
+          font-size: 9px; color: var(--text-dim); padding: 1px 3px;
+        }
+
+        .done-role-strip { flex: 1; min-width: 0; overflow: hidden; display: inline-flex; align-items: center; gap: 3px; flex-wrap: nowrap; }
+        .group-row-item {
+          display: block; padding: 0;
+          font-size: 11px; border-top: 1px solid var(--border);
+        }
+        .group-row-item:first-child { border-top: none; }
+        .group-row-item .row { font-size: 11px; }
+        .group-sha { font-size: 9px; color: var(--text-dim); background: none; }
 
         .issue-footer {
           display: flex; align-items: center; gap: 8px; padding: 8px 10px;
