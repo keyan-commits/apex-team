@@ -2,6 +2,14 @@
 
 ## ⏭️ NOW — 2026-06-01
 
+**#137 + #154 fix — `feature/137-misroute-parser-fix`. Two fixes:**
+- `orchestrator.ts` line 4: `ux-designer` added to `TEAM_ROLE_PATTERN` (#154 P0 — 0 UX dispatches ever parsed).
+- `run-turn-with-dispatches.ts`: pass `userMessage: d.message` to each peer turn (#137 — unambiguous trigger prevents cross-dispatch misroute).
+- `tests/lib/orchestrator.test.ts`: all 7 team role-ids tested in DISPATCH_RE + HANDOFF_RE; nested body text misroute guard.
+- 180/180 green. Type-check clean. Gates: Architect non-UI → QA → DevSecOps merge.
+- PRs merged this session: #132 (`1a96164`), #138 (`04c044e`), #147 (`ae1909f`).
+- PR #150 (Wave 64) still CONFLICTING, awaiting BE Dev rebase.
+
 **Wave 65-impl DONE — PR #147 merged (`ae1909f`). Wave 55-roles-impl DONE — PR #138 merged (`04c044e`). Both on main.**
 
 **Wave 52 — Wave 50 UX follow-ups: clickable Done group chips (#125), group-detail max-height (#120), now-chip focus ring (#121). Branch `feature/52-wave50-followups`. Rebased onto main (post-PR#138). 131/131 green. UX implicit-PASS authorized (6 silences, PO call). Awaiting DevSecOps merge.**
