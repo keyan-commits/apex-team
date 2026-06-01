@@ -11,7 +11,7 @@ export async function GET(): Promise<Response> {
     await fetch(APEX_MCP_URL, { signal: AbortSignal.timeout(2000) });
     apexEngineUp = true;
   } catch {
-    apexEngineUp = false;
+    // apexEngineUp stays false
   }
   return Response.json({
     status: apexEngineUp ? "ok" : "degraded",
