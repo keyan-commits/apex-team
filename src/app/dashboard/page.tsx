@@ -576,9 +576,16 @@ export default function DashboardPage() {
                         )}
                         {chipOverflow > 0 && <span className="now-chip now-chip-overflow">+{chipOverflow}</span>}
                       </span>
-                      <span className="done-role-strip">
-                        {group.roles.map((r) => roleBadge(r))}
-                      </span>
+                      {(() => {
+                        const visibleRoles = group.roles.slice(0, 4);
+                        const roleOverflow = group.roles.length - visibleRoles.length;
+                        return (
+                          <span className="done-role-strip">
+                            {visibleRoles.map((r) => roleBadge(r))}
+                            {roleOverflow > 0 && <span className="now-chip now-chip-overflow">+{roleOverflow}</span>}
+                          </span>
+                        );
+                      })()}
                       <span className="dim">{fmtTime(group.latestAt)}</span>
                     </div>
                     {expandedRow["done"] === group.key && (
@@ -1060,7 +1067,7 @@ export default function DashboardPage() {
           font-size: 9px; color: var(--text-dim); padding: 1px 3px;
         }
 
-        .done-role-strip { display: inline-flex; align-items: center; gap: 3px; flex-shrink: 0; }
+        .done-role-strip { flex: 1; min-width: 0; overflow: hidden; display: inline-flex; align-items: center; gap: 3px; flex-wrap: nowrap; }
         .group-row-item {
           display: flex; align-items: center; gap: 6px; padding: 3px 0;
           font-size: 11px; border-top: 1px solid var(--border);

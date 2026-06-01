@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 50 — Dashboard ticket-aware chips + Issues in-flight pill + Done per-wave grouping, closes #110 #111 #113. Branch `feature/50-dashboard-tickets-chips`. 124/124 green (114 prior + 10 new). pnpm lint 0 errors. Awaiting UX review PASS, then QA.**
+**Wave 50 — Dashboard ticket-aware chips + Issues in-flight pill + Done per-wave grouping, closes #110 #111 #113. Branch `feature/50-dashboard-tickets-chips`. 124/124 green. UX REVISE resolved: B1 fix applied (cap Done group role badges at 4 + `flex: 1` anchor on `.done-role-strip`). Awaiting UX re-review, then QA.**
 
 **8 files added/changed:**
 - `src/lib/extract-refs.ts` (new) — pure parser: ticket regex `/(?<![\w&])#(\d+)\b/g` + wave regex `/\bWave\s+(\d+)\b/gi`; dedup, sort, cap at 6 each.
