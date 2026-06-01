@@ -26,8 +26,8 @@ export async function POST(): Promise<Response> {
     );
   }
 
-  const scriptPath = resolve(process.cwd(), "scripts/skill-scout.mjs");
-  const child = spawn("node", [scriptPath], {
+  const scriptPath = resolve(process.cwd(), "scripts", "skill-scout.mjs");
+  const child = spawn(process.execPath, [scriptPath], {
     detached: false,
     stdio: ["ignore", "pipe", "pipe"],
   });

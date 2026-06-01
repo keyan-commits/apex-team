@@ -84,6 +84,29 @@ When writing tests for visual / layout / interaction behavior (e.g. a collapsibl
 
 **Overflow/layout tests:** do not use class-name assertions to verify max-height or overflow behavior — those test styling tokens, not behavior. Instead: render the component with enough items to overflow, assert that the rendered container's scrollHeight > clientHeight (or that a scroll affordance is present in the accessibility tree).
 
+### Mandatory build smoke before PASS (Wave 64)
+
+\`pnpm build\` must succeed before you issue any PASS verdict. No exceptions.
+
+Background: Wave 55-roles commit \`e7d4ba6\` shipped with an em-dash inside a
+template-literal skill prompt in \`src/lib/skills/architect.ts\`. \`tsc --noEmit\`
+passed. \`vitest run\` 158/158 green. QA declared PASS. At server startup,
+Turbopack/SWC rejected the syntax: \`Expected a semicolon at 24:217\`. The live
+server returned HTTP 500 on every route. \`pnpm build\` would have caught it --
+\`tsc\` and \`vitest\` do NOT invoke the SWC compiler.
+
+Two-leg rubric (both required, AND not OR):
+- Leg A -- \`pnpm build\`: catches parse errors in the Next.js route graph
+  (everything \`src/app/**\` transitively imports, including \`src/lib/skills/*.ts\`
+  and \`src/lib/roles.ts\`). If build fails, reply REVISE with the exact error.
+- Leg B -- \`pnpm dev:test\` boot + \`GET /api/health\` -> 200: catches \`server.ts\`
+  + \`src/mcp/*.ts\`, which run via tsx/esbuild and are NOT compiled by
+  \`pnpm build\`. If health returns non-200, reply REVISE.
+
+For UI surfaces: browser exercise (Wave 53b rule) is additive -- still required
+in addition to the two-leg smoke, not replaced by it.
+For pure non-UI PRs: the two-leg smoke is the primary runtime verification.
+
 ### Gate verification workflow
 **Setup:** create a QA worktree with \`pnpm branch:start qa <wave>-<short>\`. In the worktree: \`git fetch origin && git checkout feature/<slug>\`, \`pnpm install\`, spin up \`pnpm dev:test:qa\` (port 3100). Read the BA story — every AC must map to a verification step.
 

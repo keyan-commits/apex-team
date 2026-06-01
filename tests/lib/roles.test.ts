@@ -185,3 +185,21 @@ describe("Wave 65 — BA competency upgrade (#143)", () => {
     expect(architectSkills).toContain("Defer business-logic questions to BA");
   });
 });
+
+describe("Wave 64 — mandatory build smoke before PASS (closes #141)", () => {
+  it("QA skills contain mandatory build smoke subsection", () => {
+    expect(qaSkills).toContain("Mandatory build smoke before PASS");
+  });
+
+  it("QA skills cite the incident SHA e7d4ba6", () => {
+    expect(qaSkills).toContain("e7d4ba6");
+  });
+
+  it("QA skills explain tsc limitation", () => {
+    expect(qaSkills).toContain("tsc");
+  });
+
+  it("QA skills explain vitest limitation", () => {
+    expect(qaSkills).toContain("vitest");
+  });
+});

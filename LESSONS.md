@@ -4,6 +4,11 @@ Append-only. Newest first. Each entry: ~3–5 lines. Triggers: a protocol amendm
 
 ## 2026-06-01
 
+### Mandatory pnpm build + boot smoke before QA PASS (Wave 64)
+**What broke:** PR #138 (`feature/55-roles-impl-mandate-and-routing`, commit `e7d4ba6`) shipped `src/lib/skills/architect.ts` line 24 with an em-dash + escaped backticks inside a template literal. `tsc --noEmit` passed. `vitest run` 158/158 green. QA declared PASS. At server startup, Turbopack/SWC failed: `Expected a semicolon at 24:217`. Dev server returned HTTP 500 on `/dashboard` and `/api/health`.
+**Why:** `tsc` and `vitest` do NOT invoke the SWC/Turbopack compiler. `pnpm build` eagerly compiles the entire Next route graph including everything `src/app/**` transitively imports (e.g. `src/lib/roles.ts` -> `src/lib/skills/*.ts`). `server.ts` + `src/mcp/*.ts` run via tsx/esbuild and are NOT in the next-build graph; a parse error there is only caught by booting and hitting `/api/health`.
+**We now do:** `pnpm build` UNCONDITIONAL on every PR (Leg A) AND boot `:3100` + `GET /api/health` -> 200 (Leg B). AND, not OR. Both legs. User mandate: "I'm still amazed by how we still have these kinds of bugs when we have strict guidelines that all changes should be tested on another environment/instance before we actually make it live. Please fix the workflow, make sure everything is being tested prior to deployment to live."
+
 ### BA competency upgrade — domain MDs prevent repeated business-logic questions
 **What broke:** Mac 2's claude-code asked the user whether the Consolidation sheet was a separate file or part of the Order Sheet workbook. The answer was already documented in a workspace MD. BA had no hard rule to scan before answering, so it asked the user instead.
 **Why:** BA prompt had no workspace-scan procedure, no `domains/` structure, no promote-to-MD discipline. Answers lived in conversation threads and evaporated.

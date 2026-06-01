@@ -96,6 +96,11 @@ Implementation phase (after requirements are documented):
 
 export const VERIFICATION_PHASE_PROTOCOL = `
 Verification phase (after implementation):
+- If the change touches UI: UX Designer reviews the implementation against <workspace>/design/<slug>.md FIRST. Returns PASS or REVISE with concrete deltas. Only after UX PASS does QA proceed.
+- BUILD SMOKE mandatory: run \`pnpm build\` before issuing PASS. \`tsc\` and \`vitest\` do NOT invoke the SWC/Turbopack compiler; \`pnpm build\` eagerly compiles the entire Next.js route graph, including all files \`src/app/**\` transitively imports (e.g. \`src/lib/roles.ts\`, \`src/lib/skills/*.ts\`). A parse error there passes type-check and all tests, then crashes the server on boot. Incident: Wave 55-roles commit \`e7d4ba6\` — em-dash in a template literal, 158/158 green, live server HTTP 500.
+- BOOT SMOKE mandatory: boot the :3100 test instance (\`pnpm dev:test\`) and confirm \`GET /api/health\` → 200. \`server.ts\` and \`src/mcp/*.ts\` run via tsx/esbuild, NOT through \`pnpm build\`; a parse error there is invisible to the build step. Boot + health is the only gate that covers both compilation layers.
+- After confirming health 200, hit at least one changed route or API endpoint with curl to verify the specific change is reachable end-to-end.
+- Both legs are AND, not OR: \`pnpm build\` covers the Next.js route graph; \`pnpm dev:test\` + \`/api/health\` 200 covers server.ts/MCP. Skipping either is a QA gate breach, regardless of tsc/vitest results.
 - UI-touching PRs (diff includes \`src/app/**/page.tsx\`, \`src/app/**/layout.tsx\`, \`src/components/**/*.tsx\`, \`src/app/globals.css\`, or any file rendering pixels the user sees) → UX Designer gates the UI portion; Architect gates the non-UI portion. Parallel — neither blocks the other.
 - Pure non-UI PRs → Architect gates the whole thing; no UX dispatch needed.
 - Pure UI PRs → Architect routes to UX with a one-liner; UX gates the whole thing.
