@@ -2,7 +2,9 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 34 — UX Designer skill additions. 2 new sections added to `src/lib/skills/ux-designer.ts`: `### Density audit checklist` (closes #66) + `### Feed density patterns` (closes #68). Both tagged `"user"` in `ux-designer.skills.json`. 56/56 green. Feature branch: `feature/34-ux-density-skills`. Awaiting CI + merge.**
+**Wave 35 — Dep bump: `@anthropic-ai/claude-agent-sdk` 0.3.148 → 0.3.158 (replaces stuck Dependabot PR #53). Lockfile resolved to 0.3.158 (was at 0.3.156 via `^` range). tsx stays at 4.22.3 — #53 was stuck on tsx@4.22.4 minimum-release-age. Feature branch: `feature/35-deps-agent-sdk-bump`. Awaiting CI + merge.**
+
+**Wave 34 — UX Designer skill additions. 2 new sections added to `src/lib/skills/ux-designer.ts`: `### Density audit checklist` (closes #66) + `### Feed density patterns` (closes #68). Both tagged `"user"` in `ux-designer.skills.json`. 56/56 green. Feature branch: `feature/34-ux-density-skills`. Merged SHA `47a2f41`.**
 
 **Wave 33c — PR #83 (`feature/33-ux-nits`) merged SHA `6320d85`. CI PASS (26s/25s). Smoke PASS. Issues closed: #79 (aria-live → aria-busy on scout button), #80 (hex colors → CSS vars `--status-green`/`--status-amber`), #81 (tabIndex on `.doc-scroll` not `.body`). Main is clean. No pending inbox items.**
 
