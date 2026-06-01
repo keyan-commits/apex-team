@@ -39,3 +39,33 @@ describe("Wave 43 — DEFAULT_ROLE_MODELS + PO NOTES discipline", () => {
     expect(ROLES["product-owner"].systemPrompt).toContain("Mandatory update rule");
   });
 });
+
+describe("Wave 45 — Broaden self-enrichment to cover bugs/gaps/drift", () => {
+  it("PHASED_WORKFLOW_DISCIPLINE has expanded self-enrichment header", () => {
+    expect(PHASED_WORKFLOW_DISCIPLINE).toContain(
+      "Self-enrichment — file issues for out-of-scope findings"
+    );
+  });
+
+  it("PHASED_WORKFLOW_DISCIPLINE includes body template fields", () => {
+    expect(PHASED_WORKFLOW_DISCIPLINE).toContain("**Observed:**");
+    expect(PHASED_WORKFLOW_DISCIPLINE).toContain("**Discovered during:**");
+  });
+
+  it("PHASED_WORKFLOW_DISCIPLINE includes anti-noise guidance", () => {
+    expect(PHASED_WORKFLOW_DISCIPLINE).toContain("Anti-noise — do NOT file");
+  });
+
+  it("Architect prompt includes filing out-of-scope findings section", () => {
+    expect(ROLES["architect"].systemPrompt).toContain("Filing out-of-scope findings");
+  });
+
+  it("QA prompt includes filing non-blocking observations section with pre-PASS gate", () => {
+    expect(ROLES["qa"].systemPrompt).toContain("Filing non-blocking observations");
+    expect(ROLES["qa"].systemPrompt).toContain("BEFORE you emit the PASS");
+  });
+
+  it("PO prompt includes filing what peers surface section", () => {
+    expect(ROLES["product-owner"].systemPrompt).toContain("Filing what peers surface");
+  });
+});

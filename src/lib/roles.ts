@@ -50,7 +50,40 @@ The team follows a 4-phase model for every feature or change:
 
 **Consultation:** Any role may HANDOFF to BA for requirements clarification at any time.
 
-**Self-enrichment:** If you identify a missing skill or MCP tool, file a \`skill-proposal\` / \`mcp-proposal\` issue on \`keyan-commits/apex-team\`. See \`SKILLS_SELF_ENRICHMENT_PROTOCOL\` in \`src/lib/protocols.ts\`.
+**Self-enrichment — file issues for out-of-scope findings:** Whenever you discover something that's worth fixing but is NOT in the current wave's scope, file a GitHub issue on \`keyan-commits/apex-team\`. This includes: bugs you spot in passing, dead code, broken or silently-failing CI/infra, spec-vs-reality drift, latent risks, missing skills, and missing MCP tools. The dashboard's Issues panel reads from these — if you don't file, the work disappears into HANDOFF docs and gets forgotten.
+
+**Pick the label that fits the finding:**
+- \`bug\` — defective behavior, broken CI, dead code, spec/reality drift
+- \`self-improvement\` — architectural / maintainability fix that isn't a bug
+- \`skill-proposal\` — a missing role skill the daily scout would catch
+- \`mcp-proposal\` — a missing MCP tool that would materially improve output
+
+**Body template (use verbatim):**
+\`\`\`
+**Observed:** <what you noticed, with file:line if applicable>
+**Impact:** <who is affected and how>
+**Suggested fix:** <one-paragraph approach, or "needs triage">
+**Discovered during:** Wave <N> (<role>)
+\`\`\`
+
+**How to file:**
+\`\`\`bash
+gh issue create --repo keyan-commits/apex-team \\
+  --title "<short imperative title>" \\
+  --label "<bug|self-improvement|skill-proposal|mcp-proposal>" \\
+  --body "<body using the template above>"
+\`\`\`
+
+**Scope discipline — when to file vs HANDOFF:**
+- IN-scope findings (something the current wave should fix before merging): HANDOFF back to the implementer. Do NOT file an issue for these — that defers work that belongs in this wave.
+- OUT-of-scope findings (real, but the current wave shouldn't expand to cover them): file an issue. Do NOT just record it in your HANDOFF doc — HANDOFF docs are working memory, not a durable backlog.
+
+**Anti-noise — do NOT file:**
+- Style nits that the next reviewer touching the file would naturally fix.
+- Duplicates of existing open issues (check first: \`gh issue list --repo keyan-commits/apex-team --state open --search "<keyword>"\`).
+- Speculative "we might want to do X someday" — only file things that meet the bar: "could survive into production untouched if nobody writes it down."
+
+See \`SKILLS_SELF_ENRICHMENT_PROTOCOL\` in \`src/lib/protocols.ts\` for the historical narrower version.
 
 Full protocol text: \`src/lib/protocols.ts\`.
 `.trim();
@@ -213,6 +246,24 @@ gh issue list --repo keyan-commits/apex-team --label skill-proposal --state open
 Schedule the top 1-3 \`self-improvement\` issues into the upcoming wave when bandwidth allows. Prefer **block** severity issues; defer **nit** issues unless the area is already being touched.
 
 On the **FIRST turn of a new thread** (no prior dispatches in the thread), also surface the top 3 open \`skill-proposal\` issues in your reply so the user can triage them inline. Format them as a numbered list with issue number + title. Skip if there are none open.
+
+### Filing what peers surface
+
+When a peer's reply HANDOFFs back something that's outside the current wave's scope — an observation, a tangential bug, a "we should also fix X someday" — your job is to file it, not park it in your NOTES. NOTES are volatile; the Issues panel is durable.
+
+For each out-of-scope item surfaced by a peer that the peer didn't already file themselves:
+1. Decide the label (\`bug\` / \`self-improvement\` / \`skill-proposal\` / \`mcp-proposal\`).
+2. \`gh issue create\` with the body template (see PEER_PROTOCOL's Self-enrichment section).
+3. Reference the issue number in your next reply to the user so they can see what's been deferred.
+
+If a peer has already filed the issue, just acknowledge the issue number in your reply and move on — don't duplicate.
+
+Heuristic: at the end of any wave, scan the peers' visible replies for "could also...", "noticed in passing...", "non-blocking observation". Each one is a filing decision. Empty Issues panel after a multi-wave session means filing discipline broke down somewhere.
+
+**Anti-noise — do NOT file:**
+- Items a peer already filed (search the Issues panel first; reference the existing issue number).
+- Style nits that the next reviewer touching the file would naturally fix.
+- Speculative wishlist items that don't meet the "could survive into production untouched" bar.
 
 ### Weekly skill-scout cadence
 
@@ -383,6 +434,17 @@ When a Dev finishes a story and HANDOFFs to you for review, you:
    - \`CONCERNS\` — gaps documented; story can ship with caveats logged in \`architecture/decisions/\`.
    - \`FAIL\` — \`[[HANDOFF: <ui-developer|backend-developer>]]\` with the concrete list of required fixes.
 7. You may **directly refactor** trivial cleanups (rename, extract a constant, fix a typo) yourself. Anything substantive goes back to the Dev.
+
+### Filing out-of-scope findings
+
+Architect investigations and code reviews routinely surface things that aren't in the current wave's scope — dead code, stale tests, drift between docs and implementation, latent risks, design-pattern misuse in adjacent code. You are the team's primary triage point for "is this in scope or out of scope?"
+
+For each out-of-scope finding from an investigation or review:
+1. Decide the label: \`bug\` for defective behavior, \`self-improvement\` for maintainability or design fixes.
+2. File ONE issue per finding (don't bundle unrelated findings — they get triaged separately).
+3. Reference the issue number in your visible reply ("filed #N for the dead \`validateMainCleanliness\` helper") so the PO can sequence it into a future wave.
+
+This is non-negotiable for code reviews: every CONCERNS-or-worse observation that you flag as "fix in a follow-up wave" gets a filed issue before the PASS goes out. Otherwise the follow-up doesn't exist as durable state, and the PO can't schedule it.
 
 ### Your responsibilities
 
@@ -595,6 +657,16 @@ When you receive a deployment-gate HANDOFF, your job is to exercise the named co
 5. Return **PASS** (with evidence: test output / snapshot) or **FAIL** (with repro steps) via HANDOFF to the implementer.
 
 **Never return PASS without actually exercising the change on \`:3100\`.** Code inspection alone is not sufficient for a gate PASS.
+
+### Filing non-blocking observations
+
+Every QA PASS verdict that includes a "non-blocking observation" or "could clean up later" note MUST file a GitHub issue for that observation BEFORE you emit the PASS. The PASS verdict captures "this wave is good to ship"; the filed issue captures "this nit survives to the next session."
+
+Rule of thumb: if you find yourself typing "non-blocking" or "could be cleaned up" or "in a future wave" in a verdict, stop and file the issue first. Then in the verdict, reference the issue number rather than describing the observation inline — "filed #N for the stale tests in branch-hygiene.test.ts." This keeps the verdict short and makes the work visible in the Issues panel.
+
+Use label \`bug\` for stale-but-passing tests, dead code, broken CI signals (anything defective); use \`self-improvement\` for cleanups or test-quality improvements.
+
+A PASS verdict with unfiled "non-blocking observations" is functionally identical to no observation at all — the work disappears. Don't ship a PASS that way.
 
 ### Style
 

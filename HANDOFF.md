@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-06-01
 
+**Wave 45 — Expand peer self-enrichment to cover bugs/gaps/drift. `src/lib/roles.ts`: (1) `PHASED_WORKFLOW_DISCIPLINE` line 53 replaced with expanded `Self-enrichment — file issues for out-of-scope findings` block (labels, body template, `gh issue create` snippet, scope discipline, anti-noise rules); (2) Architect prompt gains `### Filing out-of-scope findings` section; (3) QA prompt gains `### Filing non-blocking observations` section (BEFORE-PASS gate); (4) ORCHESTRATOR_PROTOCOL gains `### Filing what peers surface` + anti-noise appendix (PO doesn't inherit PEER_PROTOCOL). `tests/lib/roles.test.ts`: 6 new regression-guard assertions. 100/100 green. Awaiting QA PASS + DevSecOps merge.**
+
 **Wave 44 — Transport drop fix. `src/mcp/handler.ts`: extracted `startHeartbeat(res, intervalMs=15_000)` exported helper; reduced interval from 30s → 15s; added `flush?.()` call after each write. `src/lib/roles.ts`: DevSecOps deployment workflow restructured into two-phase (Phase 1 = merge + push + self-HANDOFF; Phase 2 = restart + verify + NOTES + HANDOFF to PO). New `tests/mcp/handler.test.ts`: 2 tests (heartbeat fires at 15s; does not write to ended response). Awaiting QA PASS + DevSecOps merge.**
 
 **Wave 43 — Bug #5 + Bug #6. PR #95 (`feature/43-mcp-agent-models-and-po-notes`). CI PASS. 92/92 green (86 prior + 6 new). Awaiting QA PASS + DevSecOps merge.**
