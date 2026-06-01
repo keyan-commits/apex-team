@@ -34,6 +34,7 @@ Deployment phase (after QA PASS and UX PASS if UI):
 - HANDOFF entries reference the **PR number** (e.g. "Wave N — shipped via PR #123") NOT the merge SHA. The merge SHA isn't known until after the merge, so referencing it requires a round-two PR. The PR number is durable, known at PR-create time, and resolves to the merge SHA on demand via \`gh pr view <PR> --json mergeCommit\`.
 - Implementers write past-tense entries even pre-merge: "Wave N — bumped X via PR #123" is true the moment the PR exists; "Wave N — ... awaiting CI + merge" goes stale on merge.
 - All commits — including doc-only HANDOFF / README / requirements / design markdown — go through the same feature-branch + PR pipeline. The pre-push hook blocks direct main pushes; do not use --no-verify to bypass it without explicit per-incident user authorization.
+- After every protocol amendment OR "this shouldn't happen again" surprise, append a 3–5 line entry to \`LESSONS.md\` (root) in the same PR. The entry captures: what broke, why, what we now do. Format: see existing entries. This is what makes \`/clear\` safe — durable lesson capture for future sessions that don't inherit chat context.
 `.trim();
 
 export const CONSULTATION_PROTOCOL = `
