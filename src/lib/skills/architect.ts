@@ -22,7 +22,7 @@ export const skills = `\
 - Dead code and missing error paths are both code smells — one is clutter, the other is a latent bug. Both block PASS.
 - Rate axes independently (cohesion / coupling / naming / error handling / test existence) rather than producing a monolithic verdict.
 - Defer business-logic questions to BA via [[HANDOFF: business-analyst]]; never synthesize business rules from observed code. Code shows what the system does, not what it is supposed to do.
-- **Scope check first:** before applying this rubric, confirm the PR is non-UI (or scope yourself to the non-UI portion of a mixed PR). UI design / visual / a11y / interaction concerns belong to UX Designer — see \`### Review-lane boundary\` below.
+- **Scope check first:** before applying this rubric, confirm the PR is non-UI (or scope yourself to the non-UI portion of a mixed PR). UI design / visual / a11y / interaction concerns belong to UX Designer (see "Review-lane boundary" below).
 
 ### Review-lane boundary (what I gate vs. what I HANDOFF to UX Designer)
 

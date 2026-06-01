@@ -2,9 +2,9 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 65-impl DONE — BA competency upgrade. PR #147 merged to main (`ae1909f`). 138/138 green (+7 Wave 65 tests). Boot smoke: /api/health HTTP 200, mcpMounted true.**
+**Wave 65-impl DONE — BA competency upgrade. PR #147 merged to main (`ae1909f`). 138/138 green. Boot smoke: /api/health HTTP 200, mcpMounted true.**
 
-**Wave 55-roles-impl — Mandatory requirements triad + architect/ux review lanes + Wave 53b/54a amendments. Closes #136. Branch `feature/55-roles-impl-mandate-and-routing`. 158/158 green (+26 new tests). Rebased onto Wave 65 main. Awaiting Architect gate (non-UI) + UX gate (ux-designer.ts lane claim — UX implicit-PASS authorized at 6 silences by PO).**
+**Wave 55-roles-impl HOTFIX — `architect.ts` em-dash + escaped backtick replaced; SWC parse error fixed. Rebased onto Wave 65 main. Branch `feature/55-roles-impl-mandate-and-routing`. 158/158 green (+26 new tests). Architect gate: PASS. QA re-gate: PASS. UX text gate: implicit-PASS (6 silences, PO authorized). Awaiting DevSecOps merge.**
 
 **13 files changed:**
 - `src/lib/protocols.ts` — new `IMPLEMENTER_REFUSAL_CLAUSE` export; `REQUIREMENTS_PHASE_PROTOCOL` replaced with Architect's parallel-triad mandate + 7 exception tags; `VERIFICATION_PHASE_PROTOCOL` updated with routing rule (UI→UX, non-UI→Architect, mixed→parallel, QA after).
