@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 65-impl IN PROGRESS — BA competency upgrade. Branch `feature/65-ba-competency-upgrade`. Impl: `business-analyst.ts` full rewrite (discovery-first + onboarding scan + domains/ tree + promote-to-MD + cross-peer authority + intelligence-over-rote), `architect.ts` BA-deferral bullet, Wave 65 regression-guard tests (7 assertions), LESSONS.md entry, BA's pre-seeded `requirements/domains/` tree (5 domain MDs + 3 stubs + glossary + US-017 through US-023). SHA pending commit. Gates: Architect non-UI -> QA (Wave 64 rubric: type-check + test:run + pnpm dev:test /api/health 200; pnpm build grandfathered behind #142) -> DevSecOps. No UX gate (no UI surface). File-conflict warning: Wave 68-impl will rebase on this PR and APPEND Lane A section; do NOT pre-add Lane A content.**
+**Wave 65-impl DONE — BA competency upgrade. PR #147, commit `b711b0a`, branch `feature/65-ba-competency-upgrade`. 138/138 green (+7 new Wave 65 tests). `pnpm build` fails pre-existing #142 only (grandfathered same as PR #138). Boot smoke: /api/health HTTP 200, mcpMounted true. Gates: Architect non-UI -> QA (type-check + test:run + boot smoke; build grandfathered) -> DevSecOps. No UX gate (no UI surface). File-conflict warning: Wave 68-impl MUST rebase on this PR before adding Lane A section.**
 
 **Wave 54-meta — Fix `talk_to_product_owner` MCP tool: use `runTurnWithDispatches` so PO's DISPATCH blocks auto-trigger peers. Closes #133. Branch `feature/54-mcp-auto-trigger-dispatches`. 132/132 green (131 prior + 1 net new). Awaiting QA.**
 
