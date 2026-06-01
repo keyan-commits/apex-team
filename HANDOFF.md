@@ -2,7 +2,16 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 51 — PO prompt bundle: user-story ticket format, repo routing, PO auto-assign idle agents, per-DISPATCH model selection. Closes #112 #117 #128 #129. Branch `feature/51-po-prompt-bundle`. 131/131 green (124 prior + 7 new). Awaiting QA.**
+**Wave 54-meta — Fix `talk_to_product_owner` MCP tool: use `runTurnWithDispatches` so PO's DISPATCH blocks auto-trigger peers. Closes #133. Branch `feature/54-mcp-auto-trigger-dispatches`. 132/132 green (131 prior + 1 net new). Awaiting QA.**
+
+**3 files changed:**
+- `src/mcp/tools.ts` — `talk_to_product_owner` now calls `runTurnWithDispatches` instead of `runTurn`; description updated to "DISPATCH blocks ARE auto-triggered"; response includes peer replies under "### Dispatched peers (auto-triggered):" instead of the old "NOT auto-triggered" dispatch list.
+- `tests/mcp/tools.test.ts` — added `mockRunTurnWithDispatches` mock for `@/lib/run-turn-with-dispatches`; updated all PO-path tests to use new mock + `basePOResult`; replaced "does not run dispatched peer turns" test with two new: "includes dispatched peer visible text when peers run" + "response has no peer section when PO emits no dispatches"; updated workspace describe to use `mockRunTurnWithDispatches`.
+- `HANDOFF.md` — NOW block updated.
+
+**Wave 52 — Wave 50 UX follow-ups: clickable Done group chips (#125), group-detail max-height (#120), now-chip focus ring (#121). Branch `feature/52-wave50-followups`. Commit `e937467`. 131/131 green. Awaiting UX gate (PR #132).**
+
+**Wave 51 — PO prompt bundle: user-story ticket format, repo routing, PO auto-assign idle agents, per-DISPATCH model selection. Closes #112 #117 #128 #129. PR #130 (`feature/51-po-prompt-bundle`), commit `9aecb2b`. 131/131 green. Merged + deployed.**
 
 **7 files changed:**
 - `src/lib/orchestrator.ts` — `DISPATCH_RE` extended to capture optional `model:` field; `dispatches[]` type gains `model?: string`; replace callback extracts model.
