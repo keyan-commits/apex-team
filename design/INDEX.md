@@ -7,6 +7,7 @@ UX Designer owns this directory. Every spec file is listed here with its linked 
 | [US-003-workspace-scoped-issues.md](US-003-workspace-scoped-issues.md) | US-003 / US-005 | reviewed + Wave 13 amendments | Post-hoc spec (Wave 11a dispatch dropped). Wave 13 amendments added: drop "Issues:" prefix, per-`repoStatus` copy (4 cases), `:visited` fix, no-flicker spec. |
 | [US-008-team-page-density.md](US-008-team-page-density.md) | US-008 / Wave 28a | reviewed | Density redesign: pane max-height cap (560px), HANDOFF body scroll cap (220px), MessageBubble threshold tightened (3 lines/200 chars), PO pane cap (420px). Wave 28b shipped. UX gate PASS (Wave 28c). 1 nit filed: [ux:handoff-doc] #81 (tabIndex placement). |
 | [US-009-010-011-agent-profile-and-dashboard-additions.md](US-009-010-011-agent-profile-and-dashboard-additions.md) | US-009 / US-010 / US-011 / Wave 32 | reviewed | Post-hoc spec: /agents/[role] profile page + scout trigger button + saturation bar. PR #78. 2 warns filed as [ux:scout] + [ux:saturation] issues. |
+| [US-066-adaptive-issues-panel.md](US-066-adaptive-issues-panel.md) | US-066 / #144 / Wave 66 | draft | Adaptive Issues panel: 3-breakpoint responsive layout (desktop rail 280px, tablet strip 200px max-height, mobile drawer 50vh), severity chip hierarchy (blocker→nit), empty-state copy, hover/focus/filter interaction states, a11y (semantic HTML, ARIA, keyboard nav). First UX spec post-routing-fix. 3 open BA scope questions (peer-idle hints, severity defaults, queued-wave visibility). |
 
 ---
 
