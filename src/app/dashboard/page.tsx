@@ -592,12 +592,29 @@ export default function DashboardPage() {
                       <div className="row-detail">
                         {group.rows.map((e) => {
                           const rowKey = `${e.role}-${e.completedAt}`;
+                          const isItemExpanded = expandedRow["done-item"] === rowKey;
                           return (
                             <div key={rowKey} className="group-row-item">
-                              {roleBadge(e.role)}
-                              <span className="task-text">{e.taskSummary}</span>
-                              {e.commitSha && <code className="group-sha">{e.commitSha}</code>}
-                              <span className="dim">{fmtTime(e.completedAt)}</span>
+                              <div
+                                className="row expandable-row"
+                                onClick={(ev) => { ev.stopPropagation(); toggleRow("done-item", rowKey); }}
+                                onKeyDown={(ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); ev.stopPropagation(); toggleRow("done-item", rowKey); } }}
+                                tabIndex={0}
+                                role="button"
+                                aria-expanded={isItemExpanded}
+                              >
+                                <span className="row-chevron" aria-hidden="true">{isItemExpanded ? "▾" : "▸"}</span>
+                                {roleBadge(e.role)}
+                                <span className="task-text">{e.taskSummary}</span>
+                                <span className="dim">{fmtTime(e.completedAt)}</span>
+                              </div>
+                              {isItemExpanded && (
+                                <div className="row-detail">
+                                  <p className="row-detail-text">{e.taskSummary}</p>
+                                  {e.commitSha && <div className="row-detail-meta">commit: <code>{e.commitSha}</code></div>}
+                                  <div className="row-detail-meta">completed: {fmtTime(e.completedAt)}</div>
+                                </div>
+                              )}
                             </div>
                           );
                         })}
@@ -1069,10 +1086,11 @@ export default function DashboardPage() {
 
         .done-role-strip { flex: 1; min-width: 0; overflow: hidden; display: inline-flex; align-items: center; gap: 3px; flex-wrap: nowrap; }
         .group-row-item {
-          display: flex; align-items: center; gap: 6px; padding: 3px 0;
+          display: block; padding: 0;
           font-size: 11px; border-top: 1px solid var(--border);
         }
         .group-row-item:first-child { border-top: none; }
+        .group-row-item .row { font-size: 11px; }
         .group-sha { font-size: 9px; color: var(--text-dim); background: none; }
 
         .issue-footer {
