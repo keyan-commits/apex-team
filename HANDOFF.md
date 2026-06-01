@@ -2,7 +2,15 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 46 — Bind workspace to thread. PR pending (`feature/46-bind-workspace-to-thread`). 110/110 green (100 prior + 10 new). Awaiting QA PASS + DevSecOps merge.**
+**Wave 47a — Dead code cleanup, closes #98 + #100. Branch `feature/47a-cleanup-dead-code`. 108/108 green (110 prior − 2 deleted stale tests). Awaiting QA PASS + DevSecOps merge.**
+
+**4 files changed:**
+- `scripts/branch-start.mjs` — deleted `validateMainCleanliness` function (lines 24-37 removed; Wave 42 removed the only call site).
+- `tests/ops/branch-hygiene.test.ts` — deleted 2 stale `validateMainCleanliness —` tests (lines 35-85 removed; they exercised the dead function via inline `node --eval`). Kept the Wave 42 "does NOT refuse on dirty cwd" test.
+- `src/lib/roles.ts` — removed `DEPLOYMENT_PHASE_PROTOCOL,` from import (was imported but never used).
+- `src/lib/protocols.ts` — deleted `DEPLOYMENT_PHASE_PROTOCOL` export + definition (only importer was `roles.ts`; no other consumers).
+
+**Wave 46 — Bind workspace to thread. PR #104 (`feature/46-bind-workspace-to-thread`), commit `d2710c7`. 110/110 green (100 prior + 10 new). Awaiting QA PASS + DevSecOps merge.**
 
 **6 files changed + 3 new test files:**
 - `src/lib/db.ts` — idempotent `ALTER TABLE thread_config ADD COLUMN workspace TEXT` migration; new `getThreadWorkspace(threadId)` + `setThreadWorkspace(threadId, workspace)` helpers matching existing agent-models pattern.

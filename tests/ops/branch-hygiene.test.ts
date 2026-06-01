@@ -32,58 +32,6 @@ describe("branch-start hygiene check", () => {
     rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  it("validateMainCleanliness — refuses when main checkout has a modified tracked file", () => {
-    // We can't run branch-start against the real apex-team repo (would fork real git state),
-    // so we test the hygiene logic directly: a dirty git status exits non-zero with guidance.
-    // branch-start calls `git status --porcelain` on cwd; we verify the script exits 1
-    // when pointed at a dirty repo via env override (CWD set to a dirty tmp repo).
-    initGitRepo(tmpDir);
-    writeFileSync(join(tmpDir, "README.md"), "modified\n");
-
-    // Run node -e inline script that replicates validateMainCleanliness behaviour
-    const result = spawnSync(
-      "node",
-      [
-        "--input-type=module",
-        "--eval",
-        `
-import { execFileSync } from "node:child_process";
-const dirty = execFileSync("git", ["-C", ${JSON.stringify(tmpDir)}, "status", "--porcelain"], { encoding: "utf8" }).trim();
-if (dirty) {
-  process.stderr.write("[hygiene] Main checkout has uncommitted changes\\n");
-  process.stderr.write(dirty + "\\n");
-  process.exit(1);
-}
-process.exit(0);
-`,
-      ],
-      { encoding: "utf8" }
-    );
-    expect(result.status).toBe(1);
-    expect(result.stderr).toContain("[hygiene]");
-    expect(result.stderr).toContain("README.md");
-  });
-
-  it("validateMainCleanliness — passes when working tree is clean", () => {
-    initGitRepo(tmpDir);
-
-    const result = spawnSync(
-      "node",
-      [
-        "--input-type=module",
-        "--eval",
-        `
-import { execFileSync } from "node:child_process";
-const dirty = execFileSync("git", ["-C", ${JSON.stringify(tmpDir)}, "status", "--porcelain"], { encoding: "utf8" }).trim();
-if (dirty) { process.exit(1); }
-process.exit(0);
-`,
-      ],
-      { encoding: "utf8" }
-    );
-    expect(result.status).toBe(0);
-  });
-
   it("branch-start — does not refuse on dirty main checkout (worktree branches from origin/main, not cwd)", () => {
     // After the validateMainCleanliness() call was removed, branch-start must NOT exit
     // with dirty-state messaging. It may fail for other reasons (no remote), but not
