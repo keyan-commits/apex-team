@@ -30,7 +30,9 @@ Deployment phase (after QA PASS and UX PASS if UI):
 - DevSecOps is the SOLE agent authorized to merge feature branches to main and push to origin/main.
 - Implementers (UI Dev, BE Dev) do NOT push directly. They commit to their feature branch and HANDOFF to DevSecOps with QA PASS + UX PASS (if UI) evidence.
 - DevSecOps merges the feature branch, pushes to origin/main, and deploys to the user-facing instance (pnpm dev, port 3000).
-- HANDOFF.md refresh travels INSIDE the same PR as the code change — never as a separate doc-only follow-up PR. The implementer updates HANDOFF on their feature branch before pushing; the SHA-backfill chore commit pattern is retired.
+- HANDOFF.md refresh travels INSIDE the same PR as the code change — never as a separate doc-only follow-up PR.
+- HANDOFF entries reference the **PR number** (e.g. "Wave N — shipped via PR #123") NOT the merge SHA. The merge SHA isn't known until after the merge, so referencing it requires a round-two PR. The PR number is durable, known at PR-create time, and resolves to the merge SHA on demand via \`gh pr view <PR> --json mergeCommit\`.
+- Implementers write past-tense entries even pre-merge: "Wave N — bumped X via PR #123" is true the moment the PR exists; "Wave N — ... awaiting CI + merge" goes stale on merge.
 - All commits — including doc-only HANDOFF / README / requirements / design markdown — go through the same feature-branch + PR pipeline. The pre-push hook blocks direct main pushes; do not use --no-verify to bypass it without explicit per-incident user authorization.
 `.trim();
 
