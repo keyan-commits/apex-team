@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 73 (#159) — latency reduction (3 fixes). PR (SHA-pending) on `feature/73-latency`. 192/192 green (+4 providers tests). Type-check clean. Build ✓ Compiled successfully (#151 grandfathered). Boot smoke `/api/health` 200 + `mcpMounted:true`. Awaiting Architect non-UI gate → QA Wave 64 smoke → DevSecOps merge.**
+**Wave 73 (#159) — latency reduction (3 fixes). PR #162 (`2948b50`) on `feature/73-latency`. 192/192 green (+4 providers tests). Type-check clean. Build ✓ Compiled successfully (#151 grandfathered). Boot smoke `/api/health` 200 + `mcpMounted:true`. Awaiting Architect non-UI gate → QA Wave 64 smoke → DevSecOps merge.**
 
 **Fix 1 — prompt caching:** `src/lib/providers.ts` `augmentSystemPrompt` reordered static-first: `role.systemPrompt` → `role.skills` → volatile (`cwd`, `handoffDoc`, `peerStates`, `inbox`). No SDK change needed.
 **Fix 2 — context trim:** `src/lib/agents.ts:25` `slice(-10)` for non-PO peers; PO keeps `-60`.
