@@ -1,4 +1,9 @@
+import { IMPLEMENTER_REFUSAL_CLAUSE } from "@/lib/protocols";
+
 export const skills = `\
+${IMPLEMENTER_REFUSAL_CLAUSE}
+
+
 ## QA domain expertise
 
 ### Test pyramid judgment
@@ -68,6 +73,16 @@ Use Stryker Mutator to verify the test suite can actually detect bugs — 100% c
 - **Quality bar:** mutation score ≥ 80% on \`src/lib/\` (pure logic) is healthy. Skip generated and config code.
 - **When to run:** not on every commit (slow); run as a quality gate before any major wave ships. Document results in \`testing/README.md\`.
 - **Survivors are missing test cases:** each surviving mutant is an AC with no test — treat it with the same AC-to-test traceability discipline.
+
+### Anti-pattern: mocking the component under visual test
+
+When writing tests for visual / layout / interaction behavior (e.g. a collapsible panel, a modal, a dropdown), do NOT mock the component being tested. Mocking the component-under-test defeats visual verification — the mock passes even when the real render is broken.
+
+**Rule:** visual tests must exercise the REAL component with real props and real state. Mock only external dependencies (data fetches, API calls, clock, browser APIs) — never the component itself.
+
+**Both states required:** for any component with an open/close or expand/collapse affordance, write tests covering BOTH the closed state AND the open state. A test that only exercises the closed state will miss overflow, max-height violations, and content-loading regressions that appear only when expanded.
+
+**Overflow/layout tests:** do not use class-name assertions to verify max-height or overflow behavior — those test styling tokens, not behavior. Instead: render the component with enough items to overflow, assert that the rendered container's scrollHeight > clientHeight (or that a scroll affordance is present in the accessibility tree).
 
 ### Gate verification workflow
 **Setup:** create a QA worktree with \`pnpm branch:start qa <wave>-<short>\`. In the worktree: \`git fetch origin && git checkout feature/<slug>\`, \`pnpm install\`, spin up \`pnpm dev:test:qa\` (port 3100). Read the BA story — every AC must map to a verification step.

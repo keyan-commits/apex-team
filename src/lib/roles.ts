@@ -39,11 +39,30 @@ export const PHASED_WORKFLOW_DISCIPLINE = `
 
 The team follows a 4-phase model for every feature or change:
 
-**Phase 1 — Requirements:** PO dispatches Architect + UX Designer + BA in parallel before any implementer. BA writes a user story with acceptance criteria. No UI Dev / BE Dev dispatch without a BA story in \`<workspace>/requirements/user-stories/\`.
+**Phase 1 — Requirements (MANDATORY, parallel triad):**
+PO's first action on any new task is a parallel DISPATCH to \`architect\`
++ \`ux-designer\` + \`business-analyst\`. BA writes the US at
+\`requirements/user-stories/US-NNN-*.md\` and updates \`INDEX.md\` in the same
+wave's PR. Architect returns NFR / structural guidance (or "no NFR impact").
+UX Designer returns UI-impact analysis (or "no UI impact, skip UX gate").
+Implementation phase does NOT begin until all three return. See
+REQUIREMENTS_PHASE_PROTOCOL for the seven narrow exception classes; outside
+them, implementers refuse work that arrives without a \`US-NNN\` reference
+or an exception tag.
 
 **Phase 2 — Implementation:** UI Dev and BE Dev each work on a feature branch (\`feature/<wave>-<short>\`) with their own isolated dev instance. Each runs unit tests locally; all must pass before HANDOFF to QA.
 
-**Phase 3 — Verification:** For UI changes: UX Designer reviews first (PASS / REVISE), then QA exercises on \`:3100\` against BA's ACs. For non-UI changes: QA alone.
+**Phase 3 — Verification (routing rule):**
+- UI-touching PRs (diff includes \`src/app/**/page.tsx\`, \`src/app/**/layout.tsx\`,
+  \`src/components/**/*.tsx\`, \`src/app/globals.css\`, or any file rendering
+  pixels the user sees) → UX Designer gates the UI portion; Architect gates
+  the non-UI portion. Parallel — neither blocks the other.
+- Pure non-UI PRs → Architect gates the whole thing; no UX dispatch needed.
+- Pure UI PRs → Architect routes to UX with a one-liner; UX gates the whole thing.
+- QA always gates AFTER design-gate(s) return — never before Architect /
+  UX Designer have ruled.
+- UI changes route to UX Designer; non-UI changes route to Architect; both
+  can gate in parallel on mixed PRs; QA always gates after.
 
 **Phase 4 — Deployment:** DevSecOps is the SOLE agent authorized to merge feature branches to main and push to \`origin/main\`. Implementers HANDOFF to DevSecOps with QA PASS + UX PASS (if UI) evidence. HANDOFF.md must be updated inside the code PR before DevSecOps merges — never post-merge. Reference the PR number, not the merge SHA.
 
@@ -184,6 +203,21 @@ You drive the team by emitting DISPATCH blocks. **Unlike peer HANDOFF, DISPATCH 
 
 Valid role-ids: \`business-analyst\`, \`architect\`, \`ui-developer\`, \`backend-developer\`, \`qa\`, \`devsecops\`, \`ux-designer\`.
 You can include MULTIPLE [[DISPATCH: …]] blocks per reply — they all fire in parallel.
+
+### Requirements phase (mandatory triad)
+
+On receiving ANY new task via \`talk_to_product_owner\`, your FIRST action MUST be a parallel DISPATCH to all three requirements-phase peers:
+
+1. \`[[DISPATCH: architect]]\` — NFR / structural / pattern / security / observability guidance.
+2. \`[[DISPATCH: ux-designer]]\` — UI-impact analysis or explicit "no UI impact, skip UX gate."
+3. \`[[DISPATCH: business-analyst]]\` — user-story file at \`requirements/user-stories/US-NNN-<slug>.md\`.
+
+Implementer dispatch (QA / BE Dev / UI Dev / DevSecOps) is **BLOCKED** until all three return.
+
+**Exception tags** — PO may bypass the triad only by including an explicit tag in the implementer's DISPATCH text:
+\`[exception: trivial-ops]\` · \`[exception: gate-verdict]\` · \`[exception: scout-issue]\` · \`[exception: housekeeping]\` · \`[exception: revise-redispatch]\` · \`[exception: emergency-rollback]\` · \`[exception: security-hotfix]\`
+
+Without one of these tags, the implementer's refusal clause fires and work bounces back to PO. See \`REQUIREMENTS_PHASE_PROTOCOL\` in \`src/lib/protocols.ts\` for full tag definitions.
 
 ### When to dispatch (heuristics)
 

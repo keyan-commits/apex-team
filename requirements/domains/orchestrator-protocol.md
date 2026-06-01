@@ -52,6 +52,50 @@ The two lanes run concurrently. While Lane B implements Wave N, Lane A pre-stage
 
 **File-touch conflict avoidance:** when two Lane A waves touch the same skill file, they must be sequenced (first wave lands; second rebases and appends) or merged into one impl wave. Architect flags this during Lane A design.
 
+## Zero-idle invariant (Wave 69, US-024)
+
+**No agent may be IDLE while the backlog has open issues.** PO is the enforcer. This rule strengthens the Lane A cadence (above): pipeline parallelism keeps Lane A busy while Lane B implements; the zero-idle invariant keeps EVERY agent busy while ANY issues exist — including DevSecOps, QA, and implementers who have no current wave assigned.
+
+**Turn-start audit:** PO's first action every turn is a zero-idle scan. Any IDLE agent with backlog > 0 gets an immediate fallback DISPATCH before PO processes the incoming message.
+
+**Priority order for assignments:**
+1. Lane B impl dispatch (wave is impl-ready)
+2. Lane B gate dispatch (code review, QA gate, UX gate pending)
+3. Lane A triad for next-in-queue wave
+4. Self-improvement / `domains/` extension work (Lane A fallback)
+5. Backlog triage (oldest issues, propose priority bumps)
+6. DevSecOps ops audit (branch protection, CI, dependency review)
+7. **Only** backlog = 0 AND no in-flight work → genuine idle; PO declares "confirming with user."
+
+See [[BR-003]], [[US-024]], [[glossary#IDLE_INVARIANT]].
+
+## Consult-BA invariant (Wave 70, US-025)
+
+Every working role (Architect, UX Designer, UI Dev, BE Dev, QA, DevSecOps) MUST emit `[[HANDOFF: business-analyst]]` BEFORE writing code, tests, or configuration when any acceptance criterion or business term in the assigned user story is unclear, ambiguous, or contradicts the codebase. **Silent guessing on business intent is forbidden.**
+
+The canonical sentence lands in 6 skill files (qa.ts + backend-developer.ts + ui-developer.ts + ux-designer.ts + architect.ts strengthened + devsecops.ts first touch). BA replies with: (a) the clarification, (b) it promoted to a durable MD, (c) a HANDOFF back to the asking role with permission to proceed.
+
+**Compose-with-zero-idle:** a consult-BA HANDOFF counts as non-idle activity. PO's zero-idle scan MUST NOT double-dispatch over a role that has already emitted a consult-BA HANDOFF and is waiting for BA's reply.
+
+See [[BR-004]], [[US-025]], [[glossary#CONSULT_BA]].
+
+## Continuous assignment via server-side ticks (Wave 71, US-026)
+
+**Root cause of merge-train stalls:** PO only runs when externally pinged via `talk_to_product_owner`. Between pings, peer replies accumulate in PO's queue but PO does not process them. Wave 69's zero-idle invariant (BR-003) defines the rule; Wave 71 is the runtime enforcement.
+
+**Tick scheduler behavior:** `src/lib/tick-scheduler.ts` maintains a per-thread `setTimeout` chain. While any non-clear signal exists — peer inbox > 0, open PR, backlog > 0 — a tick fires every 15–30s. Each tick calls PO's turn handler with a synthetic `[[AUTO-CONTINUE: tick N | …]]` message. PO processes inbox items, advances gates, dispatches idle peers.
+
+**Stop conditions (all three must be implemented):**
+1. All signals clear (backlog = 0 AND inboxes = 0 AND no open PRs).
+2. NO_OP_THROTTLE exceeded: 3 consecutive zero-DISPATCH ticks → scheduler pauses.
+3. Explicit `pause_ticks(thread_id)` MCP call.
+
+**Relationship to Wave 69 (zero-idle invariant):** Wave 69 is the protocol rule; Wave 71 is the actuator that enforces it without requiring human pings. Together they close the stall gap: the invariant says WHAT must not happen; the scheduler ensures PO sees and acts on every signal.
+
+**Relationship to Wave 70 (consult-BA invariant):** AUTO-CONTINUE ticks do NOT override the consult-BA requirement. A peer dispatched via a tick still HANDOFFs to BA if the story is unclear. The tick is a scheduling mechanism, not a business-rules bypass.
+
+**Budget cap (TICK_BUDGET):** 500K tokens/thread/hour by default. Ticks halt when exceeded, resume next hour. See [[glossary#TICK_BUDGET]], [[glossary#NO_OP_THROTTLE]], [[US-026]].
+
 ## Source of truth
 
 `src/lib/protocols.ts` — `REQUIREMENTS_PHASE_PROTOCOL`, `IMPLEMENTATION_PHASE_PROTOCOL`, `VERIFICATION_PHASE_PROTOCOL`, `IMPLEMENTER_REFUSAL_CLAUSE`; `src/lib/roles.ts` — `PHASED_WORKFLOW_DISCIPLINE`, `ORCHESTRATOR_PROTOCOL`.

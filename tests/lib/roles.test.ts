@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { ROLES, PHASED_WORKFLOW_DISCIPLINE, DEFAULT_ROLE_MODELS } from "@/lib/roles";
+import { skills as qaSkills } from "@/lib/skills/qa";
+import { skills as backendDeveloperSkills } from "@/lib/skills/backend-developer";
+import { skills as uiDeveloperSkills } from "@/lib/skills/ui-developer";
 import { skills as architectSkills } from "@/lib/skills/architect";
+import { skills as uxDesignerSkills } from "@/lib/skills/ux-designer";
 import { skills as businessAnalystSkills } from "@/lib/skills/business-analyst";
 
 describe("Wave 41 — DevSecOps doc-only PR prohibition", () => {
@@ -70,6 +74,67 @@ describe("Wave 45 — Broaden self-enrichment to cover bugs/gaps/drift", () => {
 
   it("PO prompt includes filing what peers surface section", () => {
     expect(ROLES["product-owner"].systemPrompt).toContain("Filing what peers surface");
+  });
+});
+
+describe("Wave 55 — Mandatory requirements triad + role-boundary + Wave 53b/54a amendments", () => {
+  it("PHASED_WORKFLOW_DISCIPLINE Phase 1 names the parallel triad", () => {
+    expect(PHASED_WORKFLOW_DISCIPLINE).toContain("MANDATORY, parallel triad");
+  });
+
+  it("PHASED_WORKFLOW_DISCIPLINE Phase 3 names the routing rule", () => {
+    expect(PHASED_WORKFLOW_DISCIPLINE).toContain("UI changes route to UX Designer");
+    expect(PHASED_WORKFLOW_DISCIPLINE).toContain("QA always gates after");
+  });
+
+  it("PO system prompt contains Requirements phase (mandatory triad) section", () => {
+    expect(ROLES["product-owner"].systemPrompt).toContain("Requirements phase (mandatory triad)");
+  });
+
+  it("PO system prompt contains the seven exception tags", () => {
+    expect(ROLES["product-owner"].systemPrompt).toContain("[exception: trivial-ops]");
+    expect(ROLES["product-owner"].systemPrompt).toContain("[exception: gate-verdict]");
+    expect(ROLES["product-owner"].systemPrompt).toContain("[exception: security-hotfix]");
+  });
+
+  it("QA skills contain the refusal clause", () => {
+    expect(qaSkills).toContain("Refuse work without a user-story reference");
+    expect(qaSkills).toContain("Requirements phase incomplete");
+    expect(qaSkills).toContain("[exception: trivial-ops]");
+  });
+
+  it("Backend Developer skills contain the refusal clause", () => {
+    expect(backendDeveloperSkills).toContain("Refuse work without a user-story reference");
+    expect(backendDeveloperSkills).toContain("Requirements phase incomplete");
+  });
+
+  it("UI Developer skills contain the refusal clause", () => {
+    expect(uiDeveloperSkills).toContain("Refuse work without a user-story reference");
+    expect(uiDeveloperSkills).toContain("Requirements phase incomplete");
+  });
+
+  it("Architect skills contain the Review-lane boundary section", () => {
+    expect(architectSkills).toContain("Review-lane boundary");
+    expect(architectSkills).toContain("I DO NOT gate — defer to UX Designer");
+    expect(architectSkills).toContain("Mixed PRs (touches both UI and non-UI files)");
+    expect(architectSkills).toContain("Routing to ux-designer");
+  });
+
+  it("UX Designer skills contain the UI-review lane claim", () => {
+    expect(uxDesignerSkills).toContain("Review-lane boundary");
+  });
+
+  it("UX Designer skills contain Proactive gate coverage (Wave 54a)", () => {
+    expect(uxDesignerSkills).toContain("Proactive gate coverage");
+  });
+
+  it("UX Designer skills contain Full-page review rule (Wave 53b)", () => {
+    expect(uxDesignerSkills).toContain("Full-page review rule");
+    expect(uxDesignerSkills).toContain("≥1280px AND ≥390px");
+  });
+
+  it("QA skills contain Anti-pattern: mocking the component under visual test (Wave 53b)", () => {
+    expect(qaSkills).toContain("Anti-pattern: mocking the component under visual test");
   });
 });
 
