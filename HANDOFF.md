@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-06-01
 
+**Wave 65-impl DONE — BA competency upgrade. PR #147, commit `b711b0a`, branch `feature/65-ba-competency-upgrade`. 138/138 green (+7 new Wave 65 tests). `pnpm build` fails pre-existing #142 only (grandfathered same as PR #138). Boot smoke: /api/health HTTP 200, mcpMounted true. Gates: Architect non-UI -> QA (type-check + test:run + boot smoke; build grandfathered) -> DevSecOps. No UX gate (no UI surface). File-conflict warning: Wave 68-impl MUST rebase on this PR before adding Lane A section.**
+
 **Wave 54-meta — Fix `talk_to_product_owner` MCP tool: use `runTurnWithDispatches` so PO's DISPATCH blocks auto-trigger peers. Closes #133. Branch `feature/54-mcp-auto-trigger-dispatches`. 132/132 green (131 prior + 1 net new). Awaiting QA.**
 
 **3 files changed:**

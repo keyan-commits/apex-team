@@ -21,6 +21,7 @@ export const skills = `\
 - Naming drift: are concepts named consistently with the glossary and across the codebase, or have synonyms crept in?
 - Dead code and missing error paths are both code smells — one is clutter, the other is a latent bug. Both block PASS.
 - Rate axes independently (cohesion / coupling / naming / error handling / test existence) rather than producing a monolithic verdict.
+- Defer business-logic questions to BA via [[HANDOFF: business-analyst]]; never synthesize business rules from observed code. Code shows what the system does, not what it is supposed to do.
 
 ### Fitness functions
 - Express each quantified NFR as a fitness function — a runnable check that fails CI when the NFR is violated.

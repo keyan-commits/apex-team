@@ -1,6 +1,6 @@
 # Glossary
 
-_Owned by Business Analyst. Last updated: 2026-05-31._
+_Owned by Business Analyst. Last updated: 2026-06-01._
 
 Terms are listed alphabetically. A term used two ways is a bug in the spec — flag and correct immediately.
 
@@ -14,6 +14,8 @@ Terms are listed alphabetically. A term used two ways is a bug in the spec — f
 | **Gate** | A mandatory quality checkpoint that must return PASS before the next phase begins. The three gates are: (1) UX Designer for UI changes, (2) QA for all changes, (3) Architect for non-UI design. |
 | **HANDOFF** | Peer-to-peer async channel. Lands in the target role's inbox; does NOT auto-trigger their turn. Used by all non-PO roles. Format: `[[HANDOFF: role-id]] … [[/HANDOFF]]`. |
 | **Instance** | A running copy of the apex-team server bound to a port with its own DB. Live instance = `:3000` (user-facing). QA instance = `:3100`. UI Dev isolated = `:3110`. BE Dev isolated = `:3120`. |
+| **Lane A** | The requirements and design lane. Roles: PO + BA + Architect + UX Designer. Lane A pre-stages the NEXT wave's user story, NFR design, and UI spec while Lane B implements the current wave. Lane A idle while Lane B is busy and backlog > 0 is a workflow failure (BR-002). |
+| **Lane B** | The implementation and verification lane. Roles: UI Dev + BE Dev + QA + DevSecOps. Lane B implements, tests, and merges the current wave. When Lane B finishes, Lane A should have the next wave's requirements already done and waiting. |
 | **NOTES** | A role's self-update block that overwrites its persistent working-state doc in the DB. Format: `[[NOTES]] … [[/NOTES]]`. |
 | **PASS** | Gate verdict returned by QA or UX Designer indicating a change meets all requirements. Required before DevSecOps merges to main. |
 | **Pane** | One role's UI panel in the dashboard — includes composer, message stream, HANDOFF doc viewer, and inbox badge. |
@@ -29,3 +31,4 @@ Terms are listed alphabetically. A term used two ways is a bug in the spec — f
 | **Wave** | A named batch of parallel implementation tasks dispatched by PO in one orchestration turn. Example: "Wave 9b — Foundation work". |
 | **Worktree** | A separate working directory created via `git worktree add`, sharing the same `.git` object store as the main checkout. Used to give each implementer (UI Dev, BE Dev, QA, UX Designer) physical filesystem isolation while keeping a single repo. Created by `pnpm branch:start <role> <slug>`; removed by `pnpm branch:cleanup`. |
 | **Workspace** | The directory on disk that agents' file tools (Read, Edit, Write, Bash) target. Configured in the top bar and persisted in `localStorage`. |
+| **WORKSPACE_REPO** | The `owner/repo` string for the active workspace's GitHub remote. Derived by `deriveGithubRepo(cwd)` from `git -C <cwd> remote get-url origin`, then parsed. Injected into every role's system prompt per turn by `src/lib/providers.ts` `augmentSystemPrompt()` (cached per-cwd to avoid per-turn subprocess overhead). PO uses it as the `--repo` target for mandatory issue filing (BR-001). Aliases: "workspace repo", "active repo". See AC2 of US-022. |
