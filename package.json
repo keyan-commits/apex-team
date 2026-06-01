@@ -23,6 +23,7 @@
     "scout": "node scripts/skill-scout.mjs",
     "smoke": "node scripts/post-deploy-smoke.mjs",
     "devsecops:bootstrap-workspace": "node scripts/devsecops/bootstrap-workspace.mjs",
+    "lint": "eslint .",
     "postinstall": "git rev-parse --git-dir >/dev/null 2>&1 && git config core.hooksPath .githooks || true"
   },
   "dependencies": {
@@ -42,6 +43,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^25.9.1",
@@ -52,6 +54,7 @@
     "postcss": "^8.4.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^6.0.3",
+    "typescript-eslint": "^8.60.0",
     "vitest": "^4.1.7"
   },
   "packageManager": "pnpm@11.2.2"

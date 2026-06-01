@@ -2,12 +2,19 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 48 — Pre-commit hook for HANDOFF.md-in-PR rule, closes #101. Branch `feature/48-pre-commit-hook`. 113/113 green (108 prior + 5 new). Awaiting QA PASS + DevSecOps merge.**
+**Wave 49 — ESLint flat-config migration, closes #106. Branch `feature/49-eslint-flat-config`. 114/114 green (113 prior + 1 new). Awaiting QA PASS + DevSecOps merge.**
 
-**3 files added/changed:**
-- `.githooks/pre-commit` (new, +x) — POSIX shell hook: rejects commits where code is staged but HANDOFF.md is not. Respects `git config handoff.requireOnCommit false` bypass.
-- `package.json` — added `postinstall` script: `git config core.hooksPath .githooks || true` — auto-wires the hook on `pnpm install`.
-- `tests/ops/pre-commit-hook.test.ts` (new) — 5 tests: code+HANDOFF exits 0; code only exits 1; doc-only exits 0; opt-out exits 0; hook is executable.
+**6 files added/changed:**
+- `eslint.config.mjs` (new) — minimal flat config: `@eslint/js` recommended + `typescript-eslint` recommended; relaxes `no-explicit-any` (off), `no-unused-vars` (warn), `no-undef` (off), `no-empty` (warn).
+- `package.json` — added `"lint": "eslint ."` script; added `@eslint/js` + `typescript-eslint` devDeps.
+- `.github/workflows/ci.yml` — re-added `Lint` step (`pnpm lint`) WITHOUT `continue-on-error: true`.
+- `src/app/api/health/route.ts` — removed redundant `apexEngineUp = false` in catch block (was flagged as `no-useless-assignment`).
+- `src/components/AgentPane.tsx:102` — changed `// eslint-disable-line react-hooks/exhaustive-deps` → `// eslint-disable-line` (plugin not loaded; stale rule name caused "definition not found" error).
+- `tests/ops/lint-script.test.ts` (new) — 1 test: package.json `lint` script equals `"eslint ."`.
+
+**pnpm lint: 0 errors, 14 warnings (all @typescript-eslint/no-unused-vars in existing code — warnings only, do not block CI).**
+
+**Wave 48 — Pre-commit hook for HANDOFF.md-in-PR rule, closes #101. PR #108 (`feature/48-pre-commit-hook`), commit `ea82da9`. 113/113 green. Merged + deployed.**
 
 **Wave 47b — Broken lint step removal, closes #99. PR #107 (`feature/47b-lint-step-removal`), commit `24ed1d7`. 108/108 green. Merged + deployed.**
 

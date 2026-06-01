@@ -99,7 +99,7 @@ export function AgentPane({
       setOtherText(stored);
     }
     onConfigChangeRef.current({ ...configRef.current, model: stored });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); // eslint-disable-line
 
   // Elapsed-seconds ticker — starts/resets when busy transitions to true.
   useEffect(() => {
