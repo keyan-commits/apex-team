@@ -1,9 +1,9 @@
 // Wraps runTurn with the auto-trigger semantics for Product Owner
 // DISPATCHes: after the target turn finishes, any [[DISPATCH: role]]
 // blocks the PO emitted are run in parallel as their own runTurn calls.
-// Used by both /api/chat (web UI) and the talk_to_product_owner MCP tool
-// so dispatch fan-out behaves identically regardless of who triggered the
-// turn.
+// Web-UI path only (/api/chat + /api/po-dispatch). The MCP path
+// uses runTurn directly so the HTTP response is not held open for the
+// fan-out chain duration.
 
 import { runTurn, type RunTurnInput, type RunTurnResult } from "@/lib/run-turn";
 import type { TeamRoleId } from "@/types";

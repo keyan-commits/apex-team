@@ -2,7 +2,9 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 40a — Bug B hotfix (orchestrator regex line-anchoring). `src/lib/orchestrator.ts`: all 4 block-parsing regexes anchored with `(?:^|\n)` prefix + `\n` after opening tag. New `tests/lib/orchestrator.test.ts`: 13 tests (inline-mention guard × 4 block types + real-block regressions). 69/69 green. Shipped via PR #90 (pending merge → DevSecOps).**
+**Wave 40b — Bug A fix (MCP fan-out structural fix). `src/mcp/tools.ts`: `talk_to_product_owner` now calls `runTurn` (single-agent) instead of `runTurnWithDispatches` — MCP response returns after PO turn only; caller drives dispatched peers via `talk_to_role`. Tool descriptions updated: "NOT auto-triggered." `talk_to_role` dispatch output text updated to remove stale "auto-triggered" claim. `src/lib/run-turn-with-dispatches.ts`: top comment updated (web-UI-only note). New `tests/mcp/tools.test.ts`: 7 tests. 76/76 green. PR pending → QA gate.**
+
+**Wave 40a — Bug B hotfix (orchestrator regex line-anchoring). `src/lib/orchestrator.ts`: all 4 block-parsing regexes anchored with `(?:^|\n)` prefix + `\n` after opening tag. New `tests/lib/orchestrator.test.ts`: 13 tests (inline-mention guard × 4 block types + real-block regressions). 69/69 green. Shipped via PR #90.**
 
 **Wave 38+39 — `claude-opus-4-8` model support + `claude-opus-4-7` pricing fix + PO prompt hardening. Shipped via PR #89.**
 
