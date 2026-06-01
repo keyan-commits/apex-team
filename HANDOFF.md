@@ -2,6 +2,14 @@
 
 ## ⏭️ NOW — 2026-06-01
 
+**Wave 43 — Bug #5 + Bug #6. PR #95 (`feature/43-mcp-agent-models-and-po-notes`). CI PASS. 92/92 green (86 prior + 6 new). Awaiting QA PASS + DevSecOps merge.**
+
+**3 files changed + tests + HANDOFF.md:**
+- `src/lib/roles.ts` — (Bug #6) added mandatory NOTES update rule + template to ORCHESTRATOR_PROTOCOL `### Your HANDOFF doc` section; (Bug #5a) added note to `### Model initialization` that absent AGENT-MODELS block falls back to canonical defaults; (Bug #5b) new exported `DEFAULT_ROLE_MODELS` constant (PO+Architect=opus-4-8, rest=sonnet-4-6).
+- `src/mcp/tools.ts` — (Bug #5) replaced `defaultAgents()` with `resolvedAgents(threadId)` which reads `getThreadAgentModels` from DB and merges with `DEFAULT_ROLE_MODELS`; removed unused `defaultAgentConfig` import.
+- `tests/mcp/tools.test.ts` — 4 new tests: PO+Architect default to opus-4-8, stored models override defaults, non-opus roles default to sonnet-4-6.
+- `tests/lib/roles.test.ts` — 2 new tests: DEFAULT_ROLE_MODELS shape + PO mandatory NOTES rule regression guard.
+
 **Wave 42 — Bug #2 + Bug #4. `scripts/branch-start.mjs`: removed `validateMainCleanliness()` call (lines 64-66) — the call was wrong; `git worktree add ... origin/main` creates from origin, not cwd, so dirty main state is irrelevant and the forced stash was mutating user-side state outside scope. `tests/ops/branch-hygiene.test.ts`: replaced the dirty-state-exit test with one that asserts branch-start does NOT refuse on dirty cwd. New `tests/lib/pricing.test.ts`: 6 snapshot tests for MODEL_PRICING (one per model, exact values, hermetic). 86/86 green. Awaiting QA PASS + DevSecOps merge.**
 
 **Wave 41 — DevSecOps doc-only PR prohibition. `src/lib/roles.ts`: (1) `PHASED_WORKFLOW_DISCIPLINE` Phase 4 bullet extended — "HANDOFF.md must be updated inside the code PR before DevSecOps merges — never post-merge. Reference the PR number, not the merge SHA." (2) DevSecOps deployment workflow gets new step 2a (pre-merge HANDOFF.md gate) and a hard-rule line after step 6 ("HANDOFF.md ships inside the code PR, never after"). (3) `PHASED_WORKFLOW_DISCIPLINE` exported so it can be tested. New `tests/lib/roles.test.ts`: 4 regression-guard tests. 80/80 green. Awaiting QA PASS + DevSecOps merge.**

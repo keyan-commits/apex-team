@@ -5,6 +5,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { RunTurnResult } from "@/lib/run-turn";
 import type { TeamRoleId } from "@/types";
+import { getThreadAgentModels } from "@/lib/db";
 
 const mockRunTurn = vi.fn();
 
@@ -15,6 +16,7 @@ vi.mock("@/lib/run-turn", () => ({
 vi.mock("@/lib/db", () => ({
   appendMessage: vi.fn(),
   getAgentState: vi.fn(() => ({ handoffDoc: "", updatedAt: Date.now() })),
+  getThreadAgentModels: vi.fn(() => null),
   listMessages: vi.fn(() => []),
   listPendingInbox: vi.fn(() => []),
 }));
@@ -31,6 +33,11 @@ vi.mock("@/lib/roles", () => ({
   ALL_ROLES: ["product-owner", "business-analyst", "architect"],
   TEAM_ROLES: ["business-analyst", "architect"],
   isTeamRole: vi.fn(() => false),
+  DEFAULT_ROLE_MODELS: {
+    "product-owner": "claude-opus-4-8",
+    "architect": "claude-opus-4-8",
+    "business-analyst": "claude-sonnet-4-6",
+  },
 }));
 
 vi.mock("node:fs", () => ({
@@ -132,6 +139,19 @@ describe("talk_to_product_owner", () => {
     // business-analyst turn was NOT run — only one runTurn call total
     expect(mockRunTurn).toHaveBeenCalledTimes(1);
   });
+
+  it("uses claude-opus-4-8 for product-owner and architect when no stored models", async () => {
+    vi.mocked(getThreadAgentModels).mockReturnValueOnce(null);
+    mockRunTurn.mockResolvedValueOnce(baseResult);
+
+    const handler = getHandler("talk_to_product_owner");
+    await handler({ message: "Go", thread_id: "t1" });
+
+    const agents = mockRunTurn.mock.calls[0][0].agents;
+    expect(agents["product-owner"].model).toBe("claude-opus-4-8");
+    expect(agents["architect"].model).toBe("claude-opus-4-8");
+    expect(agents["business-analyst"].model).toBe("claude-sonnet-4-6");
+  });
 });
 
 describe("talk_to_role", () => {
@@ -181,5 +201,38 @@ describe("talk_to_role", () => {
     const result = await handler({ role: "business-analyst", message: "Write story", thread_id: "t1" });
 
     expect(result.content[0].text).toContain("BA reply here");
+  });
+
+  it("uses claude-opus-4-8 for architect when no stored models", async () => {
+    vi.mocked(getThreadAgentModels).mockReturnValueOnce(null);
+    mockRunTurn.mockResolvedValueOnce(baseResult);
+
+    const handler = getHandler("talk_to_role");
+    await handler({ role: "architect", message: "Review this", thread_id: "t1" });
+
+    const agents = mockRunTurn.mock.calls[0][0].agents;
+    expect(agents["architect"].model).toBe("claude-opus-4-8");
+  });
+
+  it("uses stored model when getThreadAgentModels returns an override", async () => {
+    vi.mocked(getThreadAgentModels).mockReturnValueOnce({ architect: "claude-opus-4-7" });
+    mockRunTurn.mockResolvedValueOnce(baseResult);
+
+    const handler = getHandler("talk_to_role");
+    await handler({ role: "architect", message: "Review this", thread_id: "t1" });
+
+    const agents = mockRunTurn.mock.calls[0][0].agents;
+    expect(agents["architect"].model).toBe("claude-opus-4-7");
+  });
+
+  it("uses claude-sonnet-4-6 for non-opus roles when no stored models", async () => {
+    vi.mocked(getThreadAgentModels).mockReturnValueOnce(null);
+    mockRunTurn.mockResolvedValueOnce(baseResult);
+
+    const handler = getHandler("talk_to_role");
+    await handler({ role: "business-analyst", message: "Write story", thread_id: "t1" });
+
+    const agents = mockRunTurn.mock.calls[0][0].agents;
+    expect(agents["business-analyst"].model).toBe("claude-sonnet-4-6");
   });
 });

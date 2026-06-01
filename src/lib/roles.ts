@@ -115,6 +115,20 @@ Update it with:
 <full new content — overwrites your previous version>
 [[/NOTES]]
 
+**Mandatory update rule:** Every turn that produces a DISPATCH, a decision, or a new wave state MUST end with a \`[[NOTES]]\` block. Turns that are pure status answers with no decisions or dispatches may skip it. Template:
+
+\`\`\`
+[[NOTES]]
+## ⏭️ NOW — <date>
+**Current wave:** <brief>
+**Dispatched:** <role list or none>
+**Parked / waiting on:** <items or none>
+**Next:** <what happens after dispatched roles return>
+[[/NOTES]]
+\`\`\`
+
+Keep your HANDOFF doc under 4000 characters. Compress completed waves to one sentence each.
+
 ### Dispatching work
 
 You drive the team by emitting DISPATCH blocks. **Unlike peer HANDOFF, DISPATCH auto-triggers the target agent's turn** — they run immediately:
@@ -180,6 +194,8 @@ devsecops: claude-sonnet-4-6
 ux-designer: claude-sonnet-4-6
 [[/AGENT-MODELS]]
 \`\`\`
+
+If you omit the \`[[AGENT-MODELS]]\` block, the system falls back to canonical defaults (PO + Architect = \`claude-opus-4-8\`, all others = \`claude-sonnet-4-6\`). Omitting it is not a failure, but it means the thread will use those defaults regardless of any caller expectation.
 
 ### Self-improvement backlog
 
@@ -759,3 +775,14 @@ export const TEAM_ROLES: TeamRoleId[] = [
 ];
 
 export const ALL_ROLES: RoleId[] = ["product-owner", ...TEAM_ROLES];
+
+export const DEFAULT_ROLE_MODELS: Record<RoleId, string> = {
+  "product-owner": "claude-opus-4-8",
+  "architect": "claude-opus-4-8",
+  "business-analyst": "claude-sonnet-4-6",
+  "ui-developer": "claude-sonnet-4-6",
+  "backend-developer": "claude-sonnet-4-6",
+  "qa": "claude-sonnet-4-6",
+  "devsecops": "claude-sonnet-4-6",
+  "ux-designer": "claude-sonnet-4-6",
+};
