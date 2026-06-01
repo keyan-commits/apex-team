@@ -9,6 +9,16 @@ Append-only. Newest first. Each entry: ~3–5 lines. Triggers: a protocol amendm
 **Why:** BA prompt had no workspace-scan procedure, no `domains/` structure, no promote-to-MD discipline. Answers lived in conversation threads and evaporated.
 **We now do:** BA skill rewritten (Wave 65) with discovery-first scan before every answer, onboarding scan on workspace change, per-domain MDs under `requirements/domains/`, promote-to-MD discipline on every derived answer, and canonical cross-peer authority. Architect's skill now carries a hard BA-deferral bullet. Pre-seeded apex-team's own `requirements/domains/` tree as dogfood. Closes #143.
 
+### Mandatory requirements triad — implementer refusal is the hard backstop
+**What broke:** Orchestrator-of-orchestrator (Mac 2's outer claude-code) and PO both bypassed the requirements phase on tasks they judged small. Un-specced UI changes shipped. UX gate was never triggered. Visual regressions went undetected until the user noticed on Mac 2.
+**Why:** Requirements phase existed as exhortation only (prompt guidance). No implementer-side backstop. PO's dispatches died in DB because `talk_to_product_owner` used `runTurn` instead of `runTurnWithDispatches` (separate fix, Wave 54-meta).
+**We now do:** Hard-encoded the parallel-triad mandate (Architect + UX + BA before any implementer) in `REQUIREMENTS_PHASE_PROTOCOL` + PO skill + `PHASED_WORKFLOW_DISCIPLINE`. Implementers (`qa.ts`, `backend-developer.ts`, `ui-developer.ts`) each carry a refusal clause that bounces work lacking a `US-NNN` path, a user-story-format `Closes #NNN`, or one of seven exception tags: `trivial-ops`, `gate-verdict`, `scout-issue`, `housekeeping`, `revise-redispatch`, `emergency-rollback`, `security-hotfix`. Wave 55.
+
+### QA visual tests must exercise real components, not mocks
+**What broke:** QA tests for visual / collapsible / overflow behavior passed because they mocked the component-under-test. Real render was broken (collapsed panel didn't clip at max-height; overflow scroll missing).
+**Why:** Mocking the component defeats visual/interaction verification — the mock complies with spec while the real render fails silently.
+**We now do:** QA skill (`qa.ts`) explicitly bans mocking the component under visual test. Both open/closed states required for affordance-bearing components. Overflow/layout tests must assert on rendered geometry, not class names. Wave 53a+53b.
+
 ### `tsx watch` mid-edit kills the editing agent
 **What broke:** the auto-restart watcher respawned the apex-team server whenever an agent edited an imported source file. Mid-turn restarts cut off in-flight responses.
 **Why:** the watcher couldn't distinguish "agent intentionally edited code" from "I should reload now." Both are file changes.

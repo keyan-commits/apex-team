@@ -1,4 +1,9 @@
+import { IMPLEMENTER_REFUSAL_CLAUSE } from "@/lib/protocols";
+
 export const skills = `\
+${IMPLEMENTER_REFUSAL_CLAUSE}
+
+
 ## Backend development domain expertise
 
 ### API resource modeling

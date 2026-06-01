@@ -77,7 +77,8 @@ export function registerApexTeamTools(server: McpServer): void {
         "architect (NFRs + code review), ui-developer, backend-developer, qa (testing), devsecops. " +
         "Returns the agent's visible reply AND any DISPATCH/HANDOFF blocks they emitted as structured data. " +
         "DISPATCH blocks are NOT auto-triggered within a single MCP call — " +
-        "call talk_to_role for each dispatched peer to run their turn.",
+        "call talk_to_role for each dispatched peer to run their turn. " +
+        "Reserved for diagnostic or explicit-override use. New work must go through `talk_to_product_owner` so the requirements phase runs.",
       inputSchema: {
         role: RoleEnum,
         message: z.string().min(1).describe("The user message to send to that role."),
@@ -135,6 +136,8 @@ export function registerApexTeamTools(server: McpServer): void {
     {
       title: "Talk to the Product Owner",
       description:
+        "Canonical entry point. All new work goes here. " +
+        "PO will run the requirements phase (Architect + UX + BA in parallel) before any implementer is dispatched. " +
         "Hand a task off to the Product Owner. The PO will decide which team members to dispatch " +
         "(via [[DISPATCH: role]] blocks in their reply). " +
         "Use this when you want the team driven for you instead of picking the role yourself. " +
