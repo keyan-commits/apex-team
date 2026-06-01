@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 71 (#153) — server-side PO tick scheduler. PR (SHA-pending) on `feature/71-tick-scheduler`. 205/205 green. type-check clean. Build ✓ Compiled successfully (#151 grandfathered). Boot smoke `/api/health` 200 + `mcpMounted:true` + `/api/tick-state` 200. Awaiting Architect non-UI gate → QA Wave 64 smoke → DevSecOps merge.**
+**Wave 71 (#153) — server-side PO tick scheduler. PR #158 (`c5cfa5f`) on `feature/71-tick-scheduler`. 205/205 green. type-check clean. Build ✓ Compiled successfully (#151 grandfathered). Boot smoke `/api/health` 200 + `mcpMounted:true` + `/api/tick-state` 200. Awaiting Architect non-UI gate → QA Wave 64 smoke → DevSecOps merge.**
 
 **Merged this session:** PR #132 (`1a96164`), #138 (`04c044e`), #147 (`ae1909f`), #157 (`92abd87`), #150 (`732ce39`). Main HEAD `732ce39`.
 
