@@ -2,6 +2,20 @@
 
 ## ⏭️ NOW — 2026-06-01
 
+**Wave 46 — Bind workspace to thread. PR pending (`feature/46-bind-workspace-to-thread`). 110/110 green (100 prior + 10 new). Awaiting QA PASS + DevSecOps merge.**
+
+**6 files changed + 3 new test files:**
+- `src/lib/db.ts` — idempotent `ALTER TABLE thread_config ADD COLUMN workspace TEXT` migration; new `getThreadWorkspace(threadId)` + `setThreadWorkspace(threadId, workspace)` helpers matching existing agent-models pattern.
+- `src/mcp/tools.ts` — both `talk_to_role` and `talk_to_product_owner` now call `setThreadWorkspace(thread_id, workspace)` when `workspace` arg is provided. Thread-bound workspace is persisted before `runTurn`.
+- `src/app/api/team-status/route.ts` — reads `getThreadWorkspace(threadId)` and uses it over the query param workspace when present.
+- `src/app/api/active-thread/route.ts` — returns `{ threadId, workspace }` (workspace from `getThreadWorkspace`); dashboard polls this every 4s.
+- `src/app/dashboard/page.tsx` — both active-thread fetch handlers (initial + polling) now apply `d.workspace` to `setWorkspace` when present; thread-bound workspace overrides localStorage + /api/health fallback.
+- `tests/lib/db.test.ts` (new) — 3 tests: round-trip, null for unknown, overwrite.
+- `tests/mcp/tools.test.ts` (extended) — 4 new tests: setThreadWorkspace called/not-called in both tools.
+- `tests/api/team-status-workspace.test.ts` (new) — 3 tests: query param used when no thread-bound; thread-bound overrides query param; no threadId skips DB call.
+
+**Note:** Architect's cleanup Wave 46 (`feature/46-cleanup-and-lint-removal`, closes #98/#99/#100) uses the same wave number. It is the next wave — rename to Wave 47 for branch/PR title.
+
 **Wave 45 — Expand peer self-enrichment to cover bugs/gaps/drift. `src/lib/roles.ts`: (1) `PHASED_WORKFLOW_DISCIPLINE` line 53 replaced with expanded `Self-enrichment — file issues for out-of-scope findings` block (labels, body template, `gh issue create` snippet, scope discipline, anti-noise rules); (2) Architect prompt gains `### Filing out-of-scope findings` section; (3) QA prompt gains `### Filing non-blocking observations` section (BEFORE-PASS gate); (4) ORCHESTRATOR_PROTOCOL gains `### Filing what peers surface` + anti-noise appendix (PO doesn't inherit PEER_PROTOCOL). `tests/lib/roles.test.ts`: 6 new regression-guard assertions. 100/100 green. Awaiting QA PASS + DevSecOps merge.**
 
 **Wave 44 — Transport drop fix. `src/mcp/handler.ts`: extracted `startHeartbeat(res, intervalMs=15_000)` exported helper; reduced interval from 30s → 15s; added `flush?.()` call after each write. `src/lib/roles.ts`: DevSecOps deployment workflow restructured into two-phase (Phase 1 = merge + push + self-HANDOFF; Phase 2 = restart + verify + NOTES + HANDOFF to PO). New `tests/mcp/handler.test.ts`: 2 tests (heartbeat fires at 15s; does not write to ended response). Awaiting QA PASS + DevSecOps merge.**

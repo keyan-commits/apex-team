@@ -66,6 +66,8 @@ function db(): Database.Database {
       roles_scanned     INTEGER NOT NULL DEFAULT 0
     );
   `);
+  // Additive migrations — idempotent via try/catch (column-already-exists throws, which is fine)
+  try { conn.exec(`ALTER TABLE thread_config ADD COLUMN workspace TEXT`); } catch {}
   _db = conn;
   return conn;
 }
@@ -188,6 +190,22 @@ export function setThreadAgentModels(
        ON CONFLICT(thread_id) DO UPDATE SET agent_models = excluded.agent_models`,
     )
     .run(threadId, JSON.stringify(models));
+}
+
+export function getThreadWorkspace(threadId: string): string | null {
+  const row = db()
+    .prepare(`SELECT workspace FROM thread_config WHERE thread_id = ?`)
+    .get(threadId) as { workspace: string | null } | undefined;
+  return row?.workspace ?? null;
+}
+
+export function setThreadWorkspace(threadId: string, workspace: string): void {
+  db()
+    .prepare(
+      `INSERT INTO thread_config (thread_id, agent_models, workspace) VALUES (?, '{}', ?)
+       ON CONFLICT(thread_id) DO UPDATE SET workspace = excluded.workspace`,
+    )
+    .run(threadId, workspace);
 }
 
 export function listAllAgentStates(threadId: string): AgentState[] {

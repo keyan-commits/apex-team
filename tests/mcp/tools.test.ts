@@ -5,7 +5,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { RunTurnResult } from "@/lib/run-turn";
 import type { TeamRoleId } from "@/types";
-import { getThreadAgentModels } from "@/lib/db";
+import { getThreadAgentModels, setThreadWorkspace } from "@/lib/db";
 
 const mockRunTurn = vi.fn();
 
@@ -19,6 +19,7 @@ vi.mock("@/lib/db", () => ({
   getThreadAgentModels: vi.fn(() => null),
   listMessages: vi.fn(() => []),
   listPendingInbox: vi.fn(() => []),
+  setThreadWorkspace: vi.fn(),
 }));
 
 vi.mock("@/lib/active-thread", () => ({
@@ -234,5 +235,53 @@ describe("talk_to_role", () => {
 
     const agents = mockRunTurn.mock.calls[0][0].agents;
     expect(agents["business-analyst"].model).toBe("claude-sonnet-4-6");
+  });
+
+  it("calls setThreadWorkspace when workspace arg is provided", async () => {
+    mockRunTurn.mockResolvedValueOnce(baseResult);
+
+    const handler = getHandler("talk_to_role");
+    await handler({ role: "architect", message: "Go", thread_id: "t1", workspace: "/workspace/lfm" });
+
+    expect(vi.mocked(setThreadWorkspace)).toHaveBeenCalledWith("t1", "/workspace/lfm");
+  });
+
+  it("does NOT call setThreadWorkspace when workspace arg is absent", async () => {
+    mockRunTurn.mockResolvedValueOnce(baseResult);
+
+    const handler = getHandler("talk_to_role");
+    await handler({ role: "architect", message: "Go", thread_id: "t1" });
+
+    expect(vi.mocked(setThreadWorkspace)).not.toHaveBeenCalled();
+  });
+});
+
+describe("talk_to_product_owner workspace", () => {
+  let getHandler: (name: string) => ToolHandler;
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    const { server, getHandler: gh } = buildCapturingServer();
+    getHandler = gh;
+    const { registerApexTeamTools } = await import("@/mcp/tools");
+    registerApexTeamTools(server);
+  });
+
+  it("calls setThreadWorkspace when workspace arg is provided", async () => {
+    mockRunTurn.mockResolvedValueOnce(baseResult);
+
+    const handler = getHandler("talk_to_product_owner");
+    await handler({ message: "Build X", thread_id: "t1", workspace: "/workspace/lfm" });
+
+    expect(vi.mocked(setThreadWorkspace)).toHaveBeenCalledWith("t1", "/workspace/lfm");
+  });
+
+  it("does NOT call setThreadWorkspace when workspace arg is absent", async () => {
+    mockRunTurn.mockResolvedValueOnce(baseResult);
+
+    const handler = getHandler("talk_to_product_owner");
+    await handler({ message: "Build X", thread_id: "t1" });
+
+    expect(vi.mocked(setThreadWorkspace)).not.toHaveBeenCalled();
   });
 });

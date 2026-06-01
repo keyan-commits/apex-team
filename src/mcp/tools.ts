@@ -23,6 +23,7 @@ import {
   getThreadAgentModels,
   listMessages,
   listPendingInbox,
+  setThreadWorkspace,
 } from "@/lib/db";
 import { ALL_ROLES, DEFAULT_ROLE_MODELS, TEAM_ROLES, isTeamRole } from "@/lib/roles";
 import type { AgentConfig, RoleId, TeamRoleId } from "@/types";
@@ -88,6 +89,7 @@ export function registerApexTeamTools(server: McpServer): void {
     },
     async ({ role, message, thread_id, workspace }) => {
       setActiveThread(thread_id);
+      if (workspace) setThreadWorkspace(thread_id, workspace);
       // Seed BA's inbox so it can capture product requirements from every
       // user message, regardless of which role the user targeted.
       if (role !== "business-analyst") {
@@ -146,6 +148,7 @@ export function registerApexTeamTools(server: McpServer): void {
     },
     async ({ message, thread_id, workspace }) => {
       setActiveThread(thread_id);
+      if (workspace) setThreadWorkspace(thread_id, workspace);
       appendMessage(thread_id, { kind: "handoff", from: "product-owner", to: "business-analyst" }, message);
       const result = await runTurn({
         threadId: thread_id,

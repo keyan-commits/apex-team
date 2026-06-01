@@ -5,6 +5,7 @@ import {
   listAllAgentStates,
   getSpendSummary,
   getScoutMeta,
+  getThreadWorkspace,
 } from "@/lib/db";
 import { ALL_ROLES } from "@/lib/roles";
 import { deriveGithubRepo } from "@/lib/derive-github-repo";
@@ -67,7 +68,11 @@ const _noIssues: TeamStatus["issues"] = {
 
 export async function GET(req: NextRequest): Promise<NextResponse<TeamStatus>> {
   const threadId = req.nextUrl.searchParams.get("threadId") ?? "";
-  const workspace = req.nextUrl.searchParams.get("workspace") ?? null;
+  let workspace = req.nextUrl.searchParams.get("workspace") ?? null;
+  if (threadId) {
+    const threadWs = getThreadWorkspace(threadId);
+    if (threadWs) workspace = threadWs;
+  }
 
   const messages: ChatMessage[] = threadId ? listMessages(threadId) : [];
   const agentStates = threadId ? listAllAgentStates(threadId) : [];

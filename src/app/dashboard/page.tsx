@@ -104,7 +104,10 @@ export default function DashboardPage() {
   useEffect(() => {
     fetch("/api/active-thread", { cache: "no-store" })
       .then((r) => r.json())
-      .then((d: { threadId: string | null }) => { if (d.threadId && !userEditedThreadRef.current) setThreadId(d.threadId); })
+      .then((d: { threadId: string | null; workspace?: string | null }) => {
+        if (d.threadId && !userEditedThreadRef.current) setThreadId(d.threadId);
+        if (d.workspace) setWorkspace(d.workspace);
+      })
       .catch(() => {});
   }, []);
 
@@ -114,10 +117,11 @@ export default function DashboardPage() {
       if (userEditedThreadRef.current) return;
       fetch("/api/active-thread", { cache: "no-store" })
         .then((r) => r.json())
-        .then((d: { threadId: string | null }) => {
+        .then((d: { threadId: string | null; workspace?: string | null }) => {
           if (d.threadId && d.threadId !== threadIdRef.current && !userEditedThreadRef.current) {
             setThreadId(d.threadId);
           }
+          if (d.workspace) setWorkspace(d.workspace);
         })
         .catch(() => {});
     }, 4000);
