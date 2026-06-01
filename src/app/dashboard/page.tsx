@@ -572,7 +572,9 @@ export default function DashboardPage() {
                         {visibleChips.map((chip) =>
                           chip.kind === "wave"
                             ? <span key={chip.key} className="now-chip now-chip-wave">{chip.label}</span>
-                            : <span key={chip.key} className="now-chip now-chip-ticket">#{chip.num}</span>
+                            : data.issues.repoStatus === "ok"
+                              ? <a key={chip.key} className="now-chip now-chip-ticket" href={`https://github.com/${data.issues.repo}/issues/${chip.num}`} target="_blank" rel="noreferrer">#{chip.num}</a>
+                              : <span key={chip.key} className="now-chip now-chip-ticket">#{chip.num}</span>
                         )}
                         {chipOverflow > 0 && <span className="now-chip now-chip-overflow">+{chipOverflow}</span>}
                       </span>
@@ -589,7 +591,7 @@ export default function DashboardPage() {
                       <span className="dim">{fmtTime(group.latestAt)}</span>
                     </div>
                     {expandedRow["done"] === group.key && (
-                      <div className="row-detail">
+                      <div className="row-detail group-detail">
                         {group.rows.map((e) => {
                           const rowKey = `${e.role}-${e.completedAt}`;
                           const isItemExpanded = expandedRow["done-item"] === rowKey;
@@ -1080,6 +1082,7 @@ export default function DashboardPage() {
           border: 1px solid color-mix(in srgb, var(--accent-po) 35%, var(--border));
         }
         .now-chip-ticket:hover { opacity: 0.8; }
+        .now-chip-ticket:focus-visible { outline: 2px solid var(--accent-po); outline-offset: 2px; }
         .now-chip-overflow {
           font-size: 9px; color: var(--text-dim); padding: 1px 3px;
         }
@@ -1091,6 +1094,7 @@ export default function DashboardPage() {
         }
         .group-row-item:first-child { border-top: none; }
         .group-row-item .row { font-size: 11px; }
+        .group-detail { max-height: 280px; overflow-y: auto; }
         .group-sha { font-size: 9px; color: var(--text-dim); background: none; }
 
         .issue-footer {
