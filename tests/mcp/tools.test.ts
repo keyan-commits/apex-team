@@ -8,9 +8,14 @@ import type { TeamRoleId } from "@/types";
 import { getThreadAgentModels, setThreadWorkspace } from "@/lib/db";
 
 const mockRunTurn = vi.fn();
+const mockRunTurnWithDispatches = vi.fn();
 
 vi.mock("@/lib/run-turn", () => ({
   runTurn: mockRunTurn,
+}));
+
+vi.mock("@/lib/run-turn-with-dispatches", () => ({
+  runTurnWithDispatches: mockRunTurnWithDispatches,
 }));
 
 vi.mock("@/lib/db", () => ({
@@ -74,6 +79,8 @@ const baseResult: RunTurnResult = {
   agentModels: null,
 };
 
+const basePOResult = { ...baseResult, peerReplies: [] };
+
 describe("talk_to_product_owner", () => {
   let getHandler: (name: string) => ToolHandler;
 
@@ -85,29 +92,39 @@ describe("talk_to_product_owner", () => {
     registerApexTeamTools(server);
   });
 
-  it("calls runTurn exactly once even when PO emits multiple DISPATCH blocks", async () => {
-    mockRunTurn.mockResolvedValueOnce({
-      ...baseResult,
+  it("calls runTurnWithDispatches exactly once (peer fan-out handled internally)", async () => {
+    mockRunTurnWithDispatches.mockResolvedValueOnce({
+      ...basePOResult,
       dispatches: [
         { to: "business-analyst" as TeamRoleId, message: "Spec feature X" },
         { to: "architect" as TeamRoleId, message: "Review scope" },
       ],
-    } satisfies RunTurnResult);
+      peerReplies: [
+        { role: "business-analyst" as TeamRoleId, result: { ...baseResult, visibleText: "BA ran" } },
+        { role: "architect" as TeamRoleId, result: { ...baseResult, visibleText: "Arch ran" } },
+      ],
+    });
 
     const handler = getHandler("talk_to_product_owner");
     await handler({ message: "Build feature X", thread_id: "t1" });
 
-    expect(mockRunTurn).toHaveBeenCalledTimes(1);
+    expect(mockRunTurnWithDispatches).toHaveBeenCalledTimes(1);
+    // talk_to_role's runTurn should NOT be called — peers ran inside runTurnWithDispatches
+    expect(mockRunTurn).not.toHaveBeenCalled();
   });
 
-  it("returns dispatch list in result text with NOT-auto-triggered wording", async () => {
-    mockRunTurn.mockResolvedValueOnce({
-      ...baseResult,
+  it("returns auto-triggered peer replies in result text", async () => {
+    mockRunTurnWithDispatches.mockResolvedValueOnce({
+      ...basePOResult,
       dispatches: [
         { to: "business-analyst" as TeamRoleId, message: "Spec feature X" },
         { to: "architect" as TeamRoleId, message: "Review scope" },
       ],
-    } satisfies RunTurnResult);
+      peerReplies: [
+        { role: "business-analyst" as TeamRoleId, result: { ...baseResult, visibleText: "BA reply" } },
+        { role: "architect" as TeamRoleId, result: { ...baseResult, visibleText: "Arch reply" } },
+      ],
+    });
 
     const handler = getHandler("talk_to_product_owner");
     const result = await handler({ message: "Build feature X", thread_id: "t1" });
@@ -115,12 +132,12 @@ describe("talk_to_product_owner", () => {
     const text = result.content[0].text;
     expect(text).toContain("business-analyst");
     expect(text).toContain("architect");
-    expect(text).toContain("NOT auto-triggered");
-    expect(text).not.toContain("auto-triggered — those agents are running now");
+    expect(text).toContain("auto-triggered");
+    expect(text).not.toContain("NOT auto-triggered — call talk_to_role for each dispatched role");
   });
 
   it("includes PO visible text in result", async () => {
-    mockRunTurn.mockResolvedValueOnce({ ...baseResult, visibleText: "My PO decision" } satisfies RunTurnResult);
+    mockRunTurnWithDispatches.mockResolvedValueOnce({ ...basePOResult, visibleText: "My PO decision" });
 
     const handler = getHandler("talk_to_product_owner");
     const result = await handler({ message: "Status?", thread_id: "t1" });
@@ -128,27 +145,41 @@ describe("talk_to_product_owner", () => {
     expect(result.content[0].text).toContain("My PO decision");
   });
 
-  it("does not run dispatched peer turns (no fan-out)", async () => {
-    mockRunTurn.mockResolvedValueOnce({
-      ...baseResult,
-      dispatches: [{ to: "business-analyst" as TeamRoleId, message: "Spec this" }],
-    } satisfies RunTurnResult);
+  it("includes dispatched peer visible text when peers run", async () => {
+    mockRunTurnWithDispatches.mockResolvedValueOnce({
+      ...basePOResult,
+      dispatches: [{ to: "qa" as TeamRoleId, message: "Test this" }],
+      peerReplies: [{ role: "qa" as TeamRoleId, result: { ...baseResult, visibleText: "QA ran" } }],
+    });
 
     const handler = getHandler("talk_to_product_owner");
-    await handler({ message: "Go", thread_id: "t1" });
+    const result = await handler({ message: "Go", thread_id: "t1" });
 
-    // business-analyst turn was NOT run — only one runTurn call total
-    expect(mockRunTurn).toHaveBeenCalledTimes(1);
+    const text = result.content[0].text;
+    expect(text).toContain("qa");
+    expect(text).toContain("QA ran");
+    expect(text).toContain("auto-triggered");
+  });
+
+  it("response has no peer section when PO emits no dispatches", async () => {
+    mockRunTurnWithDispatches.mockResolvedValueOnce({ ...basePOResult, peerReplies: [] });
+
+    const handler = getHandler("talk_to_product_owner");
+    const result = await handler({ message: "Status?", thread_id: "t1" });
+
+    const text = result.content[0].text;
+    expect(text).not.toContain("Dispatched peers");
+    expect(mockRunTurnWithDispatches).toHaveBeenCalledTimes(1);
   });
 
   it("uses claude-opus-4-8 for product-owner and architect when no stored models", async () => {
     vi.mocked(getThreadAgentModels).mockReturnValueOnce(null);
-    mockRunTurn.mockResolvedValueOnce(baseResult);
+    mockRunTurnWithDispatches.mockResolvedValueOnce(basePOResult);
 
     const handler = getHandler("talk_to_product_owner");
     await handler({ message: "Go", thread_id: "t1" });
 
-    const agents = mockRunTurn.mock.calls[0][0].agents;
+    const agents = mockRunTurnWithDispatches.mock.calls[0][0].agents;
     expect(agents["product-owner"].model).toBe("claude-opus-4-8");
     expect(agents["architect"].model).toBe("claude-opus-4-8");
     expect(agents["business-analyst"].model).toBe("claude-sonnet-4-6");
@@ -268,7 +299,7 @@ describe("talk_to_product_owner workspace", () => {
   });
 
   it("calls setThreadWorkspace when workspace arg is provided", async () => {
-    mockRunTurn.mockResolvedValueOnce(baseResult);
+    mockRunTurnWithDispatches.mockResolvedValueOnce(basePOResult);
 
     const handler = getHandler("talk_to_product_owner");
     await handler({ message: "Build X", thread_id: "t1", workspace: "/workspace/lfm" });
@@ -277,7 +308,7 @@ describe("talk_to_product_owner workspace", () => {
   });
 
   it("does NOT call setThreadWorkspace when workspace arg is absent", async () => {
-    mockRunTurn.mockResolvedValueOnce(baseResult);
+    mockRunTurnWithDispatches.mockResolvedValueOnce(basePOResult);
 
     const handler = getHandler("talk_to_product_owner");
     await handler({ message: "Build X", thread_id: "t1" });

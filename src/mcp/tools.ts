@@ -16,6 +16,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { runTurn } from "@/lib/run-turn";
+import { runTurnWithDispatches } from "@/lib/run-turn-with-dispatches";
 import { setActiveThread } from "@/lib/active-thread";
 import {
   appendMessage,
@@ -137,9 +138,8 @@ export function registerApexTeamTools(server: McpServer): void {
         "Hand a task off to the Product Owner. The PO will decide which team members to dispatch " +
         "(via [[DISPATCH: role]] blocks in their reply). " +
         "Use this when you want the team driven for you instead of picking the role yourself. " +
-        "Returns the PO's reply AND a structured list of peers the PO dispatched. " +
-        "DISPATCH blocks are NOT auto-triggered within a single MCP call — " +
-        "call talk_to_role for each dispatched role to actually run their turn.",
+        "Returns the PO's reply AND every dispatched peer's reply. " +
+        "DISPATCH blocks ARE auto-triggered — dispatched peer turns run in parallel after the PO's turn completes.",
       inputSchema: {
         message: z.string().min(1),
         thread_id: z.string().min(1),
@@ -150,7 +150,7 @@ export function registerApexTeamTools(server: McpServer): void {
       setActiveThread(thread_id);
       if (workspace) setThreadWorkspace(thread_id, workspace);
       appendMessage(thread_id, { kind: "handoff", from: "product-owner", to: "business-analyst" }, message);
-      const result = await runTurn({
+      const result = await runTurnWithDispatches({
         threadId: thread_id,
         target: "product-owner",
         userMessage: message,
@@ -172,12 +172,12 @@ export function registerApexTeamTools(server: McpServer): void {
           ...result.handoffs.map((h) => `- → ${h.to}: ${h.message.slice(0, 120)}${h.message.length > 120 ? "…" : ""}`),
         );
       }
-      if (result.dispatches.length > 0) {
-        out.push(
-          "",
-          "### DISPATCHes emitted (NOT auto-triggered — call talk_to_role for each dispatched role to run their turn):",
-          ...result.dispatches.map((d) => `- → ${d.to}: ${d.message.slice(0, 120)}${d.message.length > 120 ? "…" : ""}`),
-        );
+      if (result.peerReplies.length > 0) {
+        out.push("", "### Dispatched peers (auto-triggered):");
+        for (const p of result.peerReplies) {
+          const preview = (p.result.visibleText || "(no visible text)").slice(0, 300);
+          out.push(`- → ${p.role}: ${preview}`);
+        }
       }
       return { content: [{ type: "text", text: out.join("\n") }] };
     },
