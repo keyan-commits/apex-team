@@ -2,9 +2,11 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 64 (#141) — mandatory build+boot smoke gate — merging this turn.** PR #157 (`92abd87`) already on main. Rebasing Wave 64 onto `92abd87`.
-- PRs merged this session: #132 (`1a96164`), #138 (`04c044e`), #147 (`ae1909f`), #157 (`92abd87`).
-- PR #150 (Wave 64) still CONFLICTING, awaiting BE Dev rebase.
+**Wave 71 (#153) — server-side PO tick scheduler. PR #158 (`c5cfa5f`) on `feature/71-tick-scheduler`. 205/205 green. type-check clean. Build ✓ Compiled successfully (#151 grandfathered). Boot smoke `/api/health` 200 + `mcpMounted:true` + `/api/tick-state` 200. Awaiting Architect non-UI gate → QA Wave 64 smoke → DevSecOps merge.**
+
+**Merged this session:** PR #132 (`1a96164`), #138 (`04c044e`), #147 (`ae1909f`), #157 (`92abd87`), #150 (`732ce39`). Main HEAD `732ce39`.
+
+**Wave 64 DONE — PR #150 merged (`732ce39`, closes #141). Wave 65-impl DONE — PR #147 merged (`ae1909f`). Wave 55-roles-impl DONE — PR #138 merged (`04c044e`). Wave 52 DONE — PR #132 merged (`1a96164`). Wave 51 DONE — PR #130 merged. All on main.**
 
 **Wave 65-impl DONE — PR #147 merged (`ae1909f`). Wave 55-roles-impl DONE — PR #138 merged (`04c044e`). Both on main.**
 

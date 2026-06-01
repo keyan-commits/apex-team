@@ -17,11 +17,14 @@ import { join, resolve } from "node:path";
 
 import { runTurn } from "@/lib/run-turn";
 import { runTurnWithDispatches } from "@/lib/run-turn-with-dispatches";
+import { withThreadLock } from "@/lib/thread-lock";
+import { armScheduler, pauseScheduler, resumeScheduler, getSchedulerState } from "@/lib/tick-scheduler";
 import { setActiveThread } from "@/lib/active-thread";
 import {
   appendMessage,
   getAgentState,
   getThreadAgentModels,
+  getThreadSpendSince,
   listMessages,
   listPendingInbox,
   setThreadWorkspace,
@@ -97,14 +100,16 @@ export function registerApexTeamTools(server: McpServer): void {
       if (role !== "business-analyst") {
         appendMessage(thread_id, { kind: "handoff", from: role, to: "business-analyst" }, message);
       }
-      const result = await runTurn({
-        threadId: thread_id,
-        target: role,
-        userMessage: message,
-        workspace: workspaceOrCwd(workspace),
-        agents: resolvedAgents(thread_id),
-        signal: new AbortController().signal,
-      });
+      const result = await withThreadLock(thread_id, () =>
+        runTurn({
+          threadId: thread_id,
+          target: role,
+          userMessage: message,
+          workspace: workspaceOrCwd(workspace),
+          agents: resolvedAgents(thread_id),
+          signal: new AbortController().signal,
+        }),
+      );
       const out = [
         `### ${role} reply`,
         result.visibleText || "(no visible text — full reply was structured blocks only)",
@@ -153,14 +158,19 @@ export function registerApexTeamTools(server: McpServer): void {
       setActiveThread(thread_id);
       if (workspace) setThreadWorkspace(thread_id, workspace);
       appendMessage(thread_id, { kind: "handoff", from: "product-owner", to: "business-analyst" }, message);
-      const result = await runTurnWithDispatches({
-        threadId: thread_id,
-        target: "product-owner",
-        userMessage: message,
-        workspace: workspaceOrCwd(workspace),
-        agents: resolvedAgents(thread_id),
-        signal: new AbortController().signal,
-      });
+      const result = await withThreadLock(thread_id, () =>
+        runTurnWithDispatches({
+          threadId: thread_id,
+          target: "product-owner",
+          userMessage: message,
+          workspace: workspaceOrCwd(workspace),
+          agents: resolvedAgents(thread_id),
+          signal: new AbortController().signal,
+        }),
+      );
+      // Arm the tick scheduler on the first successful PO call for this thread.
+      // Subsequent arms are no-ops (armScheduler is idempotent).
+      armScheduler(thread_id);
       const out = [
         "### Product Owner reply",
         result.visibleText || "(PO emitted only structured blocks)",
@@ -353,6 +363,83 @@ export function registerApexTeamTools(server: McpServer): void {
       lines.unshift("**Roles:**");
       lines.push("", "**Peer roles** (use HANDOFF):", ...TEAM_ROLES.map((r) => `- \`${r}\``));
       return { content: [{ type: "text", text: lines.join("\n") }] };
+    },
+  );
+
+  // -- pause_ticks: pause the tick scheduler for a thread
+  server.registerTool(
+    "pause_ticks",
+    {
+      title: "Pause tick scheduler",
+      description: "Pause the automatic PO tick scheduler for the given thread. Does nothing if no scheduler is active.",
+      inputSchema: {
+        thread_id: z.string().min(1),
+      },
+    },
+    async ({ thread_id }) => {
+      const ok = pauseScheduler(thread_id);
+      return {
+        content: [
+          {
+            type: "text",
+            text: ok
+              ? `Tick scheduler paused for thread \`${thread_id}\`.`
+              : `No active tick scheduler for thread \`${thread_id}\`.`,
+          },
+        ],
+      };
+    },
+  );
+
+  // -- resume_ticks: resume a paused tick scheduler
+  server.registerTool(
+    "resume_ticks",
+    {
+      title: "Resume tick scheduler",
+      description: "Resume a paused tick scheduler for the given thread.",
+      inputSchema: {
+        thread_id: z.string().min(1),
+      },
+    },
+    async ({ thread_id }) => {
+      const ok = resumeScheduler(thread_id);
+      return {
+        content: [
+          {
+            type: "text",
+            text: ok
+              ? `Tick scheduler resumed for thread \`${thread_id}\`.`
+              : `No paused scheduler found for thread \`${thread_id}\`.`,
+          },
+        ],
+      };
+    },
+  );
+
+  // -- get_tick_state: observe the scheduler's current state + budget
+  server.registerTool(
+    "get_tick_state",
+    {
+      title: "Get tick scheduler state",
+      description:
+        "Return current tick scheduler state for a thread: tickN, noOpCount, paused, pausedReason, budgetSpent, budgetCap, budgetPct, lastTickAt.",
+      inputSchema: {
+        thread_id: z.string().min(1),
+      },
+    },
+    async ({ thread_id }) => {
+      const budgetCap = parseInt(
+        process.env.APEX_TEAM_TICK_BUDGET_PER_HOUR ?? "500000",
+        10,
+      );
+      const hourAgo = Date.now() - 3_600_000;
+      const budgetSpent = getThreadSpendSince(thread_id, hourAgo);
+      const budgetPct = Math.round((budgetSpent / budgetCap) * 100);
+      const state = getSchedulerState(thread_id);
+      const payload = state
+        ? { ...state, budgetSpent, budgetCap, budgetPct }
+        : { active: false, budgetSpent, budgetCap, budgetPct };
+      return { content: [{ type: "text", text: JSON.stringify(payload, null, 2) }] };
     },
   );
 

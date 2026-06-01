@@ -10,6 +10,7 @@
 import { createServer, type Server, type IncomingMessage, type ServerResponse } from "node:http";
 import { parse } from "node:url";
 import next from "next";
+import { stopAllSchedulers } from "./src/lib/tick-scheduler";
 
 // US-004 / #31: Node's default requestTimeout (5 min) tears down long-running
 // agent turns that dispatch multiple peers sequentially. keepAliveTimeout (5s)
@@ -72,4 +73,11 @@ void app.prepare().then(() => {
     console.log(`> apex-team ready on http://${HOST}:${PORT}`);
     console.log(`> MCP endpoint:  http://${HOST}:${PORT}/mcp`);
   });
+
+  const shutdown = () => {
+    stopAllSchedulers();
+    process.exit(0);
+  };
+  process.once("SIGINT", shutdown);
+  process.once("SIGTERM", shutdown);
 });
