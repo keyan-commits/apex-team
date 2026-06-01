@@ -21,14 +21,17 @@ export async function runTurnWithDispatches(
     return { ...result, peerReplies: [] };
   }
 
-  // Parallel fan-out — each dispatched peer gets its own turn driven from
-  // the DISPATCH row the PO just persisted. No userMessage; the dispatch
-  // row is already in their history.
+  // Parallel fan-out — each dispatched peer gets its own turn. Pass the
+  // dispatch body as userMessage so the peer has an unambiguous trigger
+  // and does not infer its task from the shared transcript (which
+  // could cause it to answer a dispatch addressed to a different role
+  // — the #137 misroute class).
   const peerReplies = await Promise.all(
     result.dispatches.map(async (d) => {
       const peerResult = await runTurn({
         threadId: input.threadId,
         target: d.to,
+        userMessage: d.message,
         agents: input.agents,
         workspace: input.workspace,
         signal: input.signal,

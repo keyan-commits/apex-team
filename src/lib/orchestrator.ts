@@ -1,7 +1,7 @@
 import type { TeamRoleId } from "@/types";
 
 const TEAM_ROLE_PATTERN =
-  "business-analyst|architect|ui-developer|backend-developer|qa|devsecops";
+  "business-analyst|architect|ui-developer|backend-developer|qa|devsecops|ux-designer";
 
 const HANDOFF_RE = new RegExp(
   `(?:^|\\n)\\[\\[HANDOFF:\\s*(${TEAM_ROLE_PATTERN}|product-owner)\\s*\\]\\]\\n([\\s\\S]*?)\\n\\[\\[/HANDOFF\\]\\]`,

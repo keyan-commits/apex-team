@@ -153,3 +153,51 @@ describe("parseAgentReply — DISPATCH model override", () => {
     expect(result.dispatches[0].model).toBeUndefined();
   });
 });
+
+// ── All 7 team role-ids (#154 + #137 regression guard) ────────────────────
+
+describe("parseAgentReply — all 7 team role-ids parse in DISPATCH_RE and HANDOFF_RE", () => {
+  const ALL_TEAM_ROLES = [
+    "business-analyst",
+    "architect",
+    "ui-developer",
+    "backend-developer",
+    "qa",
+    "devsecops",
+    "ux-designer",
+  ] as const;
+
+  for (const role of ALL_TEAM_ROLES) {
+    it(`DISPATCH: ${role} parses correctly`, () => {
+      const raw = `PO decision.\n[[DISPATCH: ${role}]]\nDo the work.\n[[/DISPATCH]]`;
+      const result = parseAgentReply(raw);
+      expect(result.dispatches).toHaveLength(1);
+      expect(result.dispatches[0].to).toBe(role);
+      expect(result.dispatches[0].message).toBe("Do the work.");
+    });
+
+    it(`HANDOFF: ${role} parses correctly`, () => {
+      const raw = `Some text.\n[[HANDOFF: ${role}]]\nHere is the handoff.\n[[/HANDOFF]]`;
+      const result = parseAgentReply(raw);
+      expect(result.handoffs).toHaveLength(1);
+      expect(result.handoffs[0].to).toBe(role);
+      expect(result.handoffs[0].message).toBe("Here is the handoff.");
+    });
+  }
+
+  it("nested [orchestrator \u2192 role] text inside a DISPATCH body does not misroute", () => {
+    const raw =
+      "[[DISPATCH: ui-developer]]\n[orchestrator \u2192 architect] This IS for you, Architect.\n[[/DISPATCH]]";
+    const result = parseAgentReply(raw);
+    expect(result.dispatches).toHaveLength(1);
+    expect(result.dispatches[0].to).toBe("ui-developer");
+  });
+
+  it("unrecognized role-id in DISPATCH body text does not produce a dispatch", () => {
+    const raw =
+      "[[DISPATCH: qa]]\nSee also [orchestrator \u2192 unknown-role] for context.\n[[/DISPATCH]]";
+    const result = parseAgentReply(raw);
+    expect(result.dispatches).toHaveLength(1);
+    expect(result.dispatches[0].to).toBe("qa");
+  });
+});
