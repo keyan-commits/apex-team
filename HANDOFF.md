@@ -2,7 +2,14 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 47a — Dead code cleanup, closes #98 + #100. Branch `feature/47a-cleanup-dead-code`. 108/108 green (110 prior − 2 deleted stale tests). Awaiting QA PASS + DevSecOps merge.**
+**Wave 47b — Broken lint step removal, closes #99. Branch `feature/47b-lint-step-removal`. 108/108 green (no test delta). Awaiting QA PASS + DevSecOps merge. Path taken: FALLBACK (deletion). Migration requires `@eslint/eslintrc` devDep not yet installed; deferred to new issue #106.**
+
+**2 files changed:**
+- `.github/workflows/ci.yml` — deleted `Lint` step (3 lines; was `continue-on-error: true` and silently failing).
+- `package.json` — deleted `lint` script (`next lint` removed in Next.js 16).
+- Filed #106 (`ci: complete ESLint flat-config migration`) as durable deferred issue.
+
+**Wave 47a — Dead code cleanup, closes #98 + #100. PR #105 (`feature/47a-cleanup-dead-code`), commit `ed861ce`. 108/108 green. Merged + deployed.**
 
 **4 files changed:**
 - `scripts/branch-start.mjs` — deleted `validateMainCleanliness` function (lines 24-37 removed; Wave 42 removed the only call site).
