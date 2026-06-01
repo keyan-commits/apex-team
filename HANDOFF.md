@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-06-01
 
+**Wave 38+39 — `claude-opus-4-8` model support + `claude-opus-4-7` pricing fix + PO prompt hardening. 5 edits across 4 files: `src/lib/pricing.ts` (new 4-8 row + corrected 4-7 row $15/$75 → $5/$25), `src/components/AgentPane.tsx` (4-8 prepended to KNOWN_MODELS), `src/app/dashboard/page.tsx` (4-8 prepended to KNOWN_MODELS), `src/lib/roles.ts` (AGENT-MODELS defaults 4-7 → 4-8 for PO + Architect; anti-hallucination clauses inserted into ORCHESTRATOR_PROTOCOL + PEER_PROTOCOL). 56/56 green. Branch: `feature/38-39-opus-4-8-and-po-hardening`. Awaiting QA PASS → DevSecOps merge via PR (to be created).**
+
 **Wave 37 — `LESSONS.md` created (6 seed lessons) + `DEPLOYMENT_PHASE_PROTOCOL` updated (LESSONS.md bullet) + `CLAUDE.md` `## Session pickup` section added + `INDEX.yaml` entry for LESSONS.md. Closes the `/clear`-safety gap. 56/56 green. Shipped via PR #88.**
 
 **Wave 36 — Protocol amendment: HANDOFF entries reference PR# not merge SHA. `DEPLOYMENT_PHASE_PROTOCOL` in `src/lib/protocols.ts` updated. Stale Wave 35 + Wave 34 HANDOFF entries cleaned up. 56/56 green. Shipped via PR #87.**
