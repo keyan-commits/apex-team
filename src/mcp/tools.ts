@@ -16,7 +16,6 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
 import { runTurn } from "@/lib/run-turn";
-import { runTurnWithDispatches } from "@/lib/run-turn-with-dispatches";
 import { setActiveThread } from "@/lib/active-thread";
 import {
   appendMessage,
@@ -69,7 +68,9 @@ export function registerApexTeamTools(server: McpServer): void {
         "Send a message to a specific team member and wait for their reply. " +
         "Roles: product-owner (PO orchestrates the team), business-analyst (owns requirements/), " +
         "architect (NFRs + code review), ui-developer, backend-developer, qa (testing), devsecops. " +
-        "Returns the agent's visible reply and any HANDOFFs / DISPATCHes they emitted.",
+        "Returns the agent's visible reply AND any DISPATCH/HANDOFF blocks they emitted as structured data. " +
+        "DISPATCH blocks are NOT auto-triggered within a single MCP call — " +
+        "call talk_to_role for each dispatched peer to run their turn.",
       inputSchema: {
         role: RoleEnum,
         message: z.string().min(1).describe("The user message to send to that role."),
@@ -112,7 +113,7 @@ export function registerApexTeamTools(server: McpServer): void {
       if (result.dispatches.length > 0) {
         out.push(
           "",
-          "### DISPATCHes emitted (auto-triggered — those agents are running now):",
+          "### DISPATCHes emitted (NOT auto-triggered — call talk_to_role for each dispatched peer to run their turn):",
           ...result.dispatches.map((d) => `- → ${d.to}: ${d.message.slice(0, 120)}${d.message.length > 120 ? "…" : ""}`),
         );
       }
@@ -126,9 +127,12 @@ export function registerApexTeamTools(server: McpServer): void {
     {
       title: "Talk to the Product Owner",
       description:
-        "Hand a task off to the Product Owner. The PO will decide which team members to dispatch (via [[DISPATCH: role]] blocks in their reply). " +
+        "Hand a task off to the Product Owner. The PO will decide which team members to dispatch " +
+        "(via [[DISPATCH: role]] blocks in their reply). " +
         "Use this when you want the team driven for you instead of picking the role yourself. " +
-        "Returns the PO's reply and a summary of who they dispatched.",
+        "Returns the PO's reply AND a structured list of peers the PO dispatched. " +
+        "DISPATCH blocks are NOT auto-triggered within a single MCP call — " +
+        "call talk_to_role for each dispatched role to actually run their turn.",
       inputSchema: {
         message: z.string().min(1),
         thread_id: z.string().min(1),
@@ -137,13 +141,8 @@ export function registerApexTeamTools(server: McpServer): void {
     },
     async ({ message, thread_id, workspace }) => {
       setActiveThread(thread_id);
-      // Seed BA's inbox so it captures product requirements from PO-targeted messages.
       appendMessage(thread_id, { kind: "handoff", from: "product-owner", to: "business-analyst" }, message);
-      // runTurnWithDispatches runs the PO turn, then fans out to every
-      // dispatched peer in PARALLEL (each peer is its own runTurn).
-      // Every event is also published to the thread's bus, so the web
-      // dashboard sees the entire dance in real time.
-      const result = await runTurnWithDispatches({
+      const result = await runTurn({
         threadId: thread_id,
         target: "product-owner",
         userMessage: message,
@@ -151,23 +150,26 @@ export function registerApexTeamTools(server: McpServer): void {
         agents: defaultAgents(),
         signal: new AbortController().signal,
       });
-
       const out = [
         "### Product Owner reply",
-        result.visibleText || "(PO emitted only DISPATCH blocks)",
+        result.visibleText || "(PO emitted only structured blocks)",
       ];
+      if (result.newHandoffDoc !== null) {
+        out.push("", `_HANDOFF doc updated (${result.newHandoffDoc.length} chars)_`);
+      }
+      if (result.handoffs.length > 0) {
+        out.push(
+          "",
+          "### Peer HANDOFFs emitted (NOT auto-triggered — call talk_to_role on the target if you want them to respond):",
+          ...result.handoffs.map((h) => `- → ${h.to}: ${h.message.slice(0, 120)}${h.message.length > 120 ? "…" : ""}`),
+        );
+      }
       if (result.dispatches.length > 0) {
         out.push(
           "",
-          `### PO dispatched ${result.dispatches.length} role(s) — their replies:`,
+          "### DISPATCHes emitted (NOT auto-triggered — call talk_to_role for each dispatched role to run their turn):",
+          ...result.dispatches.map((d) => `- → ${d.to}: ${d.message.slice(0, 120)}${d.message.length > 120 ? "…" : ""}`),
         );
-        for (const reply of result.peerReplies) {
-          out.push(
-            "",
-            `**${reply.role}**:`,
-            reply.result.visibleText || "(no visible text)",
-          );
-        }
       }
       return { content: [{ type: "text", text: out.join("\n") }] };
     },

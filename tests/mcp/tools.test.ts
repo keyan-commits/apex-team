@@ -1,0 +1,185 @@
+/**
+ * MCP tool handler tests — verify that talk_to_product_owner and talk_to_role
+ * call runTurn exactly once (no fan-out) and return structured dispatch/handoff data.
+ */
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import type { RunTurnResult } from "@/lib/run-turn";
+import type { TeamRoleId } from "@/types";
+
+const mockRunTurn = vi.fn();
+
+vi.mock("@/lib/run-turn", () => ({
+  runTurn: mockRunTurn,
+}));
+
+vi.mock("@/lib/db", () => ({
+  appendMessage: vi.fn(),
+  getAgentState: vi.fn(() => ({ handoffDoc: "", updatedAt: Date.now() })),
+  listMessages: vi.fn(() => []),
+  listPendingInbox: vi.fn(() => []),
+}));
+
+vi.mock("@/lib/active-thread", () => ({
+  setActiveThread: vi.fn(),
+}));
+
+vi.mock("@/lib/providers", () => ({
+  defaultAgentConfig: vi.fn(() => ({ provider: "claude", model: "claude-sonnet-4-6" })),
+}));
+
+vi.mock("@/lib/roles", () => ({
+  ALL_ROLES: ["product-owner", "business-analyst", "architect"],
+  TEAM_ROLES: ["business-analyst", "architect"],
+  isTeamRole: vi.fn(() => false),
+}));
+
+vi.mock("node:fs", () => ({
+  existsSync: vi.fn(() => false),
+  readdirSync: vi.fn(() => []),
+  readFileSync: vi.fn(() => ""),
+  statSync: vi.fn(() => ({ isDirectory: () => true })),
+}));
+
+type ToolResult = { content: { type: string; text: string }[] };
+type ToolHandler = (args: Record<string, unknown>) => Promise<ToolResult>;
+
+function buildCapturingServer(): {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  server: any;
+  getHandler: (name: string) => ToolHandler;
+} {
+  const handlers = new Map<string, ToolHandler>();
+  const server = {
+    registerTool(_name: string, _opts: unknown, handler: ToolHandler) {
+      handlers.set(_name, handler);
+    },
+  };
+  return { server, getHandler: (name) => handlers.get(name)! };
+}
+
+const baseResult: RunTurnResult = {
+  visibleText: "Agent reply",
+  rawBuffer: "Agent reply",
+  newHandoffDoc: null,
+  handoffs: [],
+  dispatches: [],
+  agentModels: null,
+};
+
+describe("talk_to_product_owner", () => {
+  let getHandler: (name: string) => ToolHandler;
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    const { server, getHandler: gh } = buildCapturingServer();
+    getHandler = gh;
+    const { registerApexTeamTools } = await import("@/mcp/tools");
+    registerApexTeamTools(server);
+  });
+
+  it("calls runTurn exactly once even when PO emits multiple DISPATCH blocks", async () => {
+    mockRunTurn.mockResolvedValueOnce({
+      ...baseResult,
+      dispatches: [
+        { to: "business-analyst" as TeamRoleId, message: "Spec feature X" },
+        { to: "architect" as TeamRoleId, message: "Review scope" },
+      ],
+    } satisfies RunTurnResult);
+
+    const handler = getHandler("talk_to_product_owner");
+    await handler({ message: "Build feature X", thread_id: "t1" });
+
+    expect(mockRunTurn).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns dispatch list in result text with NOT-auto-triggered wording", async () => {
+    mockRunTurn.mockResolvedValueOnce({
+      ...baseResult,
+      dispatches: [
+        { to: "business-analyst" as TeamRoleId, message: "Spec feature X" },
+        { to: "architect" as TeamRoleId, message: "Review scope" },
+      ],
+    } satisfies RunTurnResult);
+
+    const handler = getHandler("talk_to_product_owner");
+    const result = await handler({ message: "Build feature X", thread_id: "t1" });
+
+    const text = result.content[0].text;
+    expect(text).toContain("business-analyst");
+    expect(text).toContain("architect");
+    expect(text).toContain("NOT auto-triggered");
+    expect(text).not.toContain("auto-triggered — those agents are running now");
+  });
+
+  it("includes PO visible text in result", async () => {
+    mockRunTurn.mockResolvedValueOnce({ ...baseResult, visibleText: "My PO decision" } satisfies RunTurnResult);
+
+    const handler = getHandler("talk_to_product_owner");
+    const result = await handler({ message: "Status?", thread_id: "t1" });
+
+    expect(result.content[0].text).toContain("My PO decision");
+  });
+
+  it("does not run dispatched peer turns (no fan-out)", async () => {
+    mockRunTurn.mockResolvedValueOnce({
+      ...baseResult,
+      dispatches: [{ to: "business-analyst" as TeamRoleId, message: "Spec this" }],
+    } satisfies RunTurnResult);
+
+    const handler = getHandler("talk_to_product_owner");
+    await handler({ message: "Go", thread_id: "t1" });
+
+    // business-analyst turn was NOT run — only one runTurn call total
+    expect(mockRunTurn).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("talk_to_role", () => {
+  let getHandler: (name: string) => ToolHandler;
+
+  beforeEach(async () => {
+    vi.clearAllMocks();
+    const { server, getHandler: gh } = buildCapturingServer();
+    getHandler = gh;
+    const { registerApexTeamTools } = await import("@/mcp/tools");
+    registerApexTeamTools(server);
+  });
+
+  it("calls runTurn exactly once regardless of dispatch count", async () => {
+    mockRunTurn.mockResolvedValueOnce({
+      ...baseResult,
+      dispatches: [
+        { to: "architect" as TeamRoleId, message: "Please review" },
+        { to: "qa" as TeamRoleId, message: "Please test" },
+      ],
+    } satisfies RunTurnResult);
+
+    const handler = getHandler("talk_to_role");
+    await handler({ role: "product-owner", message: "Go", thread_id: "t1" });
+
+    expect(mockRunTurn).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns dispatch list in result text with NOT-auto-triggered wording", async () => {
+    mockRunTurn.mockResolvedValueOnce({
+      ...baseResult,
+      dispatches: [{ to: "architect" as TeamRoleId, message: "Review this code" }],
+    } satisfies RunTurnResult);
+
+    const handler = getHandler("talk_to_role");
+    const result = await handler({ role: "product-owner", message: "Go", thread_id: "t1" });
+
+    const text = result.content[0].text;
+    expect(text).toContain("architect");
+    expect(text).toContain("NOT auto-triggered");
+  });
+
+  it("returns agent visible text in result", async () => {
+    mockRunTurn.mockResolvedValueOnce({ ...baseResult, visibleText: "BA reply here" } satisfies RunTurnResult);
+
+    const handler = getHandler("talk_to_role");
+    const result = await handler({ role: "business-analyst", message: "Write story", thread_id: "t1" });
+
+    expect(result.content[0].text).toContain("BA reply here");
+  });
+});
