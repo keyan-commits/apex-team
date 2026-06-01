@@ -2,7 +2,9 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 38+39 — `claude-opus-4-8` model support + `claude-opus-4-7` pricing fix + PO prompt hardening. 5 edits across 4 files: `src/lib/pricing.ts` (new 4-8 row + corrected 4-7 row $15/$75 → $5/$25), `src/components/AgentPane.tsx` (4-8 prepended to KNOWN_MODELS), `src/app/dashboard/page.tsx` (4-8 prepended to KNOWN_MODELS), `src/lib/roles.ts` (AGENT-MODELS defaults 4-7 → 4-8 for PO + Architect; anti-hallucination clauses inserted into ORCHESTRATOR_PROTOCOL + PEER_PROTOCOL). 56/56 green. Branch: `feature/38-39-opus-4-8-and-po-hardening`. Awaiting QA PASS → DevSecOps merge via PR (to be created).**
+**Wave 40a — Bug B hotfix (orchestrator regex line-anchoring). `src/lib/orchestrator.ts`: all 4 block-parsing regexes anchored with `(?:^|\n)` prefix + `\n` after opening tag. New `tests/lib/orchestrator.test.ts`: 13 tests (inline-mention guard × 4 block types + real-block regressions). 69/69 green. Shipped via PR #90 (pending merge → DevSecOps).**
+
+**Wave 38+39 — `claude-opus-4-8` model support + `claude-opus-4-7` pricing fix + PO prompt hardening. Shipped via PR #89.**
 
 **Wave 37 — `LESSONS.md` created (6 seed lessons) + `DEPLOYMENT_PHASE_PROTOCOL` updated (LESSONS.md bullet) + `CLAUDE.md` `## Session pickup` section added + `INDEX.yaml` entry for LESSONS.md. Closes the `/clear`-safety gap. 56/56 green. Shipped via PR #88.**
 
