@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { ROLES, PHASED_WORKFLOW_DISCIPLINE } from "@/lib/roles";
+import { ROLES, PHASED_WORKFLOW_DISCIPLINE, DEFAULT_ROLE_MODELS } from "@/lib/roles";
 
 describe("Wave 41 — DevSecOps doc-only PR prohibition", () => {
   const devsecopsPrompt = ROLES["devsecops"].systemPrompt;
@@ -22,5 +22,20 @@ describe("Wave 41 — DevSecOps doc-only PR prohibition", () => {
 
   it("Phase 4 references PR number not merge SHA", () => {
     expect(PHASED_WORKFLOW_DISCIPLINE).toContain("PR number, not the merge SHA");
+  });
+});
+
+describe("Wave 43 — DEFAULT_ROLE_MODELS + PO NOTES discipline", () => {
+  it("DEFAULT_ROLE_MODELS has 8 entries with opus-4-8 for PO and Architect", () => {
+    expect(Object.keys(DEFAULT_ROLE_MODELS)).toHaveLength(8);
+    expect(DEFAULT_ROLE_MODELS["product-owner"]).toBe("claude-opus-4-8");
+    expect(DEFAULT_ROLE_MODELS["architect"]).toBe("claude-opus-4-8");
+    expect(DEFAULT_ROLE_MODELS["business-analyst"]).toBe("claude-sonnet-4-6");
+    expect(DEFAULT_ROLE_MODELS["qa"]).toBe("claude-sonnet-4-6");
+    expect(DEFAULT_ROLE_MODELS["devsecops"]).toBe("claude-sonnet-4-6");
+  });
+
+  it("PO system prompt contains the mandatory NOTES update rule", () => {
+    expect(ROLES["product-owner"].systemPrompt).toContain("Mandatory update rule");
   });
 });

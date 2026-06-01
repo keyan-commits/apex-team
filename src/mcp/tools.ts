@@ -20,11 +20,11 @@ import { setActiveThread } from "@/lib/active-thread";
 import {
   appendMessage,
   getAgentState,
+  getThreadAgentModels,
   listMessages,
   listPendingInbox,
 } from "@/lib/db";
-import { defaultAgentConfig } from "@/lib/providers";
-import { ALL_ROLES, TEAM_ROLES, isTeamRole } from "@/lib/roles";
+import { ALL_ROLES, DEFAULT_ROLE_MODELS, TEAM_ROLES, isTeamRole } from "@/lib/roles";
 import type { AgentConfig, RoleId, TeamRoleId } from "@/types";
 
 const RoleEnum = z.enum([
@@ -38,9 +38,14 @@ const RoleEnum = z.enum([
   "ux-designer",
 ]);
 
-function defaultAgents(): Record<RoleId, AgentConfig> {
+function resolvedAgents(threadId: string): Record<RoleId, AgentConfig> {
+  const stored = getThreadAgentModels(threadId) ?? {};
   return Object.fromEntries(
-    ALL_ROLES.map((r) => [r, defaultAgentConfig(r)]),
+    ALL_ROLES.map((r) => [r, {
+      role: r,
+      provider: "claude" as const,
+      model: stored[r] ?? DEFAULT_ROLE_MODELS[r],
+    }])
   ) as Record<RoleId, AgentConfig>;
 }
 
@@ -93,7 +98,7 @@ export function registerApexTeamTools(server: McpServer): void {
         target: role,
         userMessage: message,
         workspace: workspaceOrCwd(workspace),
-        agents: defaultAgents(),
+        agents: resolvedAgents(thread_id),
         signal: new AbortController().signal,
       });
       const out = [
@@ -147,7 +152,7 @@ export function registerApexTeamTools(server: McpServer): void {
         target: "product-owner",
         userMessage: message,
         workspace: workspaceOrCwd(workspace),
-        agents: defaultAgents(),
+        agents: resolvedAgents(thread_id),
         signal: new AbortController().signal,
       });
       const out = [
