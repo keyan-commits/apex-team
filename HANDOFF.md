@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-06-01
 
+**Wave 42 — Bug #2 + Bug #4. `scripts/branch-start.mjs`: removed `validateMainCleanliness()` call (lines 64-66) — the call was wrong; `git worktree add ... origin/main` creates from origin, not cwd, so dirty main state is irrelevant and the forced stash was mutating user-side state outside scope. `tests/ops/branch-hygiene.test.ts`: replaced the dirty-state-exit test with one that asserts branch-start does NOT refuse on dirty cwd. New `tests/lib/pricing.test.ts`: 6 snapshot tests for MODEL_PRICING (one per model, exact values, hermetic). 86/86 green. Awaiting QA PASS + DevSecOps merge.**
+
 **Wave 41 — DevSecOps doc-only PR prohibition. `src/lib/roles.ts`: (1) `PHASED_WORKFLOW_DISCIPLINE` Phase 4 bullet extended — "HANDOFF.md must be updated inside the code PR before DevSecOps merges — never post-merge. Reference the PR number, not the merge SHA." (2) DevSecOps deployment workflow gets new step 2a (pre-merge HANDOFF.md gate) and a hard-rule line after step 6 ("HANDOFF.md ships inside the code PR, never after"). (3) `PHASED_WORKFLOW_DISCIPLINE` exported so it can be tested. New `tests/lib/roles.test.ts`: 4 regression-guard tests. 80/80 green. Awaiting QA PASS + DevSecOps merge.**
 
 **Wave 40b — Bug A fix (MCP fan-out structural fix). `src/mcp/tools.ts`: `talk_to_product_owner` now calls `runTurn` (single-agent) instead of `runTurnWithDispatches` — MCP response returns after PO turn only; caller drives dispatched peers via `talk_to_role`. Tool descriptions updated: "NOT auto-triggered." `src/lib/run-turn-with-dispatches.ts`: top comment updated (web-UI-only note). New `tests/mcp/tools.test.ts`: 7 tests. 76/76 green. Shipped via PR #91 (merge SHA `5650927`). Server restart required to activate new MCP handlers.**

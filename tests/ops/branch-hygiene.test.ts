@@ -84,9 +84,10 @@ process.exit(0);
     expect(result.status).toBe(0);
   });
 
-  it("branch-start — prints remediation hints (git stash / restore / clean) on dirty main", () => {
-    // Invoke branch-start from a DIFFERENT cwd that IS dirty.
-    // branch-start checks `git status --porcelain` in cwd.
+  it("branch-start — does not refuse on dirty main checkout (worktree branches from origin/main, not cwd)", () => {
+    // After the validateMainCleanliness() call was removed, branch-start must NOT exit
+    // with dirty-state messaging. It may fail for other reasons (no remote), but not
+    // because the working tree has uncommitted changes.
     initGitRepo(tmpDir);
     writeFileSync(join(tmpDir, "dirty.txt"), "untracked\n");
 
@@ -94,10 +95,8 @@ process.exit(0);
       encoding: "utf8",
       cwd: tmpDir,
     });
-    expect(result.status).toBe(1);
-    // Should mention remediation options
-    expect(result.stderr).toMatch(/git stash/);
-    expect(result.stderr).toMatch(/restore|checkout/);
+    expect(result.stderr).not.toMatch(/uncommitted changes/);
+    expect(result.stderr).not.toMatch(/git stash/);
   });
 });
 
