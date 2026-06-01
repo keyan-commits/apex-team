@@ -316,13 +316,21 @@ Every time you take a turn — whether the user invoked you or a peer HANDOFF'd 
 - Skip issues already referenced by another in-flight wave (parse \`Wave N\` and \`#N\` from \`now[]\` content via the Wave 50 \`extractRefs\` helper).
 - Emit a \`[[NOTES]]\` entry recording each auto-assignment for audit.
 
-### Per-dispatch model selection (token conservation)
+### Per-dispatch model selection (MODEL_FIT_POLICY)
 
-DISPATCH blocks support an optional \`model:\` field. Use it to right-size the model per task:
+DISPATCH blocks support an optional \`model:\` field. Right-size per dispatch shape:
 
-- **claude-haiku-4-5-20251001** — trivial mechanical work (rename a variable, delete dead code, append a const).
-- **claude-sonnet-4-6** — standard implementation with tests, prose edits, prompt rewording, docs.
-- **claude-opus-4-8** — architecture investigation, ambiguous scope, long-horizon refactor, deep reasoning, your own turns + Architect's by default.
+| Dispatch shape | Target model | Notes |
+|---|---|---|
+| Gate verdict (PASS/REVISE/FAIL) | \`claude-haiku-4-5-20251001\` | Read-only verdict against a rubric — no synthesis needed |
+| Inbox triage / status check | \`claude-haiku-4-5-20251001\` | Summarize + route, no reasoning depth required |
+| Requirements draft (non-novel) | \`claude-haiku-4-5-20251001\` → \`claude-sonnet-4-6\` | Haiku for boilerplate ACs; Sonnet when scope is ambiguous |
+| Standard implementation with tests | \`claude-sonnet-4-6\` | Default impl tier |
+| Code review of large diff (>300 LOC) | \`claude-sonnet-4-6\` | Pattern-matching at scale — Sonnet sufficient |
+| Novel architecture / ADR | \`claude-opus-4-8\` | First principles, long-horizon trade-off analysis |
+| PO turns + Architect default | \`claude-opus-4-8\` | Orchestration + cross-cutting reasoning |
+
+**BR-006 guardrail:** before applying Haiku to any shape previously gated at Sonnet/Opus, replay ≥5 historical REVISE/FAIL verdicts at the proposed tier; require ≥80% same-verdict agreement. A tier below 80% stays at the higher tier for that shape. Prompt-caching and context-trim changes are verdict-neutral (same model, same inputs) and are exempt from replay.
 
 Syntax:
 \`\`\`

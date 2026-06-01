@@ -106,11 +106,19 @@ export async function* streamAgent(
   yield* streamAiSdk(cfg, augmentedSystem, messages, signal, onUsage);
 }
 
+// Static content (role.systemPrompt + role.skills) comes FIRST so the
+// claude_code preset's cache_control covers the largest stable prefix.
+// Volatile sections (cwd, HANDOFF, peerStates, inbox) are appended after —
+// they change every turn and must not break the cache breakpoint.
 function augmentSystemPrompt(
   role: RoleDefinition,
   ctx: AgentTurnContext,
 ): string {
   const sections: string[] = [role.systemPrompt];
+
+  if (role.skills) {
+    sections.push(role.skills);
+  }
 
   if (ctx.cwd) {
     sections.push(`## Working directory\n\nYour file tools operate on: \`${ctx.cwd}\``);
@@ -142,10 +150,6 @@ function augmentSystemPrompt(
     sections.push(
       `## Pending inbox (handoffs from teammates you haven't responded to yet)\n\n${inbox}`,
     );
-  }
-
-  if (role.skills) {
-    sections.push(role.skills);
   }
 
   return sections.join("\n\n");

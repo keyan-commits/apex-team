@@ -2,11 +2,16 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 71 (#153) — server-side PO tick scheduler. PR #158 (`c5cfa5f`) on `feature/71-tick-scheduler`. 205/205 green. type-check clean. Build ✓ Compiled successfully (#151 grandfathered). Boot smoke `/api/health` 200 + `mcpMounted:true` + `/api/tick-state` 200. Awaiting Architect non-UI gate → QA Wave 64 smoke → DevSecOps merge.**
+**Wave 73 (#159) — latency reduction (3 fixes). PR (SHA-pending) on `feature/73-latency`. 192/192 green (+4 providers tests). Type-check clean. Build ✓ Compiled successfully (#151 grandfathered). Boot smoke `/api/health` 200 + `mcpMounted:true`. Awaiting Architect non-UI gate → QA Wave 64 smoke → DevSecOps merge.**
+
+**Fix 1 — prompt caching:** `src/lib/providers.ts` `augmentSystemPrompt` reordered static-first: `role.systemPrompt` → `role.skills` → volatile (`cwd`, `handoffDoc`, `peerStates`, `inbox`). No SDK change needed.
+**Fix 2 — context trim:** `src/lib/agents.ts:25` `slice(-10)` for non-PO peers; PO keeps `-60`.
+**Fix 3 — MODEL_FIT_POLICY:** `src/lib/roles.ts` per-dispatch model table (Haiku→gates/triage, Sonnet→impl/review, Opus→novel-arch/ADR/PO+Architect). BR-006 guardrail added.
+**Doc rescue:** US-027, US-028, BR-006, requirements/INDEX.md (US-024…028 rows), design/US-066-adaptive-issues-panel.md, design/INDEX.md co-committed on this PR.
+
+**Wave 71 (#153) — PR #158 at Architect PASS. Awaiting QA smoke → DevSecOps merge.**
 
 **Merged this session:** PR #132 (`1a96164`), #138 (`04c044e`), #147 (`ae1909f`), #157 (`92abd87`), #150 (`732ce39`). Main HEAD `732ce39`.
-
-**Wave 64 DONE — PR #150 merged (`732ce39`, closes #141). Wave 65-impl DONE — PR #147 merged (`ae1909f`). Wave 55-roles-impl DONE — PR #138 merged (`04c044e`). Wave 52 DONE — PR #132 merged (`1a96164`). Wave 51 DONE — PR #130 merged. All on main.**
 
 **Wave 65-impl DONE — PR #147 merged (`ae1909f`). Wave 55-roles-impl DONE — PR #138 merged (`04c044e`). Both on main.**
 
