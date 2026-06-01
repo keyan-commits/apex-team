@@ -110,7 +110,7 @@ export async function* streamAgent(
 // claude_code preset's cache_control covers the largest stable prefix.
 // Volatile sections (cwd, HANDOFF, peerStates, inbox) are appended after —
 // they change every turn and must not break the cache breakpoint.
-function augmentSystemPrompt(
+export function augmentSystemPrompt(
   role: RoleDefinition,
   ctx: AgentTurnContext,
 ): string {
