@@ -4,6 +4,11 @@ Append-only. Newest first. Each entry: ~3–5 lines. Triggers: a protocol amendm
 
 ## 2026-06-01
 
+### BA competency upgrade — domain MDs prevent repeated business-logic questions
+**What broke:** Mac 2's claude-code asked the user whether the Consolidation sheet was a separate file or part of the Order Sheet workbook. The answer was already documented in a workspace MD. BA had no hard rule to scan before answering, so it asked the user instead.
+**Why:** BA prompt had no workspace-scan procedure, no `domains/` structure, no promote-to-MD discipline. Answers lived in conversation threads and evaporated.
+**We now do:** BA skill rewritten (Wave 65) with discovery-first scan before every answer, onboarding scan on workspace change, per-domain MDs under `requirements/domains/`, promote-to-MD discipline on every derived answer, and canonical cross-peer authority. Architect's skill now carries a hard BA-deferral bullet. Pre-seeded apex-team's own `requirements/domains/` tree as dogfood. Closes #143.
+
 ### `tsx watch` mid-edit kills the editing agent
 **What broke:** the auto-restart watcher respawned the apex-team server whenever an agent edited an imported source file. Mid-turn restarts cut off in-flight responses.
 **Why:** the watcher couldn't distinguish "agent intentionally edited code" from "I should reload now." Both are file changes.

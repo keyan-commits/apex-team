@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-06-01
 
+**Wave 65-impl IN PROGRESS — BA competency upgrade. Branch `feature/65-ba-competency-upgrade`. Impl: `business-analyst.ts` full rewrite (discovery-first + onboarding scan + domains/ tree + promote-to-MD + cross-peer authority + intelligence-over-rote), `architect.ts` BA-deferral bullet, Wave 65 regression-guard tests (7 assertions), LESSONS.md entry, BA's pre-seeded `requirements/domains/` tree (5 domain MDs + 3 stubs + glossary + US-017 through US-023). SHA pending commit. Gates: Architect non-UI -> QA (Wave 64 rubric: type-check + test:run + pnpm dev:test /api/health 200; pnpm build grandfathered behind #142) -> DevSecOps. No UX gate (no UI surface). File-conflict warning: Wave 68-impl will rebase on this PR and APPEND Lane A section; do NOT pre-add Lane A content.**
+
 **Wave 54-meta — Fix `talk_to_product_owner` MCP tool: use `runTurnWithDispatches` so PO's DISPATCH blocks auto-trigger peers. Closes #133. Branch `feature/54-mcp-auto-trigger-dispatches`. 132/132 green (131 prior + 1 net new). Awaiting QA.**
 
 **3 files changed:**
