@@ -4,15 +4,15 @@ const TEAM_ROLE_PATTERN =
   "business-analyst|architect|ui-developer|backend-developer|qa|devsecops";
 
 const HANDOFF_RE = new RegExp(
-  `\\[\\[HANDOFF:\\s*(${TEAM_ROLE_PATTERN}|product-owner)\\s*\\]\\]([\\s\\S]*?)\\[\\[/HANDOFF\\]\\]`,
+  `(?:^|\\n)\\[\\[HANDOFF:\\s*(${TEAM_ROLE_PATTERN}|product-owner)\\s*\\]\\]\\n([\\s\\S]*?)\\n\\[\\[/HANDOFF\\]\\]`,
   "gi",
 );
 const DISPATCH_RE = new RegExp(
-  `\\[\\[DISPATCH:\\s*(${TEAM_ROLE_PATTERN})\\s*\\]\\]([\\s\\S]*?)\\[\\[/DISPATCH\\]\\]`,
+  `(?:^|\\n)\\[\\[DISPATCH:\\s*(${TEAM_ROLE_PATTERN})\\s*\\]\\]\\n([\\s\\S]*?)\\n\\[\\[/DISPATCH\\]\\]`,
   "gi",
 );
-const NOTES_RE = /\[\[NOTES\]\]([\s\S]*?)\[\[\/NOTES\]\]/i;
-const AGENT_MODELS_RE = /\[\[AGENT-MODELS\]\]([\s\S]*?)\[\[\/AGENT-MODELS\]\]/i;
+const NOTES_RE = /(?:^|\n)\[\[NOTES\]\]\n([\s\S]*?)\n\[\[\/NOTES\]\]/i;
+const AGENT_MODELS_RE = /(?:^|\n)\[\[AGENT-MODELS\]\]\n([\s\S]*?)\n\[\[\/AGENT-MODELS\]\]/i;
 
 export interface ParsedReply {
   /** Text shown to the user (all blocks stripped). */
