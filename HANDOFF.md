@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 37 — `LESSONS.md` created (6 seed lessons) + `DEPLOYMENT_PHASE_PROTOCOL` updated (LESSONS.md bullet) + `CLAUDE.md` `## Session pickup` section added. Closes the `/clear`-safety gap. 56/56 green. Shipped via PR #88.**
+**Wave 37 — `LESSONS.md` created (6 seed lessons) + `DEPLOYMENT_PHASE_PROTOCOL` updated (LESSONS.md bullet) + `CLAUDE.md` `## Session pickup` section added + `INDEX.yaml` entry for LESSONS.md. Closes the `/clear`-safety gap. 56/56 green. Shipped via PR #88.**
 
 **Wave 36 — Protocol amendment: HANDOFF entries reference PR# not merge SHA. `DEPLOYMENT_PHASE_PROTOCOL` in `src/lib/protocols.ts` updated. Stale Wave 35 + Wave 34 HANDOFF entries cleaned up. 56/56 green. Shipped via PR #87.**
 

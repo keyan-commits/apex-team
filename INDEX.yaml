@@ -26,6 +26,18 @@ documents:
       - debugging cross-pane behavior or MCP-driven orchestration
     related_files: [HANDOFF.md, README.md]
 
+  - path: LESSONS.md
+    purpose: Append-only "we hit X, broke for Y, we now do Z" log. Explains WHY conventions exist so fresh sessions don't repeat past surprises.
+    topics: [lessons, protocol, postmortem, session-pickup]
+    doc_type: log
+    authority_tier: log
+    last_updated: 2026-06-01
+    read_this_when:
+      - new session after /clear — read to understand WHY current conventions exist
+      - about to bypass a protocol rule — check if there's a lesson that explains the cost
+      - just hit a surprise — after fixing, append a lesson entry
+    related_files: [HANDOFF.md, src/lib/protocols.ts]
+
   - path: HANDOFF.md
     purpose: What's in flight right now + recent session log. The NOW block on top is the authoritative resume point.
     topics: [handoff, log, in-flight, resume]

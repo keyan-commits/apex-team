@@ -28,5 +28,6 @@ _Generated from `INDEX.yaml` (the single source of truth). Edit that file to add
 | Doc | Purpose | Type |
 |---|---|---|
 | [`HANDOFF.md`](HANDOFF.md) | What's in flight right now + recent session log. The NOW block on top is the authoritative resume point. | log |
+| [`LESSONS.md`](LESSONS.md) | Append-only "we hit X, broke for Y, we now do Z" log. Explains WHY conventions exist so fresh sessions don't repeat past surprises. | log |
 
 <!-- END GENERATED INDEX -->
