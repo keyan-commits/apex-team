@@ -65,6 +65,18 @@ function db(): Database.Database {
       proposals_filed   INTEGER NOT NULL DEFAULT 0,
       roles_scanned     INTEGER NOT NULL DEFAULT 0
     );
+
+    CREATE TABLE IF NOT EXISTS tick_log (
+      id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+      thread_id           TEXT    NOT NULL,
+      tick_n              INTEGER NOT NULL,
+      tokens_spent        INTEGER NOT NULL,
+      dispatches_emitted  INTEGER NOT NULL,
+      no_op               INTEGER NOT NULL DEFAULT 0,
+      started_at          TEXT    NOT NULL,
+      finished_at         TEXT    NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_tick_log_thread ON tick_log(thread_id);
   `);
   // Additive migrations — idempotent via try/catch (column-already-exists throws, which is fine)
   try { conn.exec(`ALTER TABLE thread_config ADD COLUMN workspace TEXT`); } catch {}
@@ -367,6 +379,40 @@ export function getScoutMeta(): { lastRunAt: number | null; proposalsLast7Days: 
   } catch {
     return { lastRunAt: null, proposalsLast7Days: 0 };
   }
+}
+
+// Output tokens spent by a thread since sinceMs (epoch ms). Used by the
+// tick scheduler to enforce the per-hour budget cap without a separate table.
+export function getThreadSpendSince(threadId: string, sinceMs: number): number {
+  try {
+    const row = db()
+      .prepare(
+        `SELECT COALESCE(SUM(output_tokens), 0) as total
+         FROM turn_usage WHERE thread_id = ? AND created_at >= ?`,
+      )
+      .get(threadId, sinceMs) as { total: number };
+    return row.total;
+  } catch {
+    return 0;
+  }
+}
+
+export function logTick(
+  threadId: string,
+  tickN: number,
+  tokensSpent: number,
+  dispatchesEmitted: number,
+  noOp: boolean,
+  startedAt: string,
+  finishedAt: string,
+): void {
+  db()
+    .prepare(
+      `INSERT INTO tick_log
+         (thread_id, tick_n, tokens_spent, dispatches_emitted, no_op, started_at, finished_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    )
+    .run(threadId, tickN, tokensSpent, dispatchesEmitted, noOp ? 1 : 0, startedAt, finishedAt);
 }
 
 // Pending inbox = handoff messages addressed to this role that arrived

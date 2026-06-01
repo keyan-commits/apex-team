@@ -96,6 +96,22 @@ See [[BR-004]], [[US-025]], [[glossary#CONSULT_BA]].
 
 **Budget cap (TICK_BUDGET):** 500K tokens/thread/hour by default. Ticks halt when exceeded, resume next hour. See [[glossary#TICK_BUDGET]], [[glossary#NO_OP_THROTTLE]], [[US-026]].
 
+**US-026 AC cross-reference:**
+
+| AC | What it specifies |
+|---|---|
+| AC1 | Scheduler core: `Map<threadId, TickState>` singleton, self-rescheduling `setTimeout` chain (NOT `setInterval`), adaptive 20–120s, injectable timer for tests |
+| AC2 | AUTO-CONTINUE message format: `[[AUTO-CONTINUE tick=N inflight=<n> idle-peers=<csv> backlog=<n>]]`, kind:"user" |
+| AC3 | NO_OP_THROTTLE: K=3, `delay = 20s * 2^(noOps-K)` capped at 120s; resets on ≥1 DISPATCH |
+| AC4 | Per-thread async mutex in `src/lib/thread-lock.ts`; acquired by `talk_to_*` + tick path |
+| AC5 | Three MCP tools: `pause_ticks`, `resume_ticks`, `get_tick_state` |
+| AC6 | TICK_BUDGET: reuse `turn_usage` table via `getThreadSpendSince`; NO separate budget table |
+| AC7 | Three stop conditions: signals-clear, no-op-throttle, explicit-pause |
+| AC8 | Failure isolation: tick N throw → log + re-arm; SDK retries on 5xx/429 |
+| AC9 | Tick path skips BA-seed (tools.ts:155); uses `runTurnWithDispatches` not bare `runTurn` |
+| AC10 | `tick_log` audit table: append-only, one row per tick |
+| AC11 | Tick log section in PO's HANDOFF NOTES block (observable in dashboard) |
+
 ## Source of truth
 
 `src/lib/protocols.ts` — `REQUIREMENTS_PHASE_PROTOCOL`, `IMPLEMENTATION_PHASE_PROTOCOL`, `VERIFICATION_PHASE_PROTOCOL`, `IMPLEMENTER_REFUSAL_CLAUSE`; `src/lib/roles.ts` — `PHASED_WORKFLOW_DISCIPLINE`, `ORCHESTRATOR_PROTOCOL`.
