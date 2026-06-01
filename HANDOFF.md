@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-06-01
 
+**Wave 37 — `LESSONS.md` created (6 seed lessons) + `DEPLOYMENT_PHASE_PROTOCOL` updated (LESSONS.md bullet) + `CLAUDE.md` `## Session pickup` section added + `INDEX.yaml` entry for LESSONS.md. Closes the `/clear`-safety gap. 56/56 green. Shipped via PR #88.**
+
 **Wave 36 — Protocol amendment: HANDOFF entries reference PR# not merge SHA. `DEPLOYMENT_PHASE_PROTOCOL` in `src/lib/protocols.ts` updated. Stale Wave 35 + Wave 34 HANDOFF entries cleaned up. 56/56 green. Shipped via PR #87.**
 
 **Wave 35 — Dep bump: `@anthropic-ai/claude-agent-sdk` 0.3.156 → 0.3.158 (replaces stuck Dependabot PR #53, closes it). tsx stays at 4.22.3 — #53 was stuck on tsx@4.22.4 minimum-release-age. 56/56 green. Shipped via PR #86.**

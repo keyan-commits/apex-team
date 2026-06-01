@@ -4,6 +4,18 @@ Local single-user web app that runs a **team of seven role-specialized LLM agent
 
 Built on top of [apex-engine](../apex-engine): every team member's Claude calls have apex-engine's MCP tools (`apex_synthesize`, `apex_fanout`, `doc_review`, `code`, `web_search`, `history_search`) available.
 
+## Session pickup
+
+A fresh Claude Code session inheriting this repo should read these files in order to recover full context:
+
+1. `HANDOFF.md` — top NOW block: what shipped recently, what's open
+2. `LESSONS.md` — append-only "we hit X, it broke for Y, we now do Z" log; explains WHY conventions exist
+3. `src/lib/protocols.ts` — the encoded phased workflow each role's prompt inherits
+4. `architecture/decisions/` — ADRs for big design choices
+5. `requirements/INDEX.md` — current user-story backlog + status
+
+Memory files at `~/.claude/projects/-Users-nikoe-Development-Study-apex-team/memory/` are auto-loaded into every session and carry durable user preferences (push policy, no-API-key constraint, HANDOFF-in-PR rule, etc.).
+
 ## Architecture
 
 ```
