@@ -2,6 +2,8 @@
 
 ## ⏭️ NOW — 2026-06-01
 
+**Wave 44 — Transport drop fix. `src/mcp/handler.ts`: extracted `startHeartbeat(res, intervalMs=15_000)` exported helper; reduced interval from 30s → 15s; added `flush?.()` call after each write. `src/lib/roles.ts`: DevSecOps deployment workflow restructured into two-phase (Phase 1 = merge + push + self-HANDOFF; Phase 2 = restart + verify + NOTES + HANDOFF to PO). New `tests/mcp/handler.test.ts`: 2 tests (heartbeat fires at 15s; does not write to ended response). Awaiting QA PASS + DevSecOps merge.**
+
 **Wave 43 — Bug #5 + Bug #6. PR #95 (`feature/43-mcp-agent-models-and-po-notes`). CI PASS. 92/92 green (86 prior + 6 new). Awaiting QA PASS + DevSecOps merge.**
 
 **3 files changed + tests + HANDOFF.md:**

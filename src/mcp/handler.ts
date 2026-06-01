@@ -13,6 +13,19 @@ import { registerApexTeamTools } from "./tools";
 
 export const MCP_PATH = "/mcp";
 
+// Exported for testing. Writes SSE comment bytes at intervalMs cadence to keep
+// undici's bodyTimeout rolling during long agent turns.
+export function startHeartbeat(res: ServerResponse, intervalMs = 15_000): ReturnType<typeof setInterval> {
+  return setInterval(() => {
+    if (!res.writableEnded) {
+      try {
+        res.write(": keepalive\n\n");
+        (res as unknown as { flush?: () => void }).flush?.();
+      } catch {}
+    }
+  }, intervalMs);
+}
+
 export async function handleMcpRequest(
   req: IncomingMessage,
   res: ServerResponse,
@@ -44,13 +57,9 @@ export async function handleMcpRequest(
   // Keep the TCP connection alive during long agent turns. undici's bodyTimeout
   // (5 min default) + intermediate network idle timeouts can kill the socket
   // before a multi-agent tool call completes. Any bytes flowing reset both.
-  const heartbeat = setInterval(() => {
-    if (!res.writableEnded) {
-      try {
-        res.write(": keepalive\n\n");
-      } catch {}
-    }
-  }, 30_000);
+  // The SDK always responds with text/event-stream for tool calls, so SSE
+  // comment bytes are valid and ignored by the client.
+  const heartbeat = startHeartbeat(res);
   try {
     await transport.handleRequest(req, res, raw);
   } finally {
