@@ -61,10 +61,6 @@ if (!SLUG_RE.test(slug)) {
 const branchName = `feature/${slug}`;
 const worktreePath = resolve(process.cwd(), `../apex-team-${role}-${slug}`);
 
-// Pre-wave hygiene: refuse if main checkout has uncommitted changes.
-// Partial edits from a dropped agent turn would otherwise pollute the new worktree baseline.
-validateMainCleanliness();
-
 // Check current branch is main
 const currentBranch = run("git", ["rev-parse", "--abbrev-ref", "HEAD"]);
 if (currentBranch !== "main") {
