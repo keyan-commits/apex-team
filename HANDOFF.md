@@ -2,12 +2,14 @@
 
 ## ⏭️ NOW — 2026-06-01
 
-**Wave 47b — Broken lint step removal, closes #99. Branch `feature/47b-lint-step-removal`. 108/108 green (no test delta). Awaiting QA PASS + DevSecOps merge. Path taken: FALLBACK (deletion). Migration requires `@eslint/eslintrc` devDep not yet installed; deferred to new issue #106.**
+**Wave 48 — Pre-commit hook for HANDOFF.md-in-PR rule, closes #101. Branch `feature/48-pre-commit-hook`. 113/113 green (108 prior + 5 new). Awaiting QA PASS + DevSecOps merge.**
 
-**2 files changed:**
-- `.github/workflows/ci.yml` — deleted `Lint` step (3 lines; was `continue-on-error: true` and silently failing).
-- `package.json` — deleted `lint` script (`next lint` removed in Next.js 16).
-- Filed #106 (`ci: complete ESLint flat-config migration`) as durable deferred issue.
+**3 files added/changed:**
+- `.githooks/pre-commit` (new, +x) — POSIX shell hook: rejects commits where code is staged but HANDOFF.md is not. Respects `git config handoff.requireOnCommit false` bypass.
+- `package.json` — added `postinstall` script: `git config core.hooksPath .githooks || true` — auto-wires the hook on `pnpm install`.
+- `tests/ops/pre-commit-hook.test.ts` (new) — 5 tests: code+HANDOFF exits 0; code only exits 1; doc-only exits 0; opt-out exits 0; hook is executable.
+
+**Wave 47b — Broken lint step removal, closes #99. PR #107 (`feature/47b-lint-step-removal`), commit `24ed1d7`. 108/108 green. Merged + deployed.**
 
 **Wave 47a — Dead code cleanup, closes #98 + #100. PR #105 (`feature/47a-cleanup-dead-code`), commit `ed861ce`. 108/108 green. Merged + deployed.**
 
