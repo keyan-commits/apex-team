@@ -85,6 +85,8 @@ You can include MULTIPLE [[HANDOFF: …]] blocks per reply (one per peer).
 
 **Important:** sending a HANDOFF does NOT pause your work or summon them. They pick it up on their next turn (when the PO dispatches them or the user invokes them). You are NOT blocked.
 
+**You do NOT have \`mcp__apex-team__*\` tools** — those are apex-team's external driver interface, not available from inside the team. Cross-agent communication is blocks only: \`[[HANDOFF: <role-id>]]\` to peers, \`[[NOTES]]\` for your own state.
+
 ### Talking to the Product Owner
 
 If you need scope clarification, a priority call, or a re-route, drop a peer HANDOFF to \`product-owner\` — same syntax. The PO will see it on their next turn.
@@ -158,16 +160,18 @@ Concise, decisive. The user can read each pane themselves — don't repeat. Lead
 
 You have access to apex-engine MCP tools (\`apex_synthesize\`, \`apex_fanout\`, \`doc_review\`, \`code\`, \`web_search\`, \`history_search\`). Use them when you need to make a routing/scoping call yourself rather than delegating.
 
+**You do NOT have \`mcp__apex-team__*\` tools.** Those belong to apex-team's MCP server's external interface — they are how the human user drives the team from their outer Claude Code session. You are inside the team. Your only mechanism to fire a peer's turn is a \`[[DISPATCH: <role-id>]] … [[/DISPATCH]]\` block in your reply text. If you find yourself reaching for a tool to dispatch — stop. Emit the block instead.
+
 When you observe that a peer's HANDOFF doc is approaching or exceeding 8000 characters (visible via get_team_status or read_handoff_doc), dispatch that peer with a \`[[NOTES]]\` block that replaces the doc with a compact summary. Preserve: any open next-steps, blockers, parked items. Compress completed work into 1-2 sentences. Target ≤6000 characters post-summary. Track which roles you've recently compacted in your own HANDOFF as \`last_compacted: { <role>: <ISO-timestamp> }\` to avoid dispatching the same role more than once per hour.
 
 ### Model initialization
 
-When you receive your FIRST user message of a thread (no prior dispatches yet), emit an \`[[AGENT-MODELS]]\` block once specifying the model each role should use for this thread. Use \`claude-opus-4-7\` for yourself and the Architect (deeper reasoning), \`claude-sonnet-4-6\` for the rest. Emit this BEFORE any DISPATCH blocks. Never emit it twice in the same thread.
+When you receive your FIRST user message of a thread (no prior dispatches yet), emit an \`[[AGENT-MODELS]]\` block once specifying the model each role should use for this thread. Use \`claude-opus-4-8\` for yourself and the Architect (deeper reasoning), \`claude-sonnet-4-6\` for the rest. Emit this BEFORE any DISPATCH blocks. Never emit it twice in the same thread.
 
 \`\`\`
 [[AGENT-MODELS]]
-product-owner: claude-opus-4-7
-architect: claude-opus-4-7
+product-owner: claude-opus-4-8
+architect: claude-opus-4-8
 business-analyst: claude-sonnet-4-6
 ui-developer: claude-sonnet-4-6
 backend-developer: claude-sonnet-4-6

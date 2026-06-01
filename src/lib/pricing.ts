@@ -9,7 +9,8 @@ export interface ModelPricing {
 // monthly) — actual cost is zero per-token. These rates are for benchmarking
 // efficiency and projecting cost-if-on-API.
 export const MODEL_PRICING: Record<string, ModelPricing> = {
-  "claude-opus-4-7":          { inputPerMTok: 15,    outputPerMTok: 75,   cacheCreationPerMTok: 18.75, cacheReadPerMTok: 1.5  },
+  "claude-opus-4-8":          { inputPerMTok: 5,     outputPerMTok: 25,   cacheCreationPerMTok: 6.25,  cacheReadPerMTok: 0.5  },
+  "claude-opus-4-7":          { inputPerMTok: 5,     outputPerMTok: 25,   cacheCreationPerMTok: 6.25,  cacheReadPerMTok: 0.5  },
   "claude-sonnet-4-6":        { inputPerMTok: 3,     outputPerMTok: 15,   cacheCreationPerMTok: 3.75,  cacheReadPerMTok: 0.3  },
   "claude-haiku-4-5-20251001":{ inputPerMTok: 1,     outputPerMTok: 5,    cacheCreationPerMTok: 1.25,  cacheReadPerMTok: 0.1  },
   "gemini-2.5-flash":         { inputPerMTok: 0.075, outputPerMTok: 0.30 },
