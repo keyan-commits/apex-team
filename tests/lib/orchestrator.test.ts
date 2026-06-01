@@ -130,3 +130,26 @@ describe("parseAgentReply — inline-mention guard (Bug B fix)", () => {
     );
   });
 });
+
+// ── DISPATCH model override (Wave 51) ──────────────────────────────────────
+
+describe("parseAgentReply — DISPATCH model override", () => {
+  it("parses DISPATCH block with model: field", () => {
+    const raw =
+      "PO decision.\n[[DISPATCH: backend-developer model:claude-sonnet-4-6]]\nImplement it.\n[[/DISPATCH]]";
+    const result = parseAgentReply(raw);
+    expect(result.dispatches).toHaveLength(1);
+    expect(result.dispatches[0].to).toBe("backend-developer");
+    expect(result.dispatches[0].model).toBe("claude-sonnet-4-6");
+    expect(result.dispatches[0].message).toBe("Implement it.");
+  });
+
+  it("parses DISPATCH block without model: field — model is undefined", () => {
+    const raw =
+      "PO decision.\n[[DISPATCH: qa]]\nTest it.\n[[/DISPATCH]]";
+    const result = parseAgentReply(raw);
+    expect(result.dispatches).toHaveLength(1);
+    expect(result.dispatches[0].to).toBe("qa");
+    expect(result.dispatches[0].model).toBeUndefined();
+  });
+});

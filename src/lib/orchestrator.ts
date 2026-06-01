@@ -8,7 +8,7 @@ const HANDOFF_RE = new RegExp(
   "gi",
 );
 const DISPATCH_RE = new RegExp(
-  `(?:^|\\n)\\[\\[DISPATCH:\\s*(${TEAM_ROLE_PATTERN})\\s*\\]\\]\\n([\\s\\S]*?)\\n\\[\\[/DISPATCH\\]\\]`,
+  `(?:^|\\n)\\[\\[DISPATCH:\\s*(${TEAM_ROLE_PATTERN})(?:\\s+model:([\\w.-]+))?\\s*\\]\\]\\n([\\s\\S]*?)\\n\\[\\[/DISPATCH\\]\\]`,
   "gi",
 );
 const NOTES_RE = /(?:^|\n)\[\[NOTES\]\]\n([\s\S]*?)\n\[\[\/NOTES\]\]/i;
@@ -22,7 +22,7 @@ export interface ParsedReply {
   /** Peer handoffs (BA/Arch/UI/BE/QA/DevSecOps or escalations to PO) — async, no auto-trigger. */
   handoffs: Array<{ to: TeamRoleId | "product-owner"; message: string }>;
   /** Product Owner dispatches — auto-trigger the target peer's turn. */
-  dispatches: Array<{ to: TeamRoleId; message: string }>;
+  dispatches: Array<{ to: TeamRoleId; message: string; model?: string }>;
   /** Per-role model overrides emitted by PO on thread init; null if block absent. */
   agentModels: Record<string, string> | null;
 }
@@ -57,11 +57,12 @@ export function parseAgentReply(raw: string): ParsedReply {
     return "";
   });
 
-  const dispatches: Array<{ to: TeamRoleId; message: string }> = [];
-  working = working.replace(DISPATCH_RE, (_full, role: string, message: string) => {
+  const dispatches: Array<{ to: TeamRoleId; message: string; model?: string }> = [];
+  working = working.replace(DISPATCH_RE, (_full, role: string, model: string | undefined, message: string) => {
     dispatches.push({
       to: role.toLowerCase() as TeamRoleId,
       message: message.trim(),
+      ...(model ? { model } : {}),
     });
     return "";
   });

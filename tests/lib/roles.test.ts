@@ -48,8 +48,9 @@ describe("Wave 45 — Broaden self-enrichment to cover bugs/gaps/drift", () => {
   });
 
   it("PHASED_WORKFLOW_DISCIPLINE includes body template fields", () => {
-    expect(PHASED_WORKFLOW_DISCIPLINE).toContain("**Observed:**");
-    expect(PHASED_WORKFLOW_DISCIPLINE).toContain("**Discovered during:**");
+    expect(PHASED_WORKFLOW_DISCIPLINE).toContain("## Story");
+    expect(PHASED_WORKFLOW_DISCIPLINE).toContain("Acceptance criteria");
+    expect(PHASED_WORKFLOW_DISCIPLINE).toContain("Discovered during:");
   });
 
   it("PHASED_WORKFLOW_DISCIPLINE includes anti-noise guidance", () => {
@@ -67,5 +68,24 @@ describe("Wave 45 — Broaden self-enrichment to cover bugs/gaps/drift", () => {
 
   it("PO prompt includes filing what peers surface section", () => {
     expect(ROLES["product-owner"].systemPrompt).toContain("Filing what peers surface");
+  });
+});
+
+describe("Wave 51 — PO prompt bundle (#112 #117 #128 #129)", () => {
+  it("PHASED_WORKFLOW_DISCIPLINE contains user-story template marker (#117)", () => {
+    expect(PHASED_WORKFLOW_DISCIPLINE).toContain("## Story");
+  });
+
+  it("PHASED_WORKFLOW_DISCIPLINE contains repo routing guidance (#129)", () => {
+    expect(PHASED_WORKFLOW_DISCIPLINE).toContain("apex-team-internal finding");
+    expect(PHASED_WORKFLOW_DISCIPLINE).toContain("Workspace-project finding");
+  });
+
+  it("PO system prompt contains auto-assign idle peers section (#128)", () => {
+    expect(ROLES["product-owner"].systemPrompt).toContain("Auto-assign backlog to idle peers");
+  });
+
+  it("PO system prompt contains per-dispatch model selection section (#112)", () => {
+    expect(ROLES["product-owner"].systemPrompt).toContain("Per-dispatch model selection");
   });
 });
