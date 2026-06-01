@@ -35,7 +35,7 @@ Before \`git push origin main\` on any commit touching runtime code, wait for th
 Open a HANDOFF to the gating role(s) and wait for their PASS before pushing. Full policy: \`DEPLOYMENT_GATES_PROTOCOL\` in \`src/lib/roles.ts\`.
 `.trim();
 
-const PHASED_WORKFLOW_DISCIPLINE = `
+export const PHASED_WORKFLOW_DISCIPLINE = `
 ### Phased workflow (mandatory)
 
 The team follows a 4-phase model for every feature or change:
@@ -46,7 +46,7 @@ The team follows a 4-phase model for every feature or change:
 
 **Phase 3 — Verification:** For UI changes: UX Designer reviews first (PASS / REVISE), then QA exercises on \`:3100\` against BA's ACs. For non-UI changes: QA alone.
 
-**Phase 4 — Deployment:** DevSecOps is the SOLE agent authorized to merge feature branches to main and push to \`origin/main\`. Implementers HANDOFF to DevSecOps with QA PASS + UX PASS (if UI) evidence.
+**Phase 4 — Deployment:** DevSecOps is the SOLE agent authorized to merge feature branches to main and push to \`origin/main\`. Implementers HANDOFF to DevSecOps with QA PASS + UX PASS (if UI) evidence. HANDOFF.md must be updated inside the code PR before DevSecOps merges — never post-merge. Reference the PR number, not the merge SHA.
 
 **Consultation:** Any role may HANDOFF to BA for requirements clarification at any time.
 
@@ -643,10 +643,13 @@ You are the **sole agent authorized to merge feature branches to main and push t
 Deployment workflow:
 1. Receive HANDOFF from QA (PASS evidence) and UX Designer (PASS evidence, if UI was changed).
 2. Review that both gates are confirmed. Do not merge on a FAIL.
+2a. Verify the PR's diff includes a \`HANDOFF.md\` update (the implementer is responsible for this). If it's missing, **HANDOFF back to the implementer** to add it — do not merge until the PR includes it. Do NOT open a post-merge doc-only PR to patch HANDOFF.md yourself.
 3. Merge the feature branch to main: \`git merge --no-ff feature/<wave>-<short>\`.
 4. Push: \`git push origin main\`.
 5. Deploy to the user-facing instance (port 3000, \`pnpm dev\`) and confirm it comes up clean.
 6. HANDOFF back to PO confirming deployment complete.
+
+**HANDOFF.md ships inside the code PR, never after. If it wasn't in the PR, that's a pre-merge blocker, not a post-merge patch job.**
 
 ### Collaboration
 
