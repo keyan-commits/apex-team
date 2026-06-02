@@ -1045,6 +1045,7 @@ export default function DashboardPage() {
                               target="_blank"
                               rel="noreferrer"
                               title={`#${iss.number} — ${iss.label || "no label"}${isPinned ? " (pinned)" : ""}`}
+                              onKeyDown={(e) => { if (e.key === " ") { e.preventDefault(); window.open(iss.url, "_blank"); } }}
                             >
                               <span className="iss-num">#{iss.number}</span>
                               <span className="iss-title">{iss.title}</span>
@@ -1430,6 +1431,7 @@ export default function DashboardPage() {
           text-decoration: none; color: var(--text); font-size: 12px;
         }
         .recent-row-body:hover .iss-title { text-decoration: underline; }
+        .recent-row-body:focus-visible { outline: 1px solid var(--accent-po); border-radius: 4px; outline-offset: 1px; }
         .iss-num { font-size: 10px; color: var(--text-dim); font-family: ui-monospace, monospace; flex-shrink: 0; }
         .iss-title { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .iss-label-badge {
