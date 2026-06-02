@@ -2,6 +2,19 @@
 
 ## ⏭️ NOW — 2026-06-02 (Wave 202 D1 — merge-train .gitattributes + F1 fitness test)
 ## ⏭️ NOW — 2026-06-02 (Wave 94 — QA 9-skill upgrade / US-048)
+## ⏭️ NOW — 2026-06-02 (Wave #122 — Active Wave panel, PR open, awaiting UX gate)
+## ⏭️ NOW — 2026-06-02 (Wave #122 — UX REVISE applied, re-submitted for PASS)
+
+**Wave #122 — Active Wave panel — UX REVISE fix applied.**
+Branch `feature/122-active-wave-progress`. PR #213.
+- `src/components/ActiveWaveCard.tsx` — `.aw-poll-selected` contrast fix: `color: #fff` → `color: var(--background)` (2.0:1 → ~9.1:1, WCAG AA pass)
+- Filed warns #215 (prefers-reduced-motion) + #216 (selected+focused outline) — not this PR's scope
+- 314 tests pass, type-check 0 errors
+
+**Gates pending:** UX Designer PASS confirmation → QA `:3100` smoke → DevSecOps merge.
+**Merge order:** #197 → #209 → #193 → #206 → **#213 last**.
+
+## ⏭️ PREV — 2026-06-02 (housekeeping — inbox drained, restart-trigger landed, be-84 cleared)
 
 **Wave 94 PR open: `feature/94-qa-9skill`.** Implements S1–S9 + 6-gate DoD in `src/lib/skills/qa.ts`.
 - type-check 0 · 319/319 tests · `pnpm build` ✓ (Leg A)
