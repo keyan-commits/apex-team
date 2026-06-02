@@ -1,14 +1,16 @@
 ## Done
-- #201 prerender fitness function: added F2 grep step to `build-smoke` CI job; removed stale `continue-on-error: true` (#151 closed 25c57a4). Build output captured via `tee`; F2 runs `if: always()` so it catches masked errors even on non-zero build exit. PR opened (see below).
+- **#208** (this turn): ADR-015 (no Redis/MQ — in-process SQLite + single-process suffices) written, status **Accepted**, with a 4-condition tripwire (multi-machine / multi-user / out-of-process workers / sustained write contention) and a drafted no-broker CI fitness function. `architecture/INDEX.md` updated (ADR-015 row + date). Closes #208.
+- **#201** prerender fitness function: added F2 grep step to `build-smoke` CI job; removed stale `continue-on-error: true`. Build output captured via `tee`; F2 runs `if: always()`. PR #234 — MERGED (origin/main `f623bfd`).
+- **#228** (US-053 max-prompt-guard): Architect PASS → MERGED.
 
 ## In flight
-- #228 (US-053 max-prompt-guard): Architect PASS issued last turn. Awaiting DevSecOps merge behind #232.
+- PR for #208 opened off origin/main (`f623bfd`), self-reviewed PASS, HANDOFF'd DevSecOps to merge as a low-risk doc tail car behind the current train.
 - #231 (US-054 a11y dashboard): UX re-gate pending UI Dev `<aside>` push.
 
 ## Next
-- US-042 design (#196): blocked on OQ-BA-001 (US-042–US-045 identity unknown); resume once user clarifies.
-- #205 SHA-pin UX skills, #200 NODE_ENV pin, #194 ESLint warn→error: queued after merge train clears.
+- #200 (NODE_ENV pin) and #194 (ESLint warn→error) — next unblocked arch-lane items once #208 lands.
+- #196 (US-042 design): blocked on OQ-BA-001 (US-042–US-045 identity unknown); resumes once user clarifies.
 
 ## Notes
-- F2 fitness function is in `build-smoke` job alongside existing F1 (union-merge test). AC1 + AC2 of #201 satisfied.
-- HANDOFF DevSecOps to merge as low-priority car after #232 and #228 clear.
+- Filed drift `bug`: `architecture/INDEX.md` links ADR-006/-008/-011/-013 but none exist on disk or origin/main — dead links. Out of scope for #208; filed separately, not touched in this PR.
+- ADR-015 fitness function (no-broker dependency-graph guard) is drafted, not yet wired — flagged for DevSecOps to add to `ci.yml` as a follow-up.

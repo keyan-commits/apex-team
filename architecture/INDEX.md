@@ -1,6 +1,6 @@
 # Architecture Index
 
-Last updated: 2026-06-02 (Wave 93 — added ADR-014 fragment pattern; indexed ADR-013)
+Last updated: 2026-06-02 (Wave 97 — added ADR-015 no-Redis/MQ decision + tripwire)
 
 ## Decision Records
 
@@ -18,6 +18,7 @@ Last updated: 2026-06-02 (Wave 93 — added ADR-014 fragment pattern; indexed AD
 | [ADR-011](decisions/ADR-011-lessons-learned-skill-file-persistence.md) | Lessons-Learned Skill-File Persistence | Accepted |
 | [ADR-013](decisions/ADR-013-merge-train-conflict-resilience.md) | Merge-Train Conflict Resilience (`merge=union` + mergeable-state rescue) | Proposed |
 | [ADR-014](decisions/ADR-014-handoff-fragment-pattern.md) | Towncrier-style HANDOFF Fragment Pattern (composes with ADR-013) | Accepted |
+| [ADR-015](decisions/ADR-015-no-redis-mq.md) | No Redis / MQ — in-process SQLite + single-process suffices (+ tripwire) | Accepted |
 
 ## Pending docs
 
