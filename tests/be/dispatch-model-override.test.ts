@@ -164,7 +164,10 @@ describe("runTurnWithDispatches — dispatch model: applied transiently to peer 
   });
 
   it("dispatched peer without model: gets the default from agents map unchanged", async () => {
-    // Override the mock: dispatch has no model
+    // Reset BEFORE re-mocking so the beforeEach opus-factory is fully cleared
+    // before we register the no-model factory. Doing doMock→resetModules in the
+    // old order let CI's module resolver pick up the opus factory instead.
+    vi.resetModules();
     vi.doMock("@/lib/run-turn", () => {
       let callCount = 0;
       return {
@@ -187,7 +190,6 @@ describe("runTurnWithDispatches — dispatch model: applied transiently to peer 
       };
     });
 
-    vi.resetModules();
     const { runTurnWithDispatches } = await import("@/lib/run-turn-with-dispatches");
     const agents = makeAgents() as never;
 
