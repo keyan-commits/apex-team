@@ -114,17 +114,21 @@ function severityStyle(labelName: string, labelColor?: string): [string, string]
     case "low":      return ["var(--surface-2)", "var(--text-dim)"];
     case "nit":      return ["var(--surface-1)", "var(--text-dim)"];
     default:
-      if (labelColor) return [labelColor, contrastText(labelColor)];
+      if (labelColor) return [labelColor, getContrastingTextColor(labelColor)];
       return ["var(--accent-info)", "white"]; // unlabeled → medium
   }
 }
 
-function contrastText(hex: string): string {
-  if (!hex.startsWith("#") || hex.length < 7) return "white";
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.45 ? "var(--text)" : "white";
+// WCAG 2.x relative luminance — gamma-linearizes each channel, then picks #000 or #fff
+// at the 0.179 threshold (≥4.5:1 contrast ratio for both choices).
+function getContrastingTextColor(bgHex: string): string {
+  if (!bgHex.startsWith("#") || bgHex.length < 7) return "#fff";
+  const lin = (c: number) =>
+    c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  const r = lin(parseInt(bgHex.slice(1, 3), 16) / 255);
+  const g = lin(parseInt(bgHex.slice(3, 5), 16) / 255);
+  const b = lin(parseInt(bgHex.slice(5, 7), 16) / 255);
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.179 ? "#000" : "#fff";
 }
 export default function DashboardPage() {
   const [threadId, setThreadId] = useState<string>("");
@@ -693,10 +697,10 @@ export default function DashboardPage() {
           {panelHd("Done — last 24h", "done")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : data.done.length === 0 ? empty("Nothing completed yet.") : (
             <div className="row-list">
-              {groupedDone.map((group) => {
+              {groupedDone.map((group, idx) => {
                 if (group.rows.length === 1) {
                   const e = group.rows[0];
-                  const doneKey = group.key;
+                  const doneKey = `${group.key}-${idx}`;
                   return (
                     <div key={doneKey} className="row-item">
                       <div
@@ -723,6 +727,7 @@ export default function DashboardPage() {
                   );
                 }
                 // Multi-row group — collapsed summary with expand
+                const groupKey = `${group.key}-${idx}`;
                 const allChips = [
                   ...group.waves.map((w) => ({ kind: "wave" as const, label: `Wave ${w}`, key: `w${w}` })),
                   ...group.tickets.map((t) => ({ kind: "ticket" as const, num: t, key: `t${t}` })),
@@ -730,16 +735,16 @@ export default function DashboardPage() {
                 const visibleChips = allChips.slice(0, 4);
                 const chipOverflow = allChips.length - visibleChips.length;
                 return (
-                  <div key={group.key} className="row-item">
+                  <div key={groupKey} className="row-item">
                     <div
                       className="row expandable-row"
-                      onClick={() => toggleRow("done", group.key)}
-                      onKeyDown={rowKd("done", group.key)}
+                      onClick={() => toggleRow("done", groupKey)}
+                      onKeyDown={rowKd("done", groupKey)}
                       tabIndex={0}
                       role="button"
-                      aria-expanded={expandedRow["done"] === group.key}
+                      aria-expanded={expandedRow["done"] === groupKey}
                     >
-                      <span className="row-chevron" aria-hidden="true">{expandedRow["done"] === group.key ? "▾" : "▸"}</span>
+                      <span className="row-chevron" aria-hidden="true">{expandedRow["done"] === groupKey ? "▾" : "▸"}</span>
                       <span className="chip-strip" onClick={(ev) => ev.stopPropagation()}>
                         {visibleChips.map((chip) =>
                           chip.kind === "wave"
@@ -762,7 +767,7 @@ export default function DashboardPage() {
                       })()}
                       <span className="dim">{fmtTime(group.latestAt)}</span>
                     </div>
-                    {expandedRow["done"] === group.key && (
+                    {expandedRow["done"] === groupKey && (
                       <div className="row-detail group-detail">
                         {group.rows.map((e) => {
                           const rowKey = `${e.role}-${e.completedAt}`;

@@ -42,6 +42,25 @@ Both fixed: test now `cp`s from `$(pwd)/.gitattributes` (the checkout) and relie
 **Inbox (rescue-sweep tick=1, age=1259s — all seen):**
 - Architect #205 (supply-chain review for UX skills) — on backlog, lower priority than D1.
 - Architect worktree cleanup reminder `/tmp/be-84` — DONE (Wave 84 merged `010343d`).
+## ⏭️ NOW — 2026-06-02 (Wave 85 — dup-key fix #190 / feature/85-dup-key-fix)
+## ⏭️ NOW — 2026-06-02 (Wave 85+86 — dup-key fix #190 + label contrast fix #195 / feature/85-dup-key-fix)
+
+**Wave 85+86 — combined PR on `feature/85-dup-key-fix`. 321/321 tests green, type-check 0. Closes #190 + #195.**
+
+**Wave 85 (dup-key, closes #190):**
+- `groupedDone.map((group, idx) => …)` — composite keys on all 5 Done-group usages
+- expandedRow state now unique per-group (no shared-state side-effect)
+
+**Wave 86 (label contrast, closes #195):**
+- Replaced `contrastText` (threshold 0.45, returned CSS var `var(--text)`) with WCAG-proper `getContrastingTextColor`
+- Gamma-linearizes RGB per WCAG 2.x; threshold 0.179; returns explicit `#000`/`#fff`
+- `#a2eeef` (enhancement teal): L=0.75 → `#000` at 16:1 contrast (was broken — `var(--text)` matched bg)
+- All 4 tested label colors hit ≥4.5:1 (bug, self-improvement, ux, enhancement)
+- Test: `tests/ui/getContrastingTextColor.test.ts` (7 cases)
+
+**Console-clean verified:** Playwright headless on `:3110` — 0 React warnings.
+
+**Next:** PR #193 title/body update → UX gate (combined dup-key + contrast) → QA `:3100` smoke → DevSecOps merge.
 
 ---
 
