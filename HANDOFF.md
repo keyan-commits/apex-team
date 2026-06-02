@@ -43,17 +43,24 @@ Both fixed: test now `cp`s from `$(pwd)/.gitattributes` (the checkout) and relie
 - Architect #205 (supply-chain review for UX skills) — on backlog, lower priority than D1.
 - Architect worktree cleanup reminder `/tmp/be-84` — DONE (Wave 84 merged `010343d`).
 ## ⏭️ NOW — 2026-06-02 (Wave 85 — dup-key fix #190 / feature/85-dup-key-fix)
+## ⏭️ NOW — 2026-06-02 (Wave 85+86 — dup-key fix #190 + label contrast fix #195 / feature/85-dup-key-fix)
 
-**Wave 85 fix — PR open, awaiting UX gate → QA smoke.** Single-file patch: `src/app/dashboard/page.tsx`. 314/314 tests green, type-check 0. Closes #190.
+**Wave 85+86 — combined PR on `feature/85-dup-key-fix`. 321/321 tests green, type-check 0. Closes #190 + #195.**
 
-**Fix summary — two collision sites patched:**
-- `groupedDone.map((group) => …)` → `groupedDone.map((group, idx) => …)`
-- Single-row branch (line 699): `const doneKey = group.key` → `const doneKey = \`${group.key}-${idx}\``
-- Multi-row branch: introduced `const groupKey = \`${group.key}-${idx}\`` and replaced all 5 `group.key` usages (key=, toggleRow, rowKd, aria-expanded, chevron ternary, detail reveal).
+**Wave 85 (dup-key, closes #190):**
+- `groupedDone.map((group, idx) => …)` — composite keys on all 5 Done-group usages
+- expandedRow state now unique per-group (no shared-state side-effect)
 
-**expandedRow state**: expansion state now keyed on composite, so two same-wave groups expand independently — correct behavior (previously shared state was a secondary bug).
+**Wave 86 (label contrast, closes #195):**
+- Replaced `contrastText` (threshold 0.45, returned CSS var `var(--text)`) with WCAG-proper `getContrastingTextColor`
+- Gamma-linearizes RGB per WCAG 2.x; threshold 0.179; returns explicit `#000`/`#fff`
+- `#a2eeef` (enhancement teal): L=0.75 → `#000` at 16:1 contrast (was broken — `var(--text)` matched bg)
+- All 4 tested label colors hit ≥4.5:1 (bug, self-improvement, ux, enhancement)
+- Test: `tests/ui/getContrastingTextColor.test.ts` (7 cases)
 
-**Next:** UX gate → QA `:3100` smoke → DevSecOps merge.
+**Console-clean verified:** Playwright headless on `:3110` — 0 React warnings.
+
+**Next:** PR #193 title/body update → UX gate (combined dup-key + contrast) → QA `:3100` smoke → DevSecOps merge.
 
 ---
 
