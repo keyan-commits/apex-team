@@ -49,7 +49,7 @@ Both fixed: test now `cp`s from `$(pwd)/.gitattributes` (the checkout) and relie
 ## ⏭️ NOW — 2026-06-02 (Wave 90 — Issues panel LIFO/FIFO toggle + severity pinning, US-034, #118)
 
 **Wave 90 — UI Dev DONE, awaiting gates.**
-Branch `feature/90-issues-ordering` off `962ff52`. PR open (SHA-pending).
+Branch `feature/90-issues-ordering` off `962ff52`. PR #206 open.
 - Added `issueOrder` state + `sortedRecentIssues` memo + `toggleIssueOrder` handler in `dashboard/page.tsx`.
 - Segmented "Newest / Oldest" toggle in Recent Open header; critical/blocker pinned to top + divider.
 - `localStorage` key `apex-team:issues-order` persists across reload.
