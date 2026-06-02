@@ -101,9 +101,35 @@ function playStallAlertSound() {
   }
 }
 
+interface WaveStateData {
+  peer_idle: Array<{ role: string; isIdle: boolean }>;
+}
+
+function severityStyle(labelName: string, labelColor?: string): [string, string] {
+  switch (labelName.toLowerCase()) {
+    case "blocker":  return ["var(--accent-error)", "white"];
+    case "critical": return ["var(--accent-critical)", "white"];
+    case "high":     return ["var(--accent-warning)", "var(--text)"];
+    case "medium":   return ["var(--accent-info)", "white"];
+    case "low":      return ["var(--surface-2)", "var(--text-dim)"];
+    case "nit":      return ["var(--surface-1)", "var(--text-dim)"];
+    default:
+      if (labelColor) return [labelColor, contrastText(labelColor)];
+      return ["var(--accent-info)", "white"]; // unlabeled → medium
+  }
+}
+
+function contrastText(hex: string): string {
+  if (!hex.startsWith("#") || hex.length < 7) return "white";
+  const r = parseInt(hex.slice(1, 3), 16) / 255;
+  const g = parseInt(hex.slice(3, 5), 16) / 255;
+  const b = parseInt(hex.slice(5, 7), 16) / 255;
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.45 ? "var(--text)" : "white";
+}
 export default function DashboardPage() {
   const [threadId, setThreadId] = useState<string>("");
   const [data, setData] = useState<TeamStatus | null>(null);
+  const [waveState, setWaveState] = useState<WaveStateData | null>(null);
   const [endpointReady, setEndpointReady] = useState(true);
   const [savedOrder, setSavedOrder] = useState<number[]>([]);
   const [dragFrom, setDragFrom] = useState<number | null>(null);
@@ -213,6 +239,10 @@ export default function DashboardPage() {
         })
         .then((d) => { if (d) { setData(d); setFetchError(false); } })
         .catch(() => setFetchError(true));
+      fetch(`/api/wave-state?thread_id=${encodeURIComponent(threadId)}`, { cache: "no-store" })
+        .then((r) => r.ok ? r.json() as Promise<WaveStateData> : null)
+        .then((d) => { if (d) setWaveState(d); })
+        .catch(() => {});
     };
     fetchData();
     const id = setInterval(fetchData, 10_000);
@@ -812,8 +842,21 @@ export default function DashboardPage() {
         </section>
 
         {/* ISSUES */}
-        <section className="panel issue-panel">
-          {panelHd("Issues", "issues")}
+        <section className="panel issue-panel" aria-labelledby="issues-panel-title">
+          <div className="panel-hd-wrap">
+            <h2 className="panel-h" id="issues-panel-title">
+              Issues
+              <button
+                className="info-btn"
+                onClick={(e) => { e.stopPropagation(); setOpenTooltip(v => v === "issues" ? null : "issues"); }}
+                aria-label="About Issues"
+                aria-expanded={openTooltip === "issues"}
+              >ⓘ</button>
+            </h2>
+            {openTooltip === "issues" && (
+              <div className="info-popover" role="tooltip">{PANEL_INFO["issues"] ?? ""}</div>
+            )}
+          </div>
           {!endpointReady ? notReady : !data ? empty("Loading…") : (
             <div className="issue-panel-inner">
               {data.issues.repoStatus !== "ok" ? (
@@ -827,57 +870,110 @@ export default function DashboardPage() {
                       rel="noreferrer"
                       className="issue-repo-link"
                     >{data.issues.repo}</a>
+                    <span className="issue-total-badge" aria-label={`${data.issues.total} open issues`}>{data.issues.total} open</span>
                   </p>
-                  <div className="issue-grid">
-                    <a className="issue-row" href={`https://github.com/${data.issues.repo}/issues?q=label%3Aself-improvement+is%3Aopen`} target="_blank" rel="noreferrer">
-                      <span className="issue-count">{data.issues.selfImprovement}</span>
-                      <span className="issue-label">self-improvement</span>
-                    </a>
-                    <a className="issue-row" href={`https://github.com/${data.issues.repo}/issues?q=label%3Askill-proposal+is%3Aopen`} target="_blank" rel="noreferrer">
-                      <span className="issue-count">{data.issues.skillProposal}</span>
-                      <span className="issue-label">skill-proposal</span>
-                    </a>
-                    <a className="issue-row" href={`https://github.com/${data.issues.repo}/issues?q=label%3Amcp-proposal+is%3Aopen`} target="_blank" rel="noreferrer">
-                      <span className="issue-count">{data.issues.mcpProposal}</span>
-                      <span className="issue-label">mcp-proposal</span>
-                    </a>
-                  </div>
 
-                  {data.issues.recent.length > 0 && (
-                    <div className="recent-issues">
-                      <p className="recent-issues-hd">Recent open</p>
-                      {data.issues.recent.map((iss) => (
-                        <div key={iss.number} className="recent-row">
-                          <input
-                            type="checkbox"
-                            className="iss-check"
-                            checked={selectedIssues.has(iss.number)}
-                            onChange={() => toggleIssue(iss.number)}
-                            aria-label={`Select issue #${iss.number}`}
-                            onClick={(e) => e.stopPropagation()}
-                            disabled={dispatchState === "sending"}
-                          />
+                  {/* Peer-idle row — from /api/wave-state */}
+                  {(() => {
+                    const idlePeers = (waveState?.peer_idle ?? []).filter((p) => p.isIdle).map((p) => p.role);
+                    if (idlePeers.length === 0) return null;
+                    return (
+                      <div className="peer-idle-row" aria-label="Idle peers">
+                        <span className="peer-idle-label">Idle:</span>
+                        {idlePeers.map((r) => roleBadge(r))}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Dynamic label counts — replaces hardcoded apex-team 3-row grid */}
+                  {data.issues.byLabel.length > 0 ? (
+                    <div className="issue-grid">
+                      {data.issues.byLabel.slice(0, 8).map((lbl) => {
+                        const [bg, fg] = severityStyle(lbl.name, lbl.color);
+                        return (
                           <a
-                            className="recent-row-body"
-                            href={iss.url}
+                            key={lbl.name}
+                            className="issue-row"
+                            href={`https://github.com/${data.issues.repo}/issues?q=label%3A${encodeURIComponent(lbl.name)}+is%3Aopen`}
                             target="_blank"
                             rel="noreferrer"
-                            title={`#${iss.number} — ${iss.label}`}
                           >
-                            <span className="iss-num">#{iss.number}</span>
-                            <span className="iss-title">{iss.title}</span>
-                            {iss.inFlight && <span className="iss-inflight-pill">in-flight</span>}
-                            <span className="iss-label-badge">{iss.label}</span>
+                            <span className="issue-count" style={{ color: bg }}>{lbl.count}</span>
+                            <span
+                              className="issue-label-chip"
+                              style={{ background: bg, color: fg }}
+                              aria-label={`${lbl.name} severity`}
+                            >{lbl.name}</span>
                           </a>
-                          <button
-                            className="iss-po-btn"
-                            onClick={() => dispatchRowToPo(iss.number)}
-                            disabled={sendingRows.has(iss.number) || !threadId}
-                            aria-label={`Send issue #${iss.number} to PO`}
-                            title="Send to Product Owner"
-                          >{sendingRows.has(iss.number) ? "…" : "→ PO"}</button>
-                        </div>
-                      ))}
+                        );
+                      })}
+                      {data.issues.unlabeled > 0 && (
+                        <a
+                          className="issue-row"
+                          href={`https://github.com/${data.issues.repo}/issues?q=no%3Alabel+is%3Aopen`}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <span className="issue-count" style={{ color: "var(--accent-info)" }}>{data.issues.unlabeled}</span>
+                          <span
+                            className="issue-label-chip"
+                            style={{ background: "var(--accent-info)", color: "white" }}
+                          >unlabeled</span>
+                        </a>
+                      )}
+                    </div>
+                  ) : data.issues.total === 0 ? (
+                    <div role="status" aria-live="polite" className="empty-msg">
+                      No open issues in {data.issues.repo}.
+                    </div>
+                  ) : null}
+
+                  {/* Recent open — always shown when total > 0 (AC#2) */}
+                  {(data.issues.total ?? 0) > 0 && (
+                    <div className="recent-issues">
+                      <p className="recent-issues-hd">Recent open</p>
+                      {data.issues.recent.length === 0 ? (
+                        <p className="empty-msg">No recently opened issues.</p>
+                      ) : data.issues.recent.map((iss) => {
+                        const [sevBg, sevFg] = severityStyle(iss.label, iss.labelColor);
+                        return (
+                          <div key={iss.number} className="recent-row">
+                            <input
+                              type="checkbox"
+                              className="iss-check"
+                              checked={selectedIssues.has(iss.number)}
+                              onChange={() => toggleIssue(iss.number)}
+                              aria-label={`Select issue #${iss.number}`}
+                              onClick={(e) => e.stopPropagation()}
+                              disabled={dispatchState === "sending"}
+                            />
+                            <a
+                              className="recent-row-body"
+                              href={iss.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              title={`#${iss.number} — ${iss.label || "no label"}`}
+                            >
+                              <span className="iss-num">#{iss.number}</span>
+                              <span className="iss-title">{iss.title}</span>
+                              {iss.inFlight && <span className="iss-inflight-pill">in-flight</span>}
+                              {iss.queued && <span className="iss-queued-pill">queued</span>}
+                              <span
+                                className="iss-label-badge"
+                                style={{ background: sevBg, color: sevFg, borderColor: "transparent" }}
+                                aria-label={iss.label ? `${iss.label} severity` : "unlabeled — medium severity"}
+                              >{iss.label || "unlabeled"}</span>
+                            </a>
+                            <button
+                              className="iss-po-btn"
+                              onClick={() => dispatchRowToPo(iss.number)}
+                              disabled={sendingRows.has(iss.number) || !threadId}
+                              aria-label={`Send issue #${iss.number} to PO`}
+                              title="Send to Product Owner"
+                            >{sendingRows.has(iss.number) ? "…" : "→ PO"}</button>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
 
@@ -1161,7 +1257,7 @@ export default function DashboardPage() {
         .issue-panel-inner { display: flex; flex-direction: column; gap: 10px; }
         .issue-repo-attr {
           font-size: 11px; color: var(--text-dim); margin: 0;
-          display: flex; align-items: center; gap: 4px;
+          display: flex; align-items: center; gap: 6px;
         }
         .issue-repo-link {
           font-family: ui-monospace, monospace; color: var(--text-dim);
@@ -1170,6 +1266,24 @@ export default function DashboardPage() {
         .issue-repo-link:hover { color: var(--text); text-decoration: underline; }
         .issue-repo-link:visited { color: var(--text-dim); }
         .issue-repo-link:focus-visible { outline: 1px solid var(--accent-po); border-radius: 2px; }
+        .issue-total-badge {
+          font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 99px;
+          background: color-mix(in srgb, var(--accent-po) 12%, var(--surface-2));
+          color: var(--accent-po); border: 1px solid color-mix(in srgb, var(--accent-po) 30%, var(--border));
+          white-space: nowrap;
+        }
+
+        .peer-idle-row {
+          display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+          padding: 4px 6px; background: var(--surface-2); border-radius: 6px;
+          font-size: 11px;
+        }
+        .peer-idle-label { color: var(--text-dim); font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; flex-shrink: 0; }
+
+        .issue-label-chip {
+          font-size: 9px; font-weight: 500; padding: 2px 6px; border-radius: 3px;
+          white-space: nowrap; flex-shrink: 0;
+        }
 
         .recent-issues { display: flex; flex-direction: column; gap: 4px; }
         .recent-issues-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-dim); margin: 0 0 4px; }
@@ -1186,9 +1300,7 @@ export default function DashboardPage() {
         .iss-num { font-size: 10px; color: var(--text-dim); font-family: ui-monospace, monospace; flex-shrink: 0; }
         .iss-title { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .iss-label-badge {
-          font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 99px;
-          background: color-mix(in srgb, var(--accent-po) 12%, var(--surface-2));
-          color: var(--accent-po); border: 1px solid color-mix(in srgb, var(--accent-po) 30%, var(--border));
+          font-size: 9px; font-weight: 500; padding: 2px 6px; border-radius: 3px;
           white-space: nowrap; flex-shrink: 0;
         }
         .iss-po-btn {
@@ -1204,6 +1316,12 @@ export default function DashboardPage() {
           font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
           background: color-mix(in srgb, var(--accent-arch) 14%, var(--surface-2));
           color: var(--accent-arch); border: 1px solid color-mix(in srgb, var(--accent-arch) 40%, var(--border));
+          white-space: nowrap; flex-shrink: 0; letter-spacing: 0.03em;
+        }
+        .iss-queued-pill {
+          font-size: 9px; font-weight: 700; padding: 1px 5px; border-radius: 3px;
+          background: color-mix(in srgb, var(--status-amber) 14%, var(--surface-2));
+          color: var(--status-amber); border: 1px solid color-mix(in srgb, var(--status-amber) 40%, var(--border));
           white-space: nowrap; flex-shrink: 0; letter-spacing: 0.03em;
         }
 
