@@ -245,13 +245,19 @@ export function ActiveWaveCard({
         }
 
         .aw-poll-btn:focus-visible {
-          outline: 2px solid var(--accent-po);
-          outline-offset: 1px;
+          outline: 2px solid var(--text);
+          outline-offset: 2px;
         }
 
         .aw-poll-selected {
           background: var(--accent-po);
           color: var(--background);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .aw-poll-btn {
+            transition: none;
+          }
         }
 
         .aw-empty {
