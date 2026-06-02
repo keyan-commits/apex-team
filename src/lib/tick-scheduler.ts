@@ -329,14 +329,16 @@ async function doTick(state: TickState): Promise<void> {
     now: state.deps.now,
   });
   if (stallResult) {
-    console.warn(
-      `[stall-detector] STALL thread=${state.threadId}` +
-      ` stall_age_ms=${stallResult.stallAgeMs}` +
-      ` backlog=${stallResult.backlogCount}` +
-      ` hourly_tokens=${stallResult.hourlyTokens}` +
-      ` last_merge=${stallResult.lastMergeAt ?? "never"}`,
-    );
-    recordStallEvent(stallResult);
+    const stallInserted = recordStallEvent(stallResult);
+    if (stallInserted) {
+      console.warn(
+        `[stall-detector] STALL thread=${state.threadId}` +
+        ` stall_age_ms=${stallResult.stallAgeMs}` +
+        ` backlog=${stallResult.backlogCount}` +
+        ` hourly_tokens=${stallResult.hourlyTokens}` +
+        ` last_merge=${stallResult.lastMergeAt ?? "never"}`,
+      );
+    }
     stallsEmitted = 1;
   } else {
     // Auto-clear: if stall condition resolved, ack any pending stall event.

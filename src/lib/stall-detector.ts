@@ -78,15 +78,17 @@ export function evaluateStall(
 
 // Writes a stall event to DB. Deduplicates: skips insert if an unacknowledged
 // event already exists with detectedAt within the last STALL_MERGE_THRESHOLD_MS.
+// Returns true when a new row was inserted (onset), false when dedup-skipped.
 export function recordStallEvent(
   event: Omit<StallEvent, "id" | "acknowledged">,
-): void {
+): boolean {
   const existing = getLatestUnackedStallRow(event.threadId);
   if (existing) {
     const existingTs = new Date(existing.detectedAt).getTime();
-    if (Date.now() - existingTs < STALL_MERGE_THRESHOLD_MS) return;
+    if (Date.now() - existingTs < STALL_MERGE_THRESHOLD_MS) return false;
   }
   insertStallEventRow(event);
+  return true;
 }
 
 // Returns the most recent unacknowledged stall event, or null.

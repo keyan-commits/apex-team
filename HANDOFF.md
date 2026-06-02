@@ -1,6 +1,33 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-02 (Wave 66 / #144 — adaptive Issues panel — PR open, awaiting UX gate)
+## ⏭️ NOW — 2026-06-02 (Wave 84 — backend reliability bundle #185+#181 / US-038+US-039)
+
+**Wave 84 (#185 + #181 / US-038 + US-039) — MERGED at SHA-pending.** 314/314 tests green, type-check 0. Closes #185, closes #181. Architect PASS + QA PASS gates complete.
+
+**7 files changed / created:**
+- `src/lib/db.ts`: `listActiveTickThreads` wrapped in try/catch — returns `[]` + emits `console.warn('[db] listActiveTickThreads error: ', err)` on DB failure (US-038 / AC1–AC3).
+- `src/lib/stall-detector.ts`: `recordStallEvent` now returns `boolean` (true=inserted/onset, false=dedup-skip) instead of void (US-039 AC1–AC3).
+- `src/lib/tick-scheduler.ts`: `console.warn('[stall-detector] STALL ...')` gated on `stallInserted === true` — fires once per onset, not every tick during a prolonged stall (US-039 AC1–AC2).
+- `tests/lib/be84-reliability.test.ts` (new, 5 tests): US-039 recordStallEvent return value + warn-gate behavior.
+- `tests/lib/be84-us038.test.ts` (new, 5 tests): US-038 listActiveTickThreads normal path + error path against real temp SQLite DB (table-dropped failure scenario).
+- `requirements/user-stories/US-038-listactiveticksthreads-try-catch.md` (new): BA story.
+- `requirements/user-stories/US-039-stall-detector-log-spam.md` (new): BA story.
+
+**Next:** `.restart-trigger` bump (scheduler/db module-graph change) → supervisor respawn → verify health.
+
+---
+
+## ⏭️ PREV — 2026-06-02 (Wave 66 / #144 — adaptive Issues panel — PR merged #187)
+
+**Wave 66 / #144 — `feature/66-adaptive-issues-panel` — MERGED at `accff72` (PR #187).** 304/304 tests green, type-check 0. Closes #144 + #182.
+
+**Changes (4 files):**
+- `src/app/globals.css` — `--accent-error/critical/warning/info/surface-1` severity tokens
+- `src/types.ts` — `TeamStatus.issues` extended: `total`, `byLabel[]`, `unlabeled`; `recent[]` adds `labelColor?`, `queued?`
+- `src/app/api/team-status/route.ts` — dynamic `byLabel`, `total`, `unlabeled` from gh data; enriches `recent` with `queued` flag; label colors from `gh issue list` JSON
+- `src/app/dashboard/page.tsx` — peer-idle row from `/api/wave-state`; dynamic `byLabel` grid (severity colors); unlabeled→medium/--accent-info; `(total>0)` empty-state fix; queued wave pill; `WaveStateData` type + `waveState` state + co-fetch in team-status poll
+
+**Gate:** UX Designer design-correctness critique (PASS) → QA `:3100` smoke (PASS) → DevSecOps merge (✓ COMPLETE).
 
 **Wave 66 / #144 — `feature/66-adaptive-issues-panel` at `/tmp/ui-144`. Rebased onto main `74fa210`. PR #187 OPEN — awaiting UX Designer gate → QA → DevSecOps merge.**
 
