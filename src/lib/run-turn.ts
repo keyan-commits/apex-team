@@ -114,6 +114,17 @@ export async function runTurn(input: RunTurnInput): Promise<RunTurnResult> {
   // Dispatches — only valid from PO. Caller is responsible for auto-triggering
   // each dispatched role; this function just persists + publishes the row.
   if (input.target === "product-owner") {
+    // Wave 79 (#171): PO outbound HANDOFFs silently vanish — the handoff-persist
+    // loop above skips PO turns, so nothing fans them out. Promote each HANDOFF
+    // to a synthetic DISPATCH so it inherits DISPATCH fan-out semantics.
+    // Peer→peer HANDOFFs are NOT promoted here (sender ≠ PO); the rescue sweep
+    // in tick-scheduler handles those.
+    for (const h of handoffs) {
+      if (h.to === "product-owner") continue; // PO cannot dispatch itself
+      dispatches.push({ to: h.to as TeamRoleId, message: h.message });
+      console.warn(`[run-turn] auto-promoted PO HANDOFF→DISPATCH to ${h.to} (#171)`);
+    }
+
     for (const d of dispatches) {
       appendMessage(input.threadId, { kind: "dispatch", to: d.to }, d.message);
       publish(input.threadId, {
