@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-06-02 (Wave 82 — stall banner + settings — PR pending / US-036)
 
-**Wave 82 (#178 / US-036) — COMMITTED, PENDING PUSH + PR.** Branch `feature/82-stall-banner-v2` off `33df463`. 296/296 tests green, type-check 0. Closes #178.
+**Wave 82 (#178 / US-036) — PR #184 OPEN.** Branch `feature/82-stall-banner-v2` off `33df463`. 296/296 tests green, type-check 0. Closes #178. Awaiting UX Designer design gate → QA `:3100` → DevSecOps merge.
 
 **5 files changed / created:**
 - `src/components/StallBanner.tsx` (new): `<aside role="alert">` full-width 48px red banner; slide-down/up 200ms; respects `prefers-reduced-motion`; session-only dismiss.
