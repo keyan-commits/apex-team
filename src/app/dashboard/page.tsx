@@ -154,6 +154,12 @@ export default function DashboardPage() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [toast, setToast] = useState<{ msg: string; duration: number; key: number } | null>(null);
   const [notifPermission, setNotifPermission] = useState<NotificationPermission | "unavailable" | null>(null);
+  const [issueOrder, setIssueOrder] = useState<"lifo" | "fifo">(() => {
+    try {
+      const v = localStorage.getItem("apex-team:issues-order");
+      return v === "fifo" ? "fifo" : "lifo";
+    } catch { return "lifo"; }
+  });
   const prevStallActiveRef = useRef(false);
   const queuedRowRefs = useRef<(HTMLDivElement | null)[]>([]);
   const userEditedThreadRef = useRef(false);
@@ -250,6 +256,21 @@ export default function DashboardPage() {
     document.addEventListener("visibilitychange", onVis);
     return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
   }, [threadId, workspace]);
+
+  const PINNED_LABELS = ["critical", "blocker"];
+  const sortedRecentIssues = useMemo(() => {
+    const recent = data?.issues.recent ?? [];
+    const pinned = recent.filter((iss) => PINNED_LABELS.includes(iss.label.toLowerCase()));
+    const rest = recent.filter((iss) => !PINNED_LABELS.includes(iss.label.toLowerCase()));
+    const sortFn = (a: typeof recent[0], b: typeof recent[0]) =>
+      issueOrder === "lifo" ? b.number - a.number : a.number - b.number;
+    return { pinned: [...pinned].sort(sortFn), rest: [...rest].sort(sortFn) };
+  }, [data?.issues.recent, issueOrder]);
+
+  const toggleIssueOrder = useCallback((order: "lifo" | "fifo") => {
+    setIssueOrder(order);
+    try { localStorage.setItem("apex-team:issues-order", order); } catch {}
+  }, []);
 
   const sortedQueued = useMemo<TeamStatus["queued"]>(() => {
     if (!data?.queued) return [];
@@ -931,13 +952,35 @@ export default function DashboardPage() {
                   {/* Recent open — always shown when total > 0 (AC#2) */}
                   {(data.issues.total ?? 0) > 0 && (
                     <div className="recent-issues">
-                      <p className="recent-issues-hd">Recent open</p>
+                      <div className="recent-issues-hd-row">
+                        <span className="recent-issues-hd">Recent open</span>
+                        <div
+                          className="issue-order-toggle"
+                          role="group"
+                          aria-label="Issue sort order"
+                        >
+                          <button
+                            className={`issue-order-btn${issueOrder === "lifo" ? " active" : ""}`}
+                            aria-pressed={issueOrder === "lifo"}
+                            onClick={() => toggleIssueOrder("lifo")}
+                          >Newest</button>
+                          <button
+                            className={`issue-order-btn${issueOrder === "fifo" ? " active" : ""}`}
+                            aria-pressed={issueOrder === "fifo"}
+                            onClick={() => toggleIssueOrder("fifo")}
+                          >Oldest</button>
+                        </div>
+                      </div>
                       {data.issues.recent.length === 0 ? (
                         <p className="empty-msg">No recently opened issues.</p>
-                      ) : data.issues.recent.map((iss) => {
+                      ) : [...sortedRecentIssues.pinned, ...sortedRecentIssues.rest].map((iss, idx) => {
                         const [sevBg, sevFg] = severityStyle(iss.label, iss.labelColor);
+                        const isPinned = PINNED_LABELS.includes(iss.label.toLowerCase());
+                        const isDivider = sortedRecentIssues.pinned.length > 0 && idx === sortedRecentIssues.pinned.length;
                         return (
-                          <div key={iss.number} className="recent-row">
+                          <div key={iss.number}>
+                            {isDivider && <div className="pinned-divider" aria-hidden="true" />}
+                            <div className="recent-row">
                             <input
                               type="checkbox"
                               className="iss-check"
@@ -952,7 +995,7 @@ export default function DashboardPage() {
                               href={iss.url}
                               target="_blank"
                               rel="noreferrer"
-                              title={`#${iss.number} — ${iss.label || "no label"}`}
+                              title={`#${iss.number} — ${iss.label || "no label"}${isPinned ? " (pinned)" : ""}`}
                             >
                               <span className="iss-num">#{iss.number}</span>
                               <span className="iss-title">{iss.title}</span>
@@ -971,6 +1014,7 @@ export default function DashboardPage() {
                               aria-label={`Send issue #${iss.number} to PO`}
                               title="Send to Product Owner"
                             >{sendingRows.has(iss.number) ? "…" : "→ PO"}</button>
+                          </div>
                           </div>
                         );
                       })}
@@ -1286,7 +1330,19 @@ export default function DashboardPage() {
         }
 
         .recent-issues { display: flex; flex-direction: column; gap: 4px; }
-        .recent-issues-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-dim); margin: 0 0 4px; }
+        .recent-issues-hd-row { display: flex; align-items: center; justify-content: space-between; margin: 0 0 4px; }
+        .recent-issues-hd { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-dim); margin: 0; }
+        .issue-order-toggle { display: flex; border-radius: 4px; overflow: hidden; border: 1px solid var(--surface-2); gap: 0; }
+        .issue-order-btn {
+          font-size: 10px; font-weight: 600; padding: 2px 7px; border: none; cursor: pointer;
+          background: var(--surface-1); color: var(--text-dim);
+          transition: background 0.1s, color 0.1s;
+        }
+        .issue-order-btn:first-child { border-right: 1px solid var(--surface-2); }
+        .issue-order-btn:hover:not(.active) { background: var(--surface-2); color: var(--text); }
+        .issue-order-btn:focus-visible { outline: 2px solid var(--accent-ui, var(--accent-po)); outline-offset: -2px; }
+        .issue-order-btn.active { background: var(--accent-ui, var(--accent-po)); color: white; }
+        .pinned-divider { height: 1px; background: var(--surface-2); opacity: 0.3; margin: 2px 0; }
         .recent-row {
           display: flex; align-items: center; gap: 6px;
           padding: 4px 6px; background: var(--surface-2); border-radius: 6px;
