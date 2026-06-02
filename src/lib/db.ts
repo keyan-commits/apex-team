@@ -9,16 +9,15 @@ import type {
 } from "@/types";
 import { estimateCostUsd } from "./pricing";
 
-const DB_PATH = process.env.APEX_TEAM_DB_PATH
-  ? resolve(process.cwd(), process.env.APEX_TEAM_DB_PATH)
-  : resolve(process.cwd(), "data", "apex-team.db");
-
 let _db: Database.Database | null = null;
 
 function db(): Database.Database {
   if (_db) return _db;
-  mkdirSync(dirname(DB_PATH), { recursive: true });
-  const conn = new Database(DB_PATH);
+  const dbPath = process.env.APEX_TEAM_DB_PATH
+    ? resolve(/*turbopackIgnore: true*/ process.cwd(), process.env.APEX_TEAM_DB_PATH)
+    : resolve(/*turbopackIgnore: true*/ process.cwd(), "data", "apex-team.db");
+  mkdirSync(dirname(dbPath), { recursive: true });
+  const conn = new Database(dbPath);
   conn.pragma("journal_mode = WAL");
   conn.exec(`
     CREATE TABLE IF NOT EXISTS messages (
