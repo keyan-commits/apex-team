@@ -77,10 +77,19 @@ Both fixed: test now `cp`s from `$(pwd)/.gitattributes` (the checkout) and relie
 ---
 
 ## ⏭️ PREV — 2026-06-02 (Wave 85 — #190 dup-key fix + smoke-gate gap)
+## ⏭️ NOW — 2026-06-02 (Wave 90 — Issues panel LIFO/FIFO toggle + severity pinning, US-034, #118)
 
-**Wave 85 Lane-A (QA) — smoke rubric amended.** Added Leg C (console-clean gate) to `src/lib/skills/qa.ts`. Type-check 0. PR open: `feature/85-smoke-console-gate`. Doc-only — no code surface. Closes smoke-gate gap that let #190 ship.
+**Wave 90 — UI Dev DONE, awaiting gates.**
+Branch `feature/90-issues-ordering` off `962ff52`. PR #206 open.
+- Added `issueOrder` state + `sortedRecentIssues` memo + `toggleIssueOrder` handler in `dashboard/page.tsx`.
+- Segmented "Newest / Oldest" toggle in Recent Open header; critical/blocker pinned to top + divider.
+- `localStorage` key `apex-team:issues-order` persists across reload.
+- 15 new unit tests in `tests/ui/IssuesOrderToggle.test.ts` covering AC1–AC4+AC6 — 327 total, all pass.
+- type-check: 0 errors.
 
-**Wave 85 Lane-B (UI Dev) — in-flight.** Branch `feature/85-dup-key-fix`, two sites in `page.tsx:701 + 733`. Awaiting UI Dev → UX gate → QA :3100 smoke.
+**Gates pending:** UX Designer (design gate) → QA `:3100` smoke → DevSecOps merge.
+
+**Prior in-flight:** PR #193 (Wave 85+86, dup-key + contrast) still awaiting UX + QA gates before DevSecOps merge. Merge order: #197 first, then #193, then this PR.
 
 ---
 
