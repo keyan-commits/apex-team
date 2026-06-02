@@ -7,7 +7,7 @@
 // for a PO turn records the dispatch rows but never fans them out to the
 // peers (#156: the silent-stall class).
 
-import { appendMessage } from "@/lib/db";
+import { appendMessage, markRoleActive, markRoleIdle } from "@/lib/db";
 import { runTurn, type RunTurnInput, type RunTurnResult } from "@/lib/run-turn";
 import type { TeamRoleId } from "@/types";
 
@@ -18,7 +18,14 @@ export interface RunTurnWithDispatchesResult extends RunTurnResult {
 export async function runTurnWithDispatches(
   input: RunTurnInput,
 ): Promise<RunTurnWithDispatchesResult> {
-  const result = await runTurn(input);
+  // Mark the primary target active for the duration of its turn.
+  try { markRoleActive(input.threadId, input.target); } catch {}
+  let result: RunTurnResult;
+  try {
+    result = await runTurn(input);
+  } finally {
+    try { markRoleIdle(input.threadId, input.target); } catch {}
+  }
 
   if (input.target !== "product-owner" || result.dispatches.length === 0) {
     return { ...result, peerReplies: [] };
@@ -37,15 +44,20 @@ export async function runTurnWithDispatches(
   // silence (#156 forensics).
   const settled = await Promise.allSettled(
     result.dispatches.map(async (d) => {
-      const peerResult = await runTurn({
-        threadId: input.threadId,
-        target: d.to,
-        userMessage: d.message,
-        agents: input.agents,
-        workspace: input.workspace,
-        signal: input.signal,
-      });
-      return { role: d.to, result: peerResult };
+      try { markRoleActive(input.threadId, d.to); } catch {}
+      try {
+        const peerResult = await runTurn({
+          threadId: input.threadId,
+          target: d.to,
+          userMessage: d.message,
+          agents: input.agents,
+          workspace: input.workspace,
+          signal: input.signal,
+        });
+        return { role: d.to, result: peerResult };
+      } finally {
+        try { markRoleIdle(input.threadId, d.to); } catch {}
+      }
     }),
   );
 
