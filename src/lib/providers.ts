@@ -106,6 +106,12 @@ export async function* streamAgent(
   yield* streamAiSdk(cfg, augmentedSystem, messages, signal, onUsage);
 }
 
+// Max chars for the full augmented system prompt.
+// Claude Sonnet 4.6 has a 200k-token context window; the claude_code preset
+// adds ~15k-token static overhead. Capping here at 100k chars (~25k tokens)
+// keeps ≥155k tokens available for conversation history and model response.
+export const MAX_SYSTEM_PROMPT_CHARS = 100_000;
+
 // Static content (role.systemPrompt + role.skills) comes FIRST so the
 // claude_code preset's cache_control covers the largest stable prefix.
 // Volatile sections (cwd, HANDOFF, peerStates, inbox) are appended after —
@@ -114,22 +120,20 @@ export function augmentSystemPrompt(
   role: RoleDefinition,
   ctx: AgentTurnContext,
 ): string {
-  const sections: string[] = [role.systemPrompt];
-
-  if (role.skills) {
-    sections.push(role.skills);
-  }
-
+  // Fixed — never truncated.
+  const fixed: string[] = [role.systemPrompt];
+  if (role.skills) fixed.push(role.skills);
   if (ctx.cwd) {
-    sections.push(`## Working directory\n\nYour file tools operate on: \`${ctx.cwd}\``);
+    fixed.push(`## Working directory\n\nYour file tools operate on: \`${ctx.cwd}\``);
   }
 
-  sections.push(
-    ctx.handoffDoc.trim()
-      ? `## Your current HANDOFF doc\n\n${ctx.handoffDoc.trim()}`
-      : `## Your current HANDOFF doc\n\n_(empty — this is the start of your work in this thread)_`,
-  );
+  // Volatile state — truncated lowest-priority first when over MAX_SYSTEM_PROMPT_CHARS.
+  // Priority (lowest → truncated first): oldest inbox items → HANDOFF tail → peer states.
+  let handoffBody = ctx.handoffDoc.trim()
+    ? ctx.handoffDoc.trim()
+    : `_(empty — this is the start of your work in this thread)_`;
 
+  let peerSection: string | null = null;
   if (ctx.peerStates && ctx.peerStates.length > 0) {
     const peerBlock = ctx.peerStates
       .map((s) => {
@@ -137,22 +141,67 @@ export function augmentSystemPrompt(
         return `### ${s.role}\n\n${body}`;
       })
       .join("\n\n");
-    sections.push(`## Team HANDOFF docs (peers' current state)\n\n${peerBlock}`);
+    peerSection = `## Team HANDOFF docs (peers' current state)\n\n${peerBlock}`;
   }
 
-  if (ctx.pendingInbox.length > 0) {
-    const inbox = ctx.pendingInbox
-      .map((m) => {
-        const from = m.author.kind === "handoff" ? m.author.from : "?";
-        return `- from **${from}**: ${m.content}`;
-      })
-      .join("\n");
-    sections.push(
-      `## Pending inbox (handoffs from teammates you haven't responded to yet)\n\n${inbox}`,
-    );
+  let inboxItems: string[] = ctx.pendingInbox.map((m) => {
+    const from = m.author.kind === "handoff" ? m.author.from : "?";
+    return `- from **${from}**: ${m.content}`;
+  });
+
+  const assemble = (): string => {
+    const parts = [...fixed, `## Your current HANDOFF doc\n\n${handoffBody}`];
+    if (peerSection !== null) parts.push(peerSection);
+    if (inboxItems.length > 0) {
+      parts.push(
+        `## Pending inbox (handoffs from teammates you haven't responded to yet)\n\n${inboxItems.join("\n")}`,
+      );
+    }
+    return parts.join("\n\n");
+  };
+
+  let result = assemble();
+  if (result.length <= MAX_SYSTEM_PROMPT_CHARS) return result;
+
+  // Pass 1: drop oldest inbox items (most-recent = most relevant).
+  let droppedInbox = 0;
+  while (inboxItems.length > 0 && assemble().length > MAX_SYSTEM_PROMPT_CHARS) {
+    droppedInbox += inboxItems[0].length + 1; // +1 for the joining "\n" separator
+    inboxItems.shift();
+  }
+  if (droppedInbox > 0) {
+    inboxItems.unshift(`[truncated ${droppedInbox} chars]`);
   }
 
-  return sections.join("\n\n");
+  result = assemble();
+  if (result.length <= MAX_SYSTEM_PROMPT_CHARS) return result;
+
+  // Pass 2: truncate HANDOFF tail.
+  const excess2 = result.length - MAX_SYSTEM_PROMPT_CHARS;
+  handoffBody = truncateWithMarker(handoffBody, handoffBody.length - excess2);
+
+  result = assemble();
+  if (result.length <= MAX_SYSTEM_PROMPT_CHARS) return result;
+
+  // Pass 3: truncate peer states (edge case — very large PO peer-doc block).
+  if (peerSection !== null) {
+    const excess3 = result.length - MAX_SYSTEM_PROMPT_CHARS;
+    peerSection = truncateWithMarker(peerSection, peerSection.length - excess3);
+  }
+
+  return assemble();
+}
+
+// Truncates `text` to `maxChars` total length (including the marker).
+// The marker reports the approximate number of chars removed so readers know
+// content was dropped — never silently truncated.
+function truncateWithMarker(text: string, maxChars: number): string {
+  if (text.length <= maxChars) return text;
+  const approxDropped = text.length - maxChars;
+  const marker = `\n[truncated ${approxDropped} chars]`;
+  const kept = maxChars - marker.length;
+  if (kept <= 0) return `[truncated ${text.length} chars]`;
+  return text.slice(0, kept) + marker;
 }
 
 async function* streamClaude(

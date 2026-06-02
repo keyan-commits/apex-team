@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { augmentSystemPrompt, buildConversation } from "@/lib/providers";
+import { augmentSystemPrompt, buildConversation, MAX_SYSTEM_PROMPT_CHARS } from "@/lib/providers";
 import type { AgentTurnContext } from "@/lib/providers";
 import type { ChatMessage, RoleDefinition } from "@/types";
 
@@ -85,5 +85,74 @@ describe("providers — static-before-volatile ordering (Fix 1 / Wave 73)", () =
     const inboxIdx = result.indexOf(INBOX_SENTINEL);
     expect(skillsIdx).toBeLessThan(handoffIdx);
     expect(handoffIdx).toBeLessThan(inboxIdx);
+  });
+});
+
+describe("augmentSystemPrompt — MAX_SYSTEM_PROMPT_CHARS guard", () => {
+  const makeMsg = (content: string, id: number): ChatMessage => ({
+    id,
+    threadId: "t1",
+    author: { kind: "handoff", from: "architect", to: "backend-developer" },
+    content,
+    createdAt: id,
+  });
+
+  it("under limit: returns full text with no truncation marker", () => {
+    const role = makeRole("short system prompt");
+    const ctx: AgentTurnContext = { handoffDoc: "small handoff", pendingInbox: [] };
+    const result = augmentSystemPrompt(role, ctx);
+    expect(result).not.toMatch(/\[truncated \d+ chars\]/);
+    expect(result.length).toBeLessThanOrEqual(MAX_SYSTEM_PROMPT_CHARS);
+  });
+
+  it("over limit via large HANDOFF: output fits within MAX_SYSTEM_PROMPT_CHARS", () => {
+    const role = makeRole("sys");
+    const ctx: AgentTurnContext = {
+      handoffDoc: "x".repeat(120_000),
+      pendingInbox: [],
+    };
+    const result = augmentSystemPrompt(role, ctx);
+    expect(result.length).toBeLessThanOrEqual(MAX_SYSTEM_PROMPT_CHARS);
+  });
+
+  it("over limit via large HANDOFF: includes a [truncated N chars] marker", () => {
+    const role = makeRole("sys");
+    const ctx: AgentTurnContext = {
+      handoffDoc: "x".repeat(120_000),
+      pendingInbox: [],
+    };
+    const result = augmentSystemPrompt(role, ctx);
+    expect(result).toMatch(/\[truncated \d+ chars\]/);
+  });
+
+  it("over limit: role systemPrompt is never truncated", () => {
+    const SENTINEL = "ROLE_PROMPT_SENTINEL_NEVER_TRUNCATED_abc123";
+    const role = makeRole(SENTINEL);
+    const ctx: AgentTurnContext = {
+      handoffDoc: "x".repeat(120_000),
+      pendingInbox: [],
+    };
+    const result = augmentSystemPrompt(role, ctx);
+    expect(result).toContain(SENTINEL);
+  });
+
+  it("over limit via large inbox: oldest item is dropped first, newest is preserved", () => {
+    const role = makeRole("sys");
+    const OLD_SENTINEL = "OLDEST_INBOX_abc999";
+    const NEW_SENTINEL = "NEWEST_INBOX_abc999";
+    const ctx: AgentTurnContext = {
+      handoffDoc: "small handoff",
+      pendingInbox: [
+        // Oldest: big enough to push total over MAX when combined with newest.
+        makeMsg(`${OLD_SENTINEL} ${"x".repeat(99_950)}`, 1),
+        // Newest: small — should survive after oldest is dropped.
+        makeMsg(NEW_SENTINEL, 2),
+      ],
+    };
+    const result = augmentSystemPrompt(role, ctx);
+    expect(result.length).toBeLessThanOrEqual(MAX_SYSTEM_PROMPT_CHARS);
+    expect(result).not.toContain(OLD_SENTINEL);
+    expect(result).toContain(NEW_SENTINEL);
+    expect(result).toMatch(/\[truncated \d+ chars\]/);
   });
 });
