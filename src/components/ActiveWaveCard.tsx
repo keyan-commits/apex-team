@@ -251,7 +251,7 @@ export function ActiveWaveCard({
 
         .aw-poll-selected {
           background: var(--accent-po);
-          color: #fff;
+          color: var(--background);
         }
 
         .aw-empty {
