@@ -693,10 +693,10 @@ export default function DashboardPage() {
           {panelHd("Done — last 24h", "done")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : data.done.length === 0 ? empty("Nothing completed yet.") : (
             <div className="row-list">
-              {groupedDone.map((group) => {
+              {groupedDone.map((group, idx) => {
                 if (group.rows.length === 1) {
                   const e = group.rows[0];
-                  const doneKey = group.key;
+                  const doneKey = `${group.key}-${idx}`;
                   return (
                     <div key={doneKey} className="row-item">
                       <div
@@ -723,6 +723,7 @@ export default function DashboardPage() {
                   );
                 }
                 // Multi-row group — collapsed summary with expand
+                const groupKey = `${group.key}-${idx}`;
                 const allChips = [
                   ...group.waves.map((w) => ({ kind: "wave" as const, label: `Wave ${w}`, key: `w${w}` })),
                   ...group.tickets.map((t) => ({ kind: "ticket" as const, num: t, key: `t${t}` })),
@@ -730,16 +731,16 @@ export default function DashboardPage() {
                 const visibleChips = allChips.slice(0, 4);
                 const chipOverflow = allChips.length - visibleChips.length;
                 return (
-                  <div key={group.key} className="row-item">
+                  <div key={groupKey} className="row-item">
                     <div
                       className="row expandable-row"
-                      onClick={() => toggleRow("done", group.key)}
-                      onKeyDown={rowKd("done", group.key)}
+                      onClick={() => toggleRow("done", groupKey)}
+                      onKeyDown={rowKd("done", groupKey)}
                       tabIndex={0}
                       role="button"
-                      aria-expanded={expandedRow["done"] === group.key}
+                      aria-expanded={expandedRow["done"] === groupKey}
                     >
-                      <span className="row-chevron" aria-hidden="true">{expandedRow["done"] === group.key ? "▾" : "▸"}</span>
+                      <span className="row-chevron" aria-hidden="true">{expandedRow["done"] === groupKey ? "▾" : "▸"}</span>
                       <span className="chip-strip" onClick={(ev) => ev.stopPropagation()}>
                         {visibleChips.map((chip) =>
                           chip.kind === "wave"
@@ -762,7 +763,7 @@ export default function DashboardPage() {
                       })()}
                       <span className="dim">{fmtTime(group.latestAt)}</span>
                     </div>
-                    {expandedRow["done"] === group.key && (
+                    {expandedRow["done"] === groupKey && (
                       <div className="row-detail group-detail">
                         {group.rows.map((e) => {
                           const rowKey = `${e.role}-${e.completedAt}`;

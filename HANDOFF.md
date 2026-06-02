@@ -42,6 +42,18 @@ Both fixed: test now `cp`s from `$(pwd)/.gitattributes` (the checkout) and relie
 **Inbox (rescue-sweep tick=1, age=1259s — all seen):**
 - Architect #205 (supply-chain review for UX skills) — on backlog, lower priority than D1.
 - Architect worktree cleanup reminder `/tmp/be-84` — DONE (Wave 84 merged `010343d`).
+## ⏭️ NOW — 2026-06-02 (Wave 85 — dup-key fix #190 / feature/85-dup-key-fix)
+
+**Wave 85 fix — PR open, awaiting UX gate → QA smoke.** Single-file patch: `src/app/dashboard/page.tsx`. 314/314 tests green, type-check 0. Closes #190.
+
+**Fix summary — two collision sites patched:**
+- `groupedDone.map((group) => …)` → `groupedDone.map((group, idx) => …)`
+- Single-row branch (line 699): `const doneKey = group.key` → `const doneKey = \`${group.key}-${idx}\``
+- Multi-row branch: introduced `const groupKey = \`${group.key}-${idx}\`` and replaced all 5 `group.key` usages (key=, toggleRow, rowKd, aria-expanded, chevron ternary, detail reveal).
+
+**expandedRow state**: expansion state now keyed on composite, so two same-wave groups expand independently — correct behavior (previously shared state was a secondary bug).
+
+**Next:** UX gate → QA `:3100` smoke → DevSecOps merge.
 
 ---
 
