@@ -51,11 +51,21 @@ jobs:
           cache: 'pnpm'
       - run: pnpm install --frozen-lockfile
       - name: pnpm build (compilation gate)
-        # continue-on-error: true until #151 (/_global-error prerender Next.js 16 bug) is resolved.
-        # The compilation step MUST pass (SWC parse); only static prerender may fail.
-        # Remove continue-on-error once #151 lands.
-        run: pnpm build
-        continue-on-error: true
+        # #151 closed (25c57a4) — allowDevelopmentBuild fixes the /_global-error prerender crash.
+        # prerenderEarlyExit:false (next.config.ts:14) suppresses build abort on masked prerender
+        # errors; the F2 step below catches any that slip through via grep.
+        run: |
+          set -o pipefail
+          pnpm build 2>&1 | tee /tmp/build-output.log
+      - name: F2 — prerender error fitness function (#201)
+        if: always()
+        run: |
+          if grep -q "Error occurred prerendering" /tmp/build-output.log 2>/dev/null; then
+            echo "FAIL: prerender errors detected — prerenderEarlyExit:false masked build abort"
+            grep "Error occurred prerendering" /tmp/build-output.log
+            exit 1
+          fi
+          echo "✓ F2 PASS: zero prerender errors in build output"
 
   merge-driver-test:
     name: F1 — union-merge fitness (HANDOFF.md no conflict markers)
