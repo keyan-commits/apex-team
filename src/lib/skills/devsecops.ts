@@ -64,4 +64,34 @@ Per ADR-014, do NOT edit \`HANDOFF.md\` directly in PRs. Write a fragment instea
 
 PO folds all fragments into \`HANDOFF.md\` at wave close with \`pnpm fold-handoff\`.
 The pre-commit hook accepts either a direct \`HANDOFF.md\` edit or a fragment — both valid during the migration window.
+
+### Conflict resolution playbook — union-merge files
+
+\`.gitattributes\` marks append-mostly coordination docs (HANDOFF.md, **/HANDOFF.md,
+.restart-trigger, LESSONS.md, requirements/INDEX.md, architecture/INDEX.md) as
+\`merge=union\` — git keeps BOTH sides' lines instead of leaving conflict markers.
+
+**Critical invariant: the union driver fires only on a LOCAL merge/rebase.**
+GitHub's server-side "Update branch" button (\`gh pr update-branch\`) does NOT apply
+the repo's \`.gitattributes\` merge driver — it re-introduces the exact CONFLICTING
+state the union driver exists to prevent. NEVER use \`gh pr update-branch\` to refresh
+a branch that touches a union-merge file.
+
+When a PR shows CONFLICTING (or before merging a branch behind main) on a
+union-merge file, resolve LOCALLY:
+
+\`\`\`
+git fetch origin
+git worktree add /tmp/ds-<pr-branch> <pr-branch>
+cd /tmp/ds-<pr-branch>
+git rebase origin/main          # union driver auto-resolves the doc-only hunks
+# if a NON-union (real code) file conflicts, resolve by hand, then \`git rebase --continue\`
+pnpm install --frozen-lockfile && pnpm build   # verify before pushing
+git push --force-with-lease     # --force-with-lease, never plain --force
+git worktree remove /tmp/ds-<pr-branch>
+\`\`\`
+
+\`--force-with-lease\` (not \`--force\`) so a concurrent push by another agent aborts
+the push instead of clobbering it. The rebase + local merge is what invokes
+\`merge=union\`; the server-side button bypasses it.
 `;

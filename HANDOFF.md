@@ -35,15 +35,21 @@ Branch `feature/122-active-wave-progress`. PR #213.
 ---
 
 ## ⏭️ PREV — 2026-06-02 (Wave 88 — restore-CI + protocol-wiring / US-040+US-041)
+## ⏭️ NOW — 2026-06-02 (Merge-train cascade: #209 linchpin merged, #193 merged, #206/#213/#219 rebased + Wave 92 playbook)
 
-**Executing Architect's #202 D1 directive (ADR-013 Proposed):** add repo-root `.gitattributes` with `merge=union` for HANDOFF.md, requirements/INDEX.md, architecture/INDEX.md, LESSONS.md, .restart-trigger. F1 fitness test in CI verifies a 3-way-merge of two divergent NOW blocks produces zero conflict markers. Closes #202 D1.
+**#209 `.gitattributes` merged at `64b9292`** — union-merge driver now LIVE on main. Rebase cascade executed locally (fires `merge=union` for HANDOFF.md conflict auto-resolution):
 
-**Rebase note (this PR):** rebased on main `c919a0b` (Wave 88). HANDOFF.md conflict resolved by keeping ADR-013 NOW block on top + preserving Wave 88's deployment notes below. Wave 88's US-040/US-041 NOW block is now PREV (already merged via #197).
+**#193 (`feature/85-dup-key-fix`, Wave 85+86):** MERGED at `e5d8cd4` (dup-key fix + WCAG contrast). Fully gated (QA PASS + UX PASS).
 
-**F1 test fix (this rebase):** F1 fitness test had two bugs that failed CI on every runner:
-1. Hardcoded `cp /Users/nikoe/Development/Study/apex-team/.gitattributes .` — Mac-local path that doesn't exist on Ubuntu CI runners.
-2. Used a custom `merge.union.driver` config — but `merge=union` in `.gitattributes` is **git's built-in strategy**, not a custom driver; the config was misleading and unnecessary.
-Both fixed: test now `cp`s from `$(pwd)/.gitattributes` (the checkout) and relies on git's built-in union. Verified locally — test PASSes with both NOW blocks surviving the merge. (Wave 92 / claude-code hand-fix.)
+**#206 (`feature/90-issues-ordering`, Wave 90):** Rebased + force-pushed (SHA `8a27136` → waiting QA `:3100` smoke HANDOFF).
+
+**#213 (`feature/122-active-wave-progress`, Wave 122):** Rebased + force-pushed (SHA `3159334` → waiting UX PASS confirm + QA `:3100` smoke HANDOFF).
+
+**#219 (`feature/94-qa-9skill`, Wave 94):** Rebased (conflict on HANDOFF.md cleared by union driver) + force-pushed (SHA `6a97bd6` → waiting Architect skill-gate PASS + BA US-048 AC confirm).
+
+**Wave 92 supplement — `feature/92-devsecops-playbook`:** Adds conflict-resolution playbook section to `src/lib/skills/devsecops.ts` (US-046). Covers local-rebase procedure, --force-with-lease discipline, and critical invariant (union driver fires LOCAL-only, not GitHub "Update branch"). Type-check 0, build ✓. Ready for merge after Architect gates other PRs.
+
+**Next tick:** Confirm gate verdicts (#213 UX, #219 Architect+BA), then merge #219 + run #206/#213 smoke tail.
 
 ---
 
