@@ -322,7 +322,13 @@ export default function DashboardPage() {
       const sharesTicketFallback =
         last && last.waves.length === 0 && rowWaves.length === 0 &&
         rowTickets.length > 0 && last.tickets.some((t) => rowTickets.includes(t));
-      if (sharesWave || sharesTicketFallback) {
+      const rowHour = Math.floor(row.completedAt / 3_600_000);
+      const lastHour = last ? Math.floor(last.latestAt / 3_600_000) : -1;
+      const sharesHour = !!last &&
+        last.waves.length === 0 && last.tickets.length === 0 &&
+        rowWaves.length === 0 && rowTickets.length === 0 &&
+        rowHour === lastHour;
+      if (sharesWave || sharesTicketFallback || sharesHour) {
         last.rows.push(row);
         for (const w of rowWaves) if (!last.waves.includes(w)) last.waves.push(w);
         for (const t of rowTickets) if (!last.tickets.includes(t)) last.tickets.push(t);
@@ -335,7 +341,7 @@ export default function DashboardPage() {
           ? `wave-${sortedW[0]}`
           : sortedT.length > 0
           ? `tickets-${sortedT.join("-")}`
-          : `single-${row.role}-${row.completedAt}`;
+          : `hour-${rowHour}`;
         groups.push({ key, rows: [row], waves: [...rowWaves], tickets: [...rowTickets], roles: [row.role], latestAt: row.completedAt });
       }
     }
@@ -748,7 +754,7 @@ export default function DashboardPage() {
         </section>
 
         {/* DONE */}
-        <section className="panel">
+        <section className="panel done-panel">
           {panelHd("Done — last 24h", "done")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : data.done.length === 0 ? empty("Nothing completed yet.") : (
             <div className="row-list">
@@ -756,6 +762,12 @@ export default function DashboardPage() {
                 if (group.rows.length === 1) {
                   const e = group.rows[0];
                   const doneKey = `${group.key}-${idx}`;
+                  const allChips = [
+                    ...group.waves.map((w) => ({ kind: "wave" as const, label: `Wave ${w}`, key: `w${w}` })),
+                    ...group.tickets.map((t) => ({ kind: "ticket" as const, num: t, key: `t${t}` })),
+                  ];
+                  const visibleChips = allChips.slice(0, 4);
+                  const chipOverflow = allChips.length - visibleChips.length;
                   return (
                     <div key={doneKey} className="row-item">
                       <div
@@ -768,6 +780,18 @@ export default function DashboardPage() {
                       >
                         <span className="row-chevron" aria-hidden="true">{expandedRow["done"] === doneKey ? "▾" : "▸"}</span>
                         {roleBadge(e.role)}
+                        {allChips.length > 0 && (
+                          <span className="chip-strip" onClick={(ev) => ev.stopPropagation()}>
+                            {visibleChips.map((chip) =>
+                              chip.kind === "wave"
+                                ? <span key={chip.key} className="now-chip now-chip-wave">{chip.label}</span>
+                                : data.issues.repoStatus === "ok"
+                                  ? <a key={chip.key} className="now-chip now-chip-ticket" href={`https://github.com/${data.issues.repo}/issues/${chip.num}`} target="_blank" rel="noreferrer" onClick={(ev) => ev.stopPropagation()}>#{chip.num}</a>
+                                  : <span key={chip.key} className="now-chip now-chip-ticket">#{chip.num}</span>
+                            )}
+                            {chipOverflow > 0 && <span className="now-chip now-chip-overflow">+{chipOverflow}</span>}
+                          </span>
+                        )}
                         <span className="task-text">{e.taskSummary}</span>
                         <span className="dim">{fmtTime(e.completedAt)}</span>
                       </div>
@@ -801,14 +825,19 @@ export default function DashboardPage() {
                     >
                       <span className="row-chevron" aria-hidden="true">{expandedRow["done"] === groupKey ? "▾" : "▸"}</span>
                       <span className="chip-strip" onClick={(ev) => ev.stopPropagation()}>
-                        {visibleChips.map((chip) =>
-                          chip.kind === "wave"
-                            ? <span key={chip.key} className="now-chip now-chip-wave">{chip.label}</span>
-                            : data.issues.repoStatus === "ok"
-                              ? <a key={chip.key} className="now-chip now-chip-ticket" href={`https://github.com/${data.issues.repo}/issues/${chip.num}`} target="_blank" rel="noreferrer" onClick={(ev) => ev.stopPropagation()}>#{chip.num}</a>
-                              : <span key={chip.key} className="now-chip now-chip-ticket">#{chip.num}</span>
-                        )}
-                        {chipOverflow > 0 && <span className="now-chip now-chip-overflow">+{chipOverflow}</span>}
+                        {allChips.length === 0 && group.key.startsWith("hour-")
+                          ? <span className="now-chip now-chip-hour">{new Date(group.latestAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })}</span>
+                          : <>
+                              {visibleChips.map((chip) =>
+                                chip.kind === "wave"
+                                  ? <span key={chip.key} className="now-chip now-chip-wave">{chip.label}</span>
+                                  : data.issues.repoStatus === "ok"
+                                    ? <a key={chip.key} className="now-chip now-chip-ticket" href={`https://github.com/${data.issues.repo}/issues/${chip.num}`} target="_blank" rel="noreferrer" onClick={(ev) => ev.stopPropagation()}>#{chip.num}</a>
+                                    : <span key={chip.key} className="now-chip now-chip-ticket">#{chip.num}</span>
+                              )}
+                              {chipOverflow > 0 && <span className="now-chip now-chip-overflow">+{chipOverflow}</span>}
+                            </>
+                        }
                       </span>
                       {(() => {
                         const visibleRoles = group.roles.slice(0, 4);
@@ -1474,6 +1503,13 @@ export default function DashboardPage() {
         .now-chip-overflow {
           font-size: 9px; color: var(--text-dim); padding: 1px 3px;
         }
+        .now-chip-hour {
+          background: var(--surface-2); border: 1px solid var(--border); color: var(--text-dim);
+          font-size: 0.7rem; font-family: ui-monospace, monospace; border-radius: 4px; padding: 2px 6px;
+        }
+
+        .done-panel { max-height: 60vh; overflow-y: auto; }
+        @media (max-width: 767px) { .done-panel { max-height: 50vh; } }
 
         .done-role-strip { flex: 1; min-width: 0; overflow: hidden; display: inline-flex; align-items: center; gap: 3px; flex-wrap: nowrap; }
         .group-row-item {
