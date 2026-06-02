@@ -1,10 +1,13 @@
 // Wraps runTurn with the auto-trigger semantics for Product Owner
 // DISPATCHes: after the target turn finishes, any [[DISPATCH: role]]
 // blocks the PO emitted are run in parallel as their own runTurn calls.
-// Web-UI path only (/api/chat + /api/po-dispatch). The MCP path
-// uses runTurn directly so the HTTP response is not held open for the
-// fan-out chain duration.
+// Used by EVERY path that can advance a PO turn — web UI (/api/chat,
+// /api/po-dispatch), the MCP tools (talk_to_product_owner AND
+// talk_to_role), and the tick scheduler. Any path that uses bare runTurn
+// for a PO turn records the dispatch rows but never fans them out to the
+// peers (#156: the silent-stall class).
 
+import { appendMessage } from "@/lib/db";
 import { runTurn, type RunTurnInput, type RunTurnResult } from "@/lib/run-turn";
 import type { TeamRoleId } from "@/types";
 
@@ -26,7 +29,13 @@ export async function runTurnWithDispatches(
   // and does not infer its task from the shared transcript (which
   // could cause it to answer a dispatch addressed to a different role
   // — the #137 misroute class).
-  const peerReplies = await Promise.all(
+  //
+  // allSettled, NOT all: a single peer throwing must not reject the whole
+  // fan-out and silently drop the other peers' turns. A rejected peer is
+  // logged AND surfaced into the thread transcript as a synthetic message
+  // so the PO sees "peer X stalled" on its next turn instead of an 8-hour
+  // silence (#156 forensics).
+  const settled = await Promise.allSettled(
     result.dispatches.map(async (d) => {
       const peerResult = await runTurn({
         threadId: input.threadId,
@@ -39,6 +48,26 @@ export async function runTurnWithDispatches(
       return { role: d.to, result: peerResult };
     }),
   );
+
+  const peerReplies = settled.flatMap((s, i) => {
+    if (s.status === "fulfilled") return [s.value];
+    const role = result.dispatches[i].to;
+    const reason = s.reason instanceof Error ? s.reason.message : String(s.reason);
+    console.error(`[runTurnWithDispatches] dispatched peer ${role} FAILED:`, s.reason);
+    // Surface the failure to the PO's next-turn context. Without this the
+    // dispatch row exists but no reply ever lands — the exact invisible
+    // stall #156 documents.
+    try {
+      appendMessage(
+        input.threadId,
+        { kind: "user", to: "product-owner" },
+        `⚠️ Dispatched peer **${role}** failed to complete its turn (the DISPATCH was recorded but produced no reply): ${reason}`,
+      );
+    } catch {
+      // best-effort — never let failure-surfacing mask the original error
+    }
+    return [];
+  });
 
   return { ...result, peerReplies };
 }
