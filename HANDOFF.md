@@ -1,6 +1,26 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-02 (Wave 80 — MCP heartbeat tuning to fix transport drops #172)
+## ⏭️ NOW — 2026-06-02 (Wave 79 — inbox-rot fix: PO-HANDOFF auto-promote + rescue sweep #171)
+
+**Wave 79 (#171 / US-031) — READY FOR ARCHITECT GATE.** Branch `feature/79-handoff-rescue` off main `28c6884`. 251/251 tests green, type-check 0, lint 0 errors. Closes #171.
+
+**Two mechanisms per ADR-006:**
+
+**(a) `src/lib/run-turn.ts`** — In the `target==="product-owner"` branch, BEFORE the dispatch persist loop, folds every PO outbound `[[HANDOFF: X]]` into `dispatches[]` (skips `to==="product-owner"` self-ref). Emits `console.warn` for provenance. Peer→peer HANDOFFs untouched.
+
+**(b) `src/lib/tick-scheduler.ts`** — After the PO tick, scans all TEAM_ROLES for peers with inbox age > `RESCUE_THRESHOLD_MS` (300s) and not on cooldown. Calls `runTurnWithDispatches(target=peer, "[[RESCUE-SWEEP ...]]")` under `withThreadLock`. `lastRescueAt: Map<TeamRoleId,number>` on `TickState`; `rescuesEmitted` tracked + passed to `logTick`; `isNoOp` now requires BOTH `dispatchesEmitted===0 AND rescuesEmitted===0`.
+
+**(c) `src/lib/db.ts`** — Added `rescues_emitted` column to `tick_log` (CREATE TABLE + additive ALTER TABLE migration). Updated `logTick` signature (+1 arg, default 0).
+
+**Tests:** 7 new tests (ADR-006 cases 1-3 in `tests/lib/run-turn-wave79.test.ts`, cases 4-7 appended to `tests/lib/tick-scheduler.test.ts`). Updated 1 existing logTick assertion for 8-arg signature.
+
+**Gate:** Architect non-UI review → QA `:3100` smoke → DevSecOps merge.
+
+Also shipped this tick: PR #175 (`feature/68-worktree-isolation-protocol`) — WORKTREE_ISOLATION_PROTOCOL, awaiting Architect gate.
+
+---
+
+## ⏭️ PREV — 2026-06-02 (Wave 80 — MCP heartbeat tuning to fix transport drops #172)
 
 **Wave 80 (#172) — MCP transport drops mid-call.** Branch `feature/80-mcp-heartbeat-fix` from main. claude-code hand-implemented after the team's own dispatches kept dropping with "transport dropped mid-call" errors during long PO turns. Closes #172.
 

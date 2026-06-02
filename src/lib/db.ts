@@ -74,7 +74,8 @@ function db(): Database.Database {
       dispatches_emitted  INTEGER NOT NULL,
       no_op               INTEGER NOT NULL DEFAULT 0,
       started_at          TEXT    NOT NULL,
-      finished_at         TEXT    NOT NULL
+      finished_at         TEXT    NOT NULL,
+      rescues_emitted     INTEGER NOT NULL DEFAULT 0
     );
     CREATE INDEX IF NOT EXISTS idx_tick_log_thread ON tick_log(thread_id);
 
@@ -127,6 +128,7 @@ function db(): Database.Database {
   `);
   // Additive migrations — idempotent via try/catch (column-already-exists throws, which is fine)
   try { conn.exec(`ALTER TABLE thread_config ADD COLUMN workspace TEXT`); } catch {}
+  try { conn.exec(`ALTER TABLE tick_log ADD COLUMN rescues_emitted INTEGER NOT NULL DEFAULT 0`); } catch {}
   _db = conn;
   return conn;
 }
@@ -452,14 +454,15 @@ export function logTick(
   noOp: boolean,
   startedAt: string,
   finishedAt: string,
+  rescuesEmitted = 0,
 ): void {
   db()
     .prepare(
       `INSERT INTO tick_log
-         (thread_id, tick_n, tokens_spent, dispatches_emitted, no_op, started_at, finished_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+         (thread_id, tick_n, tokens_spent, dispatches_emitted, no_op, started_at, finished_at, rescues_emitted)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-    .run(threadId, tickN, tokensSpent, dispatchesEmitted, noOp ? 1 : 0, startedAt, finishedAt);
+    .run(threadId, tickN, tokensSpent, dispatchesEmitted, noOp ? 1 : 0, startedAt, finishedAt, rescuesEmitted);
 }
 
 // ─── Wave queue ──────────────────────────────────────────────────────────────
