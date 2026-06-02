@@ -45,7 +45,6 @@ const PROVIDER_LABEL: Record<Provider, string> = {
 
 const KNOWN_MODELS = [
   { label: "Claude Opus 4.8",    value: "claude-opus-4-8" },
-  { label: "Claude Opus 4.7",    value: "claude-opus-4-7" },
   { label: "Claude Sonnet 4.6",  value: "claude-sonnet-4-6" },
   { label: "Claude Haiku 4.5",   value: "claude-haiku-4-5-20251001" },
   { label: "Gemini 2.5 Flash",   value: "gemini-2.5-flash" },
