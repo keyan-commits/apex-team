@@ -25,6 +25,7 @@ import {
   getPipelineState,
   type PrStatusRow,
 } from "@/lib/db";
+import { evaluateStall, recordStallEvent, ackStallEvent } from "@/lib/stall-detector";
 import { ALL_ROLES, TEAM_ROLES, DEFAULT_ROLE_MODELS } from "@/lib/roles";
 import type { AgentConfig, RoleId, TeamRoleId } from "@/types";
 
@@ -303,6 +304,30 @@ async function doTick(state: TickState): Promise<void> {
     }
   }
 
+  // Wave 81 (#177): stall detector — after PO tick + rescue sweep.
+  let stallsEmitted = 0;
+  const stallResult = evaluateStall({
+    threadId: state.threadId,
+    workspace,
+    hourlyOutputTokens: outputTokensBefore,
+    tickArmed: !state.paused,
+    now: state.deps.now,
+  });
+  if (stallResult) {
+    console.warn(
+      `[stall-detector] STALL thread=${state.threadId}` +
+      ` stall_age_ms=${stallResult.stallAgeMs}` +
+      ` backlog=${stallResult.backlogCount}` +
+      ` hourly_tokens=${stallResult.hourlyTokens}` +
+      ` last_merge=${stallResult.lastMergeAt ?? "never"}`,
+    );
+    recordStallEvent(stallResult);
+    stallsEmitted = 1;
+  } else {
+    // Auto-clear: if stall condition resolved, ack any pending stall event.
+    ackStallEvent(state.threadId);
+  }
+
   const finishedAt = new Date(state.deps.now()).toISOString();
   const isNoOp = failed || (dispatchesEmitted === 0 && rescuesEmitted === 0);
 
@@ -316,6 +341,7 @@ async function doTick(state: TickState): Promise<void> {
       startedAt,
       finishedAt,
       rescuesEmitted,
+      stallsEmitted,
     );
   } catch {
     // best-effort — never kill the scheduler over audit logging

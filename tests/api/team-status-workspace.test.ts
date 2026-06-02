@@ -10,6 +10,7 @@ vi.mock("@/lib/db", () => ({
   getSpendSummary: vi.fn(() => ({ todayUsd: 0, threadUsd: 0, perRole: [] })),
   getScoutMeta: vi.fn(() => ({ lastRunAt: null, proposalsLast7Days: 0 })),
   getThreadWorkspace: vi.fn(() => null),
+  getLatestUnackedStallRow: vi.fn(() => null),
 }));
 
 vi.mock("@/lib/derive-github-repo", () => ({

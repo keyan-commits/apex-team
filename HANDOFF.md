@@ -1,22 +1,28 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-02 (Wave 79 — inbox-rot fix: PO-HANDOFF auto-promote + rescue sweep #171)
+## ⏭️ NOW — 2026-06-02 (Wave 81 — server-side stall detector #177 / US-035)
 
-**Wave 79 (#171 / US-031) — READY FOR ARCHITECT GATE.** Branch `feature/79-handoff-rescue` off main `28c6884`. 251/251 tests green, type-check 0, lint 0 errors. Closes #171.
+**Wave 81 (#177 / US-035) — READY FOR ARCHITECT GATE.** Branch `feature/81-stall-detector` off main `a873423`. 263/263 tests green, type-check 0. Closes #177.
 
-**Two mechanisms per ADR-006:**
+**New `src/lib/stall-detector.ts`:** `evaluateStall(params)` (pure predicate — reads DB + git, no writes), `recordStallEvent` (dedup: skips if unacked event <60min), `getLatestUnackedStall`, `ackStallEvent`. Consts: `STALL_MERGE_THRESHOLD_MS=3_600_000`, `STALL_BUDGET_FLOOR_TOKENS=5_000`.
 
-**(a) `src/lib/run-turn.ts`** — In the `target==="product-owner"` branch, BEFORE the dispatch persist loop, folds every PO outbound `[[HANDOFF: X]]` into `dispatches[]` (skips `to==="product-owner"` self-ref). Emits `console.warn` for provenance. Peer→peer HANDOFFs untouched.
+**4 predicates (all must hold):** (1) `git log origin/main -1 --format=%at` > 60min ago (git fail → treated as stalled); (2) `getPipelineState('open_issue_count') > 0`; (3) `!state.paused`; (4) `outputTokensBefore >= 5_000`.
 
-**(b) `src/lib/tick-scheduler.ts`** — After the PO tick, scans all TEAM_ROLES for peers with inbox age > `RESCUE_THRESHOLD_MS` (300s) and not on cooldown. Calls `runTurnWithDispatches(target=peer, "[[RESCUE-SWEEP ...]]")` under `withThreadLock`. `lastRescueAt: Map<TeamRoleId,number>` on `TickState`; `rescuesEmitted` tracked + passed to `logTick`; `isNoOp` now requires BOTH `dispatchesEmitted===0 AND rescuesEmitted===0`.
+**`src/lib/db.ts`:** Added `stall_event` table (CREATE TABLE IF NOT EXISTS + index); `stalls_emitted` column on `tick_log` (CREATE TABLE + additive ALTER TABLE migration); `logTick` updated (+1 param, default 0). Exported: `insertStallEventRow`, `getLatestUnackedStallRow`, `markStallEventAcked`, `StallEventRow`.
 
-**(c) `src/lib/db.ts`** — Added `rescues_emitted` column to `tick_log` (CREATE TABLE + additive ALTER TABLE migration). Updated `logTick` signature (+1 arg, default 0).
+**`src/lib/tick-scheduler.ts`:** Stall check in `doTick` after rescue sweep — `evaluateStall` → if non-null: `console.warn` + `recordStallEvent` + `stallsEmitted=1`; else: `ackStallEvent` (auto-clear). `stallsEmitted` passed to `logTick` as 9th arg.
 
-**Tests:** 7 new tests (ADR-006 cases 1-3 in `tests/lib/run-turn-wave79.test.ts`, cases 4-7 appended to `tests/lib/tick-scheduler.test.ts`). Updated 1 existing logTick assertion for 8-arg signature.
+**`/api/team-status`:** `stall: { active, detectedAt, stallAgeMs, backlogCount } | null` added to `TeamStatus` type + route response via `getLatestUnackedStall`.
+
+**Tests:** 12 new/updated (7 new in `tests/lib/stall-detector.test.ts`; tick-scheduler.test.ts: stall-detector mock + 9th logTick arg; team-status tests: `getLatestUnackedStallRow` added to db mock).
 
 **Gate:** Architect non-UI review → QA `:3100` smoke → DevSecOps merge.
 
-Also shipped this tick: PR #175 (`feature/68-worktree-isolation-protocol`) — WORKTREE_ISOLATION_PROTOCOL, awaiting Architect gate.
+---
+
+## PREV — 2026-06-02 (Wave 79 — inbox-rot fix: PO-HANDOFF auto-promote + rescue sweep #171)
+
+**Wave 79 (#171 / US-031) — MERGED `a873423`.** PR #176. 251/251 green.
 
 ---
 

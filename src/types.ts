@@ -115,6 +115,7 @@ export interface TeamStatus {
   };
   scout: { lastRunAt: number | null; nextScheduledAt: number | null; proposalsLast7Days: number };
   context: Array<{ role: RoleId; handoffChars: number; historyDepth: number; inboxCount: number; needsCleanup: boolean }>;
+  stall: { active: boolean; detectedAt: string; stallAgeMs: number; backlogCount: number } | null;
   spend: {
     todayUsd: number;
     threadUsd: number;
