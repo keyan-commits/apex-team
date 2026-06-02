@@ -18,6 +18,7 @@ import {
   getThreadSpendSince,
   logTick,
   listPendingInbox,
+  listActiveTickThreads,
   getThreadWorkspace,
   getThreadAgentModels,
   upsertPrStatus,
@@ -134,6 +135,20 @@ export function stopAllSchedulers(): void {
     if (state.timer != null) clearTimeout(state.timer);
   }
   schedulers.clear();
+}
+
+export const REARM_WINDOW_MS = 7_200_000; // 2 hours
+
+export function rearmActiveThreads(opts?: { deps?: SchedulerDeps }): void {
+  const threads = listActiveTickThreads(REARM_WINDOW_MS);
+  for (const threadId of threads) {
+    armScheduler(threadId, opts);
+  }
+  if (threads.length > 0) {
+    console.info(
+      `[tick-scheduler] boot: re-armed ${threads.length} thread(s): ${threads.join(", ")}`,
+    );
+  }
 }
 
 function reschedule(state: TickState, delayMs: number): void {

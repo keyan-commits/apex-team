@@ -1,20 +1,15 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-02 (Wave 81 — server-side stall detector #177 / US-035)
+## ⏭️ NOW — 2026-06-02 (Wave 83 — server-start re-arm sweep #179 / US-037)
 
-**Wave 81 (#177 / US-035) — READY FOR ARCHITECT GATE.** Branch `feature/81-stall-detector` off main `a873423`. 263/263 tests green, type-check 0. Closes #177.
+**Wave 83 (#179 / US-037) — READY FOR ARCHITECT GATE.** Branch `feature/83-rearm-sweep` off `origin/main` `33df463` (post-#180). 277/277 green, type-check 0. Closes #179.
 
-**New `src/lib/stall-detector.ts`:** `evaluateStall(params)` (pure predicate — reads DB + git, no writes), `recordStallEvent` (dedup: skips if unacked event <60min), `getLatestUnackedStall`, `ackStallEvent`. Consts: `STALL_MERGE_THRESHOLD_MS=3_600_000`, `STALL_BUDGET_FLOOR_TOKENS=5_000`.
+**3 files changed + 1 new test file:**
 
-**4 predicates (all must hold):** (1) `git log origin/main -1 --format=%at` > 60min ago (git fail → treated as stalled); (2) `getPipelineState('open_issue_count') > 0`; (3) `!state.paused`; (4) `outputTokensBefore >= 5_000`.
-
-**`src/lib/db.ts`:** Added `stall_event` table (CREATE TABLE IF NOT EXISTS + index); `stalls_emitted` column on `tick_log` (CREATE TABLE + additive ALTER TABLE migration); `logTick` updated (+1 param, default 0). Exported: `insertStallEventRow`, `getLatestUnackedStallRow`, `markStallEventAcked`, `StallEventRow`.
-
-**`src/lib/tick-scheduler.ts`:** Stall check in `doTick` after rescue sweep — `evaluateStall` → if non-null: `console.warn` + `recordStallEvent` + `stallsEmitted=1`; else: `ackStallEvent` (auto-clear). `stallsEmitted` passed to `logTick` as 9th arg.
-
-**`/api/team-status`:** `stall: { active, detectedAt, stallAgeMs, backlogCount } | null` added to `TeamStatus` type + route response via `getLatestUnackedStall`.
-
-**Tests:** 12 new/updated (7 new in `tests/lib/stall-detector.test.ts`; tick-scheduler.test.ts: stall-detector mock + 9th logTick arg; team-status tests: `getLatestUnackedStallRow` added to db mock).
+- **`src/lib/db.ts`:** `listActiveTickThreads(windowMs: number): string[]` — distinct `thread_id` from `tick_log` WHERE `finished_at >= cutoff` (ISO-string comparison). Added under new `// ─── Tick log queries ─────` section.
+- **`src/lib/tick-scheduler.ts`:** `export const REARM_WINDOW_MS = 7_200_000` + `export function rearmActiveThreads(opts?)`. Imports `listActiveTickThreads` from db. Loops `listActiveTickThreads(REARM_WINDOW_MS)` calling `armScheduler` per thread; logs INFO if >0 re-armed. Idempotency free via existing `if (schedulers.has) return` guard.
+- **`server.ts`:** `rearmActiveThreads()` called inside `server.listen(PORT, HOST, () => {...})` callback after ready log lines.
+- **`tests/lib/rearm-sweep.test.ts`** (new, 8 tests): REARM_WINDOW_MS=7200000, 0-threads no-crash, 1-qualifying armed, idempotency, outside-window skipped, MAX_THREADS warn+skip, AC4 INFO log fires, AC4 no log when 0.
 
 **Gate:** Architect non-UI review → QA `:3100` smoke → DevSecOps merge.
 

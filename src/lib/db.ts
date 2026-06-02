@@ -746,6 +746,18 @@ export function markStallEventAcked(threadId: string): void {
     .run(threadId);
 }
 
+// ─── Tick log queries ─────────────────────────────────────────────────────────
+
+export function listActiveTickThreads(windowMs: number): string[] {
+  const cutoff = new Date(Date.now() - windowMs).toISOString();
+  const rows = db()
+    .prepare(
+      `SELECT DISTINCT thread_id FROM tick_log WHERE finished_at >= ? ORDER BY thread_id`,
+    )
+    .all(cutoff) as Array<{ thread_id: string }>;
+  return rows.map((r) => r.thread_id);
+}
+
 // ─── Pending inbox ────────────────────────────────────────────────────────────
 
 // Pending inbox = handoff messages addressed to this role that arrived
