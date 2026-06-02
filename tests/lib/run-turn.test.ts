@@ -1,20 +1,20 @@
 /**
- * Wave 51 — run-turn.ts: DISPATCH model override merges into thread agent models.
- * Verifies that when PO emits a DISPATCH with model: field, runTurn calls
- * setThreadAgentModels with the override so the next resolvedAgents() call
- * picks up the right model for the dispatched peer.
+ * run-turn.ts: DISPATCH model: override is returned in result.dispatches
+ * but must NOT be written to the sticky thread_config (MODEL_FIT_POLICY:
+ * transient per-dispatch — only [[AGENT-MODELS]] block is sticky).
+ * The transient application to the peer's runTurn is tested in
+ * run-turn-with-dispatches via tests/be/dispatch-model-override.test.ts.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const mockSetThreadAgentModels = vi.fn();
-const mockGetThreadAgentModels = vi.fn(() => null);
 
 vi.mock("@/lib/db", () => ({
   appendMessage: vi.fn(),
-  getThreadAgentModels: mockGetThreadAgentModels,
   setAgentHandoffDoc: vi.fn(),
   setThreadAgentModels: mockSetThreadAgentModels,
   recordTurnUsage: vi.fn(),
+  stampTurnAt: vi.fn(),
 }));
 
 vi.mock("@/lib/agents", () => ({
@@ -33,13 +33,12 @@ vi.mock("@/lib/providers", () => ({
   DEFAULT_MODELS: { claude: "claude-sonnet-4-6" },
 }));
 
-describe("runTurn — DISPATCH model override propagation (Wave 51 #112)", () => {
+describe("runTurn — DISPATCH model override propagation (closes #241)", () => {
   beforeEach(() => {
     mockSetThreadAgentModels.mockClear();
-    mockGetThreadAgentModels.mockReturnValue(null);
   });
 
-  it("merges dispatch model override into thread agent models", async () => {
+  it("dispatch model: is returned in result.dispatches but NOT written to thread_config", async () => {
     const { runTurn } = await import("@/lib/run-turn");
 
     const result = await runTurn({
@@ -52,11 +51,12 @@ describe("runTurn — DISPATCH model override propagation (Wave 51 #112)", () =>
       signal: new AbortController().signal,
     });
 
+    // Model override is preserved in the dispatch result for runTurnWithDispatches
+    // to apply transiently — it is NOT the sticky thread assignment.
     expect(result.dispatches[0].to).toBe("backend-developer");
     expect(result.dispatches[0].model).toBe("claude-haiku-4-5-20251001");
-    expect(mockSetThreadAgentModels).toHaveBeenCalledWith(
-      "test-thread-model",
-      expect.objectContaining({ "backend-developer": "claude-haiku-4-5-20251001" }),
-    );
+
+    // setThreadAgentModels must NOT have been called (dispatch overrides are transient).
+    expect(mockSetThreadAgentModels).not.toHaveBeenCalled();
   });
 });

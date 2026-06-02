@@ -4,7 +4,7 @@
 // every observable event onto the thread's event bus so any subscriber
 // (the dashboard, future watchers) sees it.
 
-import { appendMessage, getThreadAgentModels, setAgentHandoffDoc, setThreadAgentModels, recordTurnUsage, stampTurnAt } from "@/lib/db";
+import { appendMessage, setAgentHandoffDoc, setThreadAgentModels, recordTurnUsage, stampTurnAt } from "@/lib/db";
 import { runAgentTurn } from "@/lib/agents";
 import { parseAgentReply } from "@/lib/orchestrator";
 import { publish } from "@/lib/event-bus";
@@ -133,16 +133,6 @@ export async function runTurn(input: RunTurnInput): Promise<RunTurnResult> {
         type: "dispatch",
         to: d.to,
         message: d.message,
-      });
-    }
-    // Merge per-dispatch model overrides into thread config so the next call
-    // to resolvedAgents() for the dispatched role picks up the override.
-    const overrides = dispatches.filter((d) => d.model);
-    if (overrides.length > 0) {
-      const existing = getThreadAgentModels(input.threadId) ?? {};
-      setThreadAgentModels(input.threadId, {
-        ...existing,
-        ...Object.fromEntries(overrides.map((d) => [d.to, d.model!])),
       });
     }
   }
