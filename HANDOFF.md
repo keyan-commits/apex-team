@@ -6,6 +6,12 @@
 
 ---
 
+**#161 — Done-group chip stopPropagation fix. Branch `feature/161-done-chip-stoppropagation`. 2-line change: `onClick={(ev) => ev.stopPropagation()}` on `chip-strip` span + `<a>` chip in Done group. Gate: 221/221 green. UX PASS + Architect PASS. Merging now.**
+
+**Wave 72 (#160) MERGED — STATE EXTERNALIZATION on main (#166).**
+
+---
+
 **Wave 76 (#164) — REGEX TOLERANCE: PO model omits `[[/DISPATCH]]` closer; silent fan-out failure. Branch `feature/76-dispatch-regex-tolerance` from main `3b7b88d`. claude-code hand-implemented (dispatching the fix would itself stall via the bug it fixes — same pattern as Wave 74). Closes #164.**
 
 **Symptom:** even after Wave 74 (`runTurnWithDispatches` for `talk_to_role`) + `git pull` to load Wave 74 code, peer turns still never fired. DB inspection of PO's last 4 replies: `[[DISPATCH:` opener present, `[[/DISPATCH]]` closer pos = 0. Regex requires the closer → `dispatches.length === 0` → silent fan-out short-circuit. PO model has drifted from emitting closers since ~msg 1125 (around Wave 65 / Wave 71 era).

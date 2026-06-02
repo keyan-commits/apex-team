@@ -568,12 +568,12 @@ export default function DashboardPage() {
                       aria-expanded={expandedRow["done"] === group.key}
                     >
                       <span className="row-chevron" aria-hidden="true">{expandedRow["done"] === group.key ? "▾" : "▸"}</span>
-                      <span className="chip-strip">
+                      <span className="chip-strip" onClick={(ev) => ev.stopPropagation()}>
                         {visibleChips.map((chip) =>
                           chip.kind === "wave"
                             ? <span key={chip.key} className="now-chip now-chip-wave">{chip.label}</span>
                             : data.issues.repoStatus === "ok"
-                              ? <a key={chip.key} className="now-chip now-chip-ticket" href={`https://github.com/${data.issues.repo}/issues/${chip.num}`} target="_blank" rel="noreferrer">#{chip.num}</a>
+                              ? <a key={chip.key} className="now-chip now-chip-ticket" href={`https://github.com/${data.issues.repo}/issues/${chip.num}`} target="_blank" rel="noreferrer" onClick={(ev) => ev.stopPropagation()}>#{chip.num}</a>
                               : <span key={chip.key} className="now-chip now-chip-ticket">#{chip.num}</span>
                         )}
                         {chipOverflow > 0 && <span className="now-chip now-chip-overflow">+{chipOverflow}</span>}

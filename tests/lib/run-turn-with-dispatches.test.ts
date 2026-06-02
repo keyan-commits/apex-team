@@ -1,12 +1,16 @@
 // #156 regression: runTurnWithDispatches must fan PO dispatches out to peers,
 // and a single failing peer must NOT silently drop the rest of the fan-out —
 // it must be logged AND surfaced into the thread so the PO sees it next turn.
+//
+// Wave 72: also verifies peer_idle auto-update (markRoleActive/markRoleIdle).
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { RunTurnInput, RunTurnResult } from "@/lib/run-turn";
 
 const mockRunTurn = vi.fn();
 const mockAppendMessage = vi.fn();
+const mockMarkRoleActive = vi.fn();
+const mockMarkRoleIdle = vi.fn();
 
 vi.mock("@/lib/run-turn", () => ({
   runTurn: (input: RunTurnInput) => mockRunTurn(input),
@@ -14,6 +18,8 @@ vi.mock("@/lib/run-turn", () => ({
 
 vi.mock("@/lib/db", () => ({
   appendMessage: (...args: unknown[]) => mockAppendMessage(...args),
+  markRoleActive: (...args: unknown[]) => mockMarkRoleActive(...args),
+  markRoleIdle: (...args: unknown[]) => mockMarkRoleIdle(...args),
 }));
 
 import { runTurnWithDispatches } from "@/lib/run-turn-with-dispatches";
@@ -39,6 +45,8 @@ const poInput: RunTurnInput = {
 beforeEach(() => {
   mockRunTurn.mockReset();
   mockAppendMessage.mockReset();
+  mockMarkRoleActive.mockReset();
+  mockMarkRoleIdle.mockReset();
 });
 
 describe("runTurnWithDispatches", () => {
@@ -130,5 +138,56 @@ describe("runTurnWithDispatches", () => {
 
     expect(result.peerReplies).toEqual([]);
     expect(mockRunTurn).toHaveBeenCalledTimes(1);
+  });
+
+  it("marks the primary target active before its turn and idle after", async () => {
+    mockRunTurn.mockResolvedValueOnce({ ...base, visibleText: "ba reply" } satisfies RunTurnResult);
+    const input = { ...poInput, target: "business-analyst" as const };
+
+    await runTurnWithDispatches(input);
+
+    expect(mockMarkRoleActive).toHaveBeenCalledWith("t1", "business-analyst");
+    expect(mockMarkRoleIdle).toHaveBeenCalledWith("t1", "business-analyst");
+    // active must be called before the turn; idle after.
+    const activeOrder = mockMarkRoleActive.mock.invocationCallOrder[0];
+    const idleOrder = mockMarkRoleIdle.mock.invocationCallOrder[0];
+    expect(activeOrder).toBeLessThan(idleOrder);
+  });
+
+  it("marks dispatched peers active before and idle after their turns", async () => {
+    mockRunTurn.mockImplementation(async (input: RunTurnInput) => {
+      if (input.target === "product-owner") {
+        return {
+          ...base,
+          dispatches: [{ to: "qa" as const, message: "gate it" }],
+        } satisfies RunTurnResult;
+      }
+      return { ...base, visibleText: `${input.target} done` } satisfies RunTurnResult;
+    });
+
+    await runTurnWithDispatches(poInput);
+
+    // qa should be marked active and then idle
+    expect(mockMarkRoleActive).toHaveBeenCalledWith("t1", "qa");
+    expect(mockMarkRoleIdle).toHaveBeenCalledWith("t1", "qa");
+  });
+
+  it("marks peer idle even when the peer turn throws", async () => {
+    const errSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    mockRunTurn.mockImplementation(async (input: RunTurnInput) => {
+      if (input.target === "product-owner") {
+        return {
+          ...base,
+          dispatches: [{ to: "architect" as const, message: "review it" }],
+        } satisfies RunTurnResult;
+      }
+      throw new Error("peer boom");
+    });
+
+    await runTurnWithDispatches(poInput);
+
+    // markRoleIdle must still fire despite the throw (finally block)
+    expect(mockMarkRoleIdle).toHaveBeenCalledWith("t1", "architect");
+    errSpy.mockRestore();
   });
 });
