@@ -43,6 +43,7 @@ interface TickState {
   lastTickAt: number | null;
   timer: ReturnType<typeof setTimeout> | null;
   deps: SchedulerDeps;
+  lastRescueAt: Map<TeamRoleId, number>;
 }
 
 const DEFAULT_DEPS: SchedulerDeps = {
@@ -54,6 +55,7 @@ const BASE_MS = 20_000;
 const MAX_DELAY_MS = 120_000;
 const NO_OP_K = 3;
 const PAUSE_THRESHOLD_MS = 300_000;
+const RESCUE_THRESHOLD_MS = 300_000; // independent knob from PAUSE_THRESHOLD_MS even if values coincide
 const MAX_THREADS = 5;
 
 const schedulers = new Map<string, TickState>();
@@ -77,6 +79,7 @@ export function armScheduler(
     lastTickAt: null,
     timer: null,
     deps: opts?.deps ?? DEFAULT_DEPS,
+    lastRescueAt: new Map(),
   };
   schedulers.set(threadId, state);
   reschedule(state, BASE_MS);
@@ -238,9 +241,10 @@ async function doTick(state: TickState): Promise<void> {
   let dispatchesEmitted = 0;
   let tickOutputTokens = 0;
   let failed = false;
+  let agents: Record<RoleId, AgentConfig> | undefined;
 
   try {
-    const agents = resolveAgents(state.threadId);
+    agents = resolveAgents(state.threadId);
 
     const result = await withThreadLock(state.threadId, () =>
       runTurnWithDispatches({
@@ -248,7 +252,7 @@ async function doTick(state: TickState): Promise<void> {
         target: "product-owner",
         userMessage: message,
         workspace,
-        agents,
+        agents: agents!,
         signal: new AbortController().signal,
       }),
     );
@@ -264,8 +268,43 @@ async function doTick(state: TickState): Promise<void> {
     );
   }
 
+  // Wave 79 (#171): rescue-sweep — after the PO tick, drain peer inboxes that
+  // have been waiting longer than RESCUE_THRESHOLD_MS with no PO-driven dispatch.
+  // Bypasses the PO entirely so it's structural and not prompt-dependent.
+  let rescuesEmitted = 0;
+  if (!failed && agents) {
+    const rescueNow = state.deps.now();
+    for (const teamRole of TEAM_ROLES) {
+      const pending = listPendingInbox(state.threadId, teamRole as TeamRoleId);
+      if (pending.length === 0) continue;
+      const oldestCreatedAt = Math.min(...pending.map((m) => m.createdAt));
+      const oldestAgeMs = rescueNow - oldestCreatedAt;
+      if (oldestAgeMs <= RESCUE_THRESHOLD_MS) continue;
+      const lastRescue = state.lastRescueAt.get(teamRole as TeamRoleId) ?? 0;
+      if (rescueNow - lastRescue <= RESCUE_THRESHOLD_MS) continue;
+      const ageSec = Math.round(oldestAgeMs / 1000);
+      console.warn(`[tick-scheduler] rescue-sweep: ${teamRole} inbox age=${ageSec}s (#171)`);
+      try {
+        await withThreadLock(state.threadId, () =>
+          runTurnWithDispatches({
+            threadId: state.threadId,
+            target: teamRole as TeamRoleId,
+            userMessage: `[[RESCUE-SWEEP tick=${state.tickN} role=${teamRole} inbox-age=${ageSec}s]] Process your inbox (rescue).`,
+            workspace,
+            agents: agents!,
+            signal: new AbortController().signal,
+          }),
+        );
+        state.lastRescueAt.set(teamRole as TeamRoleId, rescueNow);
+        rescuesEmitted += 1;
+      } catch (err) {
+        console.error(`[tick-scheduler] rescue for ${teamRole} failed:`, err);
+      }
+    }
+  }
+
   const finishedAt = new Date(state.deps.now()).toISOString();
-  const isNoOp = failed || dispatchesEmitted === 0;
+  const isNoOp = failed || (dispatchesEmitted === 0 && rescuesEmitted === 0);
 
   try {
     logTick(
@@ -276,6 +315,7 @@ async function doTick(state: TickState): Promise<void> {
       isNoOp,
       startedAt,
       finishedAt,
+      rescuesEmitted,
     );
   } catch {
     // best-effort — never kill the scheduler over audit logging

@@ -368,6 +368,7 @@ describe("tick-scheduler", () => {
         true,   // noOp = true (failed tick counts as no-op)
         expect.any(String),
         expect.any(String),
+        0,      // rescuesEmitted (Wave 79)
       );
 
       stopAllSchedulers();
@@ -502,6 +503,100 @@ describe("tick-scheduler", () => {
 
     it("returns false for an unknown thread", () => {
       expect(resumeScheduler("nonexistent-thread")).toBe(false);
+    });
+  });
+
+  // ── Wave 79 rescue-sweep (ADR-006 cases 4–7) ──────────────────────────────
+
+  // Helper: seed QA inbox with an item at createdAt=0 for rescue tests.
+  function seedQaInbox() {
+    const qaItem = { id: 1, createdAt: 0 };
+    // Cast required: vi.fn(() => []) is typed as Mock<() => never[]>, but
+    // mockImplementation here needs the real 2-arg signature.
+    (mockListPendingInbox as ReturnType<typeof vi.fn>).mockImplementation(
+      (_tid: string, role: string) => (role === "qa" ? [qaItem] : []),
+    );
+  }
+
+  describe("rescue-sweep (Wave 79 ADR-006)", () => {
+    it("case 4: rescue fires when inbox age > 5min", async () => {
+      // QA item created at t=0; now=6min → age=360_000 > RESCUE_THRESHOLD_MS=300_000.
+      seedQaInbox();
+      const deps = makeFakeDeps();
+      deps._advanceNow(6 * 60_000);
+
+      armScheduler("t-rescue-fires", { deps });
+      mockRunTurnWithDispatches
+        .mockResolvedValueOnce(makeNoOpResult())  // PO tick
+        .mockResolvedValueOnce(makeNoOpResult()); // rescue turn
+
+      await deps._fire();
+
+      expect(mockRunTurnWithDispatches).toHaveBeenCalledTimes(2);
+      const rescueCall = mockRunTurnWithDispatches.mock.calls[1][0];
+      expect(rescueCall.target).toBe("qa");
+      expect(rescueCall.userMessage).toMatch(/\[\[RESCUE-SWEEP/);
+      expect(rescueCall.userMessage).toMatch(/role=qa/);
+
+      stopAllSchedulers();
+    });
+
+    it("case 5: rescue does NOT fire when inbox age < 5min", async () => {
+      // QA item created at t=0; now=2min → age=120_000 < 300_000.
+      seedQaInbox();
+      const deps = makeFakeDeps();
+      deps._advanceNow(2 * 60_000);
+
+      armScheduler("t-rescue-hold", { deps });
+      mockRunTurnWithDispatches.mockResolvedValue(makeNoOpResult());
+
+      await deps._fire();
+
+      expect(mockRunTurnWithDispatches).toHaveBeenCalledTimes(1);
+      expect(mockRunTurnWithDispatches.mock.calls[0][0].target).toBe("product-owner");
+
+      stopAllSchedulers();
+    });
+
+    it("case 6: rescue cooldown — skips second rescue within 5min of first", async () => {
+      seedQaInbox();
+      const deps = makeFakeDeps();
+      deps._advanceNow(6 * 60_000); // age > threshold
+
+      armScheduler("t-rescue-cooldown", { deps });
+      mockRunTurnWithDispatches.mockResolvedValue(makeNoOpResult());
+
+      // Tick 1: PO tick + rescue
+      await deps._fire();
+      expect(mockRunTurnWithDispatches).toHaveBeenCalledTimes(2);
+
+      // Advance 1min (within RESCUE_THRESHOLD_MS cooldown) and fire again
+      deps._advanceNow(1 * 60_000);
+      mockRunTurnWithDispatches.mockClear();
+      await deps._fire();
+
+      // Only PO tick — cooldown blocks the rescue
+      expect(mockRunTurnWithDispatches).toHaveBeenCalledTimes(1);
+      expect(mockRunTurnWithDispatches.mock.calls[0][0].target).toBe("product-owner");
+
+      stopAllSchedulers();
+    });
+
+    it("case 7: rescue resets consecutiveNoOpCount to 0", async () => {
+      // Rescue fires → isNoOp=false → consecutiveNoOpCount stays 0 (not incremented).
+      seedQaInbox();
+      const deps = makeFakeDeps();
+      deps._advanceNow(6 * 60_000);
+
+      armScheduler("t-rescue-noop-reset", { deps });
+      mockRunTurnWithDispatches.mockResolvedValue(makeNoOpResult());
+
+      await deps._fire();
+
+      const state = getSchedulerState("t-rescue-noop-reset");
+      expect(state?.noOpCount).toBe(0);
+
+      stopAllSchedulers();
     });
   });
 });
