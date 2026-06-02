@@ -1,6 +1,18 @@
 # HANDOFF — apex-team
 
 ## ⏭️ NOW — 2026-06-02 (Wave 202 D1 — merge-train .gitattributes + F1 fitness test)
+## ⏭️ NOW — 2026-06-02 (Wave 94 — QA 9-skill upgrade / US-048)
+
+**Wave 94 PR open: `feature/94-qa-9skill`.** Implements S1–S9 + 6-gate DoD in `src/lib/skills/qa.ts`.
+- type-check 0 · 319/319 tests · `pnpm build` ✓ (Leg A)
+- Glossary additions (REAL_ARTIFACT, RENDER_AND_LOOK, VALIDATED_VS_DEPLOYED) in `requirements/glossary.md`.
+- S1 + S2 encoded as HARD/blocking with explicit no-advisory-path FAIL conditions.
+- 6-gate Visual Artifact DoD checklist paste-ready in skill file.
+- Awaiting Architect skill-structure gate → BA US-048 AC confirm → DevSecOps merge.
+
+---
+
+## ⏭️ PREV — 2026-06-02 (Wave 88 — restore-CI + protocol-wiring / US-040+US-041)
 
 **Executing Architect's #202 D1 directive (ADR-013 Proposed):** add repo-root `.gitattributes` with `merge=union` for HANDOFF.md, requirements/INDEX.md, architecture/INDEX.md, LESSONS.md, .restart-trigger. F1 fitness test in CI verifies a 3-way-merge of two divergent NOW blocks produces zero conflict markers. Closes #202 D1.
 
