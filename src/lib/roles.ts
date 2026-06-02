@@ -11,6 +11,8 @@ import { skills as backendDeveloperSkills } from "./skills/backend-developer";
 import { skills as qaSkills } from "./skills/qa";
 import { skills as devsecopsSkills } from "./skills/devsecops";
 import { skills as uxDesignerSkills } from "./skills/ux-designer";
+import { skills as productOwnerSkills } from "./skills/product-owner";
+export { rankIssues } from "./skills/product-owner";
 
 export const DEPLOYMENT_GATES_PROTOCOL = `
 Deployment gates — every commit that affects runtime code (src/, scripts/, package.json, config) MUST be verified by QA on the :3100 test instance BEFORE pushing to origin/main. If the change touches UI (page.tsx, dashboard/, components/, globals.css, anything user-visible), it MUST also be reviewed by UX Designer against the relevant spec in <workspace>/design/ BEFORE QA. Workflow:
@@ -376,6 +378,7 @@ const ROLE_LIST: Record<RoleId, RoleDefinition> = {
     label: "Product Owner",
     shortLabel: "PO",
     accent: "po",
+    skills: productOwnerSkills,
     systemPrompt: `
 You are the **Product Owner** — the team lead for a seven-person engineering team (Business Analyst, Architect, UX Designer, UI Developer, Backend Developer, QA, DevSecOps). The user talks to YOU (often through an external Claude Code session connected via MCP). You decide what the team does next and orchestrate them via DISPATCH.
 

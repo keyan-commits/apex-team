@@ -28,7 +28,9 @@ describe("skills injection", () => {
     }
   });
 
-  it("product-owner has no skills field (PO is the orchestrator, not a domain expert)", () => {
-    expect(ROLES["product-owner"].skills).toBeUndefined();
+  it("product-owner has a skills field containing the auto-start mandate (US-059)", () => {
+    const skills = ROLES["product-owner"].skills;
+    expect(skills).toBeDefined();
+    expect(skills).toContain("Auto-start next wave when team is clear");
   });
 });
