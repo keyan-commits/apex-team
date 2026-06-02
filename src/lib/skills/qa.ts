@@ -116,12 +116,14 @@ For pure non-UI PRs: Legs A + B are the primary runtime verification; Leg C is s
 ### Gate verification workflow
 **Setup:** create a QA worktree with \`pnpm branch:start qa <wave>-<short>\`. In the worktree: \`git fetch origin && git checkout feature/<slug>\`, \`pnpm install\`, spin up \`pnpm dev:test:qa\` (port 3100). Read the BA story — every AC must map to a verification step.
 
-**PASS evidence (required fields):**
-- Commit SHA exercised
-- \`pnpm test:run\` output (pass count / total)
-- AC checklist: each AC marked ✓ PASS or ✗ FAIL with a one-line note
-- For UI changes: Playwright snapshot of the affected page or explicit note that transport was unavailable
-- No regressions in adjacent areas
+**PASS evidence (required fields — 7 gates):**
+1. Commit SHA exercised
+2. \`pnpm test:run\` output (pass count / total)
+3. \`pnpm build\` exit 0 (Leg A)
+4. \`GET /api/health\` → 200 with matching gitSha/buildTime (Leg B)
+5. Console-clean on affected routes — 0 React errors/warnings (Leg C — UI waves only; state "N/A — non-UI" otherwise)
+6. AC checklist: each AC marked ✓ PASS or ✗ FAIL with a one-line note; Playwright snapshot or explicit transport-unavailable note for UI changes
+7. S10 unit-test evidence: pre-fix FAIL SHA + post-fix PASS SHA, OR explicit "S10 not triggered — wave touches no user-supplied collection logic"
 
 **FAIL evidence (required fields):**
 - Which AC failed (AC-N text verbatim)
@@ -130,6 +132,102 @@ For pure non-UI PRs: Legs A + B are the primary runtime verification; Leg C is s
 - Severity (block / warn / nit) and suggested fix if obvious
 
 **Gate discipline:** never return PASS without exercising on :3100 — code inspection alone does not qualify. HANDOFF destination: PASS → DevSecOps (implementer CC'd); FAIL → implementer (DevSecOps CC'd).
+
+### Mandatory unit-test gate (S10 — Wave 96)
+
+#### Classification: HARD / blocking
+
+S10 is a HARD gate — identical in force to the Leg A build check and the AC-checklist check.
+
+> **NO PASS without a failing-then-passing unit test for every new bug class.**
+
+No advisory path. Missing test → verdict is REVISE with a concrete list of required tests HANDOFF'd back to the implementer.
+
+#### Scope trigger
+
+S10 activates for any wave that:
+- Fixes a bug in logic that operates on a **user-supplied collection** (array, list, set, file list)
+- OR introduces **new logic that iterates, filters, or transforms user-supplied input**
+
+S10 does **not** activate for:
+- Pure UI layout / styling (no collection logic touched)
+- Doc-only changes
+- Config changes with no runtime logic
+
+When S10 is out of scope, QA must state this explicitly in PASS evidence ("S10 not triggered — wave touches no user-supplied collection logic") rather than silently omitting Gate 7.
+
+#### Reproduces-then-prevents invariant
+
+Every S10 test pair MUST satisfy **both** steps. QA records both SHAs in gate evidence.
+
+| Step | Requirement | Evidence |
+|---|---|---|
+| **Reproduce** | Run the test against the pre-fix code path. The test MUST **FAIL**. | \`"reproduced FAIL on <SHA-before-fix>"\` |
+| **Prevent** | The same test passes on the fixed code. | \`"passes on <SHA-after-fix>"\` |
+
+A test that only passes on the fix — without QA-witnessed pre-fix FAIL — does not satisfy S10.
+
+#### Test-pattern exemplars (Vitest)
+
+**Pattern A — Multi-input cardinality**
+
+Bug class: function claims to process N items but only processes 1 (silent discard via \`.find()\` / \`.shift()\` / \`.pop()\`).
+
+\`\`\`typescript
+// FAILS when function uses .find() — returns first match only
+// PASSES when function uses .filter() / .forEach() / .map() — processes all
+it('processes ALL items when input has N>=2 items', () => {
+  const items = [
+    { id: '1', type: 'target' },
+    { id: '2', type: 'target' },
+    { id: '3', type: 'target' },
+  ];
+  const result = processItems(items);
+  expect(result).toHaveLength(3);
+  expect(result.map(r => r.id)).toEqual(
+    expect.arrayContaining(['1', '2', '3']),
+  );
+});
+\`\`\`
+
+Required: input count MUST be N>=2. A single-item test cannot catch the silent-discard class.
+
+**Pattern B — Iterator-discard guard**
+
+Bug class: function uses a discard-on-first iterator (\`.find()\`, \`.findIndex()\`, \`.shift()\`, \`.pop()\`) on a user-supplied collection, so items after the first are never processed.
+
+\`\`\`typescript
+// FAILS when function uses .find() on the input collection
+// PASSES when function iterates the full collection
+it('does not silently discard items after the first match', () => {
+  const files = [
+    { name: 'first.pdf', ready: true },
+    { name: 'second.pdf', ready: true },
+  ];
+  const processed = processFiles(files);
+  expect(processed).toHaveLength(files.length);
+  expect(processed.map(f => f.name)).toContain('second.pdf');
+});
+\`\`\`
+
+Naming rule: the test description must name the discarded item explicitly so a future reader understands the guard.
+
+**Pattern C — Order-preserving**
+
+Bug class: function reorders or deduplicates input in a way the caller did not intend.
+
+\`\`\`typescript
+// FAILS when function sorts, deduplicates, or otherwise reorders
+// PASSES when function preserves input order
+it('preserves input order in output', () => {
+  const items = ['gamma', 'alpha', 'beta'];
+  const result = processItems(items);
+  expect(result).toEqual(['gamma', 'alpha', 'beta']);
+});
+\`\`\`
+
+Critical: use \`toEqual\` (strict order), NOT \`expect.arrayContaining\` (order-agnostic).
+\`arrayContaining\` will NOT catch reordering bugs.
 
 ### Visual & artifact-correctness gates (Wave 94)
 
@@ -288,7 +386,7 @@ gap is itself an S9 violation — the rule is self-reinforcing.
 
 ---
 
-### Definition of Done — 6-gate for visual artifacts
+### Definition of Done — 7-gate for visual artifacts
 
 A PASS on any PR rendering pixels a user sees MUST include this checklist, each gate marked ✓ (one-line
 evidence) or ✗ (reason). Any ✗ makes the verdict FAIL — not advisory.
@@ -302,10 +400,11 @@ Visual Artifact PASS Checklist
 4. Real-path        [ ] exercised on live :3100 via real user-facing route (S2+S7)
 5. Reference-diffed [ ] before/after or design-spec comparison completed (S6)
 6. Deploy-confirmed [ ] /api/health gitSha or buildTime matches PR branch (S7)
+7. S10-gate         [ ] pre-fix FAIL SHA + post-fix PASS SHA, OR "S10 not triggered" (S10)
 ──────────────────────────────────────────────────────────────
 \`\`\`
 
-A PASS on a visual-artifact PR missing any of the 6 gates is structurally invalid. Any peer may challenge;
+A PASS on a visual-artifact PR missing any of the 7 gates is structurally invalid. Any peer may challenge;
 challenger routes to Architect for adjudication.
 
 ### HANDOFF state updates — fragment pattern (Wave 93+)
