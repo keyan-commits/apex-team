@@ -10,7 +10,7 @@
 import { createServer, type Server, type IncomingMessage, type ServerResponse } from "node:http";
 import { parse } from "node:url";
 import next from "next";
-import { stopAllSchedulers } from "./src/lib/tick-scheduler";
+import { stopAllSchedulers, rearmActiveThreads } from "./src/lib/tick-scheduler";
 
 // US-004 / #31: Node's default requestTimeout (5 min) tears down long-running
 // agent turns that dispatch multiple peers sequentially. keepAliveTimeout (5s)
@@ -72,6 +72,7 @@ void app.prepare().then(() => {
   server.listen(PORT, HOST, () => {
     console.log(`> apex-team ready on http://${HOST}:${PORT}`);
     console.log(`> MCP endpoint:  http://${HOST}:${PORT}/mcp`);
+    rearmActiveThreads(); // re-arm threads active before restart (Wave 83, US-037)
   });
 
   const shutdown = () => {
