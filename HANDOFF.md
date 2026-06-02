@@ -2,7 +2,9 @@
 
 ## ⏭️ NOW — 2026-06-02
 
-**#161 — Done-group chip stopPropagation fix. Branch `feature/161-done-chip-stoppropagation` off main HEAD. 2-line change: added `onClick={(ev) => ev.stopPropagation()}` to `chip-strip` span (line 571) and `<a>` chip (line 576) in the Done-group section of `src/app/dashboard/page.tsx`, matching the Now panel pattern. Gate: 221/221 tests, type-check 0, build compiles (#151 grandfathered), boot smoke 200. PR opened, closes #161. Awaiting UX Designer verdict → QA → DevSecOps merge.**
+**#161 — Done-group chip stopPropagation fix. Branch `feature/161-done-chip-stoppropagation`. 2-line change: `onClick={(ev) => ev.stopPropagation()}` on `chip-strip` span + `<a>` chip in Done group. Gate: 221/221 green. UX PASS + Architect PASS. Merging now.**
+
+**Wave 72 (#160) MERGED — STATE EXTERNALIZATION on main (#166).**
 
 ---
 
