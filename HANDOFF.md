@@ -1,6 +1,15 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-02 (Wave 202 D1 — merge-train .gitattributes + F1 fitness test)
+## ⏭️ NOW — 2026-06-02 (Wave 95 — retire claude-opus-4-7 / US-049)
+
+**PR #95 open on `feature/95-remove-opus-47` (base `679f894`).**
+- `src/lib/pricing.ts`: `claude-opus-4-7` removed from `MODEL_PRICING`
+- `src/lib/db.ts`: `migrateRetiredModels()` — idempotent boot-time JSON migration of `thread_config.agent_models`
+- Tests: pricing snapshot updated + 4 new migration tests → 343/343 pass, type-check 0
+- Fragment at `_handoff-pending/95-backend-developer.md` (dogfoods #220 pattern)
+- OOS: UI `KNOWN_MODELS` in AgentPane.tsx + dashboard/page.tsx → filed as separate GH issue
+- Awaiting Architect gate → QA Wave-64 smoke → DevSecOps merge
+
 ## ⏭️ NOW — 2026-06-02 (Wave 94 — QA 9-skill upgrade / US-048)
 
 **Wave 94 PR open: `feature/94-qa-9skill`.** Implements S1–S9 + 6-gate DoD in `src/lib/skills/qa.ts`.

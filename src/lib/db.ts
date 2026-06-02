@@ -144,6 +144,7 @@ function db(): Database.Database {
   try { conn.exec(`ALTER TABLE tick_log ADD COLUMN rescues_emitted INTEGER NOT NULL DEFAULT 0`); } catch {}
   try { conn.exec(`ALTER TABLE tick_log ADD COLUMN stalls_emitted INTEGER NOT NULL DEFAULT 0`); } catch {}
   _db = conn;
+  migrateRetiredModels();
   return conn;
 }
 
@@ -738,6 +739,30 @@ export function getLatestUnackedStallRow(threadId: string): StallEventRow | null
     hourlyTokens: row.hourly_tokens,
     acknowledged: row.acknowledged === 1,
   };
+}
+
+// Idempotent: replaces claude-opus-4-7 with claude-opus-4-8 in every
+// thread_config.agent_models JSON blob. Safe to run twice — second run
+// finds nothing to update. Called from db() at server boot.
+export function migrateRetiredModels(): void {
+  const conn = db();
+  const rows = conn
+    .prepare(`SELECT thread_id, agent_models FROM thread_config`)
+    .all() as Array<{ thread_id: string; agent_models: string }>;
+  const update = conn.prepare(
+    `UPDATE thread_config SET agent_models = ? WHERE thread_id = ?`,
+  );
+  conn.transaction(() => {
+    for (const row of rows) {
+      let models: Record<string, string>;
+      try { models = JSON.parse(row.agent_models) as Record<string, string>; } catch { continue; }
+      let changed = false;
+      for (const role of Object.keys(models)) {
+        if (models[role] === "claude-opus-4-7") { models[role] = "claude-opus-4-8"; changed = true; }
+      }
+      if (changed) update.run(JSON.stringify(models), row.thread_id);
+    }
+  })();
 }
 
 export function markStallEventAcked(threadId: string): void {
