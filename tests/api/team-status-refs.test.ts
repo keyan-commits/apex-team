@@ -6,6 +6,7 @@ vi.mock("@/lib/db", () => ({
   getSpendSummary: vi.fn(() => ({ todayUsd: 0, threadUsd: 0, perRole: [] })),
   getScoutMeta: vi.fn(() => ({ lastRunAt: null, proposalsLast7Days: 0 })),
   getThreadWorkspace: vi.fn(() => null),
+  getLatestUnackedStallRow: vi.fn(() => null),
 }));
 
 const mockDeriveGithubRepo = vi.hoisted(() => vi.fn(() => ({ repo: "acme/app", repoStatus: "ok" as const })));

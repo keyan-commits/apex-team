@@ -24,9 +24,16 @@ vi.mock("@/lib/db", () => ({
   setPipelineState: vi.fn(),
 }));
 
-// Prevent gh CLI from actually running during tests.
+// Prevent gh CLI and git from running during tests.
 vi.mock("node:child_process", () => ({
-  execSync: vi.fn(() => { throw new Error("gh not available in tests"); }),
+  execSync: vi.fn(() => { throw new Error("not available in tests"); }),
+}));
+
+// Stall detector — stub out so tick-scheduler tests stay focused on scheduler logic.
+vi.mock("@/lib/stall-detector", () => ({
+  evaluateStall: vi.fn(() => null),
+  recordStallEvent: vi.fn(),
+  ackStallEvent: vi.fn(),
 }));
 
 vi.mock("@/lib/roles", () => ({
@@ -369,6 +376,7 @@ describe("tick-scheduler", () => {
         expect.any(String),
         expect.any(String),
         0,      // rescuesEmitted (Wave 79)
+        0,      // stallsEmitted (Wave 81)
       );
 
       stopAllSchedulers();

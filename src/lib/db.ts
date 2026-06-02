@@ -75,7 +75,8 @@ function db(): Database.Database {
       no_op               INTEGER NOT NULL DEFAULT 0,
       started_at          TEXT    NOT NULL,
       finished_at         TEXT    NOT NULL,
-      rescues_emitted     INTEGER NOT NULL DEFAULT 0
+      rescues_emitted     INTEGER NOT NULL DEFAULT 0,
+      stalls_emitted      INTEGER NOT NULL DEFAULT 0
     );
     CREATE INDEX IF NOT EXISTS idx_tick_log_thread ON tick_log(thread_id);
 
@@ -125,10 +126,23 @@ function db(): Database.Database {
       UNIQUE(thread_id, key)
     );
     CREATE INDEX IF NOT EXISTS idx_pipeline_state_thread ON pipeline_state(thread_id);
+
+    CREATE TABLE IF NOT EXISTS stall_event (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      thread_id     TEXT    NOT NULL,
+      detected_at   TEXT    NOT NULL,
+      last_merge_at TEXT,
+      stall_age_ms  INTEGER NOT NULL,
+      backlog_count INTEGER NOT NULL,
+      hourly_tokens INTEGER NOT NULL,
+      acknowledged  INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE INDEX IF NOT EXISTS idx_stall_event_thread ON stall_event(thread_id, acknowledged);
   `);
   // Additive migrations — idempotent via try/catch (column-already-exists throws, which is fine)
   try { conn.exec(`ALTER TABLE thread_config ADD COLUMN workspace TEXT`); } catch {}
   try { conn.exec(`ALTER TABLE tick_log ADD COLUMN rescues_emitted INTEGER NOT NULL DEFAULT 0`); } catch {}
+  try { conn.exec(`ALTER TABLE tick_log ADD COLUMN stalls_emitted INTEGER NOT NULL DEFAULT 0`); } catch {}
   _db = conn;
   return conn;
 }
@@ -455,14 +469,15 @@ export function logTick(
   startedAt: string,
   finishedAt: string,
   rescuesEmitted = 0,
+  stallsEmitted = 0,
 ): void {
   db()
     .prepare(
       `INSERT INTO tick_log
-         (thread_id, tick_n, tokens_spent, dispatches_emitted, no_op, started_at, finished_at, rescues_emitted)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+         (thread_id, tick_n, tokens_spent, dispatches_emitted, no_op, started_at, finished_at, rescues_emitted, stalls_emitted)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-    .run(threadId, tickN, tokensSpent, dispatchesEmitted, noOp ? 1 : 0, startedAt, finishedAt, rescuesEmitted);
+    .run(threadId, tickN, tokensSpent, dispatchesEmitted, noOp ? 1 : 0, startedAt, finishedAt, rescuesEmitted, stallsEmitted);
 }
 
 // ─── Wave queue ──────────────────────────────────────────────────────────────
@@ -661,6 +676,74 @@ export function listPipelineState(threadId: string): PipelineStateRow[] {
     .prepare(`SELECT id, thread_id, key, value, updated_at FROM pipeline_state WHERE thread_id = ? ORDER BY key ASC`)
     .all(threadId) as Array<{ id: number; thread_id: string; key: string; value: string | null; updated_at: number }>;
   return rows.map((r) => ({ id: r.id, threadId: r.thread_id, key: r.key, value: r.value, updatedAt: r.updated_at }));
+}
+
+// ─── Stall events ────────────────────────────────────────────────────────────
+
+export interface StallEventRow {
+  id: number;
+  threadId: string;
+  detectedAt: string;
+  lastMergeAt: string | null;
+  stallAgeMs: number;
+  backlogCount: number;
+  hourlyTokens: number;
+  acknowledged: boolean;
+}
+
+export function insertStallEventRow(
+  event: Omit<StallEventRow, "id" | "acknowledged">,
+): void {
+  db()
+    .prepare(
+      `INSERT INTO stall_event
+         (thread_id, detected_at, last_merge_at, stall_age_ms, backlog_count, hourly_tokens)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+    )
+    .run(
+      event.threadId,
+      event.detectedAt,
+      event.lastMergeAt ?? null,
+      event.stallAgeMs,
+      event.backlogCount,
+      event.hourlyTokens,
+    );
+}
+
+export function getLatestUnackedStallRow(threadId: string): StallEventRow | null {
+  const row = db()
+    .prepare(
+      `SELECT id, thread_id, detected_at, last_merge_at, stall_age_ms, backlog_count, hourly_tokens, acknowledged
+       FROM stall_event WHERE thread_id = ? AND acknowledged = 0
+       ORDER BY id DESC LIMIT 1`,
+    )
+    .get(threadId) as {
+    id: number;
+    thread_id: string;
+    detected_at: string;
+    last_merge_at: string | null;
+    stall_age_ms: number;
+    backlog_count: number;
+    hourly_tokens: number;
+    acknowledged: number;
+  } | undefined;
+  if (!row) return null;
+  return {
+    id: row.id,
+    threadId: row.thread_id,
+    detectedAt: row.detected_at,
+    lastMergeAt: row.last_merge_at,
+    stallAgeMs: row.stall_age_ms,
+    backlogCount: row.backlog_count,
+    hourlyTokens: row.hourly_tokens,
+    acknowledged: row.acknowledged === 1,
+  };
+}
+
+export function markStallEventAcked(threadId: string): void {
+  db()
+    .prepare(`UPDATE stall_event SET acknowledged = 1 WHERE thread_id = ? AND acknowledged = 0`)
+    .run(threadId);
 }
 
 // ─── Pending inbox ────────────────────────────────────────────────────────────

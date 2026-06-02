@@ -7,6 +7,7 @@ import {
   getScoutMeta,
   getThreadWorkspace,
 } from "@/lib/db";
+import { getLatestUnackedStall } from "@/lib/stall-detector";
 import { ALL_ROLES } from "@/lib/roles";
 import { deriveGithubRepo } from "@/lib/derive-github-repo";
 import { deriveNowAndQueued } from "@/lib/derive-now-queued";
@@ -215,6 +216,16 @@ export async function GET(req: NextRequest): Promise<NextResponse<TeamStatus>> {
     recent: rawIssues.recent.map((iss) => ({ ...iss, inFlight: inFlightTickets.has(iss.number) })),
   };
 
+  const stallEvent = threadId ? getLatestUnackedStall(threadId) : null;
+  const stall = stallEvent
+    ? {
+        active: true,
+        detectedAt: stallEvent.detectedAt,
+        stallAgeMs: stallEvent.stallAgeMs,
+        backlogCount: stallEvent.backlogCount,
+      }
+    : null;
+
   return NextResponse.json({
     now: nowPanel,
     queued: queuedPanel,
@@ -224,6 +235,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<TeamStatus>> {
     issues,
     scout: { ...getScoutMeta(), nextScheduledAt: null },
     context: contextPanel,
+    stall,
     spend,
   } satisfies TeamStatus);
 }
