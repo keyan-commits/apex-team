@@ -1,6 +1,6 @@
 # Requirements Index
 
-_Auto-maintained by Business Analyst. Last updated: 2026-06-01 (Wave 73 — US-028 accepted: latency reduction; US-027 draft: PO state externalization; US-024/025/026 Wave 69-71 stories; BR-006 confirmed)._
+_Auto-maintained by Business Analyst. Last updated: 2026-06-02 (Wave 88 — US-040 + US-041 entries added; US-028 accepted: latency reduction; US-027 draft: PO state externalization; US-024/025/026 Wave 69-71 stories; BR-006 confirmed)._
 
 | File | Summary | Last Modified |
 |------|---------|---------------|
@@ -32,6 +32,8 @@ _Auto-maintained by Business Analyst. Last updated: 2026-06-01 (Wave 73 — US-0
 | [user-stories/US-026-server-side-po-tick-scheduler.md](user-stories/US-026-server-side-po-tick-scheduler.md) | US-026: Server-side PO tick scheduler — runtime enforcement of US-024 zero-idle invariant; self-rescheduling setTimeout chain (NOT setInterval), adaptive 20-120s, per-thread mutex, NO_OP_THROTTLE K=3, TICK_BUDGET 500K tokens/hr (reuse turn_usage), 3 stop conditions, failure isolation, tick_log audit table, 3 new MCP tools, BA-seed skip; 11 ACs; new files tick-scheduler.ts + thread-lock.ts + api/tick-state; Wave 71; closes #153 | 2026-06-01 |
 | [user-stories/US-027-externalize-po-state.md](user-stories/US-027-externalize-po-state.md) | US-027: Externalize PO state into DB tables — blackboard pattern replacing prompt-context state tracking; 4 new tables (pipeline_state, wave_queue, pr_status, peer_idle), idempotent migrations, 4 new MCP tools, dashboard /api/wave-state endpoint, boot backfill from PO HANDOFF, PO HANDOFF ≤2000 chars soft-warning, schema drift-safe (#140 pattern); 8 ACs; status: **draft** (OQ-S72-001 blocks: auto-update vs MCP-only for peer_idle — Architect review required before accepted); owner BE Dev + UI Dev; Wave 72 | 2026-06-01 |
 | [user-stories/US-028-latency-reduction.md](user-stories/US-028-latency-reduction.md) | US-028: Reduce per-turn latency — prompt-caching prefix reorder (providers.ts static-first, no SDK change) + non-PO history trim (slice(-60)→-10) + MODEL_FIT_POLICY rubric (Haiku gates/triage, Sonnet impl, Opus novel-arch); 7 ACs; p50 ≤15s non-PO / ≤30s PO; benchmark harness (pnpm bench); BR-006 guardrail (≥80% verdict-correctness, caching/trim exempt); cache-hit + latency observability via /api/turn-stats; status: **accepted** (all 3 OQs resolved 2026-06-01); owner BE Dev; Wave 73; closes #159 | 2026-06-01 |
+| [user-stories/US-040-pnpm-build-restore-nextjs-prerender.md](user-stories/US-040-pnpm-build-restore-nextjs-prerender.md) | US-040: Restore `pnpm build` — Next.js 16.2.6 prerender crash fix via `next.config.ts` (`allowDevelopmentBuild:true` + `prerenderEarlyExit:false`); ADR-009 amendment required; `dynamic="force-dynamic"` retained for intent documentation; status: **accepted**; owner BE Dev; Wave 88; closes #151 | 2026-06-02 |
+| [user-stories/US-041-protocol-constants-wiring.md](user-stories/US-041-protocol-constants-wiring.md) | US-041: Wire protocol constants — `REQUIREMENTS_PHASE_PROTOCOL` interpolated into `PHASED_WORKFLOW_DISCIPLINE`; `ORCHESTRATOR_PROTOCOL` + `CONSULTATION_PROTOCOL` added to `PEER_PROTOCOL`; 3 dead imports removed; 5 new tests; additive only; status: **accepted**; owner BE Dev; Wave 88; closes #140 | 2026-06-02 |
 
 ## Voided user stories
 

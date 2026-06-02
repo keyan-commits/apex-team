@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
 import { ROLES, PHASED_WORKFLOW_DISCIPLINE, DEFAULT_ROLE_MODELS } from "@/lib/roles";
+import {
+  REQUIREMENTS_PHASE_PROTOCOL,
+  CONSULTATION_PROTOCOL,
+} from "@/lib/protocols";
 import { skills as qaSkills } from "@/lib/skills/qa";
 import { skills as backendDeveloperSkills } from "@/lib/skills/backend-developer";
 import { skills as uiDeveloperSkills } from "@/lib/skills/ui-developer";
@@ -201,5 +205,41 @@ describe("Wave 64 — mandatory build smoke before PASS (closes #141)", () => {
 
   it("QA skills explain vitest limitation", () => {
     expect(qaSkills).toContain("vitest");
+  });
+});
+
+describe("Wave 88 — US-041 protocol injection wiring (closes #140)", () => {
+  it("PO system prompt contains full REQUIREMENTS_PHASE_PROTOCOL exception table", () => {
+    const po = ROLES["product-owner"].systemPrompt;
+    expect(po).toContain(REQUIREMENTS_PHASE_PROTOCOL);
+    expect(po).toContain("[exception: trivial-ops]");
+    expect(po).toContain("[exception: security-hotfix]");
+    expect(po).toContain("When it applies");
+  });
+
+  it("PHASED_WORKFLOW_DISCIPLINE contains full REQUIREMENTS_PHASE_PROTOCOL exception table", () => {
+    expect(PHASED_WORKFLOW_DISCIPLINE).toContain(REQUIREMENTS_PHASE_PROTOCOL);
+    expect(PHASED_WORKFLOW_DISCIPLINE).toContain("| `[exception: trivial-ops]`");
+    expect(PHASED_WORKFLOW_DISCIPLINE).toContain("| `[exception: security-hotfix]`");
+  });
+
+  it("non-PO role prompts contain full exception table via PHASED_WORKFLOW_DISCIPLINE", () => {
+    for (const role of ["architect", "backend-developer", "qa", "devsecops", "ux-designer", "business-analyst", "ui-developer"] as const) {
+      const prompt = ROLES[role].systemPrompt;
+      expect(prompt, `${role} prompt missing exception table`).toContain("[exception: trivial-ops]");
+      expect(prompt, `${role} prompt missing security-hotfix tag`).toContain("[exception: security-hotfix]");
+    }
+  });
+
+  it("all non-PO role prompts include CONSULTATION_PROTOCOL via PEER_PROTOCOL", () => {
+    const consultationSnippet = "Any role may HANDOFF to BA at any time";
+    for (const role of ["architect", "backend-developer", "qa", "devsecops", "ux-designer", "business-analyst", "ui-developer"] as const) {
+      expect(ROLES[role].systemPrompt, `${role} prompt missing consultation protocol`).toContain(consultationSnippet);
+    }
+  });
+
+  it("CONSULTATION_PROTOCOL constant is non-empty and contains key phrase", () => {
+    expect(CONSULTATION_PROTOCOL).toContain("Any role may HANDOFF to BA at any time");
+    expect(CONSULTATION_PROTOCOL).toContain("Never guess at functional intent");
   });
 });
