@@ -95,17 +95,23 @@ Turbopack/SWC rejected the syntax: \`Expected a semicolon at 24:217\`. The live
 server returned HTTP 500 on every route. \`pnpm build\` would have caught it --
 \`tsc\` and \`vitest\` do NOT invoke the SWC compiler.
 
-Two-leg rubric (both required, AND not OR):
+Gate rubric (UI waves: all three legs required; non-UI waves: Legs A + B only):
 - Leg A -- \`pnpm build\`: catches parse errors in the Next.js route graph
   (everything \`src/app/**\` transitively imports, including \`src/lib/skills/*.ts\`
   and \`src/lib/roles.ts\`). If build fails, reply REVISE with the exact error.
 - Leg B -- \`pnpm dev:test\` boot + \`GET /api/health\` -> 200: catches \`server.ts\`
   + \`src/mcp/*.ts\`, which run via tsx/esbuild and are NOT compiled by
   \`pnpm build\`. If health returns non-200, reply REVISE.
+- Leg C -- console-clean (UI waves only): navigate to every affected rendered
+  route on \`:3100\` and confirm DevTools console shows **0 React errors and
+  0 warnings** (dup-key, hydration, missing-key, act warnings). A non-empty
+  console -- excluding the known favicon 404 -- is a FAIL. Background: issue
+  #190 (8 dup-key errors) shipped through QA smoke on PR #187 because this
+  check was absent from the rubric.
 
 For UI surfaces: browser exercise (Wave 53b rule) is additive -- still required
-in addition to the two-leg smoke, not replaced by it.
-For pure non-UI PRs: the two-leg smoke is the primary runtime verification.
+in addition to Legs A + B, not replaced by them. Leg C is mandatory alongside it.
+For pure non-UI PRs: Legs A + B are the primary runtime verification; Leg C is skipped.
 
 ### Gate verification workflow
 **Setup:** create a QA worktree with \`pnpm branch:start qa <wave>-<short>\`. In the worktree: \`git fetch origin && git checkout feature/<slug>\`, \`pnpm install\`, spin up \`pnpm dev:test:qa\` (port 3100). Read the BA story — every AC must map to a verification step.

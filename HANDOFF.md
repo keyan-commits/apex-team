@@ -1,6 +1,12 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-02 (Wave 84 — backend reliability bundle #185+#181 / US-038+US-039)
+## ⏭️ NOW — 2026-06-02 (Wave 85 — #190 dup-key fix + smoke-gate gap)
+
+**Wave 85 Lane-A (QA) — smoke rubric amended.** Added Leg C (console-clean gate) to `src/lib/skills/qa.ts`. Type-check 0. PR open: `feature/85-smoke-console-gate`. Doc-only — no code surface. Closes smoke-gate gap that let #190 ship.
+
+**Wave 85 Lane-B (UI Dev) — in-flight.** Branch `feature/85-dup-key-fix`, two sites in `page.tsx:701 + 733`. Awaiting UI Dev → UX gate → QA :3100 smoke.
+
+## ⏭️ PREV — 2026-06-02 (Wave 84 — backend reliability bundle #185+#181 / US-038+US-039)
 
 **Wave 84 (#185 + #181 / US-038 + US-039) — MERGED at SHA-pending.** 314/314 tests green, type-check 0. Closes #185, closes #181. Architect PASS + QA PASS gates complete.
 
