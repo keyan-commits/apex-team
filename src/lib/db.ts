@@ -143,6 +143,7 @@ function db(): Database.Database {
   try { conn.exec(`ALTER TABLE thread_config ADD COLUMN workspace TEXT`); } catch {}
   try { conn.exec(`ALTER TABLE tick_log ADD COLUMN rescues_emitted INTEGER NOT NULL DEFAULT 0`); } catch {}
   try { conn.exec(`ALTER TABLE tick_log ADD COLUMN stalls_emitted INTEGER NOT NULL DEFAULT 0`); } catch {}
+  try { conn.exec(`ALTER TABLE agent_state ADD COLUMN last_turn_at INTEGER`); } catch {}
   _db = conn;
   migrateRetiredModels();
   return conn;
@@ -201,10 +202,13 @@ export function listMessages(threadId: string): ChatMessage[] {
   }));
 }
 
+// Time since a role's last completed turn before the role is considered idle.
+export const IDLE_THRESHOLD_MS = 15 * 60 * 1000;
+
 export function getAgentState(threadId: string, role: RoleId): AgentState {
   const row = db()
     .prepare(
-      `SELECT thread_id, role, handoff_doc, updated_at
+      `SELECT thread_id, role, handoff_doc, updated_at, last_turn_at
        FROM agent_state WHERE thread_id = ? AND role = ?`,
     )
     .get(threadId, role) as
@@ -213,16 +217,18 @@ export function getAgentState(threadId: string, role: RoleId): AgentState {
         role: string;
         handoff_doc: string;
         updated_at: number;
+        last_turn_at: number | null;
       }
     | undefined;
   if (!row) {
-    return { threadId, role, handoffDoc: "", updatedAt: 0 };
+    return { threadId, role, handoffDoc: "", updatedAt: 0, lastTurnAt: null };
   }
   return {
     threadId: row.thread_id,
     role: row.role as RoleId,
     handoffDoc: row.handoff_doc,
     updatedAt: row.updated_at,
+    lastTurnAt: row.last_turn_at ?? null,
   };
 }
 
@@ -241,7 +247,21 @@ export function setAgentHandoffDoc(
          updated_at  = excluded.updated_at`,
     )
     .run(threadId, role, handoffDoc, updatedAt);
-  return { threadId, role, handoffDoc, updatedAt };
+  return getAgentState(threadId, role);
+}
+
+// Stamps last_turn_at for (threadId, role) — called on every completed turn,
+// regardless of whether the turn emitted a [[NOTES]] block.
+// Must NOT touch handoff_doc or updated_at — those belong to setAgentHandoffDoc.
+export function stampTurnAt(threadId: string, role: RoleId): void {
+  const now = Date.now();
+  db()
+    .prepare(
+      `INSERT INTO agent_state (thread_id, role, handoff_doc, updated_at, last_turn_at)
+       VALUES (?, ?, '', 0, ?)
+       ON CONFLICT(thread_id, role) DO UPDATE SET last_turn_at = excluded.last_turn_at`,
+    )
+    .run(threadId, role, now);
 }
 
 export function getThreadAgentModels(threadId: string): Record<string, string> | null {
@@ -287,19 +307,21 @@ export function setThreadWorkspace(threadId: string, workspace: string): void {
 export function listAllAgentStates(threadId: string): AgentState[] {
   const rows = db()
     .prepare(
-      `SELECT thread_id, role, handoff_doc, updated_at FROM agent_state WHERE thread_id = ?`,
+      `SELECT thread_id, role, handoff_doc, updated_at, last_turn_at FROM agent_state WHERE thread_id = ?`,
     )
     .all(threadId) as Array<{
     thread_id: string;
     role: string;
     handoff_doc: string;
     updated_at: number;
+    last_turn_at: number | null;
   }>;
   return rows.map((r) => ({
     threadId: r.thread_id,
     role: r.role as RoleId,
     handoffDoc: r.handoff_doc,
     updatedAt: r.updated_at,
+    lastTurnAt: r.last_turn_at ?? null,
   }));
 }
 

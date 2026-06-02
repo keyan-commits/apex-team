@@ -4,7 +4,7 @@
 // every observable event onto the thread's event bus so any subscriber
 // (the dashboard, future watchers) sees it.
 
-import { appendMessage, getThreadAgentModels, setAgentHandoffDoc, setThreadAgentModels, recordTurnUsage } from "@/lib/db";
+import { appendMessage, getThreadAgentModels, setAgentHandoffDoc, setThreadAgentModels, recordTurnUsage, stampTurnAt } from "@/lib/db";
 import { runAgentTurn } from "@/lib/agents";
 import { parseAgentReply } from "@/lib/orchestrator";
 import { publish } from "@/lib/event-bus";
@@ -64,6 +64,7 @@ export async function runTurn(input: RunTurnInput): Promise<RunTurnResult> {
       publish(input.threadId, { type: "delta", role: input.target, text: chunk });
     }
   } catch (err) {
+    try { stampTurnAt(input.threadId, input.target); } catch { /* best-effort */ }
     publish(input.threadId, {
       type: "error",
       role: input.target,
@@ -72,6 +73,7 @@ export async function runTurn(input: RunTurnInput): Promise<RunTurnResult> {
     throw err;
   }
 
+  try { stampTurnAt(input.threadId, input.target); } catch { /* best-effort */ }
   const { visibleText, newHandoffDoc, handoffs, dispatches, agentModels } = parseAgentReply(buffer);
 
   appendMessage(
