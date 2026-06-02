@@ -1,6 +1,10 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-02
+## ⏭️ NOW — 2026-06-02 (ADR-005 + #168 design — PR open, awaiting merge)
+
+**ADR-005 authored + #168 worktree-isolation design complete.** Branch `docs/adr-005-and-168` off `origin/main`. Files changed: `architecture/decisions/ADR-005-po-state-externalization.md` (new), `architecture/INDEX.md` (ADR-005 row added). ADR covers: 4-table design, thread-scoping rationale, `peer_idle` sole-writer invariant (OQ-S72-001), `set_wave_status` W75 deferral, `gh`-poll best-effort pattern, and per-agent worktree isolation design (#168). Implementation of worktree-isolation protocol (`WORKTREE_ISOLATION_PROTOCOL` in `protocols.ts` + LESSONS.md entry) assigned to Wave 75 / standalone wave for BE Dev or DevSecOps. PR opened — docs-only, both gate levels may be skipped per deployment protocol.
+
+---
 
 **Wave 76 (#164) — REGEX TOLERANCE: PO model omits `[[/DISPATCH]]` closer; silent fan-out failure. Branch `feature/76-dispatch-regex-tolerance` from main `3b7b88d`. claude-code hand-implemented (dispatching the fix would itself stall via the bug it fixes — same pattern as Wave 74). Closes #164.**
 

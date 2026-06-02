@@ -1,6 +1,6 @@
 # Architecture Index
 
-Last updated: 2026-06-01
+Last updated: 2026-06-02
 
 ## Decision Records
 
@@ -10,6 +10,7 @@ Last updated: 2026-06-01
 | [ADR-002](decisions/ADR-002-multi-phase-workflow.md) | Mandatory Multi-Phase Workflow | Accepted |
 | [ADR-003](decisions/ADR-003-tick-budget-reuses-turn-usage.md) | Tick Budget Reuses `turn_usage`; No Separate Budget Table | Accepted |
 | [ADR-004](decisions/ADR-004-tick-invokes-run-turn-with-dispatches.md) | Tick MUST Invoke `runTurnWithDispatches`, Not Bare `runTurn` | Accepted |
+| [ADR-005](decisions/ADR-005-po-state-externalization.md) | PO Orchestrator State Externalized into 4 Thread-Scoped DB Tables | Accepted |
 
 ## Pending docs
 
