@@ -12,12 +12,21 @@ const mockLogTick = vi.fn();
 const mockListPendingInbox = vi.fn(() => []);
 const mockGetThreadWorkspace = vi.fn(() => null);
 const mockGetThreadAgentModels = vi.fn(() => null);
+const mockGetPipelineState = vi.fn(() => null);
 vi.mock("@/lib/db", () => ({
   getThreadSpendSince: mockGetThreadSpendSince,
   logTick: mockLogTick,
   listPendingInbox: mockListPendingInbox,
   getThreadWorkspace: mockGetThreadWorkspace,
   getThreadAgentModels: mockGetThreadAgentModels,
+  getPipelineState: mockGetPipelineState,
+  upsertPrStatus: vi.fn(),
+  setPipelineState: vi.fn(),
+}));
+
+// Prevent gh CLI from actually running during tests.
+vi.mock("node:child_process", () => ({
+  execSync: vi.fn(() => { throw new Error("gh not available in tests"); }),
 }));
 
 vi.mock("@/lib/roles", () => ({
@@ -101,6 +110,7 @@ describe("tick-scheduler", () => {
     vi.clearAllMocks();
     mockGetThreadSpendSince.mockReturnValue(0);
     mockListPendingInbox.mockReturnValue([]);
+    mockGetPipelineState.mockReturnValue(null);
     mockRunTurnWithDispatches.mockResolvedValue(makeNoOpResult());
 
     const mod = await import("@/lib/tick-scheduler");
@@ -426,7 +436,7 @@ describe("tick-scheduler", () => {
         expect.objectContaining({
           target: "product-owner",
           userMessage: expect.stringMatching(
-            /\[\[AUTO-CONTINUE tick=1 inflight=\d+ idle-peers=.+ backlog=\?\]\]/,
+            /\[\[AUTO-CONTINUE tick=1 inflight=\d+ idle-peers=.+ backlog=(\?|\d+)\]\]/,
           ),
         }),
       );

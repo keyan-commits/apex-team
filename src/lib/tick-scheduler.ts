@@ -11,6 +11,7 @@
 //   - Budget sourced from turn_usage table (NO separate budget table — #140
 //     drift trap; reuse existing spend tracking per Architect's design).
 
+import { execSync } from "node:child_process";
 import { runTurnWithDispatches } from "@/lib/run-turn-with-dispatches";
 import { withThreadLock } from "@/lib/thread-lock";
 import {
@@ -19,6 +20,10 @@ import {
   listPendingInbox,
   getThreadWorkspace,
   getThreadAgentModels,
+  upsertPrStatus,
+  setPipelineState,
+  getPipelineState,
+  type PrStatusRow,
 } from "@/lib/db";
 import { ALL_ROLES, TEAM_ROLES, DEFAULT_ROLE_MODELS } from "@/lib/roles";
 import type { AgentConfig, RoleId, TeamRoleId } from "@/types";
@@ -132,6 +137,43 @@ function reschedule(state: TickState, delayMs: number): void {
   state.timer = state.deps.schedule(() => void doTick(state), delayMs);
 }
 
+// Best-effort refresh of pr_status + pipeline_state.open_issue_count from gh CLI.
+// Runs in the workspace directory so gh targets the right repo.
+// Swallows all errors so a missing gh or unconfigured repo never kills the tick.
+function refreshGhState(threadId: string, workspace: string): void {
+  try {
+    const prJson = execSync("gh pr list --state all --json number,title,state,headRefOid,body --limit 50", {
+      cwd: workspace,
+      encoding: "utf8",
+      timeout: 10_000,
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    const prs = JSON.parse(prJson) as Array<{ number: number; title: string; state: string; headRefOid: string; body: string }>;
+    for (const pr of prs) {
+      const rawState = pr.state.toLowerCase();
+      const status: PrStatusRow["status"] = rawState === "merged" ? "merged" : rawState === "closed" ? "closed" : "open";
+      const closesMatch = pr.body?.match(/closes?\s+#(\d+)/gi);
+      const closesIssues = closesMatch ? closesMatch.join(", ") : undefined;
+      upsertPrStatus(threadId, pr.number, { title: pr.title, status, sha: pr.headRefOid || undefined, closesIssues });
+    }
+  } catch {
+    // gh not available or workspace not a git repo — skip silently
+  }
+
+  try {
+    const issueJson = execSync("gh issue list --state open --json number --limit 200", {
+      cwd: workspace,
+      encoding: "utf8",
+      timeout: 10_000,
+      stdio: ["ignore", "pipe", "ignore"],
+    });
+    const issues = JSON.parse(issueJson) as Array<{ number: number }>;
+    setPipelineState(threadId, "open_issue_count", String(issues.length));
+  } catch {
+    // best-effort
+  }
+}
+
 function resolveAgents(threadId: string): Record<RoleId, AgentConfig> {
   const stored = (getThreadAgentModels(threadId) ?? {}) as Record<string, string>;
   return Object.fromEntries(
@@ -176,6 +218,11 @@ async function doTick(state: TickState): Promise<void> {
     );
   }
 
+  const workspace = getThreadWorkspace(state.threadId) ?? process.cwd();
+
+  // Refresh pr_status + open_issue_count before building the tick message.
+  refreshGhState(state.threadId, workspace);
+
   // Snapshot peer inbox state for the AUTO-CONTINUE message.
   const inboxCounts = TEAM_ROLES.map((r) => ({
     role: r as TeamRoleId,
@@ -184,14 +231,15 @@ async function doTick(state: TickState): Promise<void> {
   const inflightCount = inboxCounts.filter((p) => p.count > 0).length;
   const idlePeers = inboxCounts.filter((p) => p.count === 0).map((p) => p.role);
 
-  const message = `[[AUTO-CONTINUE tick=${state.tickN} inflight=${inflightCount} idle-peers=${idlePeers.join(",") || "none"} backlog=?]]`;
+  const openIssueRow = getPipelineState(state.threadId, "open_issue_count");
+  const backlog = openIssueRow?.value ?? "?";
+  const message = `[[AUTO-CONTINUE tick=${state.tickN} inflight=${inflightCount} idle-peers=${idlePeers.join(",") || "none"} backlog=${backlog}]]`;
 
   let dispatchesEmitted = 0;
   let tickOutputTokens = 0;
   let failed = false;
 
   try {
-    const workspace = getThreadWorkspace(state.threadId) ?? process.cwd();
     const agents = resolveAgents(state.threadId);
 
     const result = await withThreadLock(state.threadId, () =>

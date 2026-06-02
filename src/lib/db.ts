@@ -77,6 +77,53 @@ function db(): Database.Database {
       finished_at         TEXT    NOT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_tick_log_thread ON tick_log(thread_id);
+
+    CREATE TABLE IF NOT EXISTS wave_queue (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      thread_id  TEXT    NOT NULL,
+      wave       INTEGER NOT NULL,
+      title      TEXT,
+      status     TEXT    NOT NULL CHECK(status IN ('queued','active','blocked','done')) DEFAULT 'queued',
+      priority   INTEGER NOT NULL DEFAULT 0,
+      notes      TEXT,
+      updated_at INTEGER NOT NULL,
+      UNIQUE(thread_id, wave)
+    );
+    CREATE INDEX IF NOT EXISTS idx_wave_queue_thread ON wave_queue(thread_id, priority);
+
+    CREATE TABLE IF NOT EXISTS pr_status (
+      id            INTEGER PRIMARY KEY AUTOINCREMENT,
+      thread_id     TEXT    NOT NULL,
+      pr_number     INTEGER NOT NULL,
+      title         TEXT,
+      status        TEXT    NOT NULL CHECK(status IN ('open','merged','closed','conflicting')) DEFAULT 'open',
+      sha           TEXT,
+      closes_issues TEXT,
+      updated_at    INTEGER NOT NULL,
+      UNIQUE(thread_id, pr_number)
+    );
+    CREATE INDEX IF NOT EXISTS idx_pr_status_thread ON pr_status(thread_id);
+
+    CREATE TABLE IF NOT EXISTS peer_idle (
+      id             INTEGER PRIMARY KEY AUTOINCREMENT,
+      thread_id      TEXT    NOT NULL,
+      role           TEXT    NOT NULL,
+      is_idle        INTEGER NOT NULL CHECK(is_idle IN (0,1)) DEFAULT 1,
+      last_active_at INTEGER,
+      updated_at     INTEGER NOT NULL,
+      UNIQUE(thread_id, role)
+    );
+    CREATE INDEX IF NOT EXISTS idx_peer_idle_thread ON peer_idle(thread_id);
+
+    CREATE TABLE IF NOT EXISTS pipeline_state (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      thread_id  TEXT    NOT NULL,
+      key        TEXT    NOT NULL,
+      value      TEXT,
+      updated_at INTEGER NOT NULL,
+      UNIQUE(thread_id, key)
+    );
+    CREATE INDEX IF NOT EXISTS idx_pipeline_state_thread ON pipeline_state(thread_id);
   `);
   // Additive migrations — idempotent via try/catch (column-already-exists throws, which is fine)
   try { conn.exec(`ALTER TABLE thread_config ADD COLUMN workspace TEXT`); } catch {}
@@ -414,6 +461,206 @@ export function logTick(
     )
     .run(threadId, tickN, tokensSpent, dispatchesEmitted, noOp ? 1 : 0, startedAt, finishedAt);
 }
+
+// ─── Wave queue ──────────────────────────────────────────────────────────────
+
+export interface WaveQueueRow {
+  id: number;
+  threadId: string;
+  wave: number;
+  title: string | null;
+  status: "queued" | "active" | "blocked" | "done";
+  priority: number;
+  notes: string | null;
+  updatedAt: number;
+}
+
+export function upsertWaveQueue(
+  threadId: string,
+  wave: number,
+  fields: { title?: string; status?: WaveQueueRow["status"]; priority?: number; notes?: string },
+): void {
+  const updatedAt = Date.now();
+  db()
+    .prepare(
+      `INSERT INTO wave_queue (thread_id, wave, title, status, priority, notes, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(thread_id, wave) DO UPDATE SET
+         title      = COALESCE(excluded.title, title),
+         status     = COALESCE(excluded.status, status),
+         priority   = COALESCE(excluded.priority, priority),
+         notes      = COALESCE(excluded.notes, notes),
+         updated_at = excluded.updated_at`,
+    )
+    .run(threadId, wave, fields.title ?? null, fields.status ?? "queued", fields.priority ?? 0, fields.notes ?? null, updatedAt);
+}
+
+export function listWaveQueue(threadId: string): WaveQueueRow[] {
+  const rows = db()
+    .prepare(`SELECT id, thread_id, wave, title, status, priority, notes, updated_at FROM wave_queue WHERE thread_id = ? ORDER BY priority ASC, wave ASC`)
+    .all(threadId) as Array<{ id: number; thread_id: string; wave: number; title: string | null; status: string; priority: number; notes: string | null; updated_at: number }>;
+  return rows.map((r) => ({
+    id: r.id,
+    threadId: r.thread_id,
+    wave: r.wave,
+    title: r.title,
+    status: r.status as WaveQueueRow["status"],
+    priority: r.priority,
+    notes: r.notes,
+    updatedAt: r.updated_at,
+  }));
+}
+
+// ─── PR status ───────────────────────────────────────────────────────────────
+
+export interface PrStatusRow {
+  id: number;
+  threadId: string;
+  prNumber: number;
+  title: string | null;
+  status: "open" | "merged" | "closed" | "conflicting";
+  sha: string | null;
+  closesIssues: string | null;
+  updatedAt: number;
+}
+
+export function upsertPrStatus(
+  threadId: string,
+  prNumber: number,
+  fields: { title?: string; status?: PrStatusRow["status"]; sha?: string; closesIssues?: string },
+): void {
+  const updatedAt = Date.now();
+  db()
+    .prepare(
+      `INSERT INTO pr_status (thread_id, pr_number, title, status, sha, closes_issues, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(thread_id, pr_number) DO UPDATE SET
+         title         = COALESCE(excluded.title, title),
+         status        = COALESCE(excluded.status, status),
+         sha           = COALESCE(excluded.sha, sha),
+         closes_issues = COALESCE(excluded.closes_issues, closes_issues),
+         updated_at    = excluded.updated_at`,
+    )
+    .run(threadId, prNumber, fields.title ?? null, fields.status ?? "open", fields.sha ?? null, fields.closesIssues ?? null, updatedAt);
+}
+
+export function listPrStatus(threadId: string, includeAll = false): PrStatusRow[] {
+  const rows = db()
+    .prepare(
+      includeAll
+        ? `SELECT id, thread_id, pr_number, title, status, sha, closes_issues, updated_at FROM pr_status WHERE thread_id = ? ORDER BY pr_number DESC`
+        : `SELECT id, thread_id, pr_number, title, status, sha, closes_issues, updated_at FROM pr_status WHERE thread_id = ? AND status = 'open' ORDER BY pr_number DESC`,
+    )
+    .all(threadId) as Array<{ id: number; thread_id: string; pr_number: number; title: string | null; status: string; sha: string | null; closes_issues: string | null; updated_at: number }>;
+  return rows.map((r) => ({
+    id: r.id,
+    threadId: r.thread_id,
+    prNumber: r.pr_number,
+    title: r.title,
+    status: r.status as PrStatusRow["status"],
+    sha: r.sha,
+    closesIssues: r.closes_issues,
+    updatedAt: r.updated_at,
+  }));
+}
+
+// ─── Peer idle ───────────────────────────────────────────────────────────────
+
+export interface PeerIdleRow {
+  id: number;
+  threadId: string;
+  role: string;
+  isIdle: boolean;
+  lastActiveAt: number | null;
+  updatedAt: number;
+}
+
+export function markRoleActive(threadId: string, role: string): void {
+  const now = Date.now();
+  db()
+    .prepare(
+      `INSERT INTO peer_idle (thread_id, role, is_idle, last_active_at, updated_at)
+       VALUES (?, ?, 0, ?, ?)
+       ON CONFLICT(thread_id, role) DO UPDATE SET
+         is_idle        = 0,
+         last_active_at = excluded.last_active_at,
+         updated_at     = excluded.updated_at`,
+    )
+    .run(threadId, role, now, now);
+}
+
+export function markRoleIdle(threadId: string, role: string): void {
+  const now = Date.now();
+  db()
+    .prepare(
+      `INSERT INTO peer_idle (thread_id, role, is_idle, last_active_at, updated_at)
+       VALUES (?, ?, 1, NULL, ?)
+       ON CONFLICT(thread_id, role) DO UPDATE SET
+         is_idle    = 1,
+         updated_at = excluded.updated_at`,
+    )
+    .run(threadId, role, now);
+}
+
+export function listPeerIdle(threadId: string, role?: string): PeerIdleRow[] {
+  const rows = (
+    role
+      ? db()
+          .prepare(`SELECT id, thread_id, role, is_idle, last_active_at, updated_at FROM peer_idle WHERE thread_id = ? AND role = ?`)
+          .all(threadId, role)
+      : db()
+          .prepare(`SELECT id, thread_id, role, is_idle, last_active_at, updated_at FROM peer_idle WHERE thread_id = ? ORDER BY role ASC`)
+          .all(threadId)
+  ) as Array<{ id: number; thread_id: string; role: string; is_idle: number; last_active_at: number | null; updated_at: number }>;
+  return rows.map((r) => ({
+    id: r.id,
+    threadId: r.thread_id,
+    role: r.role,
+    isIdle: r.is_idle === 1,
+    lastActiveAt: r.last_active_at,
+    updatedAt: r.updated_at,
+  }));
+}
+
+// ─── Pipeline state (KV) ─────────────────────────────────────────────────────
+
+export interface PipelineStateRow {
+  id: number;
+  threadId: string;
+  key: string;
+  value: string | null;
+  updatedAt: number;
+}
+
+export function setPipelineState(threadId: string, key: string, value: string): void {
+  const now = Date.now();
+  db()
+    .prepare(
+      `INSERT INTO pipeline_state (thread_id, key, value, updated_at)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(thread_id, key) DO UPDATE SET
+         value      = excluded.value,
+         updated_at = excluded.updated_at`,
+    )
+    .run(threadId, key, value, now);
+}
+
+export function getPipelineState(threadId: string, key: string): PipelineStateRow | null {
+  const row = db()
+    .prepare(`SELECT id, thread_id, key, value, updated_at FROM pipeline_state WHERE thread_id = ? AND key = ?`)
+    .get(threadId, key) as { id: number; thread_id: string; key: string; value: string | null; updated_at: number } | undefined;
+  if (!row) return null;
+  return { id: row.id, threadId: row.thread_id, key: row.key, value: row.value, updatedAt: row.updated_at };
+}
+
+export function listPipelineState(threadId: string): PipelineStateRow[] {
+  const rows = db()
+    .prepare(`SELECT id, thread_id, key, value, updated_at FROM pipeline_state WHERE thread_id = ? ORDER BY key ASC`)
+    .all(threadId) as Array<{ id: number; thread_id: string; key: string; value: string | null; updated_at: number }>;
+  return rows.map((r) => ({ id: r.id, threadId: r.thread_id, key: r.key, value: r.value, updatedAt: r.updated_at }));
+}
+
+// ─── Pending inbox ────────────────────────────────────────────────────────────
 
 // Pending inbox = handoff messages addressed to this role that arrived
 // after the role's most recent agent turn. We use the message id

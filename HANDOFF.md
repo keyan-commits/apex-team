@@ -2,6 +2,24 @@
 
 ## ⏭️ NOW — 2026-06-02
 
+**Wave 72 (#160) — STATE EXTERNALIZATION: 4 DB tables + CRUD helpers + peer_idle auto-update + gh PR/issue refresh + 4 read-only MCP tools + `/api/wave-state` endpoint. Branch `feature/72-state-externalization` off main `a7e1f5b`. Closes #160.**
+
+**8 files changed:**
+- `src/lib/db.ts` — 4 tables (`wave_queue`, `pr_status`, `peer_idle`, `pipeline_state`) + 10 CRUD helpers + type exports. All `UNIQUE(thread_id, key)` composite, `updated_at INTEGER` epoch-ms.
+- `src/lib/run-turn-with-dispatches.ts` — `peer_idle` auto-update: `markRoleActive` before each turn, `markRoleIdle` in finally (both primary target and dispatched peers). OQ-S72-001: driver is sole writer.
+- `src/lib/tick-scheduler.ts` — `refreshGhState()` runs `gh pr list` + `gh issue list` before each tick (best-effort, full try/catch). Tick message now reads `open_issue_count` from `pipeline_state` for `backlog=<n>` (#160 fix).
+- `src/mcp/tools.ts` — 4 new read-only tools: `get_pipeline_state`, `get_wave_queue`, `get_pr_status_summary`, `get_peer_idle_state`.
+- `src/app/api/wave-state/route.ts` — NEW: `GET /api/wave-state?thread_id=<id>` → `{pipeline_state, wave_queue, pr_status, peer_idle}` arrays (AC8).
+- `tests/lib/db-wave-state.test.ts` — NEW: 18 tests covering all 4 table CRUD operations.
+- `tests/lib/run-turn-with-dispatches.test.ts` — 4 new peer_idle tests.
+- `tests/lib/tick-scheduler.test.ts` — added `node:child_process` mock + new db exports, updated backlog regex.
+
+**Gate: type-check 0, 240/240 green, lint 0 errors (18 pre-existing warnings), build compiles (#151 grandfathered), `/api/wave-state` smoke 200 on running server. Awaiting Architect non-UI gate → QA → DevSecOps merge.**
+
+**Note:** US-027 AC2 (PO HANDOFF wave-queue section replaced) and AC5 (boot backfill) deferred to Wave 75 per dispatch scope. `set_wave_status` tool omitted per dispatch's "read-only MCP" constraint (vs US AC3) — flagging to Architect.
+
+---
+
 **Wave 76 (#164) — REGEX TOLERANCE: PO model omits `[[/DISPATCH]]` closer; silent fan-out failure. Branch `feature/76-dispatch-regex-tolerance` from main `3b7b88d`. claude-code hand-implemented (dispatching the fix would itself stall via the bug it fixes — same pattern as Wave 74). Closes #164.**
 
 **Symptom:** even after Wave 74 (`runTurnWithDispatches` for `talk_to_role`) + `git pull` to load Wave 74 code, peer turns still never fired. DB inspection of PO's last 4 replies: `[[DISPATCH:` opener present, `[[/DISPATCH]]` closer pos = 0. Regex requires the closer → `dispatches.length === 0` → silent fan-out short-circuit. PO model has drifted from emitting closers since ~msg 1125 (around Wave 65 / Wave 71 era).

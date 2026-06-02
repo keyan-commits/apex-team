@@ -26,6 +26,10 @@ import {
   getThreadSpendSince,
   listMessages,
   listPendingInbox,
+  listPipelineState,
+  listWaveQueue,
+  listPrStatus,
+  listPeerIdle,
   setThreadWorkspace,
 } from "@/lib/db";
 import { ALL_ROLES, DEFAULT_ROLE_MODELS, TEAM_ROLES, isTeamRole } from "@/lib/roles";
@@ -453,6 +457,72 @@ export function registerApexTeamTools(server: McpServer): void {
         ? { ...state, budgetSpent, budgetCap, budgetPct }
         : { active: false, budgetSpent, budgetCap, budgetPct };
       return { content: [{ type: "text", text: JSON.stringify(payload, null, 2) }] };
+    },
+  );
+
+  // -- get_pipeline_state: read thread KV state (current wave, phase, open_issue_count, etc.)
+  server.registerTool(
+    "get_pipeline_state",
+    {
+      title: "Get pipeline state",
+      description: "Return all pipeline_state KV rows for a thread (current wave, phase, open_issue_count, blockers, etc.). Read-only.",
+      inputSchema: {
+        thread_id: z.string().min(1),
+      },
+    },
+    async ({ thread_id }) => {
+      const rows = listPipelineState(thread_id);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ data: rows }, null, 2) }] };
+    },
+  );
+
+  // -- get_wave_queue: read thread wave queue ordered by priority
+  server.registerTool(
+    "get_wave_queue",
+    {
+      title: "Get wave queue",
+      description: "Return wave_queue rows for a thread, ordered by priority. Read-only.",
+      inputSchema: {
+        thread_id: z.string().min(1),
+      },
+    },
+    async ({ thread_id }) => {
+      const rows = listWaveQueue(thread_id);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ data: rows }, null, 2) }] };
+    },
+  );
+
+  // -- get_pr_status_summary: read open (or all) PR rows for a thread
+  server.registerTool(
+    "get_pr_status_summary",
+    {
+      title: "Get PR status summary",
+      description: "Return pr_status rows for a thread. Defaults to open PRs only; pass include_closed=true for all. Read-only.",
+      inputSchema: {
+        thread_id: z.string().min(1),
+        include_closed: z.boolean().optional().describe("If true, return all PRs regardless of status. Defaults to open only."),
+      },
+    },
+    async ({ thread_id, include_closed }) => {
+      const rows = listPrStatus(thread_id, include_closed ?? false);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ data: rows }, null, 2) }] };
+    },
+  );
+
+  // -- get_peer_idle_state: read idle/active state for one or all peers
+  server.registerTool(
+    "get_peer_idle_state",
+    {
+      title: "Get peer idle state",
+      description: "Return peer_idle rows for a thread. Pass role to filter to a single peer. Read-only — the turn driver owns all writes.",
+      inputSchema: {
+        thread_id: z.string().min(1),
+        role: RoleEnum.optional().describe("Filter to a specific role. Omit for all peers."),
+      },
+    },
+    async ({ thread_id, role }) => {
+      const rows = listPeerIdle(thread_id, role);
+      return { content: [{ type: "text" as const, text: JSON.stringify({ data: rows }, null, 2) }] };
     },
   );
 
