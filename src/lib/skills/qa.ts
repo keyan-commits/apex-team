@@ -130,4 +130,181 @@ For pure non-UI PRs: Legs A + B are the primary runtime verification; Leg C is s
 - Severity (block / warn / nit) and suggested fix if obvious
 
 **Gate discipline:** never return PASS without exercising on :3100 — code inspection alone does not qualify. HANDOFF destination: PASS → DevSecOps (implementer CC'd); FAIL → implementer (DevSecOps CC'd).
+
+### Visual & artifact-correctness gates (Wave 94)
+
+Post-mortem on issue #217: 6 of 9 bugs that shipped under a green QA gate trace to S1/S2 — the artifact
+was never rendered and looked at, and was validated on a stand-in rather than the real production path. The
+remaining 3 trace to soft advisory checks without adversarial pressure. S1 and S2 are HARD/blocking; S3–S9
+are mandatory checks whose violation escalates to block per their FAIL conditions.
+
+#### S1 — render-and-look *(HARD — blocking gate)*
+
+**Rule:** Render the actual UI artifact in a browser and visually inspect it before issuing any verdict.
+
+**How-to:**
+1. Spin up the \`:3100\` test instance (\`pnpm dev:test\`).
+2. Navigate to the exact route affected by the change.
+3. Visually inspect: layout, overflow, element placement, no blank/garbled output.
+4. Via Playwright MCP: \`browser_navigate\` → \`browser_snapshot\` → exercise the affordance. If the transport
+   is unavailable, record the gap explicitly under S9 — do not silently skip.
+
+**Catches:** Layout breaks, overflow, blank/garbled render, wrong component shown, elements invisible or
+misplaced, states that only surface in a real browser.
+
+**FAIL when:** Any verdict on a visual surface issued without a confirmed rendered view of the exact artifact
+under test. No advisory path exists — a visual change not rendered and inspected by QA cannot PASS.
+
+#### S2 — real-artifact-e2e *(HARD — blocking gate)*
+
+**Rule:** Exercise the real path, data, and artifact a user hits — not a fixture, mock, or sample.
+
+**How-to:**
+1. Identify the exact user-facing route (check BA's story, not just the PR diff).
+2. On the \`:3100\` test instance, navigate with real or realistic data (not seed fixtures crafted to pass).
+3. Trigger the interaction the AC describes: submit a form, expand a panel, trigger a callback.
+4. Confirm \`GET /api/health\` \`gitSha\`/\`buildTime\` matches the branch HEAD (S7 gate also applies).
+
+**Catches:** Stub-passes-real-fails, happy-path fixtures masking prod breakage, route mis-registration, MCP
+mount failures only visible on a live server.
+
+**FAIL when:** PASS based on synthetic/sample input when a real path exists. \`pnpm build\` exit 0 alone is
+not sufficient — the real route must be exercised on a live instance. S2 is independent of S1; both must pass.
+
+#### S3 — scaled / adversarial inputs
+
+**Rule:** Test at realistic scale + hostile inputs — not just the 1-row demo.
+
+**How-to:**
+- Long strings: fill every text field to its maximum-length constraint.
+- Empty/null values: omit required fields, submit empty forms.
+- Concurrent requests: two clients mutating the same record simultaneously.
+- Volume: test with 0, 1, and a large N at pagination boundaries.
+- Injection smoke: a \`<script>\` tag in a text field, a \`' OR 1=1--\` in a search input.
+
+**Catches:** Truncation bugs, layout overflow at volume, race conditions, crash-on-empty, XSS in unsanitized
+output, N+1 queries under load.
+
+**FAIL when:** Only minimal/sample-size inputs exercised → advisory flag. No adversarial attempt at all → REVISE.
+
+#### S4 — positional + semantic correctness
+
+**Rule:** Verify each value is in the right place AND means the right thing — not just that it is present.
+
+**How-to:**
+- Compare element placement against the design spec or BA's story.
+- Check ARIA roles, heading levels, label associations via \`browser_snapshot\` accessibility tree.
+- For tabular data: confirm column headers match values in the same column, not an adjacent one.
+- For form fields: confirm each label is associated (\`for\`/\`aria-labelledby\`) to the correct input.
+
+**Catches:** Right number wrong column, correct-looking but mislabeled data, screen-reader regressions,
+misplaced components.
+
+**FAIL when:** Element presence checked but position or semantic role/label not asserted. Value in the wrong
+column is block-severity regardless of its presence on screen.
+
+#### S5 — WCAG contrast gate
+
+**Rule:** Every text/background pair in the changed surface must meet WCAG 2.1 AA (≥4.5:1 normal text, ≥3:1 large text).
+
+**How-to:**
+1. Identify all new or changed color pairs in the diff.
+2. Measure using the browser DevTools accessibility panel on the actual rendered output (not design-file
+   approximations, which may differ from computed styles).
+3. For icon-only affordances: confirm an \`aria-label\` or tooltip is present.
+4. Record each pair and its measured ratio in the PASS evidence.
+
+**Catches:** White-on-gold (#213, 2.0:1 real-world failure), low-opacity text, colored-on-colored backgrounds,
+icon-only affordances missing accessible labels.
+
+**FAIL when:** Any color pair ships without a measured ratio meeting AA. Untested combination → REVISE.
+
+#### S6 — side-by-side reference diff
+
+**Rule:** Compare the before and after state of every changed visual surface against the authoritative reference.
+
+**How-to:**
+1. Capture a before-state snapshot (prior PR evidence, or the current \`:3000\` instance before deploying).
+2. Render the after state on \`:3100\`.
+3. Compare against the spec in \`design/\` (if one exists) OR against the before-state capture.
+4. Document any drift — even expected drift, to confirm it is intentional.
+
+**Catches:** Unintended visual regressions, spec drift, missing states that were present before (a lost loading
+spinner, a button that dropped its disabled state).
+
+**FAIL when:** Only after-state evidence without a before/spec comparison → advisory flag. No comparison
+attempt for a visual change at all → REVISE.
+
+#### S7 — validated ≠ deployed verify
+
+**Rule:** \`pnpm build\` exit 0 is validated, not deployed. Confirm the live \`:3100\` instance reflects the branch before running any check.
+
+**How-to:**
+1. After spinning up \`pnpm dev:test\`, run \`curl http://localhost:3100/api/health\` and confirm \`gitSha\` or
+   \`buildTime\` matches the PR branch HEAD.
+2. Hard-reload the browser page before any interactive check.
+3. If the SHA does not match, restart the instance in the correct worktree before proceeding.
+4. For \`server.ts\` / MCP changes: confirm \`mcpMounted: true\` in the health response.
+
+**Catches:** "Passed locally, prod still old" failures, cached-route delivery, supervisor-reload lag,
+testing a prior commit's behavior while the PR's code sits unexecuted.
+
+**FAIL when:** PASS verdict claims deploy-correct without confirming the health endpoint SHA/buildTime. Any
+check run before this verification → S7 FAIL on that check.
+
+#### S8 — question intent (don't match the sample)
+
+**Rule:** Verify the implementation satisfies the *intent* of the AC — not that it resembles the given sample.
+
+**How-to:**
+1. Re-read the original user story and AC before running any test.
+2. Ask: "Does this verify what the user needs, or what the implementer built?"
+3. Generalize at least one assertion beyond the literal sample: if the AC shows one example row, test a
+   different row too.
+4. If the AC's intent is unclear, HANDOFF to BA before guessing — do not self-spec.
+
+**Catches:** Implementer satisfies the letter of the AC while missing the functional goal; sample-matching
+without real validation; "works for the example in the story" does not mean "works in general."
+
+**FAIL when:** QA PASS based solely on output resembling the example, with no independent functional test →
+REVISE on re-audit. Intent mismatch found after PASS → challenge routes to Architect for adjudication.
+
+#### S9 — no silent green
+
+**Rule:** A skipped, unavailable, or errored gate is explicitly reported as such — never treated as an implicit pass.
+
+**How-to:**
+- In the PASS evidence block, enumerate every applicable S-gate with a brief result line.
+- If a gate is inapplicable (e.g., S1 for a pure backend change), state why.
+- If a gate could not be completed (e.g., Playwright MCP transport dropped), record it as an explicit gap
+  with severity (warn or block) — not as a silent omission.
+- A PASS evidence block with missing gate rows is incomplete — any peer may challenge it.
+
+**Catches:** Transport-dropped Playwright read as green, skipped suite masked by a passing subset, incomplete
+checks hidden behind a green summary line.
+
+**FAIL when:** Any gate skipped, errored, or unrunnable is reported as PASS or simply omitted. Hiding an S9
+gap is itself an S9 violation — the rule is self-reinforcing.
+
+---
+
+### Definition of Done — 6-gate for visual artifacts
+
+A PASS on any PR rendering pixels a user sees MUST include this checklist, each gate marked ✓ (one-line
+evidence) or ✗ (reason). Any ✗ makes the verdict FAIL — not advisory.
+
+\`\`\`
+Visual Artifact PASS Checklist
+──────────────────────────────────────────────────────────────
+1. Rendered         [ ] artifact rendered in a real browser (S1)
+2. Looked-at        [ ] visual inspection performed (S1)
+3. AA-contrast      [ ] all color pairs ≥ AA measured on rendered output (S5)
+4. Real-path        [ ] exercised on live :3100 via real user-facing route (S2+S7)
+5. Reference-diffed [ ] before/after or design-spec comparison completed (S6)
+6. Deploy-confirmed [ ] /api/health gitSha or buildTime matches PR branch (S7)
+──────────────────────────────────────────────────────────────
+\`\`\`
+
+A PASS on a visual-artifact PR missing any of the 6 gates is structurally invalid. Any peer may challenge;
+challenger routes to Architect for adjudication.
 `;
