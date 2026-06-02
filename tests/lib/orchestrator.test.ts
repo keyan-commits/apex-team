@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { parseAgentReply } from "@/lib/orchestrator";
 
 describe("parseAgentReply — inline-mention guard (Bug B fix)", () => {
@@ -199,5 +199,93 @@ describe("parseAgentReply — all 7 team role-ids parse in DISPATCH_RE and HANDO
     const result = parseAgentReply(raw);
     expect(result.dispatches).toHaveLength(1);
     expect(result.dispatches[0].to).toBe("qa");
+  });
+});
+
+// ── #164 — Tolerant fallback for unclosed DISPATCH/HANDOFF blocks ─────────
+
+describe("parseAgentReply — tolerant fallback for missing [[/DISPATCH]] / [[/HANDOFF]]", () => {
+  beforeEach(() => {
+    // Suppress the expected console.warn from auto-termination diagnostics.
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+  });
+
+  it("DISPATCH without closer terminated at next DISPATCH opener", () => {
+    const raw =
+      "Decision.\n[[DISPATCH: backend-developer]]\nWork A line 1.\nWork A line 2.\n[[DISPATCH: qa]]\nWork B line 1.\n[[/DISPATCH]]";
+    const result = parseAgentReply(raw);
+    expect(result.dispatches).toHaveLength(2);
+    expect(result.dispatches[0].to).toBe("qa");
+    expect(result.dispatches[0].message).toBe("Work B line 1.");
+    expect(result.dispatches[1].to).toBe("backend-developer");
+    expect(result.dispatches[1].message).toContain("Work A line 1.");
+    expect(result.dispatches[1].message).toContain("Work A line 2.");
+  });
+
+  it("DISPATCH without closer terminated at [[HANDOFF: ...]] opener", () => {
+    const raw =
+      "[[DISPATCH: backend-developer]]\nDo this work.\n[[HANDOFF: architect]]\nHandoff body.\n[[/HANDOFF]]";
+    const result = parseAgentReply(raw);
+    expect(result.dispatches).toHaveLength(1);
+    expect(result.dispatches[0].to).toBe("backend-developer");
+    expect(result.dispatches[0].message).toBe("Do this work.");
+    expect(result.handoffs).toHaveLength(1);
+    expect(result.handoffs[0].to).toBe("architect");
+  });
+
+  it("DISPATCH without closer terminated at --- horizontal rule", () => {
+    const raw =
+      "[[DISPATCH: qa]]\nRun the tests.\nReport status.\n---\n\nNext section of prose.";
+    const result = parseAgentReply(raw);
+    expect(result.dispatches).toHaveLength(1);
+    expect(result.dispatches[0].to).toBe("qa");
+    expect(result.dispatches[0].message).toContain("Run the tests.");
+    expect(result.dispatches[0].message).toContain("Report status.");
+    expect(result.visibleText).toContain("Next section of prose.");
+  });
+
+  it("DISPATCH without closer at end-of-text captures everything to EOF", () => {
+    const raw = "[[DISPATCH: ui-developer]]\nFix the bug.\nWrite a test.";
+    const result = parseAgentReply(raw);
+    expect(result.dispatches).toHaveLength(1);
+    expect(result.dispatches[0].to).toBe("ui-developer");
+    expect(result.dispatches[0].message).toBe("Fix the bug.\nWrite a test.");
+  });
+
+  it("DISPATCH with model: clause parses correctly without closer", () => {
+    const raw =
+      "[[DISPATCH: backend-developer model:claude-sonnet-4-6]]\nDo the work.\n---";
+    const result = parseAgentReply(raw);
+    expect(result.dispatches).toHaveLength(1);
+    expect(result.dispatches[0].to).toBe("backend-developer");
+    expect(result.dispatches[0].model).toBe("claude-sonnet-4-6");
+    expect(result.dispatches[0].message).toBe("Do the work.");
+  });
+
+  it("HANDOFF without closer terminated at next opener", () => {
+    const raw =
+      "[[HANDOFF: architect]]\nReview please.\n[[HANDOFF: qa]]\nThen test.\n[[/HANDOFF]]";
+    const result = parseAgentReply(raw);
+    expect(result.handoffs).toHaveLength(2);
+    expect(result.handoffs.map((h) => h.to).sort()).toEqual(["architect", "qa"]);
+  });
+
+  it("properly-closed blocks STILL preferred (strict regex first)", () => {
+    const raw =
+      "[[DISPATCH: qa]]\nProperly closed.\n[[/DISPATCH]]\n[[DISPATCH: architect]]\nUnclosed body.";
+    const result = parseAgentReply(raw);
+    expect(result.dispatches).toHaveLength(2);
+    const qa = result.dispatches.find((d) => d.to === "qa");
+    const arch = result.dispatches.find((d) => d.to === "architect");
+    expect(qa?.message).toBe("Properly closed.");
+    expect(arch?.message).toBe("Unclosed body.");
+  });
+
+  it("warns on auto-termination so drift is observable", () => {
+    const warnSpy = vi.spyOn(console, "warn");
+    parseAgentReply("[[DISPATCH: qa]]\nNo closer.");
+    expect(warnSpy).toHaveBeenCalledWith(
+      expect.stringContaining("missing [[/DISPATCH]] closer"),
+    );
   });
 });

@@ -2,6 +2,18 @@
 
 ## ⏭️ NOW — 2026-06-02
 
+**Wave 76 (#164) — REGEX TOLERANCE: PO model omits `[[/DISPATCH]]` closer; silent fan-out failure. Branch `feature/76-dispatch-regex-tolerance` from main `3b7b88d`. claude-code hand-implemented (dispatching the fix would itself stall via the bug it fixes — same pattern as Wave 74). Closes #164.**
+
+**Symptom:** even after Wave 74 (`runTurnWithDispatches` for `talk_to_role`) + `git pull` to load Wave 74 code, peer turns still never fired. DB inspection of PO's last 4 replies: `[[DISPATCH:` opener present, `[[/DISPATCH]]` closer pos = 0. Regex requires the closer → `dispatches.length === 0` → silent fan-out short-circuit. PO model has drifted from emitting closers since ~msg 1125 (around Wave 65 / Wave 71 era).
+
+**Two code changes + 7 new tests:**
+- `src/lib/orchestrator.ts`:
+  - Strict regex body restricted via `(?:(?!\n\[\[DISPATCH:|\n\[\[HANDOFF:)[\s\S])*?` so a strict match cannot greedily span across other openers.
+  - Tolerant fallback pass after the strict pass — unclosed `[[DISPATCH:` / `[[HANDOFF:` openers are now captured; body terminates at first of: next opener, `---` horizontal rule line, or end-of-text. `console.warn` so drift is observable.
+- `tests/lib/orchestrator.test.ts` — 7 new tests: terminated at next DISPATCH/HANDOFF/--- /EOF, model: clause without closer, properly-closed still preferred, warn-on-auto-termination.
+
+**Gate:** type-check 0 errors, 221/221 tests, lint 0 errors. Pristine worktree at `/tmp/wave76-fix`.
+
 **Wave 74 (#156) — META-FIX: dispatch fan-out on the relay path. Branch `feature/74-meta-dispatch-fanout` from main `316e411`. PO hand-implemented (dispatching the fix would itself stall via the bug it fixes). Closes #156.**
 
 Root cause of the recurring 8-hour stalls: only `talk_to_product_owner` fanned PO dispatches out to peers. `talk_to_role` used bare `runTurn`, so a PO-targeted relay/direct call recorded the DISPATCH rows but never fired the peers — invisible stall. (Tick + web chat + po-dispatch already used `runTurnWithDispatches` since Wave 71; `talk_to_role` was the last gap.)
