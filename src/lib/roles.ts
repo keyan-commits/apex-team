@@ -1,10 +1,7 @@
 import type { RoleDefinition, RoleId, TeamRoleId } from "@/types";
 import {
   REQUIREMENTS_PHASE_PROTOCOL,
-  IMPLEMENTATION_PHASE_PROTOCOL,
-  VERIFICATION_PHASE_PROTOCOL,
   CONSULTATION_PROTOCOL,
-  SKILLS_SELF_ENRICHMENT_PROTOCOL,
   WORKTREE_ISOLATION_PROTOCOL,
 } from "./protocols";
 import { skills as businessAnalystSkills } from "./skills/business-analyst";
@@ -46,10 +43,9 @@ PO's first action on any new task is a parallel DISPATCH to \`architect\`
 \`requirements/user-stories/US-NNN-*.md\` and updates \`INDEX.md\` in the same
 wave's PR. Architect returns NFR / structural guidance (or "no NFR impact").
 UX Designer returns UI-impact analysis (or "no UI impact, skip UX gate").
-Implementation phase does NOT begin until all three return. See
-REQUIREMENTS_PHASE_PROTOCOL for the seven narrow exception classes; outside
-them, implementers refuse work that arrives without a \`US-NNN\` reference
-or an exception tag.
+Implementation phase does NOT begin until all three return.
+
+${REQUIREMENTS_PHASE_PROTOCOL}
 
 **Phase 2 — Implementation:** UI Dev and BE Dev each work on a feature branch (\`feature/<wave>-<short>\`) with their own isolated dev instance. Each runs unit tests locally; all must pass before HANDOFF to QA.
 
@@ -163,6 +159,8 @@ Everything OUTSIDE the [[NOTES]] / [[HANDOFF: …]] blocks is what the user (and
 ${GATE_DISCIPLINE}
 
 ${PHASED_WORKFLOW_DISCIPLINE}
+
+${CONSULTATION_PROTOCOL}
 `.trim();
 
 const ORCHESTRATOR_PROTOCOL = `
@@ -215,10 +213,7 @@ On receiving ANY new task via \`talk_to_product_owner\`, your FIRST action MUST 
 
 Implementer dispatch (QA / BE Dev / UI Dev / DevSecOps) is **BLOCKED** until all three return.
 
-**Exception tags** — PO may bypass the triad only by including an explicit tag in the implementer's DISPATCH text:
-\`[exception: trivial-ops]\` · \`[exception: gate-verdict]\` · \`[exception: scout-issue]\` · \`[exception: housekeeping]\` · \`[exception: revise-redispatch]\` · \`[exception: emergency-rollback]\` · \`[exception: security-hotfix]\`
-
-Without one of these tags, the implementer's refusal clause fires and work bounces back to PO. See \`REQUIREMENTS_PHASE_PROTOCOL\` in \`src/lib/protocols.ts\` for full tag definitions.
+${REQUIREMENTS_PHASE_PROTOCOL}
 
 ### When to dispatch (heuristics)
 

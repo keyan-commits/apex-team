@@ -10,6 +10,8 @@
 
 **ADR note:** ADR-009 specifies `dynamic="force-dynamic"` as the fix but it doesn't work in Next.js 16.2.6 — actual fix is in `next.config.ts`. Architect should amend ADR-009 or create ADR-010 documenting the real fix.
 
+**Commit 2 of 2 (US-041):** `src/lib/roles.ts` + 5 new tests. Dead imports removed. Protocol constants wired.
+
 ---
 
 ## ⏭️ PREV — 2026-06-02 (Wave 85 — #190 dup-key fix + smoke-gate gap)
