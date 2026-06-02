@@ -23,7 +23,6 @@ const WORKSPACE_KEY = "apex-team:workspace";
 const POLL_INTERVAL_KEY = "apex-poll-interval";
 const KNOWN_MODELS = [
   "claude-opus-4-8",
-  "claude-opus-4-7",
   "claude-sonnet-4-6",
   "claude-haiku-4-5-20251001",
   "gemini-2.5-flash",
