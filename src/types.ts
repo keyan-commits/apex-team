@@ -109,7 +109,10 @@ export interface TeamStatus {
     selfImprovement: number;
     skillProposal: number;
     mcpProposal: number;
-    recent: Array<{ number: number; title: string; label: string; url: string; inFlight?: boolean }>;
+    total: number;
+    byLabel: Array<{ name: string; color: string; count: number }>;
+    unlabeled: number;
+    recent: Array<{ number: number; title: string; label: string; labelColor?: string; url: string; inFlight?: boolean; queued?: boolean }>;
     repo: string | null;
     repoStatus: RepoStatus;
   };

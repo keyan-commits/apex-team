@@ -1,34 +1,25 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-02 (Wave 82 — stall banner + settings — PR pending / US-036)
+## ⏭️ NOW — 2026-06-02 (Wave 66 / #144 — adaptive Issues panel — PR open, awaiting UX gate)
 
-**Wave 82 (#178 / US-036) — PR #184 OPEN.** Branch `feature/82-stall-banner-v2` off `33df463`. 296/296 tests green, type-check 0. Closes #178. Awaiting UX Designer design gate → QA `:3100` → DevSecOps merge.
+**Wave 66 / #144 — `feature/66-adaptive-issues-panel` at `/tmp/ui-144`. Rebased onto main `74fa210`. PR #187 OPEN — awaiting UX Designer gate → QA → DevSecOps merge.**
 
-**5 files changed / created:**
-- `src/components/StallBanner.tsx` (new): `<aside role="alert">` full-width 48px red banner; slide-down/up 200ms; respects `prefers-reduced-motion`; session-only dismiss.
-- `src/components/StallSettingsDrawer.tsx` (new): 300px right-slide drawer with 3 toggles (banner/notification/audio); Escape + outside-click dismiss; exports `StallSettings` type + `DEFAULT_STALL_SETTINGS` + `STALL_SETTINGS_KEY`.
-- `src/components/OrchestratorBar.tsx`: added `onSettingsOpen?` + `settingsOpen?` props; gear icon (⚙) button rendered when prop present.
-- `src/app/dashboard/page.tsx`: stall settings state (loaded from localStorage `apex-team:stall-settings`); dismissed state (session-only); prevStall ref for onset detection; notification + audio fire on false→true; toast for permission grant/deny; renders StallBanner above OrchestratorBar; StallSettingsDrawer.
-- `tests/ui/StallBanner.test.ts` (new, 27 tests): AC1 banner visibility, AC2 onset detection, AC3 permission flow + disabled state, AC4 defaults + persistence.
+**Changes (4 files):**
+- `src/app/globals.css` — `--accent-error/critical/warning/info/surface-1` severity tokens
+- `src/types.ts` — `TeamStatus.issues` extended: `total`, `byLabel[]`, `unlabeled`; `recent[]` adds `labelColor?`, `queued?`
+- `src/app/api/team-status/route.ts` — dynamic `byLabel`, `total`, `unlabeled` from gh data; enriches `recent` with `queued` flag; label colors from `gh issue list` JSON
+- `src/app/dashboard/page.tsx` — peer-idle row from `/api/wave-state`; dynamic `byLabel` grid (severity colors); unlabeled→medium/--accent-info; `(total>0)` empty-state fix; queued wave pill; `WaveStateData` type + `waveState` state + co-fetch in team-status poll
+
+**Conflict resolved:** page.tsx had Wave 82 `playStallAlertSound()` vs Wave 66 `WaveStateData`/`severityStyle`/`contrastText` — disjoint, kept both.
 
 **Gate:** UX Designer design-correctness critique → QA `:3100` smoke → DevSecOps merge.
 
 ---
 
-## ⏭️ NOW — 2026-06-02 (Wave 83 — server-start re-arm sweep #179 / US-037)
+## PREV — 2026-06-02 (Wave 82 + 83 — stall banner + re-arm sweep — both MERGED at `74fa210`)
 
-**Wave 83 (#179 / US-037) — MERGED at `01d6364`.** Closes #179.
-
-**Wave 83 (#179 / US-037) — READY FOR ARCHITECT GATE.** Branch `feature/83-rearm-sweep` off `origin/main` `33df463` (post-#180). 277/277 green, type-check 0. Closes #179.
-
-**3 files changed + 1 new test file:**
-
-- **`src/lib/db.ts`:** `listActiveTickThreads(windowMs: number): string[]` — distinct `thread_id` from `tick_log` WHERE `finished_at >= cutoff` (ISO-string comparison). Added under new `// ─── Tick log queries ─────` section.
-- **`src/lib/tick-scheduler.ts`:** `export const REARM_WINDOW_MS = 7_200_000` + `export function rearmActiveThreads(opts?)`. Imports `listActiveTickThreads` from db. Loops `listActiveTickThreads(REARM_WINDOW_MS)` calling `armScheduler` per thread; logs INFO if >0 re-armed. Idempotency free via existing `if (schedulers.has) return` guard.
-- **`server.ts`:** `rearmActiveThreads()` called inside `server.listen(PORT, HOST, () => {...})` callback after ready log lines.
-- **`tests/lib/rearm-sweep.test.ts`** (new, 8 tests): REARM_WINDOW_MS=7200000, 0-threads no-crash, 1-qualifying armed, idempotency, outside-window skipped, MAX_THREADS warn+skip, AC4 INFO log fires, AC4 no log when 0.
-
-**Gate:** Architect non-UI review → QA `:3100` smoke → DevSecOps merge.
+**Wave 82 (#178 / US-036) — MERGED at `74fa210`.** PR #184. Stall banner + settings drawer.
+**Wave 83 (#179 / US-037) — MERGED at `01d6364`.** PR #183. Server-start re-arm sweep.
 
 ---
 

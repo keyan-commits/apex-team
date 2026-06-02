@@ -24,6 +24,9 @@ function fetchIssues(repo: string): TeamStatus["issues"] {
     selfImprovement: 0,
     skillProposal: 0,
     mcpProposal: 0,
+    total: 0,
+    byLabel: [],
+    unlabeled: 0,
     recent: [],
     repo,
     repoStatus: "ok",
@@ -36,22 +39,46 @@ function fetchIssues(repo: string): TeamStatus["issues"] {
     const items = JSON.parse(raw) as Array<{
       number: number;
       title: string;
-      labels: Array<{ name: string }>;
+      labels: Array<{ name: string; color: string }>;
       url: string;
     }>;
-    let si = 0,
-      sp = 0,
-      mp = 0;
+    let si = 0, sp = 0, mp = 0, unlabeled = 0;
+    const labelCounts = new Map<string, { color: string; count: number }>();
     const recent: TeamStatus["issues"]["recent"] = [];
     for (const it of items) {
-      const names = it.labels.map((l) => l.name);
+      const lbls = it.labels;
+      const names = lbls.map((l) => l.name);
       if (names.includes("self-improvement")) si++;
       if (names.includes("skill-proposal")) sp++;
       if (names.includes("mcp-proposal")) mp++;
-      if (recent.length < 10)
-        recent.push({ number: it.number, title: it.title, label: names[0] ?? "", url: it.url });
+      if (lbls.length === 0) {
+        unlabeled++;
+      } else {
+        for (const l of lbls) {
+          const prev = labelCounts.get(l.name);
+          if (prev) { prev.count++; }
+          else { labelCounts.set(l.name, { color: l.color ? `#${l.color}` : "", count: 1 }); }
+        }
+      }
+      if (recent.length < 10) {
+        const firstLabel = lbls[0];
+        recent.push({
+          number: it.number,
+          title: it.title,
+          label: firstLabel?.name ?? "",
+          labelColor: firstLabel?.color ? `#${firstLabel.color}` : undefined,
+          url: it.url,
+        });
+      }
     }
-    const data: TeamStatus["issues"] = { selfImprovement: si, skillProposal: sp, mcpProposal: mp, recent, repo, repoStatus: "ok" };
+    const byLabel = [...labelCounts.entries()]
+      .map(([name, v]) => ({ name, color: v.color, count: v.count }))
+      .sort((a, b) => b.count - a.count);
+    const data: TeamStatus["issues"] = {
+      selfImprovement: si, skillProposal: sp, mcpProposal: mp,
+      total: items.length, byLabel, unlabeled,
+      recent, repo, repoStatus: "ok",
+    };
     _issueCache.set(repo, { data, at: Date.now() });
     return data;
   } catch {
@@ -63,6 +90,9 @@ const _noIssues: TeamStatus["issues"] = {
   selfImprovement: 0,
   skillProposal: 0,
   mcpProposal: 0,
+  total: 0,
+  byLabel: [],
+  unlabeled: 0,
   recent: [],
   repo: null,
   repoStatus: "bad-path",
@@ -209,11 +239,18 @@ export async function GET(req: NextRequest): Promise<NextResponse<TeamStatus>> {
     ? fetchIssues(repo)
     : { ..._noIssues, repoStatus };
 
-  // Enrich issues.recent with inFlight flag — done at route layer, not in the cache
+  // Enrich issues.recent with inFlight + queued flags — done at route layer, not in the cache
   const inFlightTickets = new Set(nowPanel.flatMap((n) => n.tickets ?? []));
+  const queuedTickets = new Set(
+    queuedPanel.map((q) => extractRefs(lastTrigger.get(q.toRole)?.content ?? "").tickets).flat(),
+  );
   const issues: TeamStatus["issues"] = {
     ...rawIssues,
-    recent: rawIssues.recent.map((iss) => ({ ...iss, inFlight: inFlightTickets.has(iss.number) })),
+    recent: rawIssues.recent.map((iss) => ({
+      ...iss,
+      inFlight: inFlightTickets.has(iss.number),
+      queued: !inFlightTickets.has(iss.number) && queuedTickets.has(iss.number),
+    })),
   };
 
   const stallEvent = threadId ? getLatestUnackedStall(threadId) : null;

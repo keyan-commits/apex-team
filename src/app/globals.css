@@ -23,6 +23,13 @@
   /* Semantic status colours — not role-specific */
   --status-green: #4caf50;
   --status-amber: #ff9800;
+
+  /* Severity scale — issues panel */
+  --accent-error: #ef4444;
+  --accent-critical: #f97316;
+  --accent-warning: #fbbf24;
+  --accent-info: #0ea5e9;
+  --surface-1: #0d1117;
 }
 
 html,
