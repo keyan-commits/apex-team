@@ -908,7 +908,7 @@ export default function DashboardPage() {
         </section>
 
         {/* ISSUES */}
-        <section className="panel issue-panel" aria-labelledby="issues-panel-title">
+        <aside className="panel issue-panel" aria-labelledby="issues-panel-title">
           <div className="panel-hd-wrap">
             <h2 className="panel-h" id="issues-panel-title">
               Issues
@@ -1099,7 +1099,7 @@ export default function DashboardPage() {
               )}
             </div>
           )}
-        </section>
+        </aside>
 
         {/* SCOUT */}
         <section className="panel">
@@ -1206,11 +1206,20 @@ export default function DashboardPage() {
           display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 12px; padding: 12px;
         }
+        @media (min-width: 1280px) {
+          .grid {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) 280px;
+            align-items: start;
+          }
+        }
         .panel {
           background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
           padding: 12px;
         }
         .span2 { grid-column: span 2; }
+        @media (min-width: 1280px) {
+          .span2:not(.issue-panel) { grid-column: span 1; }
+        }
 
         .panel-hd-wrap { position: relative; margin-bottom: 10px; }
         .panel-h {
@@ -1264,6 +1273,12 @@ export default function DashboardPage() {
         .row.draggable { cursor: grab; }
         .row.row-dragging { opacity: 0.4; }
         .row.row-flash { background: var(--surface-2); transition: background 200ms ease-out; }
+        @media (prefers-reduced-motion: reduce) {
+          .row.row-flash {
+            transition: none;
+            background: var(--surface-0);
+          }
+        }
         .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
         .drag-handle { color: var(--text-dim); font-size: 14px; cursor: grab; }
         .state-pill {
@@ -1336,7 +1351,23 @@ export default function DashboardPage() {
         .spend-bar { height: 100%; background: var(--accent-po); border-radius: 99px; min-width: 2px; }
         .spend-cost { font-family: ui-monospace, monospace; font-size: 11px; min-width: 56px; text-align: right; }
 
-        .issue-panel { position: relative; }
+        .issue-panel {
+          position: relative;
+        }
+        @media (min-width: 1280px) {
+          .issue-panel {
+            grid-column: 4;
+            grid-row: 2 / span 2;
+            max-height: calc(100vh - 280px);
+            overflow-y: auto;
+          }
+        }
+        @media (max-width: 1279px) and (min-width: 768px) {
+          .issue-panel {
+            grid-column: 1 / -1;
+            order: -1;
+          }
+        }
         .issue-panel-inner { display: flex; flex-direction: column; gap: 10px; }
         .issue-repo-attr {
           font-size: 11px; color: var(--text-dim); margin: 0;
@@ -1381,6 +1412,9 @@ export default function DashboardPage() {
         .issue-order-btn:hover:not(.active) { background: var(--surface-2); color: var(--text); }
         .issue-order-btn:focus-visible { outline: 2px solid var(--accent-ui, var(--accent-po)); outline-offset: -2px; }
         .issue-order-btn.active { background: var(--accent-ui, var(--accent-po)); color: white; }
+        @media (prefers-reduced-motion: reduce) {
+          .issue-order-btn { transition: none; }
+        }
         .pinned-divider { height: 1px; background: var(--surface-2); opacity: 0.3; margin: 2px 0; }
         .recent-row {
           display: flex; align-items: center; gap: 6px;
@@ -1478,6 +1512,16 @@ export default function DashboardPage() {
           animation: spin 0.6s linear infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) {
+          .spinner {
+            animation: rm-spinner-pulse 1.5s ease-in-out infinite;
+            border-top-color: currentColor;
+          }
+          @keyframes rm-spinner-pulse {
+            0%, 100% { opacity: 1; }
+            50%       { opacity: 0.3; }
+          }
+        }
 
         .dispatch-success {
           font-size: 12px; padding: 8px 10px; border-radius: 6px;
