@@ -27,14 +27,13 @@ interface PersistedState {
   cachedResult: CiHealthData | null;
   cachedAt: number;
   lastSuccessAt: number | null;
-  lastAlertedHeadSha: string | null;
 }
 
 function loadState(): PersistedState {
   try {
     return JSON.parse(fs.readFileSync(STATE_FILE, "utf8")) as PersistedState;
   } catch {
-    return { cachedResult: null, cachedAt: 0, lastSuccessAt: null, lastAlertedHeadSha: null };
+    return { cachedResult: null, cachedAt: 0, lastSuccessAt: null };
   }
 }
 
@@ -133,15 +132,8 @@ export async function GET(): Promise<Response> {
     const runs = JSON.parse(stdout) as GhRunRecord[];
     const detected = detectCiHealth(runs, THRESHOLD);
 
-    // Idempotent alert tracking: reset lastAlertedHeadSha on recovery/healthy
-    // so a future distinct red SHA triggers a new alert cycle.
-    let { lastAlertedHeadSha } = stored;
-    if (detected.state === "healthy" || detected.state === "recovering") {
-      lastAlertedHeadSha = null;
-    }
-
     const result: CiHealthData = { ...detected, staleSince: null };
-    saveState({ cachedResult: result, cachedAt: now, lastSuccessAt: now, lastAlertedHeadSha });
+    saveState({ cachedResult: result, cachedAt: now, lastSuccessAt: now });
     return Response.json(result);
   } catch {
     // GH timed out or process error → unknown; surface last-known-good timestamp
