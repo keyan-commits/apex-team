@@ -908,7 +908,7 @@ export default function DashboardPage() {
         </section>
 
         {/* ISSUES */}
-        <section className="panel issue-panel" aria-labelledby="issues-panel-title">
+        <aside className="panel issue-panel" aria-labelledby="issues-panel-title">
           <div className="panel-hd-wrap">
             <h2 className="panel-h" id="issues-panel-title">
               Issues
@@ -1099,7 +1099,7 @@ export default function DashboardPage() {
               )}
             </div>
           )}
-        </section>
+        </aside>
 
         {/* SCOUT */}
         <section className="panel">
