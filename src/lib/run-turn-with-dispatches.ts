@@ -46,11 +46,16 @@ export async function runTurnWithDispatches(
     result.dispatches.map(async (d) => {
       try { markRoleActive(input.threadId, d.to); } catch {}
       try {
+        // Apply per-dispatch model: override transiently — MODEL_FIT_POLICY:
+        // omit model: → DEFAULT_ROLE_MODELS. Never write this to thread_config.
+        const peerAgents = d.model
+          ? { ...input.agents, [d.to]: { ...input.agents[d.to], model: d.model } }
+          : input.agents;
         const peerResult = await runTurn({
           threadId: input.threadId,
           target: d.to,
           userMessage: d.message,
-          agents: input.agents,
+          agents: peerAgents,
           workspace: input.workspace,
           signal: input.signal,
         });
