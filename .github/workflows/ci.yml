@@ -80,7 +80,7 @@ jobs:
           mkdir -p "$TEST_REPO"
           cp "$ATTRIBUTES_SRC" "$TEST_REPO/.gitattributes"
           cd "$TEST_REPO"
-          git init -q
+          git -c init.defaultBranch=main init -q
           git config user.email "ci@apex-team.local"
           git config user.name "CI"
 
@@ -111,7 +111,7 @@ jobs:
           git commit -q -m "wave 90"
 
           # 5. Branch "theirs" prepends Wave 89 NOW block
-          git checkout -q master 2>/dev/null || git checkout -q main
+          git checkout -q main
           git checkout -q -b theirs
           cat > HANDOFF.md <<'EOF'
           ## ⏭️ NOW — 2026-06-02 (Wave 89)
