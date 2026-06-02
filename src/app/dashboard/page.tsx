@@ -718,7 +718,7 @@ export default function DashboardPage() {
               {groupedDone.map((group, idx) => {
                 if (group.rows.length === 1) {
                   const e = group.rows[0];
-                  const doneKey = `${group.key}-${idx}`;
+                  const groupKey = `${group.key}-${idx}`;
                   const allChips = [
                     ...group.waves.map((w) => ({ kind: "wave" as const, label: `Wave ${w}`, key: `w${w}` })),
                     ...group.tickets.map((t) => ({ kind: "ticket" as const, num: t, key: `t${t}` })),
@@ -726,17 +726,16 @@ export default function DashboardPage() {
                   const visibleChips = allChips.slice(0, 4);
                   const chipOverflow = allChips.length - visibleChips.length;
                   return (
-                    <div key={doneKey} className="row-item">
+                    <div key={groupKey} className="row-item">
                       <div
                         className="row expandable-row"
-                        onClick={() => toggleRow("done", doneKey)}
-                        onKeyDown={rowKd("done", doneKey)}
+                        onClick={() => toggleRow("done", groupKey)}
+                        onKeyDown={rowKd("done", groupKey)}
                         tabIndex={0}
                         role="button"
-                        aria-expanded={expandedRow["done"] === doneKey}
+                        aria-expanded={expandedRow["done"] === groupKey}
                       >
-                        <span className="row-chevron" aria-hidden="true">{expandedRow["done"] === doneKey ? "▾" : "▸"}</span>
-                        {roleBadge(e.role)}
+                        <span className="row-chevron" aria-hidden="true">{expandedRow["done"] === groupKey ? "▾" : "▸"}</span>
                         {allChips.length > 0 && (
                           <span className="chip-strip" onClick={(ev) => ev.stopPropagation()}>
                             {visibleChips.map((chip) =>
@@ -749,10 +748,11 @@ export default function DashboardPage() {
                             {chipOverflow > 0 && <span className="now-chip now-chip-overflow">+{chipOverflow}</span>}
                           </span>
                         )}
+                        {roleBadge(e.role)}
                         <span className="task-text">{e.taskSummary}</span>
                         <span className="dim">{fmtTime(e.completedAt)}</span>
                       </div>
-                      {expandedRow["done"] === doneKey && (
+                      {expandedRow["done"] === groupKey && (
                         <div className="row-detail">
                           <p className="row-detail-text">{e.taskSummary}</p>
                           {e.commitSha && <div className="row-detail-meta">commit: <code>{e.commitSha}</code></div>}
