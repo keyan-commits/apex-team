@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-06-02 (Wave 66 / #144 — adaptive Issues panel — PR open, awaiting UX gate)
 
-**Wave 66 / #144 — `feature/66-adaptive-issues-panel` at `/tmp/ui-144`. Rebased onto main `74fa210`. PR open — awaiting UX Designer gate → QA → DevSecOps merge.**
+**Wave 66 / #144 — `feature/66-adaptive-issues-panel` at `/tmp/ui-144`. Rebased onto main `74fa210`. PR #187 OPEN — awaiting UX Designer gate → QA → DevSecOps merge.**
 
 **Changes (4 files):**
 - `src/app/globals.css` — `--accent-error/critical/warning/info/surface-1` severity tokens
