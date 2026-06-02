@@ -12,6 +12,7 @@ import {
   type StallSettings,
 } from "@/components/StallSettingsDrawer";
 import { ActiveWaveCard } from "@/components/ActiveWaveCard";
+import { groupDone, type DoneGroup } from "@/lib/group-done";
 
 const ROLE_ACCENT: Record<string, string> = {
   "product-owner": "po", "business-analyst": "ba", architect: "arch",
@@ -302,51 +303,7 @@ export default function DashboardPage() {
     return [...data.queued].sort((a, b) => (pos.get(a.id) ?? 9999) - (pos.get(b.id) ?? 9999));
   }, [data?.queued, savedOrder]);
 
-  interface DoneGroup {
-    key: string;
-    rows: TeamStatus["done"];
-    waves: number[];
-    tickets: number[];
-    roles: string[];
-    latestAt: number;
-  }
-
-  const groupedDone = useMemo<DoneGroup[]>(() => {
-    if (!data?.done) return [];
-    const groups: DoneGroup[] = [];
-    for (const row of data.done) {
-      const rowWaves = row.waves ?? [];
-      const rowTickets = row.tickets ?? [];
-      const last = groups[groups.length - 1];
-      const sharesWave = last && rowWaves.length > 0 && last.waves.some((w) => rowWaves.includes(w));
-      const sharesTicketFallback =
-        last && last.waves.length === 0 && rowWaves.length === 0 &&
-        rowTickets.length > 0 && last.tickets.some((t) => rowTickets.includes(t));
-      const rowHour = Math.floor(row.completedAt / 3_600_000);
-      const lastHour = last ? Math.floor(last.latestAt / 3_600_000) : -1;
-      const sharesHour = !!last &&
-        last.waves.length === 0 && last.tickets.length === 0 &&
-        rowWaves.length === 0 && rowTickets.length === 0 &&
-        rowHour === lastHour;
-      if (sharesWave || sharesTicketFallback || sharesHour) {
-        last.rows.push(row);
-        for (const w of rowWaves) if (!last.waves.includes(w)) last.waves.push(w);
-        for (const t of rowTickets) if (!last.tickets.includes(t)) last.tickets.push(t);
-        if (!last.roles.includes(row.role)) last.roles.push(row.role);
-        if (row.completedAt > last.latestAt) last.latestAt = row.completedAt;
-      } else {
-        const sortedW = [...rowWaves].sort((a, b) => a - b);
-        const sortedT = [...rowTickets].sort((a, b) => a - b);
-        const key = sortedW.length > 0
-          ? `wave-${sortedW[0]}`
-          : sortedT.length > 0
-          ? `tickets-${sortedT.join("-")}`
-          : `hour-${rowHour}`;
-        groups.push({ key, rows: [row], waves: [...rowWaves], tickets: [...rowTickets], roles: [row.role], latestAt: row.completedAt });
-      }
-    }
-    return groups;
-  }, [data?.done]);
+  const groupedDone = useMemo<DoneGroup[]>(() => groupDone(data?.done ?? []), [data?.done]);
 
   const handleDrop = (toIdx: number) => {
     if (dragFrom === null || dragFrom === toIdx) return;
@@ -868,6 +825,25 @@ export default function DashboardPage() {
                               >
                                 <span className="row-chevron" aria-hidden="true">{isItemExpanded ? "▾" : "▸"}</span>
                                 {roleBadge(e.role)}
+                                {(() => {
+                                  const rowWaves = e.waves ?? [];
+                                  if (rowWaves.length > 0) {
+                                    return (
+                                      <span className="chip-strip" onClick={(ev) => ev.stopPropagation()}>
+                                        {rowWaves.map((w) => (
+                                          <span key={w} className="now-chip now-chip-wave">Wave {w}</span>
+                                        ))}
+                                      </span>
+                                    );
+                                  }
+                                  return (
+                                    <span className="chip-strip" onClick={(ev) => ev.stopPropagation()}>
+                                      <span className="now-chip now-chip-hour">
+                                        {new Date(group.latestAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false })}
+                                      </span>
+                                    </span>
+                                  );
+                                })()}
                                 <span className="task-text">{e.taskSummary}</span>
                                 <span className="dim">{fmtTime(e.completedAt)}</span>
                               </div>
