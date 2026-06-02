@@ -15,7 +15,6 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-import { runTurn } from "@/lib/run-turn";
 import { runTurnWithDispatches } from "@/lib/run-turn-with-dispatches";
 import { withThreadLock } from "@/lib/thread-lock";
 import { armScheduler, pauseScheduler, resumeScheduler, getSchedulerState } from "@/lib/tick-scheduler";
@@ -79,8 +78,8 @@ export function registerApexTeamTools(server: McpServer): void {
         "Roles: product-owner (PO orchestrates the team), business-analyst (owns requirements/), " +
         "architect (NFRs + code review), ui-developer, backend-developer, qa (testing), devsecops. " +
         "Returns the agent's visible reply AND any DISPATCH/HANDOFF blocks they emitted as structured data. " +
-        "DISPATCH blocks are NOT auto-triggered within a single MCP call — " +
-        "call talk_to_role for each dispatched peer to run their turn. " +
+        "If you target `product-owner`, any DISPATCH blocks ARE auto-triggered (dispatched peers run in parallel after the PO turn) — same fan-out as talk_to_product_owner. " +
+        "For non-PO roles, HANDOFF blocks are NOT auto-triggered — call talk_to_role on the target to run their turn. " +
         "Reserved for diagnostic or explicit-override use. New work must go through `talk_to_product_owner` so the requirements phase runs.",
       inputSchema: {
         role: RoleEnum,
@@ -100,8 +99,14 @@ export function registerApexTeamTools(server: McpServer): void {
       if (role !== "business-analyst") {
         appendMessage(thread_id, { kind: "handoff", from: role, to: "business-analyst" }, message);
       }
+      // runTurnWithDispatches (not bare runTurn): when role === "product-owner"
+      // its DISPATCH blocks must fan out to the peers, exactly as
+      // talk_to_product_owner does. For non-PO roles the wrapper guards
+      // internally and behaves identically to runTurn (peerReplies: []) —
+      // peers emit HANDOFF, not DISPATCH. Bare runTurn here was #156: a
+      // PO-targeted relay call recorded dispatch rows but never fired peers.
       const result = await withThreadLock(thread_id, () =>
-        runTurn({
+        runTurnWithDispatches({
           threadId: thread_id,
           target: role,
           userMessage: message,
@@ -124,10 +129,18 @@ export function registerApexTeamTools(server: McpServer): void {
           ...result.handoffs.map((h) => `- → ${h.to}: ${h.message.slice(0, 120)}${h.message.length > 120 ? "…" : ""}`),
         );
       }
-      if (result.dispatches.length > 0) {
+      if (result.peerReplies.length > 0) {
+        out.push("", "### Dispatched peers (auto-triggered):");
+        for (const p of result.peerReplies) {
+          const preview = (p.result.visibleText || "(no visible text)").slice(0, 300);
+          out.push(`- → ${p.role}: ${preview}`);
+        }
+      } else if (result.dispatches.length > 0) {
+        // PO emitted dispatches but none fanned out (e.g. all peers failed —
+        // surfaced as synthetic messages in the thread). Show the intent.
         out.push(
           "",
-          "### DISPATCHes emitted (NOT auto-triggered — call talk_to_role for each dispatched peer to run their turn):",
+          "### DISPATCHes emitted (no peer replies returned — check thread for peer failures):",
           ...result.dispatches.map((d) => `- → ${d.to}: ${d.message.slice(0, 120)}${d.message.length > 120 ? "…" : ""}`),
         );
       }

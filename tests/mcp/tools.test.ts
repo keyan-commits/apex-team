@@ -1,6 +1,8 @@
 /**
  * MCP tool handler tests — verify that talk_to_product_owner and talk_to_role
- * call runTurn exactly once (no fan-out) and return structured dispatch/handoff data.
+ * call runTurnWithDispatches exactly once (fan-out handled internally) and
+ * return structured dispatch/handoff data. #156: talk_to_role must also fan
+ * out when it targets the product-owner.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { RunTurnResult } from "@/lib/run-turn";
@@ -197,37 +199,46 @@ describe("talk_to_role", () => {
     registerApexTeamTools(server);
   });
 
-  it("calls runTurn exactly once regardless of dispatch count", async () => {
-    mockRunTurn.mockResolvedValueOnce({
-      ...baseResult,
+  it("calls runTurnWithDispatches exactly once (fan-out handled internally)", async () => {
+    mockRunTurnWithDispatches.mockResolvedValueOnce({
+      ...basePOResult,
       dispatches: [
         { to: "architect" as TeamRoleId, message: "Please review" },
         { to: "qa" as TeamRoleId, message: "Please test" },
       ],
-    } satisfies RunTurnResult);
+      peerReplies: [
+        { role: "architect" as TeamRoleId, result: { ...baseResult, visibleText: "Arch ran" } },
+        { role: "qa" as TeamRoleId, result: { ...baseResult, visibleText: "QA ran" } },
+      ],
+    });
 
     const handler = getHandler("talk_to_role");
     await handler({ role: "product-owner", message: "Go", thread_id: "t1" });
 
-    expect(mockRunTurn).toHaveBeenCalledTimes(1);
+    expect(mockRunTurnWithDispatches).toHaveBeenCalledTimes(1);
+    expect(mockRunTurn).not.toHaveBeenCalled();
   });
 
-  it("returns dispatch list in result text with NOT-auto-triggered wording", async () => {
-    mockRunTurn.mockResolvedValueOnce({
-      ...baseResult,
+  it("auto-triggers PO dispatches when targeting product-owner directly (#156)", async () => {
+    mockRunTurnWithDispatches.mockResolvedValueOnce({
+      ...basePOResult,
       dispatches: [{ to: "architect" as TeamRoleId, message: "Review this code" }],
-    } satisfies RunTurnResult);
+      peerReplies: [
+        { role: "architect" as TeamRoleId, result: { ...baseResult, visibleText: "Arch reviewed" } },
+      ],
+    });
 
     const handler = getHandler("talk_to_role");
     const result = await handler({ role: "product-owner", message: "Go", thread_id: "t1" });
 
     const text = result.content[0].text;
     expect(text).toContain("architect");
-    expect(text).toContain("NOT auto-triggered");
+    expect(text).toContain("auto-triggered");
+    expect(text).toContain("Arch reviewed");
   });
 
   it("returns agent visible text in result", async () => {
-    mockRunTurn.mockResolvedValueOnce({ ...baseResult, visibleText: "BA reply here" } satisfies RunTurnResult);
+    mockRunTurnWithDispatches.mockResolvedValueOnce({ ...basePOResult, visibleText: "BA reply here" });
 
     const handler = getHandler("talk_to_role");
     const result = await handler({ role: "business-analyst", message: "Write story", thread_id: "t1" });
@@ -237,39 +248,39 @@ describe("talk_to_role", () => {
 
   it("uses claude-opus-4-8 for architect when no stored models", async () => {
     vi.mocked(getThreadAgentModels).mockReturnValueOnce(null);
-    mockRunTurn.mockResolvedValueOnce(baseResult);
+    mockRunTurnWithDispatches.mockResolvedValueOnce(basePOResult);
 
     const handler = getHandler("talk_to_role");
     await handler({ role: "architect", message: "Review this", thread_id: "t1" });
 
-    const agents = mockRunTurn.mock.calls[0][0].agents;
+    const agents = mockRunTurnWithDispatches.mock.calls[0][0].agents;
     expect(agents["architect"].model).toBe("claude-opus-4-8");
   });
 
   it("uses stored model when getThreadAgentModels returns an override", async () => {
     vi.mocked(getThreadAgentModels).mockReturnValueOnce({ architect: "claude-opus-4-7" });
-    mockRunTurn.mockResolvedValueOnce(baseResult);
+    mockRunTurnWithDispatches.mockResolvedValueOnce(basePOResult);
 
     const handler = getHandler("talk_to_role");
     await handler({ role: "architect", message: "Review this", thread_id: "t1" });
 
-    const agents = mockRunTurn.mock.calls[0][0].agents;
+    const agents = mockRunTurnWithDispatches.mock.calls[0][0].agents;
     expect(agents["architect"].model).toBe("claude-opus-4-7");
   });
 
   it("uses claude-sonnet-4-6 for non-opus roles when no stored models", async () => {
     vi.mocked(getThreadAgentModels).mockReturnValueOnce(null);
-    mockRunTurn.mockResolvedValueOnce(baseResult);
+    mockRunTurnWithDispatches.mockResolvedValueOnce(basePOResult);
 
     const handler = getHandler("talk_to_role");
     await handler({ role: "business-analyst", message: "Write story", thread_id: "t1" });
 
-    const agents = mockRunTurn.mock.calls[0][0].agents;
+    const agents = mockRunTurnWithDispatches.mock.calls[0][0].agents;
     expect(agents["business-analyst"].model).toBe("claude-sonnet-4-6");
   });
 
   it("calls setThreadWorkspace when workspace arg is provided", async () => {
-    mockRunTurn.mockResolvedValueOnce(baseResult);
+    mockRunTurnWithDispatches.mockResolvedValueOnce(basePOResult);
 
     const handler = getHandler("talk_to_role");
     await handler({ role: "architect", message: "Go", thread_id: "t1", workspace: "/workspace/lfm" });
@@ -278,7 +289,7 @@ describe("talk_to_role", () => {
   });
 
   it("does NOT call setThreadWorkspace when workspace arg is absent", async () => {
-    mockRunTurn.mockResolvedValueOnce(baseResult);
+    mockRunTurnWithDispatches.mockResolvedValueOnce(basePOResult);
 
     const handler = getHandler("talk_to_role");
     await handler({ role: "architect", message: "Go", thread_id: "t1" });

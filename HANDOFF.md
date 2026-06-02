@@ -1,15 +1,19 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-01
+## ⏭️ NOW — 2026-06-02
 
-**Wave 73 (#159) — latency reduction (3 fixes). PR #162 on `feature/73-latency`. CI build job was RED (type errors in providers.test.ts); PO applied the fix directly (export `augmentSystemPrompt` + fix mock `id` type → number; tests now call the real function), rebased on main `d146799` (Wave 71 merged). 192/192 green. Type-check clean. Lint 0 errors. Awaiting CI green → Architect non-UI gate → QA → DevSecOps merge.**
+**Wave 74 (#156) — META-FIX: dispatch fan-out on the relay path. Branch `feature/74-meta-dispatch-fanout` from main `316e411`. PO hand-implemented (dispatching the fix would itself stall via the bug it fixes). Closes #156.**
 
-**Fix 1 — prompt caching:** `src/lib/providers.ts` `augmentSystemPrompt` reordered static-first: `role.systemPrompt` → `role.skills` → volatile (`cwd`, `handoffDoc`, `peerStates`, `inbox`). No SDK change needed.
-**Fix 2 — context trim:** `src/lib/agents.ts:25` `slice(-10)` for non-PO peers; PO keeps `-60`.
-**Fix 3 — MODEL_FIT_POLICY:** `src/lib/roles.ts` per-dispatch model table (Haiku→gates/triage, Sonnet→impl/review, Opus→novel-arch/ADR/PO+Architect). BR-006 guardrail added.
-**Doc rescue:** US-027, US-028, BR-006, requirements/INDEX.md (US-024…028 rows), design/US-066-adaptive-issues-panel.md, design/INDEX.md co-committed on this PR.
+Root cause of the recurring 8-hour stalls: only `talk_to_product_owner` fanned PO dispatches out to peers. `talk_to_role` used bare `runTurn`, so a PO-targeted relay/direct call recorded the DISPATCH rows but never fired the peers — invisible stall. (Tick + web chat + po-dispatch already used `runTurnWithDispatches` since Wave 71; `talk_to_role` was the last gap.)
 
-**Wave 71 (#153) — PR #158 at Architect PASS. Awaiting QA smoke → DevSecOps merge.**
+**Two code changes + 1 new test:**
+- `src/mcp/tools.ts` — `talk_to_role` now calls `runTurnWithDispatches` (guarded internally: only `product-owner` target fans out; non-PO behaves exactly as before). Output now shows auto-triggered peer replies. Removed now-unused `runTurn` import. Description updated.
+- `src/lib/run-turn-with-dispatches.ts` — `Promise.all` → `Promise.allSettled`: a failing peer no longer drops the whole fan-out; the failure is `console.error`'d AND surfaced into the thread as a synthetic `{kind:user, to:product-owner}` message so PO sees "peer X stalled" next turn instead of an 8h silence.
+- `tests/lib/run-turn-with-dispatches.test.ts` (NEW) — 4 tests: fan-out, failure isolation + surfacing, non-PO guard, zero-dispatch guard.
+
+**Gate evidence:** type-check clean, **213/213** tests (updated 8 tools.test.ts `talk_to_role` tests to the new wrapper + added a #156 regression), lint 0 errors, `pnpm build` compiles (#151 `/_global-error` prerender grandfathered, `continue-on-error`).
+
+**Prior (shipped):** Wave 71 (#153, tick scheduler + mutex) merged `d146799`; Wave 73 (#159, latency: prompt-cache reorder + context trim + MODEL_FIT_POLICY) merged `316e411`. Main HEAD `316e411`.
 
 **Merged this session:** PR #132 (`1a96164`), #138 (`04c044e`), #147 (`ae1909f`), #157 (`92abd87`), #150 (`732ce39`). Main HEAD `732ce39`.
 
