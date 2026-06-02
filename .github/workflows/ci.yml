@@ -30,7 +30,11 @@ jobs:
         run: pnpm type-check
 
       - name: Tests
-        run: pnpm test:run
+        # NODE_ENV=development required because next.config.ts uses
+        # experimental.allowDevelopmentBuild (Wave 88 / US-040 fix for #151).
+        # tests/server/timeouts.test.ts imports server.ts which loads Next config;
+        # without NODE_ENV set, Next throws "allowDevelopmentBuild requires NODE_ENV=development".
+        run: NODE_ENV=development pnpm test:run
 
       - name: Lint
         run: pnpm lint
@@ -52,3 +56,94 @@ jobs:
         # Remove continue-on-error once #151 lands.
         run: pnpm build
         continue-on-error: true
+
+  merge-driver-test:
+    name: F1 — union-merge fitness (HANDOFF.md no conflict markers)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test union-merge driver on HANDOFF.md
+        run: |
+          set -e
+
+          # 1. Verify .gitattributes exists in this checkout and configures union for HANDOFF.md
+          if ! grep -q "HANDOFF.md.*merge=union" .gitattributes; then
+            echo "ERROR: .gitattributes missing or HANDOFF.md not configured for merge=union"
+            exit 1
+          fi
+
+          # 2. Set up an isolated test repo + copy THIS checkout's .gitattributes
+          #    (the prior fixed-path /Users/nikoe/... was hardcoded to one machine and
+          #    fails on CI runners — Wave 92 fix).
+          ATTRIBUTES_SRC="$(pwd)/.gitattributes"
+          TEST_REPO="${RUNNER_TEMP:-/tmp}/merge_test_$$"
+          mkdir -p "$TEST_REPO"
+          cp "$ATTRIBUTES_SRC" "$TEST_REPO/.gitattributes"
+          cd "$TEST_REPO"
+          git init -q
+          git config user.email "ci@apex-team.local"
+          git config user.name "CI"
+
+          # 3. Base HANDOFF.md (without leading-whitespace from heredoc)
+          cat > HANDOFF.md <<'EOF'
+          ## ⏭️ NOW — 2026-06-01 (Wave 88)
+          Wave 88 work in progress.
+
+          ## ⏭️ PREV — 2026-05-31 (Wave 87)
+          Wave 87 completed.
+          EOF
+          git add .gitattributes HANDOFF.md
+          git commit -q -m "base"
+
+          # 4. Branch "ours" prepends Wave 90 NOW block
+          git checkout -q -b ours
+          cat > HANDOFF.md <<'EOF'
+          ## ⏭️ NOW — 2026-06-02 (Wave 90)
+          Wave 90 work: Feature A.
+
+          ## ⏭️ PREV — 2026-06-01 (Wave 88)
+          Wave 88 work in progress.
+
+          ## ⏭️ PREV — 2026-05-31 (Wave 87)
+          Wave 87 completed.
+          EOF
+          git add HANDOFF.md
+          git commit -q -m "wave 90"
+
+          # 5. Branch "theirs" prepends Wave 89 NOW block
+          git checkout -q master 2>/dev/null || git checkout -q main
+          git checkout -q -b theirs
+          cat > HANDOFF.md <<'EOF'
+          ## ⏭️ NOW — 2026-06-02 (Wave 89)
+          Wave 89 work: Feature B.
+
+          ## ⏭️ PREV — 2026-06-01 (Wave 88)
+          Wave 88 work in progress.
+
+          ## ⏭️ PREV — 2026-05-31 (Wave 87)
+          Wave 87 completed.
+          EOF
+          git add HANDOFF.md
+          git commit -q -m "wave 89"
+
+          # 6. Attempt merge. merge=union is git's built-in strategy — no driver
+          #    config needed; .gitattributes alone activates it.
+          git checkout -q ours
+          if ! git merge --no-edit theirs; then
+            echo "ERROR: merge failed (expected union to auto-resolve)"
+            cat HANDOFF.md
+            exit 1
+          fi
+
+          # 7. Verify no conflict markers in result
+          if grep -E "^<<<<<<<|^>>>>>>>|^=======$" HANDOFF.md; then
+            echo "ERROR: conflict markers found in merged HANDOFF.md"
+            cat HANDOFF.md
+            exit 1
+          fi
+
+          # 8. Verify both NOW blocks survived the union (Wave 89 + Wave 90)
+          grep -q "Wave 89" HANDOFF.md || { echo "ERROR: Wave 89 block missing"; exit 1; }
+          grep -q "Wave 90" HANDOFF.md || { echo "ERROR: Wave 90 block missing"; exit 1; }
+
+          echo "✓ Union merge completed without conflict markers; both NOW blocks preserved"

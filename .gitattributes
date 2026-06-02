@@ -1,0 +1,8 @@
+# Append-mostly coordination docs: auto-resolve merges by keeping BOTH sides.
+# Removes the doc-only CONFLICTING class that stalls the merge train (ADR-013).
+HANDOFF.md            merge=union
+**/HANDOFF.md         merge=union
+.restart-trigger      merge=union
+LESSONS.md            merge=union
+requirements/INDEX.md merge=union
+architecture/INDEX.md merge=union

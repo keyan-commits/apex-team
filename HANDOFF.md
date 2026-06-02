@@ -1,8 +1,21 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-02 (Wave 88 — restore-CI + protocol-wiring / US-040+US-041)
+## ⏭️ NOW — 2026-06-02 (Wave 202 D1 — merge-train .gitattributes + F1 fitness test)
 
-**Wave 88 — PR open (feature/88-restore-ci-protocol). 319/319 tests green, type-check 0, `pnpm build` exits 0. Awaiting Architect non-UI gate → QA → DevSecOps merge.**
+**Executing Architect's #202 D1 directive (ADR-013 Proposed):** add repo-root `.gitattributes` with `merge=union` for HANDOFF.md, requirements/INDEX.md, architecture/INDEX.md, LESSONS.md, .restart-trigger. F1 fitness test in CI verifies a 3-way-merge of two divergent NOW blocks produces zero conflict markers. Closes #202 D1.
+
+**Rebase note (this PR):** rebased on main `c919a0b` (Wave 88). HANDOFF.md conflict resolved by keeping ADR-013 NOW block on top + preserving Wave 88's deployment notes below. Wave 88's US-040/US-041 NOW block is now PREV (already merged via #197).
+
+**F1 test fix (this rebase):** F1 fitness test had two bugs that failed CI on every runner:
+1. Hardcoded `cp /Users/nikoe/Development/Study/apex-team/.gitattributes .` — Mac-local path that doesn't exist on Ubuntu CI runners.
+2. Used a custom `merge.union.driver` config — but `merge=union` in `.gitattributes` is **git's built-in strategy**, not a custom driver; the config was misleading and unnecessary.
+Both fixed: test now `cp`s from `$(pwd)/.gitattributes` (the checkout) and relies on git's built-in union. Verified locally — test PASSes with both NOW blocks surviving the merge. (Wave 92 / claude-code hand-fix.)
+
+---
+
+## ⏭️ PREV — 2026-06-02 (Wave 88 — restore-CI + protocol-wiring / US-040+US-041 / #197 merged)
+
+**Wave 88 — MERGED via PR #197 at `c919a0b`.** 319/319 tests green, type-check 0, `pnpm build` exits 0.
 
 **US-040 (closes #151) — restores `pnpm build`:** `src/app/global-error.tsx` + `next.config.ts`. Root cause: Next.js 16.2.6 ignores `dynamic="force-dynamic"` for convention files, crashing in its own SSR bundle (useContext null). Fix: `experimental.allowDevelopmentBuild:true` (bundles React in dev mode, fixes dispatcher init) + `experimental.prerenderEarlyExit:false` (fallback). Build was broken since Wave 55.
 
@@ -10,26 +23,25 @@
 
 **ADR note:** ADR-009 specifies `dynamic="force-dynamic"` as the fix but it doesn't work in Next.js 16.2.6 — actual fix is in `next.config.ts`. Architect should amend ADR-009 or create ADR-010 documenting the real fix.
 
-**Commit 2 of 2 (US-041):** `src/lib/roles.ts` + 5 new tests. Dead imports removed. Protocol constants wired.
-
 ---
 
 ## ⏭️ PREV — 2026-06-02 (housekeeping — inbox drained, restart-trigger landed, be-84 cleared / #203)
 
-**Inbox drained — 4 stale items acked:**
-- QA → PR #187 (Wave 66) PASS — already merged `accff72`. Obsolete.
-- QA → PR #189 (Wave 84) PASS — already merged `010343d`. Obsolete.
-- QA → PR #192 (Wave 85 Lane-A doc) PASS — already merged `962ff52`. Obsolete.
-- BA → US-040/US-041 audit-trail in PR #197 — in-flight with BE Dev (they're folding ADRs now). Seen, not actioned — BE Dev owns it.
+**Executing Architect's #202 D1 directive (ADR-013 Proposed):**
+- New PR `feature/202-merge-train-gitattributes` — `.gitattributes` repo-root with union-merge for HANDOFF.md, .restart-trigger, coordination docs.
+- F1 fitness function added to CI (`.github/workflows/ci.yml`): 3-way-merge two divergent HANDOFF.md NOW blocks, verify zero conflict markers.
+- Root cause of merge-train stalls fixed: no more O(N²) doc-only CONFLICTING flips on each merge. Union driver auto-resolves append-mostly files.
+- **Caveat:** union-merge only fires on **local** rebase/merge, not GitHub's "Update branch" button. DevSecOps protocol already rebases locally; documented.
+- PR ready for Architect non-UI fast-gate. (D2 — scheduler mergeable-state detection — handed to BE Dev; lower priority.)
 
-**`.restart-trigger` Wave 84 bump — committing now.** Was stuck as local working-tree change since `010343d` (#189) merged; never pushed. Bump timestamp: `2026-06-02T08:45:46Z`.
+**HOLD on merges (unchanged):**
+- PR #197 (`feature/88-restore-ci-protocol`, sha `9fd71da`) — awaiting QA smoke.
+- PR #193 (`feature/85-dup-key-fix`, sha `f881e94`) — awaiting QA `:3100` smoke (QA PASS in on evidence, code inspection + WCAG confirmed).
+- Merge order: #197 first (has `.restart-trigger` bump that unblocks build), then #193 (UI-only, no bump).
 
-**`/tmp/be-84` worktree — REMOVED.** Branch lock cleared.
-
-**HOLD on merges:**
-- PR #197 (`feature/88-restore-ci-protocol`) — awaiting BE Dev ADR fold-in force-push + QA smoke.
-- PR #193 (`feature/85-dup-key-fix`) — awaiting QA `:3100` Leg C smoke (in-flight this turn).
-- Will merge #197 first, then #193, on QA PASS signals.
+**Inbox (rescue-sweep tick=1, age=1259s — all seen):**
+- Architect #205 (supply-chain review for UX skills) — on backlog, lower priority than D1.
+- Architect worktree cleanup reminder `/tmp/be-84` — DONE (Wave 84 merged `010343d`).
 
 ---
 
