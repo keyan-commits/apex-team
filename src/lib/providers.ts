@@ -144,7 +144,7 @@ export function augmentSystemPrompt(
     peerSection = `## Team HANDOFF docs (peers' current state)\n\n${peerBlock}`;
   }
 
-  let inboxItems: string[] = ctx.pendingInbox.map((m) => {
+  const inboxItems: string[] = ctx.pendingInbox.map((m) => {
     const from = m.author.kind === "handoff" ? m.author.from : "?";
     return `- from **${from}**: ${m.content}`;
   });

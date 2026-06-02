@@ -1,6 +1,18 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-02 (Wave 95 — retire claude-opus-4-7 / US-049)
+## ⏭️ NOW — 2026-06-02 (Wave 98 — emergency lint fix: providers.ts prefer-const)
+
+**Wave 98 (#TBD) — emergency CI unblock. claude-code hand-fix.**
+
+Every main CI run has been FAILING since ~9:33 PM (user got ~30 GitHub failure emails). Root cause: `src/lib/providers.ts:147` had `let inboxItems: string[] = ...` but the variable is never reassigned (only mutated in-place via `.shift()` / `.unshift()`). `prefer-const` lint rule flagged it as an ERROR (not warning).
+
+**One-character fix**: `let inboxItems` → `const inboxItems`. Behavior unchanged — `const` allows in-place array mutation. Closes the lint gate that's been blocking every PR's `build` job since Wave 97 (#208 prompt-cache audit) landed line 147.
+
+**Gate evidence**: type-check 0, **369/369 tests**, lint 0 errors. Branch `feature/98-lint-fix-prefer-const` off main.
+
+---
+
+## ⏭️ PREV — 2026-06-02 (Wave 95 — retire claude-opus-4-7 / US-049)
 
 **PR #95 open on `feature/95-remove-opus-47` (base `679f894`).**
 - `src/lib/pricing.ts`: `claude-opus-4-7` removed from `MODEL_PRICING`
