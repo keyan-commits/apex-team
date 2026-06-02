@@ -14,6 +14,25 @@
 
 ---
 
+## ⏭️ PREV — 2026-06-02 (housekeeping — inbox drained, restart-trigger landed, be-84 cleared / #203)
+
+**Inbox drained — 4 stale items acked:**
+- QA → PR #187 (Wave 66) PASS — already merged `accff72`. Obsolete.
+- QA → PR #189 (Wave 84) PASS — already merged `010343d`. Obsolete.
+- QA → PR #192 (Wave 85 Lane-A doc) PASS — already merged `962ff52`. Obsolete.
+- BA → US-040/US-041 audit-trail in PR #197 — in-flight with BE Dev (they're folding ADRs now). Seen, not actioned — BE Dev owns it.
+
+**`.restart-trigger` Wave 84 bump — committing now.** Was stuck as local working-tree change since `010343d` (#189) merged; never pushed. Bump timestamp: `2026-06-02T08:45:46Z`.
+
+**`/tmp/be-84` worktree — REMOVED.** Branch lock cleared.
+
+**HOLD on merges:**
+- PR #197 (`feature/88-restore-ci-protocol`) — awaiting BE Dev ADR fold-in force-push + QA smoke.
+- PR #193 (`feature/85-dup-key-fix`) — awaiting QA `:3100` Leg C smoke (in-flight this turn).
+- Will merge #197 first, then #193, on QA PASS signals.
+
+---
+
 ## ⏭️ PREV — 2026-06-02 (Wave 85 — #190 dup-key fix + smoke-gate gap)
 
 **Wave 85 Lane-A (QA) — smoke rubric amended.** Added Leg C (console-clean gate) to `src/lib/skills/qa.ts`. Type-check 0. PR open: `feature/85-smoke-console-gate`. Doc-only — no code surface. Closes smoke-gate gap that let #190 ship.
