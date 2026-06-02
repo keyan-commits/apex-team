@@ -98,6 +98,22 @@ export interface SseEvent {
   agentModels?: Record<RoleId, string>;
 }
 
+export type CiState = "healthy" | "warning" | "alarm" | "recovering" | "unknown";
+
+export interface CiRunInfo {
+  name: string;
+  conclusion: string;
+  createdAt: string;
+}
+
+export interface CiHealthData {
+  state: CiState;
+  consecutiveReds: number;
+  threshold: number;
+  latestRun: CiRunInfo | null;
+  staleSince: string | null;
+}
+
 export type RepoStatus = "ok" | "none" | "not-git" | "non-github" | "bad-path";
 
 export interface TeamStatus {
