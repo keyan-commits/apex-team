@@ -4,6 +4,13 @@ Append-only. Newest first. Each entry: ~3–5 lines. Triggers: a protocol amendm
 
 ## 2026-06-02
 
+### Wave 93 — fragment pattern (towncrier-inspired) for HANDOFF.md prevents doc-collision merge conflicts (ADR-014)
+**What broke:** Multiple PRs each prepending a NOW block to `HANDOFF.md` produced conflicts on merge. The `merge=union` driver (ADR-013) fixed LOCAL rebases but not GitHub's server-side "Update branch" path, and the union line-ordering was nondeterministic even when it resolved.
+**Why:** Any shared file that multiple PRs all write to will conflict. Mitigation (union driver) covers one merge path; elimination (disjoint files) covers all paths.
+**We now do:** Each implementer role writes `_handoff-pending/<wave>-<role>.md` with Done/In-flight/Next/Notes sections. PO folds all fragments into `HANDOFF.md` at wave close with `pnpm fold-handoff`. The pre-commit hook accepts either a direct `HANDOFF.md` edit or a fragment during the migration window. `merge=union` is retained as belt-and-suspenders for in-flight branches that still touch `HANDOFF.md` directly.
+
+---
+
 ### Concurrent `git checkout` in shared working tree corrupts mid-turn reads (Wave 72, ADR-005)
 **What broke:** During the Wave 72 (#166) Architect code review, the shared working tree was on the feature branch being reviewed. A concurrent agent turn in that same tree could `git checkout` a different branch, invalidating any file the Architect had already read mid-review. The corruption is silent — no error, just stale content.
 **Why:** git's working tree is a single mutable surface. Multiple concurrent agent turns all point their file tools at the same directory. Any `git checkout` mid-flight changes what every other agent reads.

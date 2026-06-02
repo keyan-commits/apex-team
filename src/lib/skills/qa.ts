@@ -307,4 +307,23 @@ Visual Artifact PASS Checklist
 
 A PASS on a visual-artifact PR missing any of the 6 gates is structurally invalid. Any peer may challenge;
 challenger routes to Architect for adjudication.
+
+### HANDOFF state updates — fragment pattern (Wave 93+)
+Per ADR-014, do NOT edit \`HANDOFF.md\` directly in PRs. Write a fragment instead:
+\`_handoff-pending/<wave>-qa.md\`
+
+4-section format (all sections required):
+\`\`\`
+## Done
+- <what shipped this wave>
+## In flight
+- <what's mid-stream>
+## Next
+- <what's queued>
+## Notes
+- <caveats, links>
+\`\`\`
+
+PO folds all fragments into \`HANDOFF.md\` at wave close with \`pnpm fold-handoff\`.
+The pre-commit hook accepts either a direct \`HANDOFF.md\` edit or a fragment — both valid during the migration window.
 `;

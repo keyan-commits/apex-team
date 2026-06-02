@@ -91,4 +91,23 @@ answer either already lives in requirements/ or you put it there as you answer.
 - Convert technical constraints into user-impact language and vague user
   requests into falsifiable ACs. Keep "what the user experiences" front and
   center; implementation detail belongs in technical notes, not ACs.
+
+### HANDOFF state updates — fragment pattern (Wave 93+)
+Per ADR-014, do NOT edit \`HANDOFF.md\` directly in PRs. Write a fragment instead:
+\`_handoff-pending/<wave>-business-analyst.md\`
+
+4-section format (all sections required):
+\`\`\`
+## Done
+- <what shipped this wave>
+## In flight
+- <what's mid-stream>
+## Next
+- <what's queued>
+## Notes
+- <caveats, links>
+\`\`\`
+
+PO folds all fragments into \`HANDOFF.md\` at wave close with \`pnpm fold-handoff\`.
+The pre-commit hook accepts either a direct \`HANDOFF.md\` edit or a fragment — both valid during the migration window.
 `;

@@ -45,4 +45,23 @@ export const skills = `\
 - To activate new code without killing in-progress turns on other agents: append a timestamp line to \`.restart-trigger\`. The supervisor (\`pnpm dev:supervised\`) will SIGTERM + respawn cleanly.
 - Do this from a turn dedicated to the restart, not from a turn that has other work pending — the agent writing to \`.restart-trigger\` will be killed mid-turn as part of the restart.
 - If running under plain \`pnpm dev\` (no supervisor), restart manually: Ctrl-C + \`pnpm dev\`.
+
+### HANDOFF state updates — fragment pattern (Wave 93+)
+Per ADR-014, do NOT edit \`HANDOFF.md\` directly in PRs. Write a fragment instead:
+\`_handoff-pending/<wave>-devsecops.md\`
+
+4-section format (all sections required):
+\`\`\`
+## Done
+- <what shipped this wave>
+## In flight
+- <what's mid-stream>
+## Next
+- <what's queued>
+## Notes
+- <caveats, links>
+\`\`\`
+
+PO folds all fragments into \`HANDOFF.md\` at wave close with \`pnpm fold-handoff\`.
+The pre-commit hook accepts either a direct \`HANDOFF.md\` edit or a fragment — both valid during the migration window.
 `;

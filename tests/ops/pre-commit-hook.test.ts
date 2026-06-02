@@ -47,12 +47,20 @@ describe("pre-commit hook", () => {
     expect(result.status).toBe(0);
   });
 
-  it("exits 1 when code is staged but HANDOFF.md is not", () => {
+  it("exits 1 when code is staged but neither HANDOFF.md nor a fragment is staged", () => {
     stageFile(tmpDir, "src/lib/foo.ts", 'export const x = 1;\n');
     const result = runHook(tmpDir);
     expect(result.status).toBe(1);
-    expect(result.stderr).toContain("HANDOFF.md is not");
+    expect(result.stderr).toContain("neither HANDOFF.md");
+    expect(result.stderr).toContain("_handoff-pending");
     expect(result.stderr).toContain("--no-verify");
+  });
+
+  it("exits 0 when code + a _handoff-pending fragment is staged (Wave 93+ path)", () => {
+    stageFile(tmpDir, "src/lib/foo.ts", 'export const x = 1;\n');
+    stageFile(tmpDir, "_handoff-pending/93-backend-developer.md", "## Done\n- stuff\n");
+    const result = runHook(tmpDir);
+    expect(result.status).toBe(0);
   });
 
   it("exits 0 when only a doc file (no code path) is staged without HANDOFF.md", () => {

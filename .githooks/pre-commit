@@ -13,12 +13,16 @@ if ! echo "$staged" | grep -qE '^(src/|scripts/|tests/|\.github/|package\.json$|
   exit 0
 fi
 
-# Code is staged — require HANDOFF.md to also be staged
-if ! echo "$staged" | grep -qx 'HANDOFF.md'; then
-  echo "✗ pre-commit: code is staged but HANDOFF.md is not." >&2
+# Code is staged — require either a HANDOFF.md edit OR a _handoff-pending/*.md fragment.
+# (Wave 93+: roles write per-wave fragments instead of editing HANDOFF.md directly.)
+has_handoff=$(echo "$staged" | grep -qx 'HANDOFF.md' && echo 1 || echo 0)
+has_fragment=$(echo "$staged" | grep -qE '^_handoff-pending/.+\.md$' && echo 1 || echo 0)
+if [ "$has_handoff" = "0" ] && [ "$has_fragment" = "0" ]; then
+  echo "✗ pre-commit: code is staged but neither HANDOFF.md nor a _handoff-pending/*.md fragment is." >&2
   echo "" >&2
-  echo "  Update the HANDOFF.md NOW block and re-stage it, OR:" >&2
-  echo "  - Bypass once:    git commit --no-verify" >&2
-  echo "  - Disable always: git config handoff.requireOnCommit false" >&2
+  echo "  Option A (Wave 93+): add _handoff-pending/<wave>-<role>.md with Done/In-flight/Next/Notes." >&2
+  echo "  Option B (legacy):   update the HANDOFF.md NOW block and re-stage it." >&2
+  echo "  Bypass once:         git commit --no-verify" >&2
+  echo "  Disable always:      git config handoff.requireOnCommit false" >&2
   exit 1
 fi
