@@ -1,6 +1,20 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-02 (ADR-005 + #168 design — PR open, awaiting merge)
+## ⏭️ NOW — 2026-06-02 (Wave 80 — MCP heartbeat tuning to fix transport drops #172)
+
+**Wave 80 (#172) — MCP transport drops mid-call.** Branch `feature/80-mcp-heartbeat-fix` from main. claude-code hand-implemented after the team's own dispatches kept dropping with "transport dropped mid-call" errors during long PO turns. Closes #172.
+
+**Root cause:** `src/mcp/handler.ts:18` heartbeat was `setInterval(fn, 15_000)` — `setInterval` does NOT fire immediately; first beat happens 15s after request start. Any client/proxy timeout < 15s killed the connection before the first keepalive ever wrote.
+
+**Fix (`src/mcp/handler.ts`):**
+- Default `intervalMs` reduced from `15_000` → `5_000`.
+- New `firstBeatMs` param (default `100`) — fires an immediate first keepalive via `setTimeout` BEFORE the `setInterval` cadence begins. Defeats sub-second client timeouts.
+- Heartbeat returns `{ stop(): void }` instead of bare `Timeout` — cleanly cancels both the immediate timer and the recurring interval.
+- Write failures (`res.write` throws) now `console.warn` instead of silently swallowed — future drops are diagnosable.
+
+**Gate (pristine worktree at `/tmp/wave80-fix`):** type-check 0, **244/244 tests** (6 new heartbeat tests + 238 prior), lint 0 errors. Strategic deferral: `req.signal` wiring into peer turns (orphan-cleanup hygiene, secondary) is OUT-of-scope — requires MCP SDK plumbing; tracked as follow-up.
+
+## ⏭️ EARLIER — 2026-06-02 (ADR-005 + #168 design — PR open, awaiting merge)
 
 **ADR-005 authored + #168 worktree-isolation design complete.** Branch `docs/adr-005-and-168` off `origin/main`. Files changed: `architecture/decisions/ADR-005-po-state-externalization.md` (new), `architecture/INDEX.md` (ADR-005 row added). ADR covers: 4-table design, thread-scoping rationale, `peer_idle` sole-writer invariant (OQ-S72-001), `set_wave_status` W75 deferral, `gh`-poll best-effort pattern, and per-agent worktree isolation design (#168). Implementation of worktree-isolation protocol (`WORKTREE_ISOLATION_PROTOCOL` in `protocols.ts` + LESSONS.md entry) assigned to Wave 75 / standalone wave for BE Dev or DevSecOps. PR opened — docs-only, both gate levels may be skipped per deployment protocol.
 

@@ -14,16 +14,43 @@ import { registerApexTeamTools } from "./tools";
 export const MCP_PATH = "/mcp";
 
 // Exported for testing. Writes SSE comment bytes at intervalMs cadence to keep
-// undici's bodyTimeout rolling during long agent turns.
-export function startHeartbeat(res: ServerResponse, intervalMs = 15_000): ReturnType<typeof setInterval> {
-  return setInterval(() => {
-    if (!res.writableEnded) {
-      try {
-        res.write(": keepalive\n\n");
-        (res as unknown as { flush?: () => void }).flush?.();
-      } catch {}
+// undici's bodyTimeout rolling during long agent turns. Returns a `stop`
+// disposer that cancels both the immediate first-fire timeout AND the
+// recurring interval (#172).
+//
+// First beat fires after `firstBeatMs` (default 100ms) — setInterval alone
+// would not fire until `intervalMs` elapsed, leaving the response stream
+// silent during the initial model round-trip; if any client/proxy timeout
+// is shorter than that initial gap, the connection drops before the first
+// keepalive is ever written. The immediate-first-fire defeats that class
+// of failure.
+function writeKeepalive(res: ServerResponse): void {
+  if (!res.writableEnded) {
+    try {
+      res.write(": keepalive\n\n");
+      (res as unknown as { flush?: () => void }).flush?.();
+    } catch (err) {
+      // Log so transport drops are diagnosable instead of silently swallowed.
+      console.warn("[mcp/handler] heartbeat write failed:", err);
     }
-  }, intervalMs);
+  }
+}
+
+export function startHeartbeat(
+  res: ServerResponse,
+  intervalMs = 5_000,
+  firstBeatMs = 100,
+): { stop: () => void } {
+  // Defeat sub-interval client/proxy timeouts by writing one keepalive almost
+  // immediately, before the SDK starts its model round-trip.
+  const firstTimer = setTimeout(() => writeKeepalive(res), firstBeatMs);
+  const interval = setInterval(() => writeKeepalive(res), intervalMs);
+  return {
+    stop: () => {
+      clearTimeout(firstTimer);
+      clearInterval(interval);
+    },
+  };
 }
 
 export async function handleMcpRequest(
@@ -59,11 +86,15 @@ export async function handleMcpRequest(
   // before a multi-agent tool call completes. Any bytes flowing reset both.
   // The SDK always responds with text/event-stream for tool calls, so SSE
   // comment bytes are valid and ignored by the client.
+  //
+  // 5s cadence + immediate first-beat (~100ms) defeats sub-interval client and
+  // proxy timeouts that were dropping connections before the first keepalive
+  // could fire (#172).
   const heartbeat = startHeartbeat(res);
   try {
     await transport.handleRequest(req, res, raw);
   } finally {
-    clearInterval(heartbeat);
+    heartbeat.stop();
   }
 }
 
