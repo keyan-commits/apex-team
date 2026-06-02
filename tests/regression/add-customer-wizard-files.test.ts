@@ -22,10 +22,9 @@ interface UploadedFile {
   ready: boolean;
 }
 
-// PRE-FIX implementation — uses .find(), silently discards all files after the first
+// POST-FIX implementation — uses .filter(), processes ALL ready files
 function processUploadedFiles(files: UploadedFile[]): UploadedFile[] {
-  const f = files.find((f) => f.ready);
-  return f ? [f] : [];
+  return files.filter((f) => f.ready);
 }
 
 describe("S10 regression — processUploadedFiles multi-input cardinality (Pattern A)", () => {
