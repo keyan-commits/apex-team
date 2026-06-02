@@ -24,6 +24,8 @@ import {
   getAgentState,
   getThreadAgentModels,
   getThreadSpendSince,
+  IDLE_THRESHOLD_MS,
+  listAllAgentStates,
   listMessages,
   listPendingInbox,
   listPipelineState,
@@ -514,7 +516,7 @@ export function registerApexTeamTools(server: McpServer): void {
     "get_peer_idle_state",
     {
       title: "Get peer idle state",
-      description: "Return peer_idle rows for a thread. Pass role to filter to a single peer. Read-only — the turn driver owns all writes.",
+      description: "Return peer_idle rows for a thread, enriched with last_turn_at and isIdleByTurnAt from agent_state. Pass role to filter to a single peer. Read-only — the turn driver owns all writes.",
       inputSchema: {
         thread_id: z.string().min(1),
         role: RoleEnum.optional().describe("Filter to a specific role. Omit for all peers."),
@@ -522,7 +524,15 @@ export function registerApexTeamTools(server: McpServer): void {
     },
     async ({ thread_id, role }) => {
       const rows = listPeerIdle(thread_id, role);
-      return { content: [{ type: "text" as const, text: JSON.stringify({ data: rows }, null, 2) }] };
+      const agentStates = listAllAgentStates(thread_id);
+      const lastTurnAtMap = new Map(agentStates.map((s) => [s.role, s.lastTurnAt]));
+      const now = Date.now();
+      const enriched = rows.map((r) => {
+        const lastTurnAt = lastTurnAtMap.get(r.role as import("@/types").RoleId) ?? null;
+        const isIdleByTurnAt = lastTurnAt === null || (now - lastTurnAt) > IDLE_THRESHOLD_MS;
+        return { ...r, lastTurnAt, isIdleByTurnAt };
+      });
+      return { content: [{ type: "text" as const, text: JSON.stringify({ data: enriched, idleThresholdMs: IDLE_THRESHOLD_MS }, null, 2) }] };
     },
   );
 

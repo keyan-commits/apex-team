@@ -216,6 +216,7 @@ export async function GET(req: NextRequest): Promise<NextResponse<TeamStatus>> {
       historyDepth: depth,
       inboxCount: inbox,
       needsCleanup: handoffChars > 8000 || depth > 50,
+      lastTurnAt: state?.lastTurnAt ?? null,
     };
   });
 

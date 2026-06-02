@@ -65,6 +65,7 @@ export interface AgentState {
   role: RoleId;
   handoffDoc: string;
   updatedAt: number;
+  lastTurnAt: number | null;
 }
 
 export interface ChatTurnRequest {
@@ -117,7 +118,7 @@ export interface TeamStatus {
     repoStatus: RepoStatus;
   };
   scout: { lastRunAt: number | null; nextScheduledAt: number | null; proposalsLast7Days: number };
-  context: Array<{ role: RoleId; handoffChars: number; historyDepth: number; inboxCount: number; needsCleanup: boolean }>;
+  context: Array<{ role: RoleId; handoffChars: number; historyDepth: number; inboxCount: number; needsCleanup: boolean; lastTurnAt: number | null }>;
   stall: { active: boolean; detectedAt: string; stallAgeMs: number; backlogCount: number } | null;
   spend: {
     todayUsd: number;
