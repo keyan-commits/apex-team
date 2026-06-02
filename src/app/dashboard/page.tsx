@@ -1,9 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { TeamStatus, RepoStatus } from "@/types";
 import { OrchestratorBar } from "@/components/OrchestratorBar";
+import { StallBanner } from "@/components/StallBanner";
+import {
+  StallSettingsDrawer,
+  DEFAULT_STALL_SETTINGS,
+  STALL_SETTINGS_KEY,
+  type StallSettings,
+} from "@/components/StallSettingsDrawer";
 
 const ROLE_ACCENT: Record<string, string> = {
   "product-owner": "po", "business-analyst": "ba", architect: "arch",
@@ -76,6 +83,24 @@ function roleBadge(role: string) {
   );
 }
 
+function playStallAlertSound() {
+  try {
+    const ctx = new (window.AudioContext || (window as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext!)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    osc.type = "sine";
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.2);
+  } catch {
+    // Web Audio unavailable; silently skip
+  }
+}
+
 export default function DashboardPage() {
   const [threadId, setThreadId] = useState<string>("");
   const [data, setData] = useState<TeamStatus | null>(null);
@@ -96,6 +121,14 @@ export default function DashboardPage() {
   const [scoutRunning, setScoutRunning] = useState(false);
   const [scoutError, setScoutError] = useState<string | null>(null);
   const scoutBaseRunAtRef = useRef<number | null | undefined>(undefined);
+
+  // Stall notification state
+  const [stallSettings, setStallSettings] = useState<StallSettings>(DEFAULT_STALL_SETTINGS);
+  const [stallDismissed, setStallDismissed] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [toast, setToast] = useState<{ msg: string; duration: number; key: number } | null>(null);
+  const [notifPermission, setNotifPermission] = useState<NotificationPermission | "unavailable" | null>(null);
+  const prevStallActiveRef = useRef(false);
   const queuedRowRefs = useRef<(HTMLDivElement | null)[]>([]);
   const userEditedThreadRef = useRef(false);
   const threadIdRef = useRef(threadId);
@@ -370,6 +403,89 @@ export default function DashboardPage() {
     return () => clearInterval(id);
   }, [scoutRunning]);
 
+  // Load stall settings and notification permission on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STALL_SETTINGS_KEY);
+      if (raw) setStallSettings({ ...DEFAULT_STALL_SETTINGS, ...JSON.parse(raw) });
+    } catch {}
+    if (typeof Notification !== "undefined") {
+      setNotifPermission(Notification.permission);
+    } else {
+      setNotifPermission("unavailable");
+    }
+  }, []);
+
+  // Persist settings to localStorage on every change
+  useEffect(() => {
+    try {
+      localStorage.setItem(STALL_SETTINGS_KEY, JSON.stringify(stallSettings));
+    } catch {}
+  }, [stallSettings]);
+
+  // Auto-dismiss toast
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), toast.duration);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  // Stall onset detection — fires notification + audio on false→true transition
+  useEffect(() => {
+    const currentlyStalled = !!(data?.stall?.active);
+    if (!prevStallActiveRef.current && currentlyStalled) {
+      // Stall onset
+      if (stallSettings.notification && notifPermission === "granted") {
+        try {
+          new Notification("apex-team: Team stalled", {
+            body: "No merge in >60 min. Backlog present. Check dashboard.",
+            tag: "apex-stall",
+          });
+        } catch {}
+      }
+      if (stallSettings.audio) {
+        playStallAlertSound();
+      }
+      // Reset dismissed state so banner re-shows on a new stall event
+      setStallDismissed(false);
+    }
+    prevStallActiveRef.current = currentlyStalled;
+  }, [data?.stall?.active, stallSettings.notification, stallSettings.audio, notifPermission]);
+
+  const handleNotificationToggle = useCallback(
+    async (checked: boolean) => {
+      if (!checked) {
+        setStallSettings((s) => ({ ...s, notification: false }));
+        return;
+      }
+      const perm = typeof Notification !== "undefined" ? Notification.permission : "denied";
+      if (perm === "denied") return;
+      if (perm === "granted") {
+        setStallSettings((s) => ({ ...s, notification: true }));
+        setToast({ msg: "Notifications enabled", duration: 2000, key: Date.now() });
+        return;
+      }
+      // "default" — request from user gesture (this fires inside the checkbox handler)
+      try {
+        const result = await Notification.requestPermission();
+        if (result === "granted") {
+          setNotifPermission("granted");
+          setStallSettings((s) => ({ ...s, notification: true }));
+          setToast({ msg: "Notifications enabled", duration: 2000, key: Date.now() });
+        } else {
+          setNotifPermission("denied");
+          setStallSettings((s) => ({ ...s, notification: false }));
+          setToast({
+            msg: "Browser blocked notifications — check site settings",
+            duration: 4000,
+            key: Date.now(),
+          });
+        }
+      } catch {}
+    },
+    [],
+  );
+
   const REPO_STATUS_COPY: Record<Exclude<RepoStatus, "ok">, string> = {
     none: "No origin remote configured — issues unavailable.",
     "not-git": "This workspace isn't a git repo — issues unavailable.",
@@ -397,8 +513,17 @@ export default function DashboardPage() {
     </div>
   );
 
+  const stallActive = !!(data?.stall?.active);
+
   return (
     <div className="dash">
+      {stallSettings.banner && (
+        <StallBanner
+          active={stallActive && !stallDismissed}
+          onDismiss={() => setStallDismissed(true)}
+        />
+      )}
+
       <OrchestratorBar
         threadId={threadId}
         onNewThread={() => setThreadId(`t_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`)}
@@ -409,7 +534,24 @@ export default function DashboardPage() {
           setWorkspace(ws);
           try { localStorage.setItem(WORKSPACE_KEY, ws); } catch {}
         }}
+        onSettingsOpen={() => setSettingsOpen((v) => !v)}
+        settingsOpen={settingsOpen}
       />
+
+      <StallSettingsDrawer
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        settings={stallSettings}
+        onSettingsChange={setStallSettings}
+        onNotificationToggle={handleNotificationToggle}
+        notificationPermission={notifPermission}
+      />
+
+      {toast && (
+        <div className="stall-toast" key={toast.key} role="status" aria-live="polite">
+          {toast.msg}
+        </div>
+      )}
 
       {fetchError && (
         <div className="poll-error">
@@ -1149,6 +1291,21 @@ export default function DashboardPage() {
         @media (max-width: 720px) {
           .grid { grid-template-columns: 1fr; }
           .span2 { grid-column: span 1; }
+        }
+
+        .stall-toast {
+          position: fixed;
+          bottom: 24px;
+          right: 24px;
+          z-index: 300;
+          background: var(--surface-2);
+          border: 1px solid var(--border);
+          color: var(--text);
+          padding: 10px 16px;
+          border-radius: 6px;
+          font-size: 13px;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+          max-width: 320px;
         }
       `}</style>
     </div>

@@ -11,6 +11,8 @@ interface Props {
   busy: boolean;
   workspace: string;
   onWorkspaceChange: (next: string) => void;
+  onSettingsOpen?: () => void;
+  settingsOpen?: boolean;
 }
 
 export function OrchestratorBar({
@@ -20,6 +22,8 @@ export function OrchestratorBar({
   busy,
   workspace,
   onWorkspaceChange,
+  onSettingsOpen,
+  settingsOpen = false,
 }: Props) {
   const pathname = usePathname();
   const [draft, setDraft] = useState(workspace);
@@ -102,6 +106,19 @@ export function OrchestratorBar({
           new
         </button>
       </div>
+
+      {onSettingsOpen && (
+        <button
+          type="button"
+          className={`gear-btn${settingsOpen ? " gear-active" : ""}`}
+          onClick={onSettingsOpen}
+          aria-label="Stall notification settings"
+          aria-expanded={settingsOpen}
+          title="Stall notification settings"
+        >
+          ⚙
+        </button>
+      )}
 
       <style jsx>{`
         .bar {
@@ -200,6 +217,21 @@ export function OrchestratorBar({
           cursor: pointer;
         }
         .ghost:disabled { opacity: 0.4; cursor: not-allowed; }
+        .gear-btn {
+          background: transparent;
+          border: none;
+          color: var(--text-dim);
+          cursor: pointer;
+          font-size: 16px;
+          line-height: 1;
+          padding: 4px 6px;
+          border-radius: 4px;
+          flex-shrink: 0;
+          transition: color 150ms;
+        }
+        .gear-btn:hover { color: var(--accent-ui); }
+        .gear-btn.gear-active { color: var(--accent-ui); }
+        .gear-btn:focus-visible { outline: 2px solid var(--accent-ui); outline-offset: 2px; }
       `}</style>
     </header>
   );

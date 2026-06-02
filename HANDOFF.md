@@ -1,6 +1,23 @@
 # HANDOFF — apex-team
 
+## ⏭️ NOW — 2026-06-02 (Wave 82 — stall banner + settings — PR pending / US-036)
+
+**Wave 82 (#178 / US-036) — PR #184 OPEN.** Branch `feature/82-stall-banner-v2` off `33df463`. 296/296 tests green, type-check 0. Closes #178. Awaiting UX Designer design gate → QA `:3100` → DevSecOps merge.
+
+**5 files changed / created:**
+- `src/components/StallBanner.tsx` (new): `<aside role="alert">` full-width 48px red banner; slide-down/up 200ms; respects `prefers-reduced-motion`; session-only dismiss.
+- `src/components/StallSettingsDrawer.tsx` (new): 300px right-slide drawer with 3 toggles (banner/notification/audio); Escape + outside-click dismiss; exports `StallSettings` type + `DEFAULT_STALL_SETTINGS` + `STALL_SETTINGS_KEY`.
+- `src/components/OrchestratorBar.tsx`: added `onSettingsOpen?` + `settingsOpen?` props; gear icon (⚙) button rendered when prop present.
+- `src/app/dashboard/page.tsx`: stall settings state (loaded from localStorage `apex-team:stall-settings`); dismissed state (session-only); prevStall ref for onset detection; notification + audio fire on false→true; toast for permission grant/deny; renders StallBanner above OrchestratorBar; StallSettingsDrawer.
+- `tests/ui/StallBanner.test.ts` (new, 27 tests): AC1 banner visibility, AC2 onset detection, AC3 permission flow + disabled state, AC4 defaults + persistence.
+
+**Gate:** UX Designer design-correctness critique → QA `:3100` smoke → DevSecOps merge.
+
+---
+
 ## ⏭️ NOW — 2026-06-02 (Wave 83 — server-start re-arm sweep #179 / US-037)
+
+**Wave 83 (#179 / US-037) — MERGED at `01d6364`.** Closes #179.
 
 **Wave 83 (#179 / US-037) — READY FOR ARCHITECT GATE.** Branch `feature/83-rearm-sweep` off `origin/main` `33df463` (post-#180). 277/277 green, type-check 0. Closes #179.
 
