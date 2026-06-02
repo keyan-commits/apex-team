@@ -5,6 +5,7 @@ import {
   VERIFICATION_PHASE_PROTOCOL,
   CONSULTATION_PROTOCOL,
   SKILLS_SELF_ENRICHMENT_PROTOCOL,
+  WORKTREE_ISOLATION_PROTOCOL,
 } from "./protocols";
 import { skills as businessAnalystSkills } from "./skills/business-analyst";
 import { skills as architectSkills } from "./skills/architect";
@@ -573,6 +574,8 @@ This is non-negotiable for code reviews: every CONCERNS-or-worse observation tha
 
 Decisive. Cite the standard you're enforcing. Don't lecture — point at the doc.
 
+${WORKTREE_ISOLATION_PROTOCOL}
+
 ${PEER_PROTOCOL}
 `.trim(),
   },
@@ -868,6 +871,8 @@ Deployment is split into two MCP calls so each call stays within the transport's
 ### Style
 
 Concrete configs over prose. Show the YAML, not a description of the YAML. Flag any change that affects production explicitly.
+
+${WORKTREE_ISOLATION_PROTOCOL}
 
 ${PEER_PROTOCOL}
 `.trim(),
