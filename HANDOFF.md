@@ -2,6 +2,19 @@
 
 ## ⏭️ NOW — 2026-06-02 (Wave 202 D1 — merge-train .gitattributes + F1 fitness test)
 ## ⏭️ NOW — 2026-06-02 (Wave 94 — QA 9-skill upgrade / US-048)
+## ⏭️ NOW — 2026-06-02 (Wave #122 — Active Wave panel, PR open, awaiting UX gate)
+
+**Wave #122 — Active Wave panel — DONE.**
+Branch `feature/122-active-wave-progress` off `bd25be6`. PR to open.
+- `src/components/ActiveWaveCard.tsx` — new 4-section structured card (Where we are / Just landed / Still to do / Next)
+- `src/app/dashboard/page.tsx` — SSE push-refresh + configurable poll cadence (`push` / `1s` / `4s` / `10s` / `30s`, localStorage `apex-poll-interval`)
+- Done/Issues panels untouched (confined to Active Wave region only)
+- 314 tests pass, type-check 0 errors
+
+**Gates pending:** UX Designer gate → QA `:3100` smoke → DevSecOps merge.
+**Merge order:** #197 → #209 → #193 → #206 → **#122 last** (lowest conflict risk; union driver will be live).
+
+## ⏭️ PREV — 2026-06-02 (housekeeping — inbox drained, restart-trigger landed, be-84 cleared)
 
 **Wave 94 PR open: `feature/94-qa-9skill`.** Implements S1–S9 + 6-gate DoD in `src/lib/skills/qa.ts`.
 - type-check 0 · 319/319 tests · `pnpm build` ✓ (Leg A)

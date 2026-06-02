@@ -11,6 +11,7 @@ import {
   STALL_SETTINGS_KEY,
   type StallSettings,
 } from "@/components/StallSettingsDrawer";
+import { ActiveWaveCard } from "@/components/ActiveWaveCard";
 
 const ROLE_ACCENT: Record<string, string> = {
   "product-owner": "po", "business-analyst": "ba", architect: "arch",
@@ -19,6 +20,7 @@ const ROLE_ACCENT: Record<string, string> = {
 };
 
 const WORKSPACE_KEY = "apex-team:workspace";
+const POLL_INTERVAL_KEY = "apex-poll-interval";
 const KNOWN_MODELS = [
   "claude-opus-4-8",
   "claude-opus-4-7",
@@ -146,6 +148,7 @@ export default function DashboardPage() {
   const [workspace, setWorkspace] = useState<string>("");
   const [sendingRows, setSendingRows] = useState<Set<number>>(new Set());
   const [fetchError, setFetchError] = useState(false);
+  const [pollIntervalMs, setPollIntervalMs] = useState<number>(10000);
   const [flashedRowId, setFlashedRowId] = useState<number | null>(null);
   const [liveMsg, setLiveMsg] = useState("");
   const [scoutRunning, setScoutRunning] = useState(false);
@@ -230,30 +233,47 @@ export default function DashboardPage() {
     };
   }, [openTooltip]);
 
+  const fetchTeamData = useCallback(() => {
+    if (!threadId || document.visibilityState !== "visible") return;
+    fetch(`/api/team-status?threadId=${encodeURIComponent(threadId)}&workspace=${encodeURIComponent(workspace)}`, { cache: "no-store" })
+      .then((r) => {
+        if (r.status === 404) { setEndpointReady(false); return null; }
+        setEndpointReady(true);
+        return r.json() as Promise<TeamStatus>;
+      })
+      .then((d) => { if (d) { setData(d); setFetchError(false); } })
+      .catch(() => setFetchError(true));
+    fetch(`/api/wave-state?thread_id=${encodeURIComponent(threadId)}`, { cache: "no-store" })
+      .then((r) => r.ok ? r.json() as Promise<WaveStateData> : null)
+      .then((d) => { if (d) setWaveState(d); })
+      .catch(() => {});
+  }, [threadId, workspace]);
+
   useEffect(() => {
     if (!threadId) return;
-    setData(null); // clear stale data immediately when workspace or threadId changes
-    const fetchData = () => {
-      if (document.visibilityState !== "visible") return;
-      fetch(`/api/team-status?threadId=${encodeURIComponent(threadId)}&workspace=${encodeURIComponent(workspace)}`, { cache: "no-store" })
-        .then((r) => {
-          if (r.status === 404) { setEndpointReady(false); return null; }
-          setEndpointReady(true);
-          return r.json() as Promise<TeamStatus>;
-        })
-        .then((d) => { if (d) { setData(d); setFetchError(false); } })
-        .catch(() => setFetchError(true));
-      fetch(`/api/wave-state?thread_id=${encodeURIComponent(threadId)}`, { cache: "no-store" })
-        .then((r) => r.ok ? r.json() as Promise<WaveStateData> : null)
-        .then((d) => { if (d) setWaveState(d); })
-        .catch(() => {});
-    };
-    fetchData();
-    const id = setInterval(fetchData, 10_000);
-    const onVis = () => { if (document.visibilityState === "visible") fetchData(); };
+    setData(null);
+    fetchTeamData();
+    const onVis = () => fetchTeamData();
     document.addEventListener("visibilitychange", onVis);
+    if (pollIntervalMs === 0) {
+      return () => document.removeEventListener("visibilitychange", onVis);
+    }
+    const id = setInterval(fetchTeamData, pollIntervalMs);
     return () => { clearInterval(id); document.removeEventListener("visibilitychange", onVis); };
-  }, [threadId, workspace]);
+  }, [threadId, fetchTeamData, pollIntervalMs]);
+
+  useEffect(() => {
+    if (!threadId) return;
+    const es = new EventSource(`/api/thread-events?threadId=${threadId}`);
+    es.onmessage = (e) => {
+      let ev: { type: string };
+      try { ev = JSON.parse(e.data); } catch { return; }
+      if (["turn-end", "notes-updated", "handoff", "dispatch"].includes(ev.type)) {
+        fetchTeamData();
+      }
+    };
+    return () => es.close();
+  }, [threadId, fetchTeamData]);
 
   const sortedQueued = useMemo<TeamStatus["queued"]>(() => {
     if (!data?.queued) return [];
@@ -401,6 +421,11 @@ export default function DashboardPage() {
     }
   };
 
+  const handlePollIntervalChange = (ms: number) => {
+    setPollIntervalMs(ms);
+    try { localStorage.setItem(POLL_INTERVAL_KEY, String(ms)); } catch {}
+  };
+
   const setRoleModel = (role: string, model: string) => {
     setRoleModels((prev) => ({ ...prev, [role]: model }));
     try { localStorage.setItem(`apex-model-${role}`, model); } catch {}
@@ -448,6 +473,16 @@ export default function DashboardPage() {
     } else {
       setNotifPermission("unavailable");
     }
+  }, []);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(POLL_INTERVAL_KEY);
+      if (saved !== null) {
+        const parsed = parseInt(saved, 10);
+        if ([0, 1000, 4000, 10000, 30000].includes(parsed)) setPollIntervalMs(parsed);
+      }
+    } catch {}
   }, []);
 
   // Persist settings to localStorage on every change
@@ -840,10 +875,15 @@ export default function DashboardPage() {
 
         {/* ACTIVE WAVE */}
         <section className="panel span2">
-          {panelHd("Active Wave", "wave")}
-          {!endpointReady ? notReady : !data ? empty("Loading…") : !data.activeWave ? empty("No wave context found in thread.") : (
-            <pre className="wave-text">{data.activeWave.excerpt}</pre>
-          )}
+          <ActiveWaveCard
+            activeWave={data?.activeWave ?? null}
+            now={data?.now ?? []}
+            done={data?.done ?? []}
+            queued={data?.queued ?? []}
+            pollIntervalMs={pollIntervalMs}
+            onPollIntervalChange={handlePollIntervalChange}
+            endpointReady={endpointReady}
+          />
         </section>
 
         {/* ISSUES */}
@@ -1190,12 +1230,6 @@ export default function DashboardPage() {
         .task-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .error-text { flex: 1; min-width: 0; color: var(--accent-qa); font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .dim { font-size: 10px; color: var(--text-dim); white-space: nowrap; flex-shrink: 0; }
-
-        .wave-text {
-          font-size: 11px; font-family: ui-monospace, monospace; color: var(--text-dim);
-          white-space: pre-wrap; word-break: break-word; margin: 0;
-          max-height: 160px; overflow-y: auto;
-        }
 
         .issue-grid { display: flex; flex-direction: column; gap: 4px; }
         .issue-row {
