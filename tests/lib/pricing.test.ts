@@ -11,11 +11,8 @@ describe("MODEL_PRICING snapshot — update test when prices change", () => {
     });
   });
 
-  it("claude-opus-4-7", () => {
-    expect(MODEL_PRICING["claude-opus-4-7"]).toMatchObject({
-      inputPerMTok: 5, outputPerMTok: 25,
-      cacheCreationPerMTok: 6.25, cacheReadPerMTok: 0.5,
-    });
+  it("claude-opus-4-7 is absent (retired)", () => {
+    expect(MODEL_PRICING["claude-opus-4-7"]).toBeUndefined();
   });
 
   it("claude-sonnet-4-6", () => {
