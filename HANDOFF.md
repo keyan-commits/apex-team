@@ -1,10 +1,24 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-02 (Wave 85 — #190 dup-key fix + smoke-gate gap)
+## ⏭️ NOW — 2026-06-02 (Wave 88 — restore-CI + protocol-wiring / US-040+US-041)
+
+**Wave 88 — PR open (feature/88-restore-ci-protocol). 319/319 tests green, type-check 0, `pnpm build` exits 0. Awaiting Architect non-UI gate → QA → DevSecOps merge.**
+
+**US-040 (closes #151) — restores `pnpm build`:** `src/app/global-error.tsx` + `next.config.ts`. Root cause: Next.js 16.2.6 ignores `dynamic="force-dynamic"` for convention files, crashing in its own SSR bundle (useContext null). Fix: `experimental.allowDevelopmentBuild:true` (bundles React in dev mode, fixes dispatcher init) + `experimental.prerenderEarlyExit:false` (fallback). Build was broken since Wave 55.
+
+**US-041 (closes #140) — wires dead protocol constants:** `src/lib/roles.ts` — removed 3 dead imports (`IMPLEMENTATION_PHASE_PROTOCOL`, `VERIFICATION_PHASE_PROTOCOL`, `SKILLS_SELF_ENRICHMENT_PROTOCOL`); interpolated `REQUIREMENTS_PHASE_PROTOCOL` into `PHASED_WORKFLOW_DISCIPLINE` + `ORCHESTRATOR_PROTOCOL`; added `CONSULTATION_PROTOCOL` to `PEER_PROTOCOL`. 5 new tests in `tests/lib/roles.test.ts`.
+
+**ADR note:** ADR-009 specifies `dynamic="force-dynamic"` as the fix but it doesn't work in Next.js 16.2.6 — actual fix is in `next.config.ts`. Architect should amend ADR-009 or create ADR-010 documenting the real fix.
+
+---
+
+## ⏭️ PREV — 2026-06-02 (Wave 85 — #190 dup-key fix + smoke-gate gap)
 
 **Wave 85 Lane-A (QA) — smoke rubric amended.** Added Leg C (console-clean gate) to `src/lib/skills/qa.ts`. Type-check 0. PR open: `feature/85-smoke-console-gate`. Doc-only — no code surface. Closes smoke-gate gap that let #190 ship.
 
 **Wave 85 Lane-B (UI Dev) — in-flight.** Branch `feature/85-dup-key-fix`, two sites in `page.tsx:701 + 733`. Awaiting UI Dev → UX gate → QA :3100 smoke.
+
+---
 
 ## ⏭️ PREV — 2026-06-02 (Wave 84 — backend reliability bundle #185+#181 / US-038+US-039)
 
