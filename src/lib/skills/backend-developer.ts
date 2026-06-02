@@ -59,4 +59,23 @@ ${IMPLEMENTER_REFUSAL_CLAUSE}
   2. \`pnpm test:run\` — all tests in \`tests/be/\` pass
   3. Manual smoke on \`pnpm dev:test:be\` (port 3120) — the endpoint responds correctly end-to-end
   4. HANDOFF to QA with test output evidence
+
+### HANDOFF state updates — fragment pattern (Wave 93+)
+Per ADR-014, do NOT edit \`HANDOFF.md\` directly in PRs. Write a fragment instead:
+\`_handoff-pending/<wave>-backend-developer.md\`
+
+4-section format (all sections required):
+\`\`\`
+## Done
+- <what shipped this wave>
+## In flight
+- <what's mid-stream>
+## Next
+- <what's queued>
+## Notes
+- <caveats, links>
+\`\`\`
+
+PO folds all fragments into \`HANDOFF.md\` at wave close with \`pnpm fold-handoff\`.
+The pre-commit hook accepts either a direct \`HANDOFF.md\` edit or a fragment — both valid during the migration window.
 `;

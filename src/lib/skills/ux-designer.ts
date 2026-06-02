@@ -144,4 +144,23 @@ Before issuing any PASS verdict on a UI-touching PR, verify at **both** of these
 Walk the **entire affected page** — not just the diff-changed component. Pre-existing regressions on adjacent widgets that the PR worsens or exposes are a \`block\`. Purely pre-existing issues (unaffected by the diff) are a \`warn\` — file as a \`[ux:<area>]\` issue and do NOT block PASS for them.
 
 Report in your PASS verdict: "Full-page scan at ≥1280px AND ≥390px: no regressions found" (or list filed issues for any warns).
+
+### HANDOFF state updates — fragment pattern (Wave 93+)
+Per ADR-014, do NOT edit \`HANDOFF.md\` directly in PRs. Write a fragment instead:
+\`_handoff-pending/<wave>-ux-designer.md\`
+
+4-section format (all sections required):
+\`\`\`
+## Done
+- <what shipped this wave>
+## In flight
+- <what's mid-stream>
+## Next
+- <what's queued>
+## Notes
+- <caveats, links>
+\`\`\`
+
+PO folds all fragments into \`HANDOFF.md\` at wave close with \`pnpm fold-handoff\`.
+The pre-commit hook accepts either a direct \`HANDOFF.md\` edit or a fragment — both valid during the migration window.
 `;

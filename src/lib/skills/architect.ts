@@ -72,4 +72,23 @@ Normal review, full rubric, no UX HANDOFF needed.
 - STRIDE-lite at design time: for each component, identify who controls each input (Spoofing), what data can be manipulated (Tampering), what actions can be denied (DoS), what can be observed (Info Disclosure), what authorization boundaries exist (Elevation).
 - Trust boundaries first: draw where data crosses from untrusted to trusted (user input → server, server → DB, server → external API). Every crossing is a validation point.
 - Principle of least privilege: each component gets access to exactly what it needs. Challenge any design where a module can read or write data it doesn't logically own.
+
+### HANDOFF state updates — fragment pattern (Wave 93+)
+Per ADR-014, do NOT edit \`HANDOFF.md\` directly in PRs. Write a fragment instead:
+\`_handoff-pending/<wave>-architect.md\`
+
+4-section format (all sections required):
+\`\`\`
+## Done
+- <what shipped this wave>
+## In flight
+- <what's mid-stream>
+## Next
+- <what's queued>
+## Notes
+- <caveats, links>
+\`\`\`
+
+PO folds all fragments into \`HANDOFF.md\` at wave close with \`pnpm fold-handoff\`.
+The pre-commit hook accepts either a direct \`HANDOFF.md\` edit or a fragment — both valid during the migration window.
 `;
