@@ -2,6 +2,15 @@
 
 Append-only. Newest first. Each entry: ~3–5 lines. Triggers: a protocol amendment, a "this shouldn't happen again" surprise, a non-obvious workaround.
 
+## 2026-06-02
+
+### Concurrent `git checkout` in shared working tree corrupts mid-turn reads (Wave 72, ADR-005)
+**What broke:** During the Wave 72 (#166) Architect code review, the shared working tree was on the feature branch being reviewed. A concurrent agent turn in that same tree could `git checkout` a different branch, invalidating any file the Architect had already read mid-review. The corruption is silent — no error, just stale content.
+**Why:** git's working tree is a single mutable surface. Multiple concurrent agent turns all point their file tools at the same directory. Any `git checkout` mid-flight changes what every other agent reads.
+**We now do:** `git worktree add /tmp/<role>-<branch> origin/<branch>` for every branch operation that isn't the currently-checked-out main. The primary tree is read-only for branch state during concurrent waves. Clean up with `git worktree remove /tmp/<role>-<branch>` after the PR opens; DevSecOps runs `git worktree prune` post-merge. Protocol: `WORKTREE_ISOLATION_PROTOCOL` in `src/lib/protocols.ts`.
+
+---
+
 ## 2026-06-01
 
 ### Mandatory pnpm build + boot smoke before QA PASS (Wave 64)

@@ -128,3 +128,43 @@ Skills self-enrichment protocol:
 - You may also search mcpmarket.com or the Anthropic skill marketplace for ready-made solutions before proposing a custom one.
 - Don't block your current turn waiting for the skill — file the issue and continue with what you have.
 `.trim();
+
+export const WORKTREE_ISOLATION_PROTOCOL = `
+WORKTREE_ISOLATION_PROTOCOL
+===========================
+
+**Invariant:** the primary working tree is read-only for branch state during
+any concurrent multi-agent wave. All branch-level work (checkout, edit, build,
+test) happens in isolated per-agent worktrees at \`/tmp/<role>-<branch>\`
+(e.g. \`/tmp/arch-review\`, \`/tmp/qa-wave72\`).
+
+### Creating a worktree
+
+\`\`\`
+git fetch origin
+git worktree add /tmp/<role>-<branch> origin/<branch>
+cd /tmp/<role>-<branch> && pnpm install --frozen-lockfile
+\`\`\`
+
+**Never \`git checkout\` in the primary working tree** while other agents may be
+reading it. Switching branches in a shared tree corrupts concurrent file reads
+mid-turn.
+
+### Cleanup
+
+After a PR is opened or review is complete:
+
+\`\`\`
+git worktree remove /tmp/<role>-<branch>   # add --force if it has uncommitted changes
+\`\`\`
+
+DevSecOps post-merge step: run \`git worktree prune\` to remove stale
+registrations, and audit \`ls /tmp/<role>-*\` before each wave fan-out to
+confirm no orphan worktrees are holding branch locks.
+
+### Scope
+
+This protocol applies to **Architect** (code reviews) and **DevSecOps** (branch
+ops), and to any role that needs to inspect or modify a branch other than
+the currently checked-out main.
+`.trim();
