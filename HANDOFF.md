@@ -2,21 +2,9 @@
 
 ## ⏭️ NOW — 2026-06-02
 
-**Wave 72 (#160) — STATE EXTERNALIZATION: 4 DB tables + CRUD helpers + peer_idle auto-update + gh PR/issue refresh + 4 read-only MCP tools + `/api/wave-state` endpoint. Branch `feature/72-state-externalization` off main `a7e1f5b`. Closes #160.**
+**#161 — Done-group chip stopPropagation fix. Branch `feature/161-done-chip-stoppropagation`. 2-line change: `onClick={(ev) => ev.stopPropagation()}` on `chip-strip` span + `<a>` chip in Done group. Gate: 221/221 green. UX PASS + Architect PASS. Merging now.**
 
-**8 files changed:**
-- `src/lib/db.ts` — 4 tables (`wave_queue`, `pr_status`, `peer_idle`, `pipeline_state`) + 10 CRUD helpers + type exports. All `UNIQUE(thread_id, key)` composite, `updated_at INTEGER` epoch-ms.
-- `src/lib/run-turn-with-dispatches.ts` — `peer_idle` auto-update: `markRoleActive` before each turn, `markRoleIdle` in finally (both primary target and dispatched peers). OQ-S72-001: driver is sole writer.
-- `src/lib/tick-scheduler.ts` — `refreshGhState()` runs `gh pr list` + `gh issue list` before each tick (best-effort, full try/catch). Tick message now reads `open_issue_count` from `pipeline_state` for `backlog=<n>` (#160 fix).
-- `src/mcp/tools.ts` — 4 new read-only tools: `get_pipeline_state`, `get_wave_queue`, `get_pr_status_summary`, `get_peer_idle_state`.
-- `src/app/api/wave-state/route.ts` — NEW: `GET /api/wave-state?thread_id=<id>` → `{pipeline_state, wave_queue, pr_status, peer_idle}` arrays (AC8).
-- `tests/lib/db-wave-state.test.ts` — NEW: 18 tests covering all 4 table CRUD operations.
-- `tests/lib/run-turn-with-dispatches.test.ts` — 4 new peer_idle tests.
-- `tests/lib/tick-scheduler.test.ts` — added `node:child_process` mock + new db exports, updated backlog regex.
-
-**Gate: type-check 0, 240/240 green, lint 0 errors (18 pre-existing warnings), build compiles (#151 grandfathered), `/api/wave-state` smoke 200 on running server. Awaiting Architect non-UI gate → QA → DevSecOps merge.**
-
-**Note:** US-027 AC2 (PO HANDOFF wave-queue section replaced) and AC5 (boot backfill) deferred to Wave 75 per dispatch scope. `set_wave_status` tool omitted per dispatch's "read-only MCP" constraint (vs US AC3) — flagging to Architect.
+**Wave 72 (#160) MERGED — STATE EXTERNALIZATION on main (#166).**
 
 ---
 
