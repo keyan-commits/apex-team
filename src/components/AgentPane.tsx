@@ -163,6 +163,7 @@ export function AgentPane({
     status === "dispatching" ? "dispatching" :
     busy && pendingDraft !== null ? "streaming" :
     busy ? "thinking" :
+    inboxCount > 0 ? "pending" :
     "idle";
 
   const pillLabel =
@@ -170,6 +171,7 @@ export function AgentPane({
     pillState === "dispatching" ? "dispatching" :
     pillState === "streaming" ? "streaming" :
     pillState === "thinking" ? "thinking…" :
+    pillState === "pending" ? `pending(${inboxCount})` :
     "idle";
 
   // Filter the shared transcript for this pane's perspective.
@@ -223,7 +225,7 @@ export function AgentPane({
         <div className="folded-bar">
           <span className={`pill pill-${pillState}`} aria-label={`Status: ${pillLabel}`} title={pillLabel}>{pillLabel}</span>
           <Link href={`/agents/${role}`} className="folded-title folded-title-link" title={`${title} profile`}>{title}</Link>
-          {inboxCount > 0 && (
+          {inboxCount > 0 && pillState !== "pending" && (
             <span className="inbox-badge" title={`${inboxCount} pending`}>{inboxCount}</span>
           )}
           <button
@@ -257,6 +259,7 @@ export function AgentPane({
           .fold-btn:hover { color: var(--text); }
           .pill { display: inline-flex; align-items: center; font-size: 9px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 6px; border-radius: 99px; border: 1px solid currentColor; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: nowrap; }
           .pill-idle { color: var(--text-dim); border-color: var(--border); }
+          .pill-pending { color: var(--status-amber); border-color: var(--status-amber); }
           .pill-dispatching { color: var(--accent-po); animation: pill-pulse 1.4s ease-in-out infinite; }
           .pill-thinking { color: var(--accent-arch); animation: pill-pulse 1.1s ease-in-out infinite; }
           .pill-streaming { color: var(--accent-ui); animation: pill-pulse 0.6s ease-in-out infinite; }
@@ -484,6 +487,7 @@ export function AgentPane({
           text-overflow: ellipsis;
         }
         .pill-idle { color: var(--text-dim); border-color: var(--border); }
+        .pill-pending { color: var(--status-amber); border-color: var(--status-amber); }
         .pill-dispatching { color: var(--accent-po); animation: pill-pulse 1.4s ease-in-out infinite; }
         .pill-thinking { color: var(--accent-arch); animation: pill-pulse 1.1s ease-in-out infinite; }
         .pill-streaming { color: var(--accent-ui); animation: pill-pulse 0.6s ease-in-out infinite; }
