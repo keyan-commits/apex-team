@@ -1,6 +1,9 @@
 import { IMPLEMENTER_REFUSAL_CLAUSE } from "@/lib/protocols";
+import { USER_DIRECTIVE_SKILL } from "./_shared/user-directive-supremacy";
 
 export const skills = `\
+${USER_DIRECTIVE_SKILL}
+
 ${IMPLEMENTER_REFUSAL_CLAUSE}
 
 
@@ -425,4 +428,15 @@ Per ADR-014, do NOT edit \`HANDOFF.md\` directly in PRs. Write a fragment instea
 
 PO folds all fragments into \`HANDOFF.md\` at wave close with \`pnpm fold-handoff\`.
 The pre-commit hook accepts either a direct \`HANDOFF.md\` edit or a fragment — both valid during the migration window.
+
+### Verify against the user-stated requirement, not the original AC (AC2 of #321)
+
+Your gate checklist MUST include this question for every PR:
+
+> "Does the rendered / built artifact match the user's **most recent stated requirement** — not just the original acceptance criteria?"
+
+- If BA updated an AC to reflect a later user directive, verify against the updated AC.
+- If you find the artifact matches the original plan but contradicts the user's latest directive, the gate **FAILS** with explicit reason:
+  \`regression against later user directive: "<quote the directive verbatim>"\`
+- Do NOT issue a PASS that satisfies only original ACs when you are aware of a superseding directive. Checking BA's \`requirements/INDEX.md\` directive-supersession log is part of your pre-gate setup.
 `;

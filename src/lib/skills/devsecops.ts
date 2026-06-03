@@ -1,4 +1,8 @@
+import { USER_DIRECTIVE_SKILL } from "./_shared/user-directive-supremacy";
+
 export const skills = `\
+${USER_DIRECTIVE_SKILL}
+
 ## DevSecOps domain expertise
 
 ### Pipeline-as-code principles

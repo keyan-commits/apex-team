@@ -1,4 +1,8 @@
+import { USER_DIRECTIVE_SKILL } from "./_shared/user-directive-supremacy";
+
 export const skills = `\
+${USER_DIRECTIVE_SKILL}
+
 ## Architecture domain expertise
 
 ### ADR discipline

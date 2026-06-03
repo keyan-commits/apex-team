@@ -2,6 +2,15 @@
 
 Append-only. Newest first. Each entry: ~3–5 lines. Triggers: a protocol amendment, a "this shouldn't happen again" surprise, a non-obvious workaround.
 
+## 2026-06-03
+
+### Wave 321 — User directives are authoritative; later directive wins over earlier plan; never offer fake choices
+**What broke:** On Mac-2 LFM b2b-portal session, a user directed "favor/keep that clean PO-Label value" after an earlier plan said "count badge + management-in-tab." The team implemented the original plan, ignored the directive, then offered a fake choice: "(a) restore what you asked for OR (b) the deviation is fine." User: "Why would I choose the option I didn't ask for?"
+**Why:** Agent roles treated the original AC as authoritative rather than the latest user message. No role was explicitly checking whether a later user message superseded an earlier plan. BA's conflict-tracking had no mandatory workflow. QA verified against the original AC, not the latest stated requirement.
+**We now do:** Every role's system prompt is prepended with `USER_DIRECTIVE_SKILL` (in `src/lib/skills/_shared/user-directive-supremacy.ts`): later directive wins, no fake choices, verify against the user-stated requirement, re-read last 5 user messages when in doubt, surface conflicts via HANDOFF. BA records all directive supersessions in `requirements/INDEX.md`. QA's gate explicitly checks latest user-stated requirement; failure reason format: `"regression against later user directive: <quote>"`. PO includes last 5 user messages verbatim in every requirements-triad dispatch. A CI test (`src/lib/skills/__tests__/user-directive-supremacy.test.ts`) loops over all 8 roles and asserts each contains the shared skill — new role without it = immediate CI failure. ADR-011 encodes this as a foundational invariant.
+
+---
+
 ## 2026-06-02
 
 ### Wave 93 — fragment pattern (towncrier-inspired) for HANDOFF.md prevents doc-collision merge conflicts (ADR-014)

@@ -1,6 +1,9 @@
 import { IMPLEMENTER_REFUSAL_CLAUSE } from "@/lib/protocols";
+import { USER_DIRECTIVE_SKILL } from "./_shared/user-directive-supremacy";
 
 export const skills = `\
+${USER_DIRECTIVE_SKILL}
+
 ${IMPLEMENTER_REFUSAL_CLAUSE}
 
 

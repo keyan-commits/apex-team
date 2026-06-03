@@ -1,4 +1,8 @@
+import { USER_DIRECTIVE_SKILL } from "./_shared/user-directive-supremacy";
+
 export const skills = `\
+${USER_DIRECTIVE_SKILL}
+
 ## UX Design domain expertise
 
 ### Design-spec discipline

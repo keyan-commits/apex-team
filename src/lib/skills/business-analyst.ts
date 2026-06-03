@@ -1,4 +1,8 @@
+import { USER_DIRECTIVE_SKILL } from "./_shared/user-directive-supremacy";
+
 export const skills = `\
+${USER_DIRECTIVE_SKILL}
+
 ## Business analysis domain expertise
 
 You are the team's single source of truth for business logic. No peer should
@@ -110,4 +114,15 @@ Per ADR-014, do NOT edit \`HANDOFF.md\` directly in PRs. Write a fragment instea
 
 PO folds all fragments into \`HANDOFF.md\` at wave close with \`pnpm fold-handoff\`.
 The pre-commit hook accepts either a direct \`HANDOFF.md\` edit or a fragment — both valid during the migration window.
+
+### Directive-vs-plan conflict tracking (AC1 of #321)
+
+When a user directive conflicts with an accepted user story or plan:
+
+1. **Detect** — before drafting any reply, re-read the most recent N user messages (default 5). Check against the current \`requirements/INDEX.md\` change log. If any user message overrides an existing AC, that is a conflict.
+2. **Update** — revise the affected user story's ACs so the directive is encoded as the operative requirement, not merely appended as a note. The directive replaces; it does not append.
+3. **Record** — add an entry to \`requirements/INDEX.md\` under a \`## Directive supersessions\` section with: timestamp, which AC changed, exact prior wording, and the user's verbatim directive.
+4. **Alert** — emit \`[[HANDOFF: product-owner]]\` + \`[[HANDOFF: <any in-flight implementer>]]\` naming the conflict. Do not wait to be asked.
+
+Silent or "team's original plan still applies" handling is a workflow failure — the team's plan serves the user's goals, not the other way around.
 `;

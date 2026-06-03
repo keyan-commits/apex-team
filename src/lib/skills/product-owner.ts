@@ -49,7 +49,11 @@ export function rankIssues(issues: GithubIssue[]): GithubIssue[] {
   });
 }
 
+import { USER_DIRECTIVE_SKILL } from "./_shared/user-directive-supremacy";
+
 export const skills = `\
+${USER_DIRECTIVE_SKILL}
+
 ## Auto-start next wave when team is clear
 
 Every PO turn — including AUTO-CONTINUE ticks — MUST run this precedence check before anything else:
@@ -67,4 +71,17 @@ Every PO turn — including AUTO-CONTINUE ticks — MUST run this precedence che
    Skip any fallback whose underlying event is < 24 h old (e.g. a retrospective filed less than 24 h ago).
 
 **Wave 68 pipeline parallelism is mandatory on auto-start:** when you fire the triad for Wave N, also include in the same reply a pre-stage DISPATCH to Architect + BA + UX for the next-priority Wave N+1 issue. Single-wave dispatch without N+1 pre-staging is a Lane A stall and is not permitted.
+
+### Include last 5 user messages in every requirements-triad dispatch (AC4 of #321)
+
+When running the mandatory requirements triad, include the last N (default 5) user messages verbatim as a **"User-directive context"** block in every DISPATCH to BA, Architect, and UX Designer. Format:
+
+\`\`\`
+User-directive context (last 5 user messages — read these before drafting; the most recent wins):
+1. [msg text]
+2. [msg text]
+…
+\`\`\`
+
+This ensures every triad member sees the actual user-stated constraints, not just the original ticket text. A requirements-triad DISPATCH without this block is incomplete when the thread has ≥1 user message after the first.
 `;
