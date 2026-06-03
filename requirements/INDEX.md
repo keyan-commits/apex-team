@@ -1,6 +1,6 @@
 # Requirements Index
 
-_Auto-maintained by Business Analyst. Last updated: 2026-06-03 (Wave 121 — US-078 added; directive-supremacy conflict-tracking discipline codified; queue.md created for durable user-priority ordering)._
+_Auto-maintained by Business Analyst. Last updated: 2026-06-03 (Wave 121+ rescue sweep — US-079/080/081 added for self-heal L1/L2/L3 bundle; Architect NFR brief for #318 encoded into US-081 OQs; directive-supremacy conflict-tracking discipline codified; queue.md created for durable user-priority ordering)._
 
 | File | Summary | Last Modified |
 |------|---------|---------------|
@@ -41,6 +41,9 @@ _Auto-maintained by Business Analyst. Last updated: 2026-06-03 (Wave 121 — US-
 | [user-stories/US-066-focus-ring-selected-poll-button.md](user-stories/US-066-focus-ring-selected-poll-button.md) | US-066: Focus-ring contrast on selected poll button (#216) — specificity override `.aw-poll-selected.aw-poll-btn:focus-visible`; ring color `var(--text)`; WCAG 2.1 SC 1.4.11 ≥3:1; split from US-065 on Architect's Wave 108 pre-stage rec; status: **accepted**; owner UI Dev; Wave 108; closes #216 | 2026-06-03 |
 | [user-stories/US-078-user-directive-supremacy.md](user-stories/US-078-user-directive-supremacy.md) | US-078: User-directive supremacy shared skill — `USER_DIRECTIVE_SKILL` prepended to all 8 role prompts; 5 directives (later wins, no fake choices, verify vs latest requirement, re-read last 5, surface conflicts); CI unit test loop-over-roles; BA records supersessions in INDEX.md; QA gate format `"regression against later user directive: <quote>"`; ADR-011 foundational invariant; regression test 2026-06-03-po-label-directive; status: **done** (PR #323 `2ea18a2`); closes #321 | 2026-06-03 |
 | [queue.md](queue.md) | User-directed priority queue — overrides `rankIssues` age-sort; active ordering: PR #323 → #316–#320 self-heal bundle → #126/US-071 QA tests page → #322–#330 audit fills; source: user directive 2026-06-03; application of US-078/ADR-011 | 2026-06-03 |
+| [user-stories/US-079-self-heal-l1-launchd-agents.md](user-stories/US-079-self-heal-l1-launchd-agents.md) | US-079: Self-heal L1 — launchd LaunchAgents for apex-team + apex-engine; KeepAlive={Crashed:true,SuccessfulExit:false}; install/uninstall scripts; pnpm dev:off/on; signal-handler + stale-child short-circuit; PR #339 (signal handlers) already merged; plist install scripts remain; status: **accepted**; owner DevSecOps; closes #316 | 2026-06-03 |
+| [user-stories/US-080-self-heal-l2-stall-detector.md](user-stories/US-080-self-heal-l2-stall-detector.md) | US-080: Self-heal L2 — multi-signal stall detector (tick-count + HANDOFF/PR/issue write); STALL_WARN_MIN=10, STALL_EXIT_MIN=15; cascade-protection via .exit-history.json (3 exits/5min → manual-mode + dashboard banner); user-off bypass; status: **accepted**; owner BE Dev; closes #317 | 2026-06-03 |
+| [user-stories/US-081-self-heal-l3-auto-merge.md](user-stories/US-081-self-heal-l3-auto-merge.md) | US-081: Self-heal L3 — DevSecOps auto-merge hardened gate (G1–G6: MERGEABLE+CLEAN+CI success+closes open issue+not recently updated+explicit PASS+author-role); user-off bypass (NFR-SEC-002); post-merge CI watch (NFR-SEC-003); cascade-pause at 3 failures/5min; 4 OQs open (Architect brief); status: **accepted**; owner DevSecOps; closes #318 | 2026-06-03 |
 
 ## Voided user stories
 
