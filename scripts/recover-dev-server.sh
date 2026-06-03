@@ -17,7 +17,7 @@
 # Filed against #270 (Wave 103) — the script is the workaround until the
 # supervisor itself handles stale lockfile cleanup.
 
-set -u
+set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT" || exit 1
 
