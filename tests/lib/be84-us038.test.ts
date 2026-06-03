@@ -10,7 +10,7 @@ import { join } from "node:path";
 
 const tmpDir = mkdtempSync(join(tmpdir(), "apex-db-84-test-"));
 
-describe("US-038 — listActiveTickThreads try/catch (AC1–AC4)", () => {
+describe.sequential("US-038 — listActiveTickThreads try/catch (AC1–AC4)", () => {
   let listActiveTickThreads: (windowMs: number) => string[];
   let logTick: (...args: unknown[]) => void;
 
@@ -27,9 +27,21 @@ describe("US-038 — listActiveTickThreads try/catch (AC1–AC4)", () => {
     try { rmSync(tmpDir, { recursive: true, force: true }); } catch {}
   });
 
-  it("AC4 normal path: returns [] when no ticks have been logged", () => {
-    const result = listActiveTickThreads(7_200_000);
+  it("AC4 normal path: returns [] when no ticks have been logged", async () => {
+    // Fresh module + DB to guarantee clean state (previous tests may have polluted the shared DB)
+    const freshDir = mkdtempSync(join(tmpdir(), "apex-db-84-empty-"));
+    process.env.APEX_TEAM_DB_PATH = join(freshDir, "empty.db");
+    vi.resetModules();
+    const freshMod = await import("@/lib/db");
+    const result = freshMod.listActiveTickThreads(7_200_000);
     expect(result).toEqual([]);
+    try { rmSync(freshDir, { recursive: true, force: true }); } catch {}
+    // Restore shared DB for remaining tests
+    process.env.APEX_TEAM_DB_PATH = join(tmpDir, "test.db");
+    vi.resetModules();
+    const mod = await import("@/lib/db");
+    listActiveTickThreads = mod.listActiveTickThreads;
+    logTick = mod.logTick as unknown as (...args: unknown[]) => void;
   });
 
   it("AC4 normal path: returns thread id after a tick is logged in the window", () => {
