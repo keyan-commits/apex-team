@@ -12,23 +12,33 @@
  *   - Third signal → bare process.exit(1).
  *   - Stale-child detection in killChild(): check pid alive before waiting (AC6).
  *   - Startup orphan detection: kill leftover child PID from crashed prior run.
+ *   - Single-supervisor invariant (US-084 AC2): refuse to spawn if another
+ *     supervisor is alive (detected via SELF_PID_FILE + kill -0).
  *
  * launchd KeepAlive={Crashed:true, SuccessfulExit:false} invariant:
  *   - clean process.exit(0) → launchd does NOT respawn (user intent respected).
  *   - exit-nonzero or SIGKILL → launchd DOES respawn.
  *
  * Exported as a class so unit tests can inject mocks without touching disk.
+ *
+ * Kill pattern (US-084 AC3):
+ *   pkill -f apex-team-supervisor    # matches process.title set at startup
+ *   — or —
+ *   kill $(cat data/apex-team-supervisor.pid)
  */
 
 import { spawn } from 'node:child_process';
-import { watchFile, rmSync, writeFileSync, readFileSync, mkdirSync } from 'node:fs';
+import { watchFile, rmSync, writeFileSync, readFileSync, mkdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RESTART_SENTINEL = join(ROOT, '.restart-trigger');
 const USER_OFF_PATH = join(ROOT, 'data', '.user-off');
+// Stores the child server's PID (for orphan detection on restart).
 const PID_FILE = join(ROOT, 'data', '.supervisor.pid');
+// Stores the supervisor's OWN PID (for duplicate-supervisor detection, US-084 AC2).
+const SELF_PID_FILE = join(ROOT, 'data', 'apex-team-supervisor.pid');
 const GRACE_MS = 15_000;
 const DOUBLE_SIGNAL_WINDOW_MS = 8_000;
 
@@ -48,6 +58,7 @@ export class Supervisor {
     this.doubleSignalWindowMs = opts.doubleSignalWindowMs ?? DOUBLE_SIGNAL_WINDOW_MS;
     this.userOffPath = opts.userOffPath ?? USER_OFF_PATH;
     this.pidFile = opts.pidFile ?? PID_FILE;
+    this.selfPidFile = opts.selfPidFile ?? SELF_PID_FILE;
     this.restartSentinel = opts.restartSentinel ?? RESTART_SENTINEL;
     this.exitFn = opts.exitFn ?? ((code) => process.exit(code));
 
@@ -55,6 +66,46 @@ export class Supervisor {
     // State machine: 'running' | 'grace' | 'escalated'
     this._shutdownState = 'running';
     this._firstSignalAt = 0;
+  }
+
+  // US-084 AC2: refuse to start if another supervisor is already alive.
+  // Returns true if a live duplicate was found (caller should exit).
+  checkDuplicateSupervisor() {
+    if (!existsSync(this.selfPidFile)) return false;
+    try {
+      const raw = readFileSync(this.selfPidFile, 'utf8').trim();
+      const pid = parseInt(raw, 10);
+      if (isNaN(pid)) return false;
+      try {
+        process.kill(pid, 0); // ESRCH if dead
+        console.error(
+          `[supervisor] ERROR: another supervisor is already running (pid=${pid}).\n` +
+          `  Kill it first:  pkill -f apex-team-supervisor\n` +
+          `  — or —         kill $(cat ${this.selfPidFile})`
+        );
+        return true;
+      } catch {
+        // Stale pidfile — process is gone, safe to proceed.
+        return false;
+      }
+    } catch {
+      return false;
+    }
+  }
+
+  writeSupervisorPid() {
+    try {
+      mkdirSync(dirname(this.selfPidFile), { recursive: true });
+      writeFileSync(this.selfPidFile, String(process.pid));
+    } catch (err) {
+      console.error('[supervisor] failed to write self pidfile:', err.message);
+    }
+  }
+
+  cleanSupervisorPid() {
+    try {
+      rmSync(this.selfPidFile, { force: true });
+    } catch {}
   }
 
   // AC6: stale-child guard — resolve immediately if child PID no longer exists.
@@ -122,6 +173,7 @@ export class Supervisor {
         this.child = null;
       }
       this.writeUserOff(sig);
+      this.cleanSupervisorPid();
       this.exitFn(0);
       return;
     }
@@ -133,6 +185,7 @@ export class Supervisor {
 
   async _gracefulShutdown() {
     await this.killChild();
+    this.cleanSupervisorPid();
     // Don't exit if escalation already handled it.
     if (this._shutdownState !== 'escalated') {
       this.exitFn(0);
@@ -186,6 +239,13 @@ export class Supervisor {
   }
 
   start() {
+    // US-084 AC2: bail out if a live supervisor is already running.
+    if (this.checkDuplicateSupervisor()) {
+      this.exitFn(1);
+      return;
+    }
+    this.writeSupervisorPid();
+
     this.checkStaleChildOnStartup();
 
     watchFile(this.restartSentinel, { interval: 1000 }, async () => {
@@ -209,5 +269,7 @@ export class Supervisor {
 
 const isMain = process.argv[1] === fileURLToPath(import.meta.url);
 if (isMain) {
+  // US-084 AC3: set process title so `pkill -f apex-team-supervisor` matches.
+  process.title = 'apex-team-supervisor';
   new Supervisor().start();
 }
