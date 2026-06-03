@@ -73,15 +73,11 @@ describe("foldFragments — pure fold logic", () => {
 describe("run() — filesystem + git rm integration (F2)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(fsP.readdir as any).mockResolvedValue(["93-architect.md", ".gitkeep"]);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(fsP.readFile as any)
       .mockResolvedValueOnce("## Done\n- ADR-014\n## In flight\n- none\n## Next\n- none\n## Notes\n- n/a")
       .mockResolvedValueOnce("## Old HANDOFF\n\nContent.");
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(fsP.writeFile as any).mockResolvedValue(undefined);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(execSync as any).mockReturnValue(undefined);
   });
 

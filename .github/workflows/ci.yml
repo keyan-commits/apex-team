@@ -22,6 +22,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Lint
+        # Wave 108 (Piece 2/#303): lint first (fail fast), max-warnings 0 to catch all warnings as errors
+        run: pnpm lint --max-warnings 0
+
       - name: Dependency audit
         run: pnpm audit --audit-level moderate
         continue-on-error: true  # transient registry failures don't block PRs
@@ -35,9 +39,6 @@ jobs:
         # tests/server/timeouts.test.ts imports server.ts which loads Next config;
         # without NODE_ENV set, Next throws "allowDevelopmentBuild requires NODE_ENV=development".
         run: NODE_ENV=development pnpm test:run
-
-      - name: Lint
-        run: pnpm lint
 
   build-smoke:
     name: Build smoke (pnpm build)

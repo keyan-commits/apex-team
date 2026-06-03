@@ -197,7 +197,6 @@ describe("tick-scheduler", () => {
 
     it("applies geometric backoff (not signals-clear) when inboxes are non-empty", async () => {
       // Make inboxes non-empty so signals-clear doesn't trigger.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockListPendingInbox.mockReturnValue([{ id: 1 }] as any);
       const deps = makeFakeDeps();
       armScheduler("t-geo2", { deps });
@@ -232,7 +231,6 @@ describe("tick-scheduler", () => {
     });
 
     it("resets no-op count to 0 when a tick emits dispatches", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockListPendingInbox.mockReturnValue([{ id: 1 }] as any);
       const deps = makeFakeDeps();
       armScheduler("t-reset", { deps });
@@ -274,7 +272,6 @@ describe("tick-scheduler", () => {
     });
 
     it("stop condition 2: pauses with no-op-throttle when cumulative delay >= 300s", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mockListPendingInbox.mockReturnValue([{ id: 1 }] as any); // keep inboxes non-empty
       const deps = makeFakeDeps();
       armScheduler("t-throttle", { deps });
@@ -412,9 +409,9 @@ describe("tick-scheduler", () => {
       // Immediately fire another tick before tick1 finishes.
       // Since mockListPendingInbox returns [] and deps._fire fires the next callback,
       // we add a second callback manually to simulate concurrent tick scheduling.
-      let cb2!: () => void;
+      let _cb2!: () => void;
       deps.schedule.mockImplementationOnce((fn: () => void) => {
-        cb2 = fn;
+        _cb2 = fn;
         return setTimeout(() => {}, 9_999_999) as ReturnType<typeof setTimeout>;
       });
 
