@@ -1295,6 +1295,7 @@ export default function DashboardPage() {
         .row-detail-error .row-detail-text { color: var(--accent-qa); }
         .row-error { background: color-mix(in srgb, var(--accent-qa) 8%, var(--surface-2)); }
         .row.draggable { cursor: grab; }
+        .row.draggable:focus-visible { outline: 2px solid var(--accent-po); outline-offset: 2px; border-radius: 6px; }
         .row.row-dragging { opacity: 0.4; }
         .row.row-flash { background: var(--surface-2); transition: background 200ms ease-out; }
         @media (prefers-reduced-motion: reduce) {
