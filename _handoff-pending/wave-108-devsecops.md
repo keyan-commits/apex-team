@@ -1,11 +1,11 @@
 ## Done
 - Lint sweep: fixed 23 pre-existing warnings (unused imports, variables, eslint-disable directives)
-- Piece 1 (pre-commit hook): added `pnpm lint --max-warnings 0 --quiet` + `pnpm type-check` gates
-- Piece 2 (CI): moved Lint step ABOVE Tests, added `--max-warnings 0` flag
+- Piece 1 (pre-commit hook): added `pnpm lint --max-warnings 0 --quiet` + `pnpm type-check` gates → commit 6f40fbb
+- Piece 2 (CI): moved Lint step ABOVE Tests, added `--max-warnings 0` flag → commit 6f40fbb
 - eslint.config.mjs: added `.claude/**` to ignores to exclude worktree build artifacts
+- Piece 4 (vitest shuffle): added `--sequence.shuffle` to `test:run` script (catches order-dependent leaks)
 
 ## In flight
-- Piece 4 (vitest shuffle): wired into `package.json` test:run script
 - Piece 5 (PR template): creating `.github/pull_request_template.md` with 5-line visual checklist
 - Piece 6 (#310 guard): implementing GitHub Actions workflow to validate PR body close-keyword syntax
 
