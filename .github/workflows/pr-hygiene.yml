@@ -10,8 +10,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check close-keyword syntax
+        # Guard: only run on pull_request events. The workflow is only triggered
+        # by pull_request (see `on:` above), but GitHub also runs a registration
+        # validation pass on every push that modifies this file. In that push
+        # context github.event.pull_request is null, so the env-var expression
+        # below would cause a validation failure (manifest as run name falling
+        # back to the file path with 0 jobs). The `if:` guard short-circuits
+        # the step in any non-PR context, and the `|| ''` defensive default
+        # prevents the expression from rejecting during registration validation.
+        if: github.event_name == 'pull_request'
         env:
-          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_BODY: ${{ github.event.pull_request.body || '' }}
         run: |
           # PR_BODY is passed as an env var — the ${{ }} expansion happens at
           # YAML-render time into a quoted env assignment, so shell metacharacters
