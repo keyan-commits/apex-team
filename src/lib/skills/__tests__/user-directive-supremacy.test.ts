@@ -19,7 +19,7 @@ import {
  *    - "Verify against the user-stated requirement"
  *    - "When in doubt, re-read"
  *    - "Surface conflicts"
- * 4. Assert each clause appears EARLY in the skills (position < 2000 chars)
+ * 4. Assert each clause appears EARLY in the skills (position < 400 chars)
  */
 
 describe("User-Directive-Supremacy Shared Skill", () => {
@@ -47,9 +47,9 @@ describe("User-Directive-Supremacy Shared Skill", () => {
         }
       });
 
-      it("should have directive-supremacy content EARLY in skills (first 2000 chars)", () => {
+      it("should have directive-supremacy content EARLY in skills (first 400 chars)", () => {
         const skills = role.skills ?? "";
-        const earlyPortion = skills.substring(0, 2000);
+        const earlyPortion = skills.substring(0, 400);
 
         // At least one of the required phrases should appear early,
         // indicating the shared skill is prepended before role-specific content
@@ -62,9 +62,9 @@ describe("User-Directive-Supremacy Shared Skill", () => {
 
       it("should not offer fake choices when directive conflicts with plan", () => {
         // Negative assertion: skills should NOT contain these patterns in the
-        // directive-supremacy section (first 2000 chars)
+        // directive-supremacy section (first 400 chars)
         const skills = role.skills ?? "";
-        const earlyPortion = skills.substring(0, 2000);
+        const earlyPortion = skills.substring(0, 400);
 
         const badPatterns = [
           "Would you prefer",

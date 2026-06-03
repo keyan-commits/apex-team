@@ -12,6 +12,6 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    exclude: ["tests/playwright/**", "**/node_modules/**"],
+    exclude: ["tests/playwright/**", "**/node_modules/**", ".claude/**", "**/.git/**"],
   },
 });
