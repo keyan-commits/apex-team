@@ -2,6 +2,7 @@
 
 _Auto-maintained by Business Analyst. Last updated: 2026-06-03 (Wave 121+ Lane A — US-084 added for #349 self-instability hardening; OQ-349-001 open for AC4 UI surface)._
 _Auto-maintained by Business Analyst. Last updated: 2026-06-03 (Wave 121+ rescue sweep — US-079/080/081 added for self-heal L1/L2/L3 bundle; Architect NFR brief for #318 encoded into US-081 OQs; directive-supremacy conflict-tracking discipline codified; queue.md created for durable user-priority ordering; US-082 added for SQLite migration crash-safety, closes #319)._
+_Auto-maintained by Business Analyst. Last updated: 2026-06-03 (Wave 121+ — US-083 added: runaway-restart osascript alert + dashboard banner + reset (closes #320); OQ-320-001 open: agent\_state health.manual\_mode key schema needs Architect confirmation before impl. Prior: US-079/080/081 self-heal L1/L2/L3; US-082 SQLite crash-safety; US-078 user-directive supremacy; queue.md priority ordering)._
 
 | File | Summary | Last Modified |
 |------|---------|---------------|
@@ -47,6 +48,7 @@ _Auto-maintained by Business Analyst. Last updated: 2026-06-03 (Wave 121+ rescue
 | [user-stories/US-081-self-heal-l3-auto-merge.md](user-stories/US-081-self-heal-l3-auto-merge.md) | US-081: Self-heal L3 — DevSecOps auto-merge hardened gate (G1–G6: MERGEABLE+CLEAN+CI success+closes open issue+not recently updated+explicit PASS+author-role); user-off bypass (NFR-SEC-002); post-merge CI watch (NFR-SEC-003); cascade-pause at 3 failures/5min; 4 OQs open (Architect brief); status: **accepted**; owner DevSecOps; closes #318 | 2026-06-03 |
 | [user-stories/US-084-apex-team-self-instability-hardening.md](user-stories/US-084-apex-team-self-instability-hardening.md) | US-084: apex-team self-instability hardening — conflict-marker precompile fence (BE Dev AC1); single-supervisor pidfile invariant (DevSecOps AC2); discoverable kill pattern (DevSecOps AC3); stale-compile recovery signal (DevSecOps AC4); QA smokes for both failure modes (AC5); OQ-349-001 open (AC4 UI surface — drives UX gate); status: **accepted**; closes #349 | 2026-06-03 |
 | [user-stories/US-082-sqlite-migration-crash-safety.md](user-stories/US-082-sqlite-migration-crash-safety.md) | US-082: SQLite migration crash-safety — `BEGIN IMMEDIATE` transaction wrapping for all migrations; `data/.migration-in-flight` flag (refuse-to-start on boot if present); `_schema_version` table; 3 integration test paths (normal, crash, resume); `docs/operations/db-recovery.md`; WAL explicit; UX gate skipped (pure backend); OQ-319-001 open (current `db.ts` transaction API shape); status: **accepted**; owner BE Dev; closes #319 | 2026-06-03 |
+| [user-stories/US-083-runaway-restart-alert.md](user-stories/US-083-runaway-restart-alert.md) | US-083: Self-heal runaway-restart alert — osascript macOS notification + sticky `health.manual_mode` row in `agent_state` + dashboard red banner + "Dismiss + reset" button; single-fire; osascript fallback on CI/non-mac; 7 ACs; depends on US-080; OQ-320-001 open (agent\_state key schema needs Architect confirmation); UX gate required (banner contrast + a11y); owner DevSecOps + UI Dev; closes #320 | 2026-06-03 |
 
 ## Voided user stories
 
