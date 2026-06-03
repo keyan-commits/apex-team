@@ -170,8 +170,6 @@ export function StallSettingsDrawer({
           z-index: 200;
           display: flex;
           flex-direction: column;
-          transform: translateX(100%);
-          transition: transform 250ms ease-in-out;
           box-shadow: -4px 0 16px rgba(0, 0, 0, 0.25);
         }
         .stall-drawer.open {
