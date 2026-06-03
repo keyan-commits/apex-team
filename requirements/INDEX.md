@@ -1,6 +1,6 @@
 # Requirements Index
 
-_Auto-maintained by Business Analyst. Last updated: 2026-06-03 (Wave 115/121 — US-078 added; directive-supremacy conflict-tracking discipline codified)._
+_Auto-maintained by Business Analyst. Last updated: 2026-06-03 (Wave 121 — US-078 added; directive-supremacy conflict-tracking discipline codified; queue.md created for durable user-priority ordering)._
 
 | File | Summary | Last Modified |
 |------|---------|---------------|
@@ -40,6 +40,7 @@ _Auto-maintained by Business Analyst. Last updated: 2026-06-03 (Wave 115/121 —
 | [user-stories/US-065-rm-a11y-cluster.md](user-stories/US-065-rm-a11y-cluster.md) | US-065: RM-transition trio — verify-then-act ACs for Issues panel toggle (#210), ActiveWaveCard poll button (#215), responsive-layout transitions (#233); co-location rule; Architect drift note; status: **accepted**; owner UI Dev; Wave 108; closes #210 #215 #233 | 2026-06-03 |
 | [user-stories/US-066-focus-ring-selected-poll-button.md](user-stories/US-066-focus-ring-selected-poll-button.md) | US-066: Focus-ring contrast on selected poll button (#216) — specificity override `.aw-poll-selected.aw-poll-btn:focus-visible`; ring color `var(--text)`; WCAG 2.1 SC 1.4.11 ≥3:1; split from US-065 on Architect's Wave 108 pre-stage rec; status: **accepted**; owner UI Dev; Wave 108; closes #216 | 2026-06-03 |
 | [user-stories/US-078-user-directive-supremacy.md](user-stories/US-078-user-directive-supremacy.md) | US-078: User-directive supremacy shared skill — `USER_DIRECTIVE_SKILL` prepended to all 8 role prompts; 5 directives (later wins, no fake choices, verify vs latest requirement, re-read last 5, surface conflicts); CI unit test loop-over-roles; BA records supersessions in INDEX.md; QA gate format `"regression against later user directive: <quote>"`; ADR-011 foundational invariant; regression test 2026-06-03-po-label-directive; status: **done** (PR #323 `2ea18a2`); closes #321 | 2026-06-03 |
+| [queue.md](queue.md) | User-directed priority queue — overrides `rankIssues` age-sort; active ordering: PR #323 → #316–#320 self-heal bundle → #126/US-071 QA tests page → #322–#330 audit fills; source: user directive 2026-06-03; application of US-078/ADR-011 | 2026-06-03 |
 
 ## Voided user stories
 
@@ -74,3 +75,4 @@ _Per US-078 AC4: BA records every case where a later user directive superseded a
 | Date | Original plan | User directive | Resolution | Source |
 |---|---|---|---|---|
 | 2026-06-03 | "count badge + management-in-tab" for PO-Label field on Mac-2 LFM b2b-portal | "favor/keep that clean PO-Label value" | Directive wins; count badge rolled back; clean value restored. Established `USER_DIRECTIVE_SKILL` (US-078). | Wave 321 incident; LESSONS.md 2026-06-03 |
+| 2026-06-03 | `rankIssues` age-sort would place #126 (oldest open) ahead of #316–#320 (newer self-heal bundle) | "After #316-#320, I want the ticket where I can see the QA tests in http://localhost:3000/agents/qa" | Directive wins; #316–#320 precede #126 in execution order regardless of age. Recorded in `requirements/queue.md`. | User directive via PO inbox 2026-06-03 |
