@@ -3,7 +3,7 @@ import { APEX_MCP_URL } from "@/lib/mcp-config";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// Stable per process lifetime — used by the dashboard rebind banner (US-064).
+// Stable per process lifetime — not re-evaluated per request.
 const BOOT_TIME = Date.now();
 
 export async function GET(): Promise<Response> {
