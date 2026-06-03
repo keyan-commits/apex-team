@@ -243,3 +243,35 @@ describe("Wave 88 — US-041 protocol injection wiring (closes #140)", () => {
     expect(CONSULTATION_PROTOCOL).toContain("Never guess at functional intent");
   });
 });
+
+describe("Wave 107 — US-017 PO auto-compact peer HANDOFF docs (#131)", () => {
+  const poPrompt = ROLES["product-owner"].systemPrompt;
+
+  it("PO prompt has compaction pre-check step in auto-assign section", () => {
+    expect(poPrompt).toContain("Compaction pre-check");
+  });
+
+  it("PO prompt references the 8000-char threshold", () => {
+    expect(poPrompt).toContain("8000");
+  });
+
+  it("PO prompt references needsCleanup flag", () => {
+    expect(poPrompt).toContain("needsCleanup");
+  });
+
+  it("PO prompt enforces 1-hour cooldown", () => {
+    expect(poPrompt).toContain("1 hour");
+  });
+
+  it("PO prompt carries [exception: housekeeping] on compaction DISPATCH", () => {
+    expect(poPrompt).toContain("[exception: housekeeping]");
+  });
+
+  it("PO prompt tracks last_compacted per role in NOTES", () => {
+    expect(poPrompt).toContain("last_compacted");
+  });
+
+  it("PO prompt requires one DISPATCH per peer per turn during compaction", () => {
+    expect(poPrompt).toContain("one DISPATCH per peer per turn");
+  });
+});

@@ -233,7 +233,7 @@ export function registerApexTeamTools(server: McpServer): void {
         const state = getAgentState(thread_id, role);
         const inbox = isTeamRole(role) ? listPendingInbox(thread_id, role as TeamRoleId) : [];
         lines.push(
-          `- **${role}** — HANDOFF: ${state.handoffDoc.length} chars${state.updatedAt ? ` (updated ${new Date(state.updatedAt).toISOString()})` : ""}${isTeamRole(role) ? ` · inbox: ${inbox.length}` : ""}`,
+          `- **${role}** — HANDOFF: ${state.handoffDoc.length} chars${state.handoffDoc.length > 8000 ? " ⚠ needsCleanup:true" : ""}${state.updatedAt ? ` (updated ${new Date(state.updatedAt).toISOString()})` : ""}${isTeamRole(role) ? ` · inbox: ${inbox.length}` : ""}`,
         );
       }
       return { content: [{ type: "text", text: lines.join("\n") }] };
