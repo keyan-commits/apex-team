@@ -3,7 +3,7 @@
  * It must NOT leak into the sticky thread_config (getThreadAgentModels),
  * and it MUST be applied to the dispatched peer's runTurn call in-memory.
  */
-import { describe, it, expect, beforeEach, afterAll, vi } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, afterAll, vi } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -144,6 +144,10 @@ describe("runTurnWithDispatches — dispatch model: applied transiently to peer 
         }),
       };
     });
+  });
+
+  afterEach(() => {
+    vi.resetModules();
   });
 
   it("dispatched peer turn receives the model: override in its agents map (in-memory only)", async () => {
