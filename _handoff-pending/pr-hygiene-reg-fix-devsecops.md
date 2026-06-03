@@ -1,15 +1,21 @@
 ## Done
-- **PR #378 (pending)** — `fix(ci): fix pr-hygiene.yml registration failure on push events`
+- **PR #378 (pending)** — `fix(ci): use GITHUB_EVENT_PATH to avoid pull_request context in env:`
   - Branch: `feature/pr-hygiene-registration-fix`
   - Root cause: `env: PR_BODY: ${{ github.event.pull_request.body }}` at step level
-    caused GitHub's workflow registration validator to fail when evaluating the
-    expression in push context (pull_request context is null on push).
+    caused GitHub's static context-availability validator to reject the workflow on push
+    events. Validator checks env: expressions at parse time; job-level if: and || ''
+    fallbacks do NOT help because they only affect runtime evaluation.
     Symptom: run name fell back to file path `.github/workflows/pr-hygiene.yml`
     with 0 jobs; workflow deregistered from PR check lists.
-  - Fix: added `if: github.event_name == 'pull_request'` step guard AND
-    `|| ''` defensive default on the env-var expression (option 3 per spec).
-  - AC4 (shell injection fix from #375) preserved — `env:` passthrough + `printf '%s'` intact.
+  - Fix: removed ALL `${{ github.event.pull_request.* }}` expressions from the workflow.
+    PR body is now read from `$GITHUB_EVENT_PATH` (runner env var, always set) via
+    `node` in the run: script. This bypasses static validation entirely.
+  - AC4 (shell injection fix from #375) preserved — body never passes through bash eval.
   - AC3 (comma-list check) logic unchanged.
+  - Attempted intermediate fixes that did NOT work (for future reference):
+    - `|| ''` defensive default on env: value — still fails static validation
+    - `if: github.event_name == 'pull_request'` at job level — validator still parses env: exprs
+    - `if: github.event_name == 'pull_request'` at step level — same issue
 
 ## In flight
 - Waiting for merge of feature/pr-hygiene-registration-fix → main (PR #378)
