@@ -1,6 +1,6 @@
 # Architecture Index
 
-Last updated: 2026-06-03 (Wave 115/#321 — ADR-011 created: user-directive supremacy foundational invariant)
+Last updated: 2026-06-04 (Wave 107 — `workspace-conventions.md` ratified as the directory contract for the Plan C subagent runtime; resolves OQ-085-001 + OQ-085-002)
 
 ## Decision Records
 
@@ -20,11 +20,12 @@ Last updated: 2026-06-03 (Wave 115/#321 — ADR-011 created: user-directive supr
 | [ADR-014](decisions/ADR-014-handoff-fragment-pattern.md) | Towncrier-style HANDOFF Fragment Pattern (composes with ADR-013) | Accepted |
 | [ADR-015](decisions/ADR-015-no-redis-mq.md) | No Redis / MQ — in-process SQLite + single-process suffices (+ tripwire) | Accepted |
 
-## Pending docs
+## Flat docs
 
-| File | Status |
-|---|---|
-| [`nfr.md`](nfr.md) | Created — NFR-A11Y-001, NFR-MOTION-001, NFR-MOTION-002 |
-| `system-design.md` | Not yet created |
-| `tech-stack.md` | Not yet created |
-| `coding-standards.md` | Not yet created — needs UI/UX review sub-step entry when drafted |
+| File | Purpose | Status |
+|---|---|---|
+| [`workspace-conventions.md`](workspace-conventions.md) | Directory contract — single source of truth for where every deliverable lives under the Plan C subagent runtime. Every subagent reads this. | Ratified Wave 107 |
+| [`nfr.md`](nfr.md) | Quantified non-functional requirements with measurement methods. | Created — NFR-A11Y-001, NFR-MOTION-001, NFR-MOTION-002 |
+| `system-design.md` | Components, data flow, deployment topology. | Not yet created |
+| `tech-stack.md` | Languages, frameworks, libraries with rationale. | Not yet created |
+| `coding-standards.md` | Naming, layout, patterns the team must follow. | Not yet created — needs UI/UX review sub-step entry when drafted |

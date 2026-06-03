@@ -128,4 +128,32 @@ Open questions are blockers or ambiguities that require an answer before affecte
 
 ---
 
+## OQ-085-001 — Retention policy for `tests/qa/wave-NNN/` artifacts
+
+**Status:** ~~Open~~ **RESOLVED**
+**Owner:** Architect
+**Raised by:** QA (Wave 106, US-085 AC1)
+**Resolved:** Wave 107 (2026-06-04)
+**Affects:** US-085 AC1, QA artifact discipline
+
+**Decision (Architect, Wave 107):** Test **code** is retained (committed) indefinitely; **evidence artifacts** (screenshots, console logs, browser traces, videos) are gitignored under `tests/qa/wave-NNN/evidence/` with a committed `README.md` recording what was captured, when, and for which gate verdict. Snapshot files are committed with the test code. Wave-NNN is an organization boundary, not a retention horizon — tests are never pruned by wave age.
+
+**Full text:** [`architecture/workspace-conventions.md`](../architecture/workspace-conventions.md) §"OQ-085-001 — Test artifact retention policy".
+
+---
+
+## OQ-085-002 — Skill-slot for QA disk-artifact discipline
+
+**Status:** ~~Open~~ **CLOSED — original framing no longer applies**
+**Owner:** Architect
+**Raised by:** QA (Wave 106, US-085 AC4)
+**Resolved:** Wave 107 (2026-06-04)
+**Affects:** US-085 AC4 (dropped)
+
+**Decision (Architect, Wave 107):** The original question — "which section of `src/lib/skills/qa.ts` holds the discipline" — no longer makes sense under the Plan C subagent runtime. That file was deleted in PR #373 along with the rest of the monolith. **`.claude/agents/qa.md` IS the QA skill file** under the subagent runtime; the "skill slot" abstraction is gone. Discipline is now enforced by: (1) the text of `.claude/agents/qa.md` itself, (2) the workspace-conventions doc naming `tests/` as QA's canonical home, (3) Architect code-review FAIL on chat-only artifact delivery.
+
+**Full text:** [`architecture/workspace-conventions.md`](../architecture/workspace-conventions.md) §"OQ-085-002 — Skill-slot question (CLOSED, re-scoped)".
+
+---
+
 _Future questions append below this line._

@@ -1,6 +1,38 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 106 — Plan C RETIREMENT PR: monolith deleted, subagents are the team)
+## ⏭️ NOW — 2026-06-04 (Wave 107 — first wave under subagent runtime: workspace conventions + backlog re-triage + #375 fix)
+
+**claude-code direct on `feature/wave-107-conventions-and-backlog` (off origin/main `749843d`).**
+
+**Wave 107 — first wave run end-to-end through the new Plan C subagent runtime.** Outer Claude Code invoked product-owner subagent, PO emitted advisory DISPATCH blocks for a 4-lane parallel charter, outer dispatched all 4 subagents in parallel via the `Agent` tool. Three concrete deliverables landed:
+
+1. ✅ **Architect ratified `architecture/workspace-conventions.md`** — flat doc (not ADR; rationale: this is a reference doc every subagent reads daily). Single source of truth for the directory contract: `requirements/`, `architecture/`, `design/`, `tests/` (with `tests/qa/wave-NNN/` artifact path), `ops/`, `coordination/handoffs/`. Three-layer enforcement model (subagent prompts → code review → CI hooks). Cross-linked from `CLAUDE.md` §"Engineering standards" item 2, `architecture/INDEX.md` (new "Flat docs" table). **OQ-085-001 RESOLVED:** test code committed, evidence binaries gitignored under `tests/qa/wave-NNN/evidence/`, per-evidence-dir `README.md` audit trail. **OQ-085-002 CLOSED** as re-scoped under subagent runtime (the original "skill slot in src/lib/skills/qa.ts" question is meaningless post-monolith; `.claude/agents/qa.md` IS the QA skill file).
+
+2. ✅ **BA re-triaged the monolith-era backlog.** US-086 filed for the workspace-conventions deliverable (traceability wrapper). **44 GitHub issues closed** (dev-supervisor: #370/#371/#372; MCP/server/tick-scheduler: #355/#275/#260/#152/#97; DISPATCH mechanism: #352; dashboard/component: #354/#353/#207/#233/#329/#330/#327/#326/#328/#249/#254/#186/#155/#200/#315/#114/#116/#139/#128/#188/#305/#304/#297; superseded by US-022+subagent: #145; dup skill proposals: #356/#357/#358). **8 US files status-updated to closed**: US-065, US-066, US-079, US-080, US-081, US-082, US-083, US-084. 31 issues retained (skill proposals, CI/process discipline, docs-integrity, role-discipline items annotated for `.claude/agents/*.md` rehoming — see #196, #217). Full re-triage table in `coordination/handoffs/business-analyst.md`.
+
+3. ✅ **DevSecOps fixed pr-hygiene.yml shell-injection (#375).** PR #376 merged to main at `749843d` after Architect PASS code review. `${{ github.event.pull_request.body }}` now reads via env-var passthrough + `printf '%s'`; backticks/`$`/code-fences in PR bodies no longer crash the workflow.
+
+**Plan C runtime dogfooding proof:** Wave 107 = first wave fully on the new runtime. The 4-subagent parallel dispatch + files-on-disk coordination + advisory DISPATCH/HANDOFF blocks + outer Claude Code orchestration via `Agent` tool worked end-to-end. PO charter → 4 parallel subagents → all deliverables landed → Architect post-PR code review → DevSecOps merge. No SQLite, no MCP, no shared process. Single-turn subagents, all coordination via `coordination/handoffs/<role>.md` + workspace artifacts.
+
+**Bundled into this PR** (Wave 107 doc-deliverables — `feature/wave-107-conventions-and-backlog`):
+- New: `architecture/workspace-conventions.md`, `requirements/user-stories/US-086-workspace-conventions.md`, 5 `coordination/handoffs/*.md` (architect, business-analyst, devsecops, product-owner, ux-designer).
+- Modified: `CLAUDE.md`, `architecture/INDEX.md`, `requirements/INDEX.md`, `requirements/open-questions.md`, 8 US files (status → closed).
+- Cleanup: delete `_handoff-pending/107-devsecops.md` (orphan from DevSecOps's PR #376 branch — legacy `_handoff-pending/` pattern was removed in retirement; canonical state in `coordination/handoffs/devsecops.md`).
+
+**Surfaced gaps (follow-up wave):**
+- `.claude/agents/devsecops.md` body still references `_handoff-pending/` + `pnpm fold-handoff` + ADR-014 (all deleted in retirement). DevSecOps subagent honored the runtime adapter header correctly but body text caused a stray fragment file to land in PR #376.
+- `.claude/agents/ui-developer.md` + `.claude/agents/backend-developer.md` reference `pnpm dev:test:ui` / `pnpm dev:test:be` (monolith dev commands, deleted).
+- Subagent body rewrites are the natural Wave 108 candidate.
+
+**Next steps (post-merge of Wave 107 PR):**
+1. Plan Wave 108. Top candidates per Architect/PO HANDOFFs:
+   - Subagent body rewrites — remove all legacy monolith references from `.claude/agents/*.md` bodies. Eliminates the runtime-adapter translation layer.
+   - Viewer-repo coordination — extend the workspace-conventions doc into the sibling `apex-team-viewer` repo (or land a peer doc there).
+   - Address top items BA flagged as retained-annotated (mostly skill proposals).
+
+---
+
+## ⏭️ PREV — 2026-06-04 (Wave 106 — Plan C RETIREMENT PR: monolith deleted, subagents are the team)
 
 **claude-code direct on `feature/c2-plan-c-retirement` (off origin/main `47e0d48`).**
 

@@ -3,7 +3,7 @@ name: US-083-runaway-restart-alert
 description: Self-heal runaway-restart alerting — macOS osascript notification + dashboard banner + reset path when L2 cascade-protection enters manual-intervention mode; closes #320
 metadata:
   type: user-story
-  status: accepted
+  status: closed
   owner: DevSecOps (notification + state row) + UI Dev (banner + reset)
   issue: "#320"
   wave: pending-implementation

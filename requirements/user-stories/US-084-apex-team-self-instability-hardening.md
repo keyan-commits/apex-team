@@ -1,6 +1,6 @@
 # US-084 — apex-team self-instability hardening
 
-**Status:** accepted
+**Status:** closed
 **Owner role:** backend-developer (AC1), devsecops (AC2 AC3 AC4), qa (AC5)
 **Created:** 2026-06-03
 **Story ID:** US-084

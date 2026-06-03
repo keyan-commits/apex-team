@@ -3,7 +3,7 @@ name: US-066-focus-ring-selected-poll-button
 description: Focus-ring contrast on selected poll-cadence button (#216) — `.aw-poll-selected.aw-poll-btn:focus-visible` specificity override so the ring is visible against the accent-colored selected state. WCAG 2.1 SC 1.4.11 ≥3:1. UX owns ring-color/token decision.
 metadata:
   type: user-story
-  status: accepted
+  status: closed
   owner: UI Dev
   closes: "#216"
   wave: Wave 108

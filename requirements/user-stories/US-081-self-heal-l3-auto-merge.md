@@ -3,7 +3,7 @@ name: US-081-self-heal-l3-auto-merge
 description: Self-heal L3 — DevSecOps auto-merge green PRs with hardened gate + user-off bypass; closes #318
 metadata:
   type: user-story
-  status: accepted
+  status: closed
   owner: DevSecOps
   issue: "#318"
   wave: pending-triad

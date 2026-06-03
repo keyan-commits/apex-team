@@ -149,12 +149,12 @@ bash scripts/install-agents-user-scope.sh # symlink 8 subagents into ~/.claude/a
 ## Engineering standards
 
 1. **Files-on-disk discipline.** Every deliverable is a real file. Chat-bubble artifacts (test code, design specs, ADRs) do not count.
-2. **One source of truth per artifact:**
+2. **One source of truth per artifact** — see [`architecture/workspace-conventions.md`](architecture/workspace-conventions.md) for the full directory contract (ratified Wave 107). Summary:
    - Functional requirements: `requirements/` (BA-owned).
    - Architecture + NFRs + coding standards: `architecture/` (Architect-owned).
    - UX specs: `design/` (UX-owned).
-   - Tests: `tests/` (QA-owned).
-   - Ops / CI / deployment: `ops/` (DevSecOps-owned).
+   - Tests: `tests/` (QA-owned). Per-wave home: `tests/qa/wave-NNN/`; evidence binaries gitignored under `tests/qa/wave-NNN/evidence/`.
+   - Ops / CI / deployment: `ops/` (DevSecOps-owned). Carveout: GitHub Actions workflows live at `.github/workflows/` (repo root, GitHub-mandated path).
    - Per-subagent working state: `coordination/handoffs/<role>.md`.
 3. **HANDOFF-in-PR rule.** Every wave's HANDOFF refresh ships in the same PR as the code change. Never a separate doc-only PR.
 4. **Living docs at the top.** `HANDOFF.md` always opens with the NOW block; older blocks demote to PREV or archive under `_archive/HANDOFF-<YYYY-MM>.md`.

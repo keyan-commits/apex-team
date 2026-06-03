@@ -3,7 +3,7 @@ name: US-079-self-heal-l1-launchd-agents
 description: Self-heal L1 — launchd LaunchAgents for apex-team + apex-engine (user-off-respecting KeepAlive); closes #316
 metadata:
   type: user-story
-  status: accepted
+  status: closed
   owner: DevSecOps
   issue: "#316"
   wave: pending-triad

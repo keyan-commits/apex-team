@@ -1,6 +1,6 @@
 # US-082 — SQLite migration crash-safety (transaction + version flag)
 
-**Status:** accepted
+**Status:** closed
 **Owner role:** backend-developer (Architect reviews transaction boundaries)
 **Created:** 2026-06-03
 **Story ID:** US-082
