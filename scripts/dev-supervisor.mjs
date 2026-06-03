@@ -7,7 +7,7 @@
  * graph re-loaded (src/mcp/**, run-turn.ts, providers.ts, etc.).
  */
 import { spawn } from 'child_process';
-import { watchFile } from 'fs';
+import { watchFile, rmSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -18,12 +18,22 @@ const GRACE_MS = 5000;
 let child = null;
 let restarting = false;
 
+function cleanDevLock() {
+  try {
+    rmSync(join(ROOT, '.next/dev'), { recursive: true, force: true });
+    console.log('[supervisor] cleaned .next/dev lockfile');
+  } catch (err) {
+    console.log('[supervisor] .next/dev cleanup failed:', err.message);
+  }
+}
+
 function spawnChild() {
   console.log('[supervisor] starting server...');
   child = spawn('tsx', ['server.ts'], { stdio: 'inherit', cwd: ROOT });
   child.on('exit', (code, signal) => {
     if (!restarting) {
       console.log(`[supervisor] child exited (code=${code} signal=${signal}), respawning in 1s...`);
+      cleanDevLock();
       setTimeout(spawnChild, 1000);
     }
   });
@@ -50,6 +60,7 @@ watchFile(SENTINEL, { interval: 1000 }, async () => {
   restarting = true;
   console.log('[supervisor] restart requested');
   await killChild();
+  cleanDevLock();
   restarting = false;
   spawnChild();
 });
