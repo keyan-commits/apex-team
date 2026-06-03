@@ -1,5 +1,5 @@
 import Database from "better-sqlite3";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, existsSync, writeFileSync, unlinkSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import type {
   AgentState,
@@ -10,6 +10,101 @@ import type {
 import { estimateCostUsd } from "./pricing";
 
 let _db: Database.Database | null = null;
+
+// ─── Schema migrations ────────────────────────────────────────────────────────
+
+type Migration = { version: number; apply: (conn: Database.Database) => void };
+
+function tableColumns(conn: Database.Database, table: string): Set<string> {
+  const rows = conn.pragma(`table_info(${table})`) as Array<{ name: string }>;
+  return new Set(rows.map((r) => r.name));
+}
+
+const MIGRATIONS: Migration[] = [
+  {
+    version: 1,
+    apply(conn) {
+      if (!tableColumns(conn, "thread_config").has("workspace"))
+        conn.exec(`ALTER TABLE thread_config ADD COLUMN workspace TEXT`);
+    },
+  },
+  {
+    version: 2,
+    apply(conn) {
+      if (!tableColumns(conn, "tick_log").has("rescues_emitted"))
+        conn.exec(`ALTER TABLE tick_log ADD COLUMN rescues_emitted INTEGER NOT NULL DEFAULT 0`);
+    },
+  },
+  {
+    version: 3,
+    apply(conn) {
+      if (!tableColumns(conn, "tick_log").has("stalls_emitted"))
+        conn.exec(`ALTER TABLE tick_log ADD COLUMN stalls_emitted INTEGER NOT NULL DEFAULT 0`);
+    },
+  },
+  {
+    version: 4,
+    apply(conn) {
+      if (!tableColumns(conn, "agent_state").has("last_turn_at"))
+        conn.exec(`ALTER TABLE agent_state ADD COLUMN last_turn_at INTEGER`);
+    },
+  },
+];
+
+function applyMigrations(conn: Database.Database, dbPath: string): void {
+  const useFlag = !dbPath.startsWith(":");
+  const flagPath = useFlag ? resolve(dirname(dbPath), ".migration-in-flight") : null;
+
+  if (flagPath && existsSync(flagPath)) {
+    const msg =
+      `[db] MIGRATION CRASH DETECTED: flag file exists at ${flagPath}. ` +
+      `Inspect the DB and remove the flag file manually before restarting. ` +
+      `See docs/operations/db-recovery.md for repair steps.`;
+    console.error(msg);
+    throw new Error(msg);
+  }
+
+  const applied = new Set(
+    (
+      conn
+        .prepare(`SELECT version FROM _schema_version WHERE success = 1`)
+        .all() as Array<{ version: number }>
+    ).map((r) => r.version),
+  );
+
+  const pending = MIGRATIONS.filter((m) => !applied.has(m.version));
+  if (pending.length === 0) return;
+
+  if (flagPath) writeFileSync(flagPath, String(Date.now()));
+
+  for (const migration of pending) {
+    try {
+      conn
+        .transaction(() => {
+          migration.apply(conn);
+          conn
+            .prepare(
+              `INSERT OR REPLACE INTO _schema_version (version, applied_at, success) VALUES (?, ?, 1)`,
+            )
+            .run(migration.version, Date.now());
+        })
+        .immediate();
+    } catch (err) {
+      try {
+        conn
+          .prepare(
+            `INSERT OR REPLACE INTO _schema_version (version, applied_at, success) VALUES (?, ?, 0)`,
+          )
+          .run(migration.version, Date.now());
+      } catch {
+        /* best effort */
+      }
+      // Flag file remains — next boot detects the crash and refuses to start.
+      throw err;
+    }
+  }
+  if (flagPath) unlinkSync(flagPath);
+}
 
 function db(): Database.Database {
   if (_db) return _db;
@@ -144,12 +239,14 @@ function db(): Database.Database {
       ran_at    INTEGER NOT NULL,
       output    TEXT
     );
+
+    CREATE TABLE IF NOT EXISTS _schema_version (
+      version    INTEGER PRIMARY KEY,
+      applied_at INTEGER NOT NULL,
+      success    INTEGER NOT NULL DEFAULT 1
+    );
   `);
-  // Additive migrations — idempotent via try/catch (column-already-exists throws, which is fine)
-  try { conn.exec(`ALTER TABLE thread_config ADD COLUMN workspace TEXT`); } catch {}
-  try { conn.exec(`ALTER TABLE tick_log ADD COLUMN rescues_emitted INTEGER NOT NULL DEFAULT 0`); } catch {}
-  try { conn.exec(`ALTER TABLE tick_log ADD COLUMN stalls_emitted INTEGER NOT NULL DEFAULT 0`); } catch {}
-  try { conn.exec(`ALTER TABLE agent_state ADD COLUMN last_turn_at INTEGER`); } catch {}
+  applyMigrations(conn, dbPath);
   _db = conn;
   migrateRetiredModels();
   return conn;

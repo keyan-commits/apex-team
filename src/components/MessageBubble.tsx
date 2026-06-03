@@ -158,6 +158,11 @@ export function MessageBubble({ message, perspective, pending }: Props) {
         }
         .bubble + .bubble { margin-top: 10px; }
         .bubble-collapsed { cursor: pointer; }
+        .bubble-collapsed:focus-visible {
+          outline: 2px solid var(--accent-ui);
+          outline-offset: 2px;
+          border-radius: 10px;
+        }
         .bubble-header {
           font-size: 11px;
           text-transform: uppercase;
