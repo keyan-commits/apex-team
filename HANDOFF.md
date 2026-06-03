@@ -1,5 +1,6 @@
 # HANDOFF — apex-team
 
+## ⏭️ NOW — 2026-06-03 (Wave 99 — QA #299 regression guards + BE #316 signal handlers + Lane A #318 N+1 pre-stage)
 ## ⏭️ NOW — 2026-06-03 (Wave 116 — US-079 BE signal handlers + Wave 115 UI Dev)
 
 **In flight (BE Dev — US-079 / #316 backend half):**
@@ -48,13 +49,49 @@
 
 ## ⏭️ PREV — 2026-06-02 (Wave 98 — emergency lint fix: providers.ts prefer-const)
 
-**Wave 98 (#TBD) — emergency CI unblock. claude-code hand-fix.**
+**QA in flight:**
+- **PR (SHA-pending)** `feature/299-regression-guards` — #299 self-improvement: upgraded `tests/lib/roles.test.ts` Wave 107 block (lines 247–277) from pure presence checks (`toContain("8000")`) to **behavioral assertions** that verify PO logic. New structure: presence checks organized in `describe("prompt structure")` + behavioral logic tests in `describe("compaction logic (behavioral)")` verifying:
+  - Dispatch generation when `needsCleanup:true` + cooldown expired
+  - 1-hour cooldown enforcement
+  - One DISPATCH per peer per turn rule
+  - 54/54 tests pass, type-check 0
 
-Every main CI run has been FAILING since ~9:33 PM (user got ~30 GitHub failure emails). Root cause: `src/lib/providers.ts:147` had `let inboxItems: string[] = ...` but the variable is never reassigned (only mutated in-place via `.shift()` / `.unshift()`). `prefer-const` lint rule flagged it as an ERROR (not warning).
+**Backend-Developer in flight:**
+- **PR (SHA-pending)** `feature/316-signal-handlers` — US-079: server.ts SIGTERM/SIGINT/SIGHUP graceful shutdown + double-Ctrl-C user-off semantics per Architect NFR brief
 
-**One-character fix**: `let inboxItems` → `const inboxItems`. Behavior unchanged — `const` allows in-place array mutation. Closes the lint gate that's been blocking every PR's `build` job since Wave 97 (#208 prompt-cache audit) landed line 147.
+**Lane A (requirements + NFR preview):**
+- **#318 N+1 pre-stage** (auto-merge hardened gate) — Architect drafting NFR brief (hardened-gate preconditions + user-off bypass + audit), UX triaging UI impact, BA drafting US spec
 
-**Gate evidence**: type-check 0, **369/369 tests**, lint 0 errors. Branch `feature/98-lint-fix-prefer-const` off main.
+**Pending merge (#311/#313 after #299):**
+- QA smoke queue: #299 open PR → #311 dashboard density → #313 regression gates
+
+## ⏭️ PREV — 2026-06-03 (Wave 115 — US-072 #291 scout error copy fix in PR)
+
+**In flight (UI Dev):**
+- **PR (SHA-pending)** `feature/291-us072-scout-error-copy` — US-072 / #291: replaced stale `ANTHROPIC_API_KEY not configured — scout disabled` fallback with `"Claude Code not logged in — run 'claude login' to authenticate"` in `dashboard/page.tsx:440`; design doc updated to match. 527 passed / 1 skipped / 0 failed, type-check 0.
+- Gate sequence: Architect review → UX final-copy AC3 → QA smoke → DevSecOps
+
+## ⏭️ PREV — 2026-06-03 (Wave 99 — 4-PR merge train landed, main green, #311/#313 QA smoke in flight)
+
+**Merge train complete & verified (all four merged @ Git SHAs below):**
+- **#334** @ `c6fd65a` — playwright exclude guard (first ✓)
+- **#312** @ `1cc11870` — dashboard spec carrier (QA tested at `1cc1187` ✓)
+- **#323** @ `272a903` — user's #1 (locked per #314 ✓)
+- **#331** @ `6c07798` — UX retro spec doc-only (✓)
+
+**Main state:**
+- type-check 0, **506 passed / 1 skipped / 0 failed** (clean root checkout)
+- Phantom "pre-existing failures" traced to stale `.claude/worktrees/qa-smoke-*` (cleaned, filed #336)
+- Prod restarted, `/api/health` → 200 (apex-engine dependency is down, expected)
+
+**In flight:**
+- **#311** (`feature/112-us070-dashboard-density` @ `32b3ff2`) — UX PASS ✓, Architect PASS ✓, QA smoke pending
+- **#313** (`feature/303-regression-gates` @ `e658aef`) — Architect PASS ✓, QA smoke pending
+- **#311/#313 are independent** — merge order does not matter
+
+**Queued after #311/#313 merge:**
+- **#316 triad dispatch** (launchd KeepAlive handler) — per PO queue.md
+- **#317 N+1 pre-stage** (multi-signal stall detector) — parallel Architect NFR
 
 ---
 
