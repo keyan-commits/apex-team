@@ -3,7 +3,7 @@ name: US-080-self-heal-l2-stall-detector
 description: Self-heal L2 — multi-signal stall detector + process.exit(1) with bounded cascade-protection; closes #317
 metadata:
   type: user-story
-  status: accepted
+  status: closed
   owner: BackendDeveloper
   issue: "#317"
   wave: pending-triad

@@ -3,7 +3,7 @@ name: US-065-rm-a11y-cluster
 description: RM-transition trio — co-located reduced-motion overrides for Issues panel toggle (#210), ActiveWaveCard poll button (#215), responsive-layout transitions (#233). Verify-first ACs per Architect's drift findings. Focus-ring contrast (#216) split to US-066.
 metadata:
   type: user-story
-  status: accepted
+  status: closed
   owner: UI Dev
   closes: "#210, #215, #233"
   wave: Wave 108
