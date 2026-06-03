@@ -186,7 +186,7 @@ export function ActiveWaveCard({
             ) : now.length > 0 ? (
               <p className="aw-status-text">dispatching in progress</p>
             ) : (
-              <p className="aw-status-text">awaiting input</p>
+              <p className="aw-status-text">Tick scheduler idle — queue is empty. Send a goal via your Claude Code session, or use the composer.</p>
             )}
           </div>
 

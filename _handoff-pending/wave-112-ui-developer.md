@@ -2,24 +2,24 @@
 - US-070 Wave 112 implemented on `feature/112-us070-dashboard-density`
 - AC1: done-panel CSS-grid expand (`data-done-expands`, `grid-column: 1/4`, ≥1280px, instant snap)
 - AC2: workspace path RTL truncation on blur when len>40; full path in `title` tooltip
-- AC3: model dropdown hidden by default; `pane-header:hover` + `:focus-within` reveal (a11y gate satisfied)
-- AC4: peer-idle-row `overflow-x:auto` + `flex-wrap:nowrap`; `recent-row` gap 6→8px
+- AC3 (re-fixed per UX REVISE): `.ctx-model-select` hidden by default (`display:none`); revealed via `.ctx-card:hover .ctx-model-select, .ctx-card:focus-within .ctx-model-select { display:inline-block }` — focus-within parity for keyboard a11y
+- AC4: peer-idle-row `overflow-x:auto` + `flex-wrap:nowrap` (was already correct); `.recent-row-body` gap 6→12px (re-fixed per UX REVISE)
 - AC5: done[] pre-sorted by wave descending (nulls last) before `groupDone`
-- AC6: empty-state copy → "Tick scheduler idle — queue is empty. Send a goal via your Claude Code session, or use the composer." with `href="#"` link stub
-- AC7: chip-strip limit 4→2; +N badge with tooltip of hidden chips
-- Tests: 478/478 (17 new pure-function tests for AC1/AC2/AC5/AC7)
-- type-check: 0 (excl pre-existing QA playwright TS errors unrelated to this wave)
+- AC6 (re-fixed per UX REVISE): "awaiting input" in ActiveWaveCard Section D (Next) → "Tick scheduler idle — queue is empty. Send a goal via your Claude Code session, or use the composer."
+- AC7 (re-fixed per UX REVISE): NOW-panel chip-strip `slice(0,3)` → `slice(0,2)`; +N overflow badge retained
+- Tests: 468/468 (pre-existing playwright #309 excluded)
+- type-check: 0 (excl pre-existing playwright TS errors)
 
 ## In flight
-- PR #302 (Wave 108) — focus-ring fix, pending UX re-gate
-- Wave 112 PR pending open; branch `feature/112-us070-dashboard-density`
+- Awaiting UX re-gate on feature/112-us070-dashboard-density
 
 ## Next
-- Open PR for Wave 112 → HANDOFF UX Designer for design critique
-- After UX PASS → HANDOFF QA on :3100
+- After UX PASS → HANDOFF Architect code review
+- After Arch PASS → HANDOFF QA on :3100
 - After QA PASS → HANDOFF DevSecOps squash-merge
+- US-073 (trivial CSS deletion — vestigial `translateX(0)` from StallSettingsDrawer; triad complete)
 
 ## Notes
-- Pre-existing playwright test failure (`tests/playwright/dashboard-smoke.spec.ts`) is QA's untracked file missing `@playwright/test` package — was failing on main before this wave
-- AC6 docs link uses `#` stub per US-070 OQ-070-003 (non-blocking for tiny-lane ship)
-- AC3 CSS uses `display: none` / `display: flex` toggle (not visibility:hidden) so hidden dropdown is removed from tab order, satisfying keyboard a11y
+- Pre-existing playwright failure (`@playwright/test` not installed, #309) unaffected — all Vitest tests green
+- AC4A (peer-idle-row) was already correct at e008945; no re-edit needed
+- UX REVISE line numbers shifted vs. actual file; applied by value matching not line number

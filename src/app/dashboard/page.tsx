@@ -653,7 +653,7 @@ export default function DashboardPage() {
                         ...(e.waves ?? []).map((w) => ({ kind: "wave" as const, label: `Wave ${w}`, key: `w${w}` })),
                         ...(e.tickets ?? []).map((t) => ({ kind: "ticket" as const, num: t, key: `t${t}` })),
                       ];
-                      const visible = allChips.slice(0, 3);
+                      const visible = allChips.slice(0, 2);
                       const overflow = allChips.length - visible.length;
                       return (
                         <span className="chip-strip" onClick={(ev) => ev.stopPropagation()}>
@@ -1360,8 +1360,10 @@ export default function DashboardPage() {
         .ctx-model-select {
           font-size: 10px; color: var(--text-dim);
           background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
-          padding: 2px 4px; cursor: pointer; width: 100%;
+          padding: 2px 4px; cursor: pointer; width: 100%; display: none;
         }
+        .ctx-card:hover .ctx-model-select,
+        .ctx-card:focus-within .ctx-model-select { display: inline-block; }
         .ctx-model-select:hover { border-color: var(--text-dim); }
         .ctx-model-select:focus { outline: 2px solid var(--accent-po); outline-offset: 1px; }
 
@@ -1448,7 +1450,7 @@ export default function DashboardPage() {
         }
         .iss-check { flex-shrink: 0; cursor: pointer; accent-color: var(--accent-po); }
         .recent-row-body {
-          display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;
+          display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;
           text-decoration: none; color: var(--text); font-size: 12px;
         }
         .recent-row-body:hover .iss-title { text-decoration: underline; }
