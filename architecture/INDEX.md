@@ -23,7 +23,7 @@ Last updated: 2026-06-02 (Wave 98 — fix dead ADR links: delist ADR-008/-011; r
 
 | File | Status |
 |---|---|
-| `nfr.md` | Not yet created |
+| [`nfr.md`](nfr.md) | Created — NFR-A11Y-001, NFR-MOTION-001, NFR-MOTION-002 |
 | `system-design.md` | Not yet created |
 | `tech-stack.md` | Not yet created |
 | `coding-standards.md` | Not yet created — needs UI/UX review sub-step entry when drafted |
