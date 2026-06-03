@@ -6,8 +6,8 @@
 - Piece 4 (vitest shuffle): added `--sequence.shuffle` to `test:run` script (catches order-dependent leaks) → commit d70ded2
 - Piece 5 (PR template): created `.github/pull_request_template.md` with visual evidence checklist
 
-## In flight
-- Piece 6 (#310 guard): implementing GitHub Actions workflow to validate PR body close-keyword syntax
+## Done (continued)
+- Piece 6 (#310 guard): created `.github/workflows/pr-hygiene.yml` to validate PR body syntax (rejects comma-list `closes #a, #b, #c` patterns)
 
 ## Next
 - Test locally: `pnpm type-check` + `pnpm test:run`
