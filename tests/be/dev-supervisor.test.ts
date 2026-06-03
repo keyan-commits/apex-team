@@ -5,11 +5,13 @@ import { vi, describe, it, expect, beforeEach, afterEach } from "vitest";
 // Prevent any real file I/O from the supervisor module.
 vi.mock("node:fs", () => ({
   watchFile: vi.fn(),
+  watch: vi.fn().mockReturnValue({ on: vi.fn() }),
   rmSync: vi.fn(),
   writeFileSync: vi.fn(),
   readFileSync: vi.fn().mockImplementation(() => {
     throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
   }),
+  readdirSync: vi.fn().mockReturnValue([]),
   mkdirSync: vi.fn(),
 }));
 
@@ -19,6 +21,7 @@ vi.mock("node:child_process", () => ({
 
 import { Supervisor } from "../../scripts/dev-supervisor.mjs";
 import { writeFileSync, readFileSync } from "node:fs";
+import { spawn } from "node:child_process";
 import { EventEmitter } from "node:events";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -223,5 +226,168 @@ describe("checkStaleChildOnStartup()", () => {
     // kill(0) was called but SIGKILL was NOT (pid already gone)
     expect(process.kill).toHaveBeenCalledWith(66666, 0);
     expect(process.kill).not.toHaveBeenCalledWith(66666, "SIGKILL");
+  });
+});
+
+// ── AC1 — conflict-marker precompile fence ───────────────────────────────────
+
+describe("AC1 — conflict-marker fence: _checkFileForMarkers()", () => {
+  beforeEach(() => {
+    vi.mocked(readFileSync).mockReset();
+    vi.mocked(spawn as ReturnType<typeof vi.fn>).mockReset();
+  });
+
+  it("ignores non-watched extensions (.css, .json, .md)", () => {
+    const sup = new Supervisor();
+    for (const path of ["/src/globals.css", "/src/data.json", "/src/README.md"]) {
+      sup._checkFileForMarkers(path);
+    }
+    expect(readFileSync).not.toHaveBeenCalled();
+    expect(sup["_conflictFiles"].size).toBe(0);
+  });
+
+  it("detects <<<<<<<, =======, >>>>>>> markers and records file + 1-based lines", () => {
+    vi.mocked(readFileSync).mockReturnValueOnce(
+      "// good\n<<<<<<< HEAD\nconst a = 1;\n=======\nconst a = 2;\n>>>>>>> branch\n"
+    );
+    const sup = new Supervisor();
+    sup.child = Object.assign(new EventEmitter(), { pid: 1, kill: vi.fn() }) as any;
+    const killSpy = vi.spyOn(sup, "killChild").mockResolvedValue(undefined);
+
+    sup._checkFileForMarkers("/src/lib/foo.ts");
+
+    expect(sup["_conflictFiles"].has("/src/lib/foo.ts")).toBe(true);
+    const lines = sup["_conflictFiles"].get("/src/lib/foo.ts") as number[];
+    expect(lines).toContain(2); // <<<<<<< on line 2
+    expect(lines).toContain(4); // ======= on line 4
+    expect(lines).toContain(6); // >>>>>>> on line 6
+    expect(killSpy).toHaveBeenCalled();
+  });
+
+  it("does not call killChild() a second time for the same already-tracked file", () => {
+    vi.mocked(readFileSync).mockReturnValue(
+      "<<<<<<< HEAD\n"
+    );
+    const sup = new Supervisor();
+    sup.child = Object.assign(new EventEmitter(), { pid: 2, kill: vi.fn() }) as any;
+    const killSpy = vi.spyOn(sup, "killChild").mockResolvedValue(undefined);
+
+    sup._checkFileForMarkers("/src/lib/foo.ts"); // first detection — child present, killChild fires
+    sup.child = null; // child is now gone after kill
+    sup._checkFileForMarkers("/src/lib/foo.ts"); // same file, still conflicted — isNew=false → no second kill
+
+    expect(killSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("clears the file from _conflictFiles when markers are removed", () => {
+    // First call: markers present
+    vi.mocked(readFileSync).mockReturnValueOnce("<<<<<<< HEAD\n");
+    const sup = new Supervisor();
+    vi.spyOn(sup, "killChild").mockResolvedValue(undefined);
+    vi.spyOn(sup, "_onConflictResolved").mockImplementation(() => {});
+
+    sup._checkFileForMarkers("/src/lib/foo.ts");
+    expect(sup["_conflictFiles"].size).toBe(1);
+
+    // Second call: file is clean
+    vi.mocked(readFileSync).mockReturnValueOnce("// all good\n");
+    sup._checkFileForMarkers("/src/lib/foo.ts");
+    expect(sup["_conflictFiles"].has("/src/lib/foo.ts")).toBe(false);
+    expect(sup["_onConflictResolved"]).toHaveBeenCalled();
+  });
+
+  it("removes file from _conflictFiles when file is deleted (readFileSync throws)", () => {
+    vi.mocked(readFileSync).mockReturnValueOnce("<<<<<<< HEAD\n");
+    const sup = new Supervisor();
+    vi.spyOn(sup, "killChild").mockResolvedValue(undefined);
+    const resolvedSpy = vi.spyOn(sup, "_onConflictResolved").mockImplementation(() => {});
+
+    sup._checkFileForMarkers("/src/lib/foo.ts");
+    expect(sup["_conflictFiles"].size).toBe(1);
+
+    // File deleted — readFileSync throws
+    vi.mocked(readFileSync).mockImplementationOnce(() => {
+      throw Object.assign(new Error("ENOENT"), { code: "ENOENT" });
+    });
+    sup._checkFileForMarkers("/src/lib/foo.ts");
+    expect(sup["_conflictFiles"].has("/src/lib/foo.ts")).toBe(false);
+    expect(resolvedSpy).toHaveBeenCalled();
+  });
+});
+
+describe("AC1 — conflict-marker fence: spawnChild() guard", () => {
+  beforeEach(() => {
+    vi.mocked(spawn as ReturnType<typeof vi.fn>).mockReset();
+  });
+
+  it("does not call spawn when _conflictFiles is non-empty", () => {
+    const sup = new Supervisor();
+    sup["_conflictFiles"].set("/src/lib/roles.ts", [3, 5]);
+
+    sup.spawnChild();
+
+    expect(spawn).not.toHaveBeenCalled();
+  });
+
+  it("calls spawn when _conflictFiles is empty", () => {
+    const fakeChild = Object.assign(new EventEmitter(), { pid: 42, kill: vi.fn() });
+    vi.mocked(spawn as ReturnType<typeof vi.fn>).mockReturnValue(fakeChild as any);
+    vi.mocked(readFileSync).mockImplementation(() => { throw new Error("ENOENT"); });
+
+    const sup = new Supervisor();
+    // _conflictFiles is empty by default
+    sup.spawnChild();
+
+    expect(spawn).toHaveBeenCalledWith("tsx", ["server.ts"], expect.objectContaining({ stdio: "inherit" }));
+  });
+});
+
+describe("AC1 — conflict-marker fence: _onConflictResolved()", () => {
+  it("calls spawnChild() when all conflicts cleared and no child is running", () => {
+    const sup = new Supervisor();
+    sup["_conflictFiles"].set("/src/lib/foo.ts", [1]);
+    sup.child = null;
+    const spawnSpy = vi.spyOn(sup, "spawnChild").mockImplementation(() => {});
+
+    // Clear the conflict, then call resolved
+    sup["_conflictFiles"].delete("/src/lib/foo.ts");
+    sup._onConflictResolved();
+
+    expect(spawnSpy).toHaveBeenCalled();
+  });
+
+  it("does not call spawnChild() when child is already running", () => {
+    const sup = new Supervisor();
+    sup.child = Object.assign(new EventEmitter(), { pid: 99, kill: vi.fn() }) as any;
+    const spawnSpy = vi.spyOn(sup, "spawnChild").mockImplementation(() => {});
+
+    sup._onConflictResolved();
+
+    expect(spawnSpy).not.toHaveBeenCalled();
+  });
+
+  it("does not call spawnChild() when other conflict files remain", () => {
+    const sup = new Supervisor();
+    sup["_conflictFiles"].set("/src/lib/foo.ts", [1]);
+    sup["_conflictFiles"].set("/src/lib/bar.ts", [5]);
+    sup.child = null;
+    const spawnSpy = vi.spyOn(sup, "spawnChild").mockImplementation(() => {});
+
+    // Resolve only one file
+    sup["_conflictFiles"].delete("/src/lib/foo.ts");
+    sup._onConflictResolved();
+
+    expect(spawnSpy).not.toHaveBeenCalled();
+  });
+
+  it("does not call spawnChild() when shutdownState is not 'running'", () => {
+    const sup = new Supervisor();
+    sup["_shutdownState"] = "grace";
+    sup.child = null;
+    const spawnSpy = vi.spyOn(sup, "spawnChild").mockImplementation(() => {});
+
+    sup._onConflictResolved();
+
+    expect(spawnSpy).not.toHaveBeenCalled();
   });
 });

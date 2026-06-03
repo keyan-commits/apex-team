@@ -28,9 +28,9 @@
  */
 
 import { spawn } from 'node:child_process';
-import { watchFile, rmSync, writeFileSync, readFileSync, mkdirSync, existsSync } from 'node:fs';
+import { watchFile, watch, rmSync, writeFileSync, readFileSync, readdirSync, mkdirSync, existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { dirname, join } from 'node:path';
+import { dirname, join, extname } from 'node:path';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const RESTART_SENTINEL = join(ROOT, '.restart-trigger');
@@ -41,6 +41,17 @@ const PID_FILE = join(ROOT, 'data', '.supervisor.pid');
 const SELF_PID_FILE = join(ROOT, 'data', 'apex-team-supervisor.pid');
 const GRACE_MS = 15_000;
 const DOUBLE_SIGNAL_WINDOW_MS = 8_000;
+
+const WATCHED_EXTENSIONS = new Set(['.ts', '.tsx', '.mjs']);
+
+function findMarkerLines(content) {
+  const lines = content.split('\n');
+  const found = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (/^(?:<{7}|={7}|>{7})/.test(lines[i])) found.push(i + 1);
+  }
+  return found;
+}
 
 function cleanDevLock(root) {
   try {
@@ -66,6 +77,100 @@ export class Supervisor {
     // State machine: 'running' | 'grace' | 'escalated'
     this._shutdownState = 'running';
     this._firstSignalAt = 0;
+    // AC1: path → [1-based line numbers] for files with unresolved conflict markers
+    this._conflictFiles = new Map();
+  }
+
+  // AC1: scan a single file for conflict markers; update _conflictFiles and react.
+  _checkFileForMarkers(fullPath) {
+    if (!WATCHED_EXTENSIONS.has(extname(fullPath))) return;
+
+    let content;
+    try {
+      content = readFileSync(fullPath, 'utf8');
+    } catch {
+      // File deleted — clear any tracked conflict for it.
+      if (this._conflictFiles.has(fullPath)) {
+        this._conflictFiles.delete(fullPath);
+        this._onConflictResolved();
+      }
+      return;
+    }
+
+    const markerLines = findMarkerLines(content);
+    if (markerLines.length > 0) {
+      const isNew = !this._conflictFiles.has(fullPath);
+      this._conflictFiles.set(fullPath, markerLines);
+      if (isNew) this._onConflictDetected(fullPath, markerLines);
+    } else if (this._conflictFiles.has(fullPath)) {
+      this._conflictFiles.delete(fullPath);
+      console.log(`[supervisor] conflict markers cleared: ${fullPath}`);
+      this._onConflictResolved();
+    }
+  }
+
+  _onConflictDetected(filePath, lines) {
+    console.error(`\n[supervisor] !! CONFLICT MARKERS — refusing compilation !!`);
+    console.error(`[supervisor]    file: ${filePath}`);
+    console.error(`[supervisor]    lines: ${lines.join(', ')}`);
+    console.error(`[supervisor] Fix all conflict markers then save the file to resume.\n`);
+    if (this._shutdownState === 'running' && this.child) {
+      void this.killChild();
+    }
+  }
+
+  _onConflictResolved() {
+    if (this._conflictFiles.size > 0) {
+      const remaining = [...this._conflictFiles.keys()].map(p => `  - ${p}`).join('\n');
+      console.log(`[supervisor] conflict markers still present:\n${remaining}`);
+      return;
+    }
+    console.log('[supervisor] all conflict markers resolved — resuming compilation');
+    if (this._shutdownState === 'running' && !this.child) {
+      cleanDevLock(this.root);
+      this.spawnChild();
+    }
+  }
+
+  // AC1: walk src/ recursively; skip node_modules / .next.
+  _scanSourceDir(dir) {
+    let entries;
+    try {
+      entries = readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const fullPath = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === 'node_modules' || entry.name === '.next') continue;
+        this._scanSourceDir(fullPath);
+      } else if (entry.isFile()) {
+        this._checkFileForMarkers(fullPath);
+      }
+    }
+  }
+
+  // AC1: initial scan + persistent watcher for src/**/*.{ts,tsx,mjs}.
+  startConflictWatcher() {
+    const srcDir = join(this.root, 'src');
+    this._scanSourceDir(srcDir);
+
+    if (this._conflictFiles.size > 0) {
+      console.error('[supervisor] !! Conflict markers found at startup — server will NOT start until resolved !!');
+      for (const [file, lines] of this._conflictFiles) {
+        console.error(`[supervisor]    ${file} (lines: ${lines.join(', ')})`);
+      }
+    }
+
+    const watcher = watch(srcDir, { recursive: true }, (event, filename) => {
+      if (!filename) return;
+      if (!WATCHED_EXTENSIONS.has(extname(filename))) return;
+      this._checkFileForMarkers(join(srcDir, filename));
+    });
+    watcher.on('error', (err) => {
+      console.error('[supervisor] conflict-marker watcher error:', err.message);
+    });
   }
 
   // US-084 AC2: refuse to start if another supervisor is already alive.
@@ -223,6 +328,12 @@ export class Supervisor {
   }
 
   spawnChild() {
+    // AC1: refuse to spawn if any source file contains unresolved conflict markers.
+    if (this._conflictFiles.size > 0) {
+      const files = [...this._conflictFiles.keys()].join(', ');
+      console.error(`[supervisor] spawn blocked — unresolved conflict markers in: ${files}`);
+      return;
+    }
     console.log('[supervisor] starting server...');
     this.child = spawn('tsx', ['server.ts'], { stdio: 'inherit', cwd: this.root });
     if (this.child.pid != null) {
@@ -247,6 +358,7 @@ export class Supervisor {
     this.writeSupervisorPid();
 
     this.checkStaleChildOnStartup();
+    this.startConflictWatcher();
 
     watchFile(this.restartSentinel, { interval: 1000 }, async () => {
       if (this._shutdownState !== 'running') return;
