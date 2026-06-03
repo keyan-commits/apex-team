@@ -6,6 +6,7 @@ import { AgentPane } from "@/components/AgentPane";
 import { ActivityLog, type ActivityEntry } from "@/components/ActivityLog";
 import { OrchestratorBar } from "@/components/OrchestratorBar";
 import { CiHealthBanner } from "@/components/CiHealthBanner";
+import { McpRebindBanner } from "@/components/McpRebindBanner";
 import { useCiHealth } from "@/hooks/useCiHealth";
 import type {
   AccentKey,
@@ -488,6 +489,8 @@ export default function Home() {
         ciHealth={ciHealth}
       />
 
+      <McpRebindBanner />
+
       <CiHealthBanner ciHealth={ciHealth} />
 
       <ActivityLog entries={activityLog} />
@@ -506,7 +509,7 @@ export default function Home() {
         .layout {
           min-height: 100vh;
           display: grid;
-          grid-template-rows: auto auto auto auto 1fr;
+          grid-template-rows: auto auto auto auto auto 1fr;
           gap: 0;
         }
         .po-area {
