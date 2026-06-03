@@ -114,7 +114,11 @@ export function ActiveWaveCard({
       {!endpointReady ? (
         <p className="aw-empty">Dashboard data not available — is the server fully started?</p>
       ) : !hasContent ? (
-        <p className="aw-empty">No wave context found in thread.</p>
+        <p className="aw-empty">
+          Tick scheduler idle — queue is empty.{" "}
+          <a href="#" className="aw-empty-link">Send a goal via your Claude Code session</a>
+          , or use the composer.
+        </p>
       ) : (
         <div className="aw-sections">
 
@@ -265,6 +269,13 @@ export function ActiveWaveCard({
           color: var(--text-dim);
           margin: 4px 0;
         }
+
+        .aw-empty-link {
+          color: var(--accent-po);
+          text-decoration: underline;
+        }
+        .aw-empty-link:hover { opacity: 0.8; }
+        .aw-empty-link:focus-visible { outline: 1px solid var(--accent-po); border-radius: 2px; }
 
         .aw-sections {
           display: flex;

@@ -539,7 +539,9 @@ export function AgentPane({
           text-overflow: ellipsis;
           border-top: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
         }
-        .config { display: flex; gap: 4px; font-size: 11px; align-items: center; }
+        .config { display: none; gap: 4px; font-size: 11px; align-items: center; }
+        .pane-header:hover .config,
+        .pane-header:focus-within .config { display: flex; }
         .fold-btn {
           background: transparent; border: 1px solid var(--border); border-radius: 4px;
           color: var(--text-dim); padding: 2px 6px; font-size: 10px; cursor: pointer; line-height: 1;
