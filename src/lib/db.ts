@@ -449,6 +449,16 @@ export function getSpendSummary(threadId: string): SpendSummary {
   }
 }
 
+export function recordScoutRun(proposalsFiled: number, rolesScanned: number): void {
+  try {
+    db()
+      .prepare(
+        "INSERT INTO scout_runs (ran_at, proposals_filed, roles_scanned) VALUES (?, ?, ?)",
+      )
+      .run(Date.now(), proposalsFiled, rolesScanned);
+  } catch { /* best-effort — DB unavailable does not abort the scout */ }
+}
+
 export function getScoutMeta(): { lastRunAt: number | null; proposalsLast7Days: number } {
   try {
     const conn = db();
