@@ -6,7 +6,7 @@
 
 The architecture pivots to **Plan C**: each role moves out of apex-team's Next.js monolith and becomes a Claude Code subagent in `.claude/agents/<role>.md`. Run by Claude Code's native subagent system, isolated per invocation, true parallel dispatch, no shared SQLite, no shared process, no MCP server, no dueling supervisors.
 
-**This commit:** 8 subagent files (PO + 7 team) + porting script + this HANDOFF block.
+**This PR:** 8 subagent files (PO + 7 team) + porting script + user-scope install script + this HANDOFF block.
 
 | Subagent | Model | Size |
 |---|---|---|
@@ -28,6 +28,8 @@ Each file = YAML frontmatter (`name`, `description`, `model`) + Plan C runtime a
 **PR #341 closed** as superseded by the viewer (US-071 functionality is in the viewer's Output > QA panel now).
 
 **Activation requires Claude Code restart.** The current session caches its subagent registry at startup; a new session in this workspace will pick up `.claude/agents/*.md`. Smoke test on next session: `Use the business-analyst subagent to identify yourself.`
+
+**Cross-Mac / multi-project access**: run `bash scripts/install-agents-user-scope.sh` to symlink the 8 .md files into `~/.claude/agents/` — promotes them to user-scope so they're available in every Claude Code session, not just apex-team's workspace. Idempotent; safe to re-run after `git pull`. `--uninstall` walks them back out cleanly. Symlinks (not copies) so apex-team source updates flow automatically.
 
 **apex-team monolith stays running in parallel during transition.** No code in `src/`, `server.ts`, MCP, or dashboard changes this PR. PR #367 (US-084 AC1 fence) still merges as transition-window protection. Other in-flight backlog work (#316–#320 self-heal bundle, US-082/083 docs already merged, etc.) deferred — no new waves dispatched to apex-team.
 
