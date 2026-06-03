@@ -200,6 +200,15 @@ export function MessageBubble({ message, perspective, pending }: Props) {
           0%, 100% { opacity: 0.3; }
           50% { opacity: 1; }
         }
+        @keyframes rm-pending-dot-pulse {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .pending-dot {
+            animation: rm-pending-dot-pulse 1.5s ease-in-out infinite;
+          }
+        }
         .bubble-fade {
           height: 24px;
           margin-top: -24px;
