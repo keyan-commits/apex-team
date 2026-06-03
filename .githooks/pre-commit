@@ -13,6 +13,11 @@ if ! echo "$staged" | grep -qE '^(src/|scripts/|tests/|\.github/|package\.json$|
   exit 0
 fi
 
+# Wave 108 — lint + type-check gates (Piece 1 of #303 regression-gate bundle)
+echo "→ Running pre-commit gates (lint + type-check)..."
+pnpm lint --max-warnings 0 --quiet
+pnpm type-check
+
 # Code is staged — require either a HANDOFF.md edit OR a _handoff-pending/*.md fragment.
 # (Wave 93+: roles write per-wave fragments instead of editing HANDOFF.md directly.)
 has_handoff=$(echo "$staged" | grep -qx 'HANDOFF.md' && echo 1 || echo 0)
