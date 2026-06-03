@@ -1,6 +1,6 @@
 # Requirements Index
 
-_Auto-maintained by Business Analyst. Last updated: 2026-06-02 (Wave 88 — US-040 + US-041 entries added; US-028 accepted: latency reduction; US-027 draft: PO state externalization; US-024/025/026 Wave 69-71 stories; BR-006 confirmed)._
+_Auto-maintained by Business Analyst. Last updated: 2026-06-03 (Wave 105 Lane-A — US-063 added; US-062 added; US-060 status updated to done)._
 
 | File | Summary | Last Modified |
 |------|---------|---------------|
@@ -34,6 +34,9 @@ _Auto-maintained by Business Analyst. Last updated: 2026-06-02 (Wave 88 — US-0
 | [user-stories/US-028-latency-reduction.md](user-stories/US-028-latency-reduction.md) | US-028: Reduce per-turn latency — prompt-caching prefix reorder (providers.ts static-first, no SDK change) + non-PO history trim (slice(-60)→-10) + MODEL_FIT_POLICY rubric (Haiku gates/triage, Sonnet impl, Opus novel-arch); 7 ACs; p50 ≤15s non-PO / ≤30s PO; benchmark harness (pnpm bench); BR-006 guardrail (≥80% verdict-correctness, caching/trim exempt); cache-hit + latency observability via /api/turn-stats; status: **accepted** (all 3 OQs resolved 2026-06-01); owner BE Dev; Wave 73; closes #159 | 2026-06-01 |
 | [user-stories/US-040-pnpm-build-restore-nextjs-prerender.md](user-stories/US-040-pnpm-build-restore-nextjs-prerender.md) | US-040: Restore `pnpm build` — Next.js 16.2.6 prerender crash fix via `next.config.ts` (`allowDevelopmentBuild:true` + `prerenderEarlyExit:false`); ADR-009 amendment required; `dynamic="force-dynamic"` retained for intent documentation; status: **accepted**; owner BE Dev; Wave 88; closes #151 | 2026-06-02 |
 | [user-stories/US-041-protocol-constants-wiring.md](user-stories/US-041-protocol-constants-wiring.md) | US-041: Wire protocol constants — `REQUIREMENTS_PHASE_PROTOCOL` interpolated into `PHASED_WORKFLOW_DISCIPLINE`; `ORCHESTRATOR_PROTOCOL` + `CONSULTATION_PROTOCOL` added to `PEER_PROTOCOL`; 3 dead imports removed; 5 new tests; additive only; status: **accepted**; owner BE Dev; Wave 88; closes #140 | 2026-06-02 |
+| [user-stories/US-060-stall-drawer-closed-a11y.md](user-stories/US-060-stall-drawer-closed-a11y.md) | US-060: Conditional render StallSettingsDrawer — remove dialog from a11y tree when closed (PR #278, `f158afc`); closes #226; status: **done** | 2026-06-03 |
+| [user-stories/US-062-reduced-motion-guard-remediation.md](user-stories/US-062-reduced-motion-guard-remediation.md) | US-062: Reduced-motion guards — `pill-pulse` frozen at `opacity:1` under RM; pending-dot uses 1.5s/0.6–1 subdued pulse; design spec `design/US-062-reduced-motion-guard-remediation.md`; closes #276+#277; status: **in-dev** (Wave 105) | 2026-06-03 |
+| [user-stories/US-063-stall-drawer-motion-cleanup.md](user-stories/US-063-stall-drawer-motion-cleanup.md) | US-063: StallSettingsDrawer motion cleanup — remove dead `transition: transform 250ms` (inert since conditional render; #281) + RM-guard compliance (#282); OQ-063-001 open (Architect verdict: remove vs guard); closes #281+#282; status: **accepted** | 2026-06-03 |
 
 ## Voided user stories
 
