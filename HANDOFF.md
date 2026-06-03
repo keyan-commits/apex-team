@@ -1,6 +1,23 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-03 (Wave 104 — backlog drain: #272 recover-script hardening + merge-train block)
+## ⏭️ NOW — 2026-06-03 (Wave 105 — emergency hand-fix: US-084 AC1 regex false-positive on `=======` dividers)
+
+**claude-code hand-fix on `feature/349-us084-be-ac1` (PR #367, US-084 AC1).**
+
+apex-team went down (all 7 `/agents/[role]` routes 404, dashboard panels "Dashboard data not available") because the AC1 conflict-marker precompile fence in `scripts/dev-supervisor.mjs:41` had a regex over-match. Original pattern `/^(?:<{7}|={7}|>{7})/` matched any line starting with 7+ `=` chars — that catches `===========================` section-divider underlines in template literals (`src/lib/protocols.ts` lines 3 and 134). The fence designed to prevent apex-team from breaking itself **caused apex-team to break itself**.
+
+**Fix**: tightened to `/^(?:<{7} |={7}$|>{7} )/`. Real conflict markers are `<<<<<<< <label>` (7+space), exactly-7 `=` alone on a line (`={7}$`), `>>>>>>> <label>` (7+space). 8/8 smoke tests pass against both real markers and the divider lines.
+
+**Recovery sequence**: `./scripts/recover-dev-server.sh` → EADDRINUSE on retry (3 dueling supervisors from earlier crashes — exactly the AC2 single-supervisor problem #360 addresses) → manual `pkill -f scripts/dev-supervisor.mjs` + `pkill -f /Users/nikoe/Development/Study/apex-team` → re-ran recovery → server healthy in 2×2s → all 7 agent routes return 200.
+
+**Follow-ups (handed to PO this turn):**
+- 3 PRs with real `build` CI failures: **#341** (US-071), **#343** (US-082 docs), **#348** (US-083 docs).
+- 4 PRs with `Validate PR body close-keyword` PR-hygiene fails: **#367, #360, #343, #341**.
+- AC2 single-supervisor (PR #360) gained dogfooded evidence this incident — three dueling supervisors made recovery harder.
+
+---
+
+## ⏭️ PREV — 2026-06-03 (Wave 104 — backlog drain: #272 recover-script hardening + merge-train block)
 
 **DevSecOps Wave 104: #272 recovery script hardening (file-disjoint, backlog drain while merge-train blocked on Architect #340 review).**
 

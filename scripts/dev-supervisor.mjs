@@ -48,7 +48,7 @@ function findMarkerLines(content) {
   const lines = content.split('\n');
   const found = [];
   for (let i = 0; i < lines.length; i++) {
-    if (/^(?:<{7}|={7}|>{7})/.test(lines[i])) found.push(i + 1);
+    if (/^(?:<{7} |={7}$|>{7} )/.test(lines[i])) found.push(i + 1);
   }
   return found;
 }
