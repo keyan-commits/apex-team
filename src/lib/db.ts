@@ -77,37 +77,33 @@ function applyMigrations(conn: Database.Database, dbPath: string): void {
 
   if (flagPath) writeFileSync(flagPath, String(Date.now()));
 
-  try {
-    for (const migration of pending) {
-      try {
-        conn
-          .transaction(() => {
-            migration.apply(conn);
-            conn
-              .prepare(
-                `INSERT OR REPLACE INTO _schema_version (version, applied_at, success) VALUES (?, ?, 1)`,
-              )
-              .run(migration.version, Date.now());
-          })
-          .immediate();
-      } catch (err) {
-        try {
+  for (const migration of pending) {
+    try {
+      conn
+        .transaction(() => {
+          migration.apply(conn);
           conn
             .prepare(
-              `INSERT OR REPLACE INTO _schema_version (version, applied_at, success) VALUES (?, ?, 0)`,
+              `INSERT OR REPLACE INTO _schema_version (version, applied_at, success) VALUES (?, ?, 1)`,
             )
             .run(migration.version, Date.now());
-        } catch {
-          /* best effort */
-        }
-        throw err;
+        })
+        .immediate();
+    } catch (err) {
+      try {
+        conn
+          .prepare(
+            `INSERT OR REPLACE INTO _schema_version (version, applied_at, success) VALUES (?, ?, 0)`,
+          )
+          .run(migration.version, Date.now());
+      } catch {
+        /* best effort */
       }
+      // Flag file remains — next boot detects the crash and refuses to start.
+      throw err;
     }
-    if (flagPath) unlinkSync(flagPath);
-  } catch (err) {
-    // Flag file remains — next boot detects the crash and refuses to start.
-    throw err;
   }
+  if (flagPath) unlinkSync(flagPath);
 }
 
 function db(): Database.Database {

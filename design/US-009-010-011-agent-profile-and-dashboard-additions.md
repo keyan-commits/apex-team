@@ -124,7 +124,7 @@ Below the Scout panel's `kv-list` (last-run / proposals-filed / next-run metadat
 | **idle** | default | "Run now" button (accent-po tinted, 12px, 5px 14px padding) |
 | **running** | 202 response from POST | Button disabled; spinner `⟳` + "Running…"; polls `/api/scout/status` every 5s |
 | **run complete** | `running: false` + `lastRunAt` changed | Reverts to "Run now"; kv-list refreshes on next 10s team-status poll |
-| **503 (no API key)** | 503 response | Inline `scout-error` paragraph above button: `ANTHROPIC_API_KEY not configured — scout disabled` |
+| **503 (auth error)** | 503 response | Inline `scout-error` paragraph above button: `Claude Code not logged in — run 'claude login' to authenticate` |
 | **network error** | fetch throws | Inline error: `Failed to trigger scout — check server logs` |
 
 ### 2c. Accessibility

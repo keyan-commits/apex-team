@@ -81,4 +81,5 @@ void app.prepare().then(() => {
   };
   process.once("SIGINT", shutdown);
   process.once("SIGTERM", shutdown);
+  process.once("SIGHUP", shutdown);
 });

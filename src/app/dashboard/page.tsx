@@ -437,7 +437,7 @@ export default function DashboardPage() {
       const res = await fetch("/api/scout/trigger", { method: "POST" });
       if (res.status === 503) {
         const body = await res.json().catch(() => ({})) as { error?: { message?: string } };
-        setScoutError(body.error?.message ?? "ANTHROPIC_API_KEY not configured — scout disabled");
+        setScoutError(body.error?.message ?? "Claude Code not logged in — run 'claude login' to authenticate");
         return;
       }
       setScoutRunning(true);

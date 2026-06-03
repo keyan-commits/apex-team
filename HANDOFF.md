@@ -1,5 +1,16 @@
 # HANDOFF — apex-team
 
+## ⏭️ NOW — 2026-06-03 (Wave 116 — US-079 BE signal handlers + Wave 115 UI Dev)
+
+**In flight (BE Dev — US-079 / #316 backend half):**
+- **branch** `feature/316-us079-server-signal-handlers` — `scripts/dev-supervisor.mjs` rewritten (Supervisor class, 15s grace, SIGHUP, double-signal escalation, stale-child guard, user-off sentinel); `server.ts` SIGHUP added; 10 new tests in `tests/be/dev-supervisor.test.ts`
+- Gate: type-check 0, 533/533 tests pass. Fragment at `_handoff-pending/316-backend-developer.md`.
+- Gate: Architect review → QA smoke → DevSecOps (no UX gate — ops-only)
+- **DevSecOps seam**: `data/.user-off` (double-signal sentinel) and `data/.supervisor.pid` (orphan detection) — see fragment Notes
+
+**In flight (UI Dev):**
+- **PR #338** @ `2adb3ab` `feature/291-us072-scout-error-copy` — US-072 / #291: replaced stale `ANTHROPIC_API_KEY not configured — scout disabled` fallback with `"Claude Code not logged in — run 'claude login' to authenticate"` in `dashboard/page.tsx:440`; design doc table updated in sync. 527 tests / 0 failed, type-check 0.
+- Gate: Architect review → UX final-copy check → QA smoke → DevSecOps
 ## ⏭️ NOW — 2026-06-02 (Wave 98 — emergency lint fix: providers.ts prefer-const)
 ## ⏭️ NOW — 2026-06-03 (Wave 116 — #325 a11y focus-visible + #341 gates pending)
 
