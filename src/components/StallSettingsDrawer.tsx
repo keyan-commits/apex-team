@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export interface StallSettings {
   banner: boolean;
@@ -36,6 +36,13 @@ export function StallSettingsDrawer({
   const notifDisabled =
     notificationPermission === "denied" || notificationPermission === "unavailable";
 
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+
+  // Move focus into the dialog when it opens (AC4)
+  useEffect(() => {
+    if (open) closeBtnRef.current?.focus();
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -54,18 +61,42 @@ export function StallSettingsDrawer({
     return () => document.removeEventListener("mousedown", onDown);
   }, [open, onClose]);
 
+  // Tab trap: keep focus within dialog while open (AC4)
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const focusable = Array.from(
+        document.querySelectorAll<HTMLElement>(".stall-drawer button, .stall-drawer input")
+      ).filter((el) => !(el as HTMLInputElement).disabled);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
   return (
     <>
+      {open && (
       <aside
-        className={`stall-drawer${open ? " open" : ""}`}
+        className="stall-drawer open"
         role="dialog"
         aria-modal="true"
         aria-label="Stall notification settings"
-        aria-hidden={!open}
       >
         <div className="drawer-header">
           <span className="drawer-title">Stall notifications</span>
           <button
+            ref={closeBtnRef}
             type="button"
             className="drawer-close"
             onClick={onClose}
@@ -125,6 +156,7 @@ export function StallSettingsDrawer({
           </label>
         </div>
       </aside>
+      )}
 
       <style jsx>{`
         .stall-drawer {

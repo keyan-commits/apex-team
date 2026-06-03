@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { type RefObject, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { CiHealthData, CiState } from "@/types";
@@ -15,6 +15,7 @@ interface Props {
   onWorkspaceChange: (next: string) => void;
   onSettingsOpen?: () => void;
   settingsOpen?: boolean;
+  gearBtnRef?: RefObject<HTMLButtonElement | null>;
   ciHealth?: CiHealthData | null;
 }
 
@@ -54,6 +55,7 @@ export function OrchestratorBar({
   onWorkspaceChange,
   onSettingsOpen,
   settingsOpen = false,
+  gearBtnRef,
   ciHealth = null,
 }: Props) {
   const pathname = usePathname();
@@ -140,6 +142,7 @@ export function OrchestratorBar({
 
       {onSettingsOpen && (
         <button
+          ref={gearBtnRef}
           type="button"
           className={`gear-btn${settingsOpen ? " gear-active" : ""}`}
           onClick={onSettingsOpen}
