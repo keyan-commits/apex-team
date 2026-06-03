@@ -391,3 +391,61 @@ describe("AC1 — conflict-marker fence: _onConflictResolved()", () => {
     expect(spawnSpy).not.toHaveBeenCalled();
   });
 });
+
+// ── AC1 — Wave 105 divider false-positive regression ────────────────────────
+// The old regex /^(?:<{7}|={7}|>{7})/ matched any line starting with 7+ `=`,
+// which caught `===========================` section-divider underlines in
+// src/lib/protocols.ts (lines 3 and 134), taking all 7 /agents/[role] routes
+// down. Fixed to /^(?:<{7} |={7}$|>{7} )/ so ={7}$ requires exactly-7-then-EOL.
+
+describe("AC1 — conflict-marker regex: Wave 105 ={7}$ false-positive regression", () => {
+  beforeEach(() => {
+    vi.mocked(readFileSync).mockReset();
+  });
+
+  it("does NOT flag section-divider lines with >7 or <7 equals chars", () => {
+    // Reproduces the exact crashing pattern: protocols.ts dividers are 28+ = chars.
+    vi.mocked(readFileSync).mockReturnValueOnce(
+      [
+        "// normal code",
+        "===========================", // 28 = — the actual line that crashed apex-team
+        "some content",
+        "========",                   // 8 = alone — above 7 but not exactly 7
+        "more content",
+        "===",                        // 3 = — well below threshold
+      ].join("\n")
+    );
+
+    const sup = new Supervisor();
+    sup._checkFileForMarkers("/src/lib/protocols.ts");
+
+    expect(sup["_conflictFiles"].has("/src/lib/protocols.ts")).toBe(false);
+  });
+
+  it("still flags exactly-7 ======= alone on a line (real git conflict divider)", () => {
+    // Regression guard: the ={7}$ fix must not drop the real conflict divider.
+    vi.mocked(readFileSync).mockReturnValueOnce(
+      "<<<<<<< HEAD\n=======\n>>>>>>> branch\n"
+    );
+    const sup = new Supervisor();
+    vi.spyOn(sup, "killChild").mockResolvedValue(undefined);
+    sup.child = Object.assign(new EventEmitter(), { pid: 1, kill: vi.fn() }) as any;
+
+    sup._checkFileForMarkers("/src/lib/example.ts");
+
+    const lines = sup["_conflictFiles"].get("/src/lib/example.ts") as number[];
+    expect(lines).toContain(2); // ======= is line 2
+  });
+
+  it("does NOT flag ======= followed by text (not a valid git divider line)", () => {
+    // ={7}$ requires end-of-line; "======= trailing text" should not match.
+    vi.mocked(readFileSync).mockReturnValueOnce(
+      "// code\n======= some description\n// more\n"
+    );
+
+    const sup = new Supervisor();
+    sup._checkFileForMarkers("/src/lib/example.ts");
+
+    expect(sup["_conflictFiles"].has("/src/lib/example.ts")).toBe(false);
+  });
+});
