@@ -12,6 +12,8 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    exclude: ["tests/playwright/**", "**/node_modules/**"],
+    // explicit exclude replaces vitest defaults — keep node_modules, playwright, and
+    // .claude/ worktrees (QA smoke dirs) out of test discovery
+    exclude: ["tests/playwright/**", "**/node_modules/**", ".claude/**", "**/.git/**"],
   },
 });

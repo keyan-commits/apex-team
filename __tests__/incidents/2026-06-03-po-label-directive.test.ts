@@ -80,12 +80,12 @@ describe("User-Directive Supremacy (#321)", () => {
 
   describe("AC3: Verify against user-stated requirement, not original AC", () => {
     it("should check artifact against latest user directive, not original plan", () => {
-      const originalAC = {
+      const _originalAC = {
         id: "AC-1",
         text: "Count badge visible in the tab area",
       };
 
-      const userDirective = {
+      const _userDirective = {
         timestamp: new Date("2026-06-03T10:15:00Z"),
         text: "Favor clean PO-Label value visible",
       };
