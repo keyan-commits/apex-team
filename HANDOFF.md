@@ -1,6 +1,12 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-02 (Wave 98 — emergency lint fix: providers.ts prefer-const)
+## ⏭️ NOW — 2026-06-03 (Wave 115 — US-072 scout error copy fix)
+
+**In flight (UI Dev):**
+- **PR (SHA-pending)** `feature/291-us072-scout-error-copy` — US-072 / #291: replaced stale `ANTHROPIC_API_KEY not configured — scout disabled` fallback with `"Claude Code not logged in — run 'claude login' to authenticate"` in `dashboard/page.tsx:440`; design doc table updated in sync. 527 tests / 0 failed, type-check 0.
+- Gate: Architect review → UX final-copy check → QA smoke → DevSecOps
+
+## ⏭️ PREV — 2026-06-02 (Wave 98 — emergency lint fix: providers.ts prefer-const)
 
 **Wave 98 (#TBD) — emergency CI unblock. claude-code hand-fix.**
 
