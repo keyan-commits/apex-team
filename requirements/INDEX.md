@@ -1,6 +1,6 @@
 # Requirements Index
 
-_Auto-maintained by Business Analyst. Last updated: 2026-06-03 (Wave 105 Lane-A — US-063 added; US-062 added; US-060 status updated to done)._
+_Auto-maintained by Business Analyst. Last updated: 2026-06-03 (Wave 108 Lane-A — US-065 + US-066 added; US-062 + US-063 status updated to done)._
 
 | File | Summary | Last Modified |
 |------|---------|---------------|
@@ -35,8 +35,10 @@ _Auto-maintained by Business Analyst. Last updated: 2026-06-03 (Wave 105 Lane-A 
 | [user-stories/US-040-pnpm-build-restore-nextjs-prerender.md](user-stories/US-040-pnpm-build-restore-nextjs-prerender.md) | US-040: Restore `pnpm build` — Next.js 16.2.6 prerender crash fix via `next.config.ts` (`allowDevelopmentBuild:true` + `prerenderEarlyExit:false`); ADR-009 amendment required; `dynamic="force-dynamic"` retained for intent documentation; status: **accepted**; owner BE Dev; Wave 88; closes #151 | 2026-06-02 |
 | [user-stories/US-041-protocol-constants-wiring.md](user-stories/US-041-protocol-constants-wiring.md) | US-041: Wire protocol constants — `REQUIREMENTS_PHASE_PROTOCOL` interpolated into `PHASED_WORKFLOW_DISCIPLINE`; `ORCHESTRATOR_PROTOCOL` + `CONSULTATION_PROTOCOL` added to `PEER_PROTOCOL`; 3 dead imports removed; 5 new tests; additive only; status: **accepted**; owner BE Dev; Wave 88; closes #140 | 2026-06-02 |
 | [user-stories/US-060-stall-drawer-closed-a11y.md](user-stories/US-060-stall-drawer-closed-a11y.md) | US-060: Conditional render StallSettingsDrawer — remove dialog from a11y tree when closed (PR #278, `f158afc`); closes #226; status: **done** | 2026-06-03 |
-| [user-stories/US-062-reduced-motion-guard-remediation.md](user-stories/US-062-reduced-motion-guard-remediation.md) | US-062: Reduced-motion guards — `pill-pulse` frozen at `opacity:1` under RM; pending-dot uses 1.5s/0.6–1 subdued pulse; design spec `design/US-062-reduced-motion-guard-remediation.md`; closes #276+#277; status: **in-dev** (Wave 105) | 2026-06-03 |
-| [user-stories/US-063-stall-drawer-motion-cleanup.md](user-stories/US-063-stall-drawer-motion-cleanup.md) | US-063: StallSettingsDrawer motion cleanup — remove dead `transition: transform 250ms` (inert since conditional render; #281) + RM-guard compliance (#282); OQ-063-001 open (Architect verdict: remove vs guard); closes #281+#282; status: **accepted** | 2026-06-03 |
+| [user-stories/US-062-reduced-motion-guard-remediation.md](user-stories/US-062-reduced-motion-guard-remediation.md) | US-062: Reduced-motion guards — `pill-pulse` frozen at `opacity:1` under RM; pending-dot uses 1.5s/0.6–1 subdued pulse; design spec `design/US-062-reduced-motion-guard-remediation.md`; closes #276+#277; status: **done** (PR #284 `e8ae6c2`) | 2026-06-03 |
+| [user-stories/US-063-stall-drawer-motion-cleanup.md](user-stories/US-063-stall-drawer-motion-cleanup.md) | US-063: StallSettingsDrawer motion cleanup — remove dead `transition: transform 250ms` (inert since conditional render; #281) + RM-guard compliance (#282); closes #281+#282; status: **done** (PR #285 `f09117c`) | 2026-06-03 |
+| [user-stories/US-065-rm-a11y-cluster.md](user-stories/US-065-rm-a11y-cluster.md) | US-065: RM-transition trio — verify-then-act ACs for Issues panel toggle (#210), ActiveWaveCard poll button (#215), responsive-layout transitions (#233); co-location rule; Architect drift note; status: **accepted**; owner UI Dev; Wave 108; closes #210 #215 #233 | 2026-06-03 |
+| [user-stories/US-066-focus-ring-selected-poll-button.md](user-stories/US-066-focus-ring-selected-poll-button.md) | US-066: Focus-ring contrast on selected poll button (#216) — specificity override `.aw-poll-selected.aw-poll-btn:focus-visible`; ring color `var(--text)`; WCAG 2.1 SC 1.4.11 ≥3:1; split from US-065 on Architect's Wave 108 pre-stage rec; status: **accepted**; owner UI Dev; Wave 108; closes #216 | 2026-06-03 |
 
 ## Voided user stories
 
