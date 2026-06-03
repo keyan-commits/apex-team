@@ -7,7 +7,8 @@
 - Piece 5 (PR template): created `.github/pull_request_template.md` with visual evidence checklist
 
 ## Done (continued)
-- Piece 6 (#310 guard): created `.github/workflows/pr-hygiene.yml` to validate PR body syntax (rejects comma-list `closes #a, #b, #c` patterns)
+- Piece 6 (#310 guard): created `.github/workflows/pr-hygiene.yml` to validate PR body syntax (rejects comma-list `closes #a, #b, #c` patterns) → commit d98b4f8
+- Pre-commit hook guard: added pnpm-lock.yaml check to prevent hook from running in minimal test environments
 
 ## Next
 - Test locally: `pnpm type-check` + `pnpm test:run`
