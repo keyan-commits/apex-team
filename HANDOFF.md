@@ -1,6 +1,53 @@
 # HANDOFF — apex-team
 
 ## ⏭️ NOW — 2026-06-03 (Wave 99 — QA #299 regression guards + BE #316 signal handlers + Lane A #318 N+1 pre-stage)
+## ⏭️ NOW — 2026-06-03 (Wave 116 — US-079 BE signal handlers + Wave 115 UI Dev)
+
+**In flight (BE Dev — US-079 / #316 backend half):**
+- **branch** `feature/316-us079-server-signal-handlers` — `scripts/dev-supervisor.mjs` rewritten (Supervisor class, 15s grace, SIGHUP, double-signal escalation, stale-child guard, user-off sentinel); `server.ts` SIGHUP added; 10 new tests in `tests/be/dev-supervisor.test.ts`
+- Gate: type-check 0, 533/533 tests pass. Fragment at `_handoff-pending/316-backend-developer.md`.
+- Gate: Architect review → QA smoke → DevSecOps (no UX gate — ops-only)
+- **DevSecOps seam**: `data/.user-off` (double-signal sentinel) and `data/.supervisor.pid` (orphan detection) — see fragment Notes
+
+**In flight (UI Dev):**
+- **PR #338** @ `2adb3ab` `feature/291-us072-scout-error-copy` — US-072 / #291: replaced stale `ANTHROPIC_API_KEY not configured — scout disabled` fallback with `"Claude Code not logged in — run 'claude login' to authenticate"` in `dashboard/page.tsx:440`; design doc table updated in sync. 527 tests / 0 failed, type-check 0.
+- Gate: Architect review → UX final-copy check → QA smoke → DevSecOps
+## ⏭️ NOW — 2026-06-02 (Wave 98 — emergency lint fix: providers.ts prefer-const)
+## ⏭️ NOW — 2026-06-03 (Wave 116 — #325 a11y focus-visible + #341 gates pending)
+
+**UI Developer Wave 116: #325 a11y — `focus-visible` restored on three interactive surfaces.**
+
+**PR open on `feature/325-focus-visible-a11y`:**
+- `src/components/AgentStatePanel.tsx`: removed `.doc-scroll:focus { outline: none }`, added `.doc-scroll:focus-visible` with `2px solid var(--accent-arch)` (AC1)
+- `src/components/MessageBubble.tsx`: added `.bubble-collapsed:focus-visible` with `2px solid var(--accent-ui)` (AC2 — collapsed div[role="button"])
+- `src/app/dashboard/page.tsx`: added `.row.draggable:focus-visible` with `2px solid var(--accent-po)` (AC3 — queued items; `.expandable-row:focus-visible` was already present)
+- `tests/ui/focus-visible-a11y.test.ts`: 10 new tests, all pass
+- Gate evidence: type-check 0, **532/533 tests** (1 skip pre-existing)
+
+**Parked:** #341 (`feature/126-us071-qa-tests-section`) awaiting Architect/UX/QA gates — no action until gates return.
+
+**Next:** HANDOFF Architect for #325 gate review.
+
+---
+
+## ⏭️ PREV — 2026-06-03 (Wave 104 — backlog drain: #272 recover-script hardening + merge-train block)
+
+**DevSecOps Wave 104: #272 recovery script hardening (file-disjoint, backlog drain while merge-train blocked on Architect #340 review).**
+
+**PR #272 open on `feature/272-recover-script-hardening`:**
+- `scripts/recover-dev-server.sh` line 20: `set -u` → `set -euo pipefail`
+- `-e` causes early exit on command failure (mkdir, nohup, ps pipes)
+- `-o pipefail` catches pipeline failures in grep | awk loops (lines 42, 57)
+- Functional impact: fail-fast instead of silent-swallow on stale lock / missing pnpm binary
+- Verified: bash syntax OK, lint green
+
+**Merge-train priority lock:** moment Architect returns PASS on #340, execute train sequence: #340 → #339 (prerequisite for L1) → #338/#337 (independent). Do not yield until #340 merge SHA is recorded in NOTES.
+
+**Next:** HANDOFF #272 to Architect for gate → QA smoke (if applicable) → DevSecOps merge. Re-engage merge train on #340 PASS.
+
+---
+
+## ⏭️ PREV — 2026-06-02 (Wave 98 — emergency lint fix: providers.ts prefer-const)
 
 **QA in flight:**
 - **PR (SHA-pending)** `feature/299-regression-guards` — #299 self-improvement: upgraded `tests/lib/roles.test.ts` Wave 107 block (lines 247–277) from pure presence checks (`toContain("8000")`) to **behavioral assertions** that verify PO logic. New structure: presence checks organized in `describe("prompt structure")` + behavioral logic tests in `describe("compaction logic (behavioral)")` verifying:
