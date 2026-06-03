@@ -264,6 +264,14 @@ export function AgentPane({
           .pill-streaming { color: var(--accent-ui); animation: pill-pulse 0.6s ease-in-out infinite; }
           .pill-error { color: var(--accent-qa); }
           @keyframes pill-pulse { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+          @media (prefers-reduced-motion: reduce) {
+            .pill-dispatching,
+            .pill-thinking,
+            .pill-streaming {
+              animation: none;
+              opacity: 1;
+            }
+          }
         `}</style>
       </section>
     );
@@ -610,7 +618,12 @@ export function AgentPane({
           50% { opacity: 1; }
         }
         @media (prefers-reduced-motion: reduce) {
-          .pane { transition: none; }
+          .pill-dispatching,
+          .pill-thinking,
+          .pill-streaming {
+            animation: none;
+            opacity: 1;
+          }
         }
       `}</style>
     </section>
