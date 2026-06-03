@@ -159,6 +159,7 @@ export default function DashboardPage() {
   const [stallSettings, setStallSettings] = useState<StallSettings>(DEFAULT_STALL_SETTINGS);
   const [stallDismissed, setStallDismissed] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const gearBtnRef = useRef<HTMLButtonElement>(null);
   const [toast, setToast] = useState<{ msg: string; duration: number; key: number } | null>(null);
   const [notifPermission, setNotifPermission] = useState<NotificationPermission | "unavailable" | null>(null);
   const [issueOrder, setIssueOrder] = useState<"lifo" | "fifo">(() => {
@@ -588,11 +589,12 @@ export default function DashboardPage() {
         }}
         onSettingsOpen={() => setSettingsOpen((v) => !v)}
         settingsOpen={settingsOpen}
+        gearBtnRef={gearBtnRef}
       />
 
       <StallSettingsDrawer
         open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
+        onClose={() => { setSettingsOpen(false); gearBtnRef.current?.focus(); }}
         settings={stallSettings}
         onSettingsChange={setStallSettings}
         onNotificationToggle={handleNotificationToggle}
