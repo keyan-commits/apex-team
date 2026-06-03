@@ -1,24 +1,11 @@
-import { spawn } from "node:child_process";
-import { resolve } from "node:path";
+import { query } from "@anthropic-ai/claude-agent-sdk";
 import { scoutRunning, setScoutRunning } from "@/lib/scout-state";
+import { runScout } from "@/lib/scout-runner";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function POST(): Promise<Response> {
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json(
-      {
-        error: {
-          code: "API_KEY_MISSING",
-          message:
-            "ANTHROPIC_API_KEY required for scout — set it in .env.local",
-        },
-      },
-      { status: 503 },
-    );
-  }
-
   if (scoutRunning) {
     return Response.json(
       { error: { code: "ALREADY_RUNNING", message: "Scout is already running" } },
@@ -26,17 +13,34 @@ export async function POST(): Promise<Response> {
     );
   }
 
-  const scriptPath = resolve(process.cwd(), "scripts", "skill-scout.mjs");
-  const child = spawn(process.execPath, [scriptPath], {
-    detached: false,
-    stdio: ["ignore", "pipe", "pipe"],
-  });
+  // Auth probe: iterate query() once to surface OAuth absence before returning 202.
+  // The SDK throws on the first iteration when Claude Code is not logged in.
+  try {
+    const probe = query({
+      prompt: "ping",
+      options: {
+        model: "claude-haiku-4-5-20251001",
+        systemPrompt: { type: "preset", preset: "claude_code", append: "Reply with ok." },
+      },
+    });
+    for await (const _ of probe) {
+      break; // one iteration is enough to confirm OAuth is live
+    }
+  } catch {
+    return Response.json(
+      {
+        error: {
+          code: "UNAUTHENTICATED",
+          message: "Claude Code not logged in — run 'claude login' to authenticate",
+        },
+      },
+      { status: 503 },
+    );
+  }
 
+  // Auth confirmed — run the full scout in-process (fire and forget)
   setScoutRunning(true);
+  runScout().finally(() => setScoutRunning(false));
 
-  child.on("close", () => {
-    setScoutRunning(false);
-  });
-
-  return Response.json({ status: "running", pid: child.pid }, { status: 202 });
+  return Response.json({ status: "running" }, { status: 202 });
 }

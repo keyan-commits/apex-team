@@ -25,6 +25,7 @@
     "devsecops:bootstrap-workspace": "node scripts/devsecops/bootstrap-workspace.mjs",
     "lint": "eslint .",
     "fold-handoff": "tsx scripts/fold-handoff.ts",
+    "lint:security:nfr001": "! grep -rqE '\"x-api-key\"|fetch\\(\"https://api\\.anthropic\\.com' --include='*.ts' --include='*.mjs' --include='*.js' src/ scripts/",
     "postinstall": "git rev-parse --git-dir >/dev/null 2>&1 && git config core.hooksPath .githooks || true"
   },
   "dependencies": {

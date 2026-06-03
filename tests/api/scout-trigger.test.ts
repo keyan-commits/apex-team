@@ -1,70 +1,84 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("node:child_process", () => ({
-  spawn: vi.fn().mockReturnValue({
-    pid: 12345,
-    on: vi.fn(),
-  }),
-}));
-
+// scout-state: top-level mock with getter so _scoutRunning drives the value
+// across test resets without requiring vi.resetModules for this module.
+let _scoutRunning = false;
 vi.mock("../../src/lib/scout-state", () => ({
-  scoutRunning: false,
+  get scoutRunning() { return _scoutRunning; },
   setScoutRunning: vi.fn(),
 }));
 
-describe("POST /api/scout/trigger", () => {
-  const originalKey = process.env.ANTHROPIC_API_KEY;
+function makeQueryIterable(throws = false) {
+  return {
+    [Symbol.asyncIterator]() {
+      return {
+        async next(): Promise<IteratorResult<unknown>> {
+          if (throws) throw new Error("not authenticated — run claude login");
+          return { done: true, value: undefined };
+        },
+      };
+    },
+  };
+}
 
+describe("POST /api/scout/trigger", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    _scoutRunning = false;
     vi.resetModules();
-  });
-
-  afterEach(() => {
-    if (originalKey !== undefined) {
-      process.env.ANTHROPIC_API_KEY = originalKey;
-    } else {
-      delete process.env.ANTHROPIC_API_KEY;
-    }
-  });
-
-  it("returns 503 when ANTHROPIC_API_KEY is not set", async () => {
     delete process.env.ANTHROPIC_API_KEY;
-    vi.doMock("../../src/lib/scout-state", () => ({
-      scoutRunning: false,
-      setScoutRunning: vi.fn(),
-    }));
-    const { POST } = await import("../../src/app/api/scout/trigger/route");
-    const req = new Request("http://localhost/api/scout/trigger", { method: "POST" });
-    const res = await POST();
-    expect(res.status).toBe(503);
-    const body = await res.json();
-    expect(body.error.code).toBe("API_KEY_MISSING");
-    expect(body.error.message).toContain("ANTHROPIC_API_KEY");
   });
 
-  it("returns 202 and spawns script when API key is set", async () => {
-    process.env.ANTHROPIC_API_KEY = "sk-test";
-    vi.doMock("../../src/lib/scout-state", () => ({
-      scoutRunning: false,
-      setScoutRunning: vi.fn(),
+  it("(AC6a) invokes query() for the auth probe", async () => {
+    vi.doMock("@anthropic-ai/claude-agent-sdk", () => ({
+      query: vi.fn(() => makeQueryIterable()),
     }));
+    vi.doMock("../../src/lib/scout-runner", () => ({
+      runScout: vi.fn().mockResolvedValue(undefined),
+    }));
+
     const { POST } = await import("../../src/app/api/scout/trigger/route");
-    const req = new Request("http://localhost/api/scout/trigger", { method: "POST" });
+    const res = await POST();
+    expect(res.status).toBe(202);
+
+    const { query } = await import("@anthropic-ai/claude-agent-sdk");
+    expect(vi.mocked(query as (...args: unknown[]) => unknown)).toHaveBeenCalled();
+  });
+
+  it("(AC6b) returns 202 when ANTHROPIC_API_KEY absent but OAuth OK", async () => {
+    vi.doMock("@anthropic-ai/claude-agent-sdk", () => ({
+      query: vi.fn(() => makeQueryIterable()),
+    }));
+    vi.doMock("../../src/lib/scout-runner", () => ({
+      runScout: vi.fn().mockResolvedValue(undefined),
+    }));
+
+    const { POST } = await import("../../src/app/api/scout/trigger/route");
     const res = await POST();
     expect(res.status).toBe(202);
     const body = await res.json();
-    expect(body.status).toBe("running");
+    expect(body?.error?.code).not.toBe("API_KEY_MISSING");
+  });
+
+  it("(AC6c) returns 503 with clear message when OAuth is absent", async () => {
+    vi.doMock("@anthropic-ai/claude-agent-sdk", () => ({
+      query: vi.fn(() => makeQueryIterable(true)),
+    }));
+
+    const { POST } = await import("../../src/app/api/scout/trigger/route");
+    const res = await POST();
+    expect(res.status).toBe(503);
+    const body = await res.json();
+    expect(body.error.code).toBe("UNAUTHENTICATED");
+    expect(body.error.message).toBe(
+      "Claude Code not logged in — run 'claude login' to authenticate",
+    );
   });
 
   it("returns 409 when scout is already running", async () => {
-    process.env.ANTHROPIC_API_KEY = "sk-test";
-    vi.doMock("../../src/lib/scout-state", () => ({
-      scoutRunning: true,
-      setScoutRunning: vi.fn(),
-    }));
+    _scoutRunning = true;
+
     const { POST } = await import("../../src/app/api/scout/trigger/route");
-    const req = new Request("http://localhost/api/scout/trigger", { method: "POST" });
     const res = await POST();
     expect(res.status).toBe(409);
     const body = await res.json();

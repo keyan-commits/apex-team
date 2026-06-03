@@ -1,20 +1,22 @@
 #!/usr/bin/env node
 /**
- * Daily skill scout — researches latest best practices per role via Anthropic
- * web-search beta and files GitHub skill-proposal issues. Idempotent by title.
+ * Daily skill scout — researches latest best practices per role via the
+ * Claude Agent SDK (OAuth) + apex-engine apex_web_search MCP tool, then
+ * files GitHub skill-proposal issues. Idempotent by title.
  *
  * Usage: pnpm scout
- * Requires: ANTHROPIC_API_KEY in .env.local (or environment), gh CLI authenticated.
+ * Requires: Claude Code logged in (`claude login`). No ANTHROPIC_API_KEY needed.
  */
 import { readFileSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
 import Database from "better-sqlite3";
+import { query } from "@anthropic-ai/claude-agent-sdk";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-// Load .env.local (skip keys already set by the environment)
+// Load .env.local for APEX_MCP_URL and other non-secret config (skip keys already set)
 const envFile = resolve(ROOT, ".env.local");
 if (existsSync(envFile)) {
   for (const line of readFileSync(envFile, "utf8").split("\n")) {
@@ -23,12 +25,18 @@ if (existsSync(envFile)) {
   }
 }
 
-const API_KEY = process.env.ANTHROPIC_API_KEY;
-if (!API_KEY) { console.error("[FAIL] ANTHROPIC_API_KEY not set"); process.exit(1); }
-
+const APEX_MCP_URL = process.env.APEX_MCP_URL?.trim() || "http://127.0.0.1:31001/mcp";
 const REPO = "keyan-commits/apex-team";
 const LABEL = "skill-proposal";
+const MODEL = "claude-sonnet-4-6";
 const ROLES = ["business-analyst", "architect", "ui-developer", "backend-developer", "qa", "devsecops"];
+
+// apex_web_search is the load-bearing web search tool; web_search is an alias
+// in some apex-engine versions — include both for compatibility.
+const SCOUT_ALLOWED_TOOLS = [
+  "mcp__apex-engine__apex_web_search",
+  "mcp__apex-engine__web_search",
+];
 
 // --- SQLite (best-effort — app may not be running) ---
 const DB_PATH = process.env.APEX_TEAM_DB_PATH
@@ -52,43 +60,6 @@ function openDb() {
     );
   `);
   return db;
-}
-
-// --- Anthropic REST + web-search-2025-03-05 loop ---
-// Passing empty tool_result causes Anthropic to inject real search results on
-// the next call when using the managed web-search beta.
-async function callAnthropic(prompt) {
-  const messages = [{ role: "user", content: prompt }];
-  for (let round = 0; round < 5; round++) {
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "x-api-key": API_KEY,
-        "anthropic-version": "2023-06-01",
-        "anthropic-beta": "web-search-2025-03-05",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: 1024,
-        tools: [{ type: "web_search_20250305", name: "web_search" }],
-        messages,
-      }),
-    });
-    if (!r.ok) throw new Error(`Anthropic ${r.status}: ${await r.text()}`);
-    const data = await r.json();
-    if (data.stop_reason !== "tool_use") {
-      return (data.content ?? []).filter(b => b.type === "text").map(b => b.text).join("");
-    }
-    messages.push({ role: "assistant", content: data.content });
-    messages.push({
-      role: "user",
-      content: data.content
-        .filter(b => b.type === "tool_use")
-        .map(b => ({ type: "tool_result", tool_use_id: b.id, content: "" })),
-    });
-  }
-  throw new Error("tool-use loop did not converge");
 }
 
 function parseProposals(text) {
@@ -118,8 +89,39 @@ Respond with ONLY a JSON array (0–2 items, empty array [] if skills are alread
   }
 ]`;
 
-  const text = await callAnthropic(prompt);
-  const proposals = parseProposals(text);
+  let responseText = "";
+  try {
+    for await (const msg of query({
+      prompt,
+      options: {
+        model: MODEL,
+        systemPrompt: {
+          type: "preset",
+          preset: "claude_code",
+          append: "You are a skills research assistant. Use web_search to research current best practices.",
+        },
+        mcpServers: { "apex-engine": { type: "http", url: APEX_MCP_URL } },
+        allowedTools: SCOUT_ALLOWED_TOOLS,
+      },
+    })) {
+      if (msg.type === "assistant") {
+        const content = msg.message?.content;
+        if (Array.isArray(content)) {
+          for (const block of content) {
+            if (block.type === "text" && typeof block.text === "string") {
+              responseText += block.text;
+            }
+          }
+        }
+      }
+    }
+  } catch (e) {
+    // If apex_web_search is unavailable, degrade gracefully — log and return 0
+    console.warn(`[WARN] ${roleId}: query error — ${e.message}`);
+    return 0;
+  }
+
+  const proposals = parseProposals(responseText);
   let filed = 0;
   for (const p of proposals.slice(0, 2)) {
     if (!p?.title || existingTitles.has(p.title)) continue;
@@ -142,7 +144,6 @@ async function main() {
   console.log(`[INFO] Skill scout starting — ${ROLES.length} roles`);
   const db = openDb();
 
-  // Fetch existing skill-proposal titles for deduplication
   const listResult = spawnSync("gh", [
     "issue", "list", "--repo", REPO, "--label", LABEL,
     "--state", "open", "--json", "title", "--limit", "200",
@@ -168,7 +169,6 @@ async function main() {
       "INSERT INTO scout_runs (ran_at, proposals_filed, roles_scanned) VALUES (?, ?, ?)"
     ).run(Date.now(), totalFiled, ROLES.length);
 
-    // Refresh issue_cache for all tracked labels
     for (const label of ["skill-proposal", "mcp-proposal", "self-improvement"]) {
       try {
         const r = spawnSync("gh", [
@@ -182,7 +182,7 @@ async function main() {
              ON CONFLICT(label) DO UPDATE SET count=excluded.count, updated_at=excluded.updated_at`
           ).run(label, count, Date.now());
         }
-      } catch { /* best-effort — issue_cache is read-through fallback for team-status */ }
+      } catch { /* best-effort */ }
     }
     db.close();
   }
