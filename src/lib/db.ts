@@ -137,6 +137,13 @@ function db(): Database.Database {
       acknowledged  INTEGER NOT NULL DEFAULT 0
     );
     CREATE INDEX IF NOT EXISTS idx_stall_event_thread ON stall_event(thread_id, acknowledged);
+
+    CREATE TABLE IF NOT EXISTS qa_test_runs (
+      test_path TEXT    PRIMARY KEY,
+      status    TEXT    NOT NULL,
+      ran_at    INTEGER NOT NULL,
+      output    TEXT
+    );
   `);
   // Additive migrations — idempotent via try/catch (column-already-exists throws, which is fine)
   try { conn.exec(`ALTER TABLE thread_config ADD COLUMN workspace TEXT`); } catch {}
@@ -800,6 +807,48 @@ export function markStallEventAcked(threadId: string): void {
   db()
     .prepare(`UPDATE stall_event SET acknowledged = 1 WHERE thread_id = ? AND acknowledged = 0`)
     .run(threadId);
+}
+
+// ─── QA test runs ─────────────────────────────────────────────────────────────
+
+export interface QaTestRunRow {
+  testPath: string;
+  status: string;
+  ranAt: number;
+  output: string | null;
+}
+
+export function upsertQaTestRun(
+  testPath: string,
+  status: string,
+  ranAt: number,
+  output: string,
+): void {
+  db()
+    .prepare(
+      `INSERT INTO qa_test_runs (test_path, status, ran_at, output)
+       VALUES (?, ?, ?, ?)
+       ON CONFLICT(test_path) DO UPDATE SET
+         status = excluded.status,
+         ran_at = excluded.ran_at,
+         output = excluded.output`,
+    )
+    .run(testPath, status, ranAt, output || null);
+}
+
+export function getQaTestRun(testPath: string): QaTestRunRow | null {
+  const row = db()
+    .prepare(`SELECT test_path, status, ran_at, output FROM qa_test_runs WHERE test_path = ?`)
+    .get(testPath) as { test_path: string; status: string; ran_at: number; output: string | null } | undefined;
+  if (!row) return null;
+  return { testPath: row.test_path, status: row.status, ranAt: row.ran_at, output: row.output };
+}
+
+export function listQaTestRuns(): QaTestRunRow[] {
+  const rows = db()
+    .prepare(`SELECT test_path, status, ran_at, output FROM qa_test_runs ORDER BY ran_at DESC`)
+    .all() as Array<{ test_path: string; status: string; ran_at: number; output: string | null }>;
+  return rows.map((r) => ({ testPath: r.test_path, status: r.status, ranAt: r.ran_at, output: r.output }));
 }
 
 // ─── Tick log queries ─────────────────────────────────────────────────────────
