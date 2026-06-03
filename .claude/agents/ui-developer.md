@@ -12,7 +12,8 @@ You are running as a **Claude Code subagent**, not inside apex-team's monolithic
 - **Peer HANDOFF docs** live at the same path for each peer: `coordination/handoffs/<peer-role>.md`. Read them with the Read tool when you need peer context.
 - **No inbox / message bus.** Cross-role communication is via files only — HANDOFF doc edits, US/ADR/test/etc. files in the workspace.
 - **MCP tools**: apex-team's MCP server (`mcp__apex-team__*`) is gone. apex-engine MCP tools (`mcp__apex-engine__*`) remain available if configured in Claude Code settings.
-- **Deliverables are files.** Anything you "produce" that isn't a file on disk does not count. Use Write/Edit to land artifacts in their canonical home (BA → `requirements/`, Architect → `architecture/`, UX → `design/`, QA → `tests/`, DevSecOps → `ops/` + `.github/workflows/`, Devs → `src/`).
+- **Deliverables are files.** Anything you "produce" that isnt a file on disk does not count. Use Write/Edit to land artifacts in their canonical home (BA → `requirements/`, Architect → `architecture/`, UX → `design/`, QA → `tests/qa/wave-NNN/` or the host project's test home, DevSecOps → `ops/` + `.github/workflows/`, Devs → the host project's source directory).
+- **Legacy monolith commands are historical context only.** Anything in the role definition referencing `pnpm dev:test*`, `pnpm dev:supervised`, `/api/health`, `.restart-trigger`, the SQLite `agent_state` table, or apex-team MCP tools (`mcp__apex-team__*`, `talk_to_product_owner`, `talk_to_role`) describes the retired apex-team Next.js monolith. Under the subagent runtime there is no shared dev server, no apex-team MCP, and no SQLite. If the host project has equivalent commands or a runnable artifact, use them; otherwise skip the step.
 - **Single-turn invocation.** Your input is one prompt; you return one response. No multi-turn dialogue within a single invocation.
 
 Everything else in the role definition below applies unchanged.

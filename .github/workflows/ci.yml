@@ -10,11 +10,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4  # v4
-      # Don't pass `version:` — it conflicts with `packageManager: pnpm@x.y.z`
-      # in package.json. The action reads that field as the source of truth.
+      - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4  # v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
@@ -23,50 +21,17 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        # Wave 108 (Piece 2/#303): lint first (fail fast), max-warnings 0 to catch all warnings as errors
         run: pnpm lint --max-warnings 0
 
       - name: Dependency audit
         run: pnpm audit --audit-level moderate
-        continue-on-error: true  # transient registry failures don't block PRs
+        continue-on-error: true
 
       - name: Type check
         run: pnpm type-check
 
       - name: Tests
-        # NODE_ENV=development required because next.config.ts uses
-        # experimental.allowDevelopmentBuild (Wave 88 / US-040 fix for #151).
-        # tests/server/timeouts.test.ts imports server.ts which loads Next config;
-        # without NODE_ENV set, Next throws "allowDevelopmentBuild requires NODE_ENV=development".
-        run: NODE_ENV=development pnpm test:run
-
-  build-smoke:
-    name: Build smoke (pnpm build)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'pnpm'
-      - run: pnpm install --frozen-lockfile
-      - name: pnpm build (compilation gate)
-        # #151 closed (25c57a4) — allowDevelopmentBuild fixes the /_global-error prerender crash.
-        # prerenderEarlyExit:false (next.config.ts:14) suppresses build abort on masked prerender
-        # errors; the F2 step below catches any that slip through via grep.
-        run: |
-          set -o pipefail
-          pnpm build 2>&1 | tee /tmp/build-output.log
-      - name: F2 — prerender error fitness function (#201)
-        if: always()
-        run: |
-          if grep -q "Error occurred prerendering" /tmp/build-output.log 2>/dev/null; then
-            echo "FAIL: prerender errors detected — prerenderEarlyExit:false masked build abort"
-            grep "Error occurred prerendering" /tmp/build-output.log
-            exit 1
-          fi
-          echo "✓ F2 PASS: zero prerender errors in build output"
+        run: pnpm test:run
 
   merge-driver-test:
     name: F1 — union-merge fitness (HANDOFF.md no conflict markers)
@@ -84,8 +49,6 @@ jobs:
           fi
 
           # 2. Set up an isolated test repo + copy THIS checkout's .gitattributes
-          #    (the prior fixed-path /Users/nikoe/... was hardcoded to one machine and
-          #    fails on CI runners — Wave 92 fix).
           ATTRIBUTES_SRC="$(pwd)/.gitattributes"
           TEST_REPO="${RUNNER_TEMP:-/tmp}/merge_test_$$"
           mkdir -p "$TEST_REPO"
@@ -95,7 +58,7 @@ jobs:
           git config user.email "ci@apex-team.local"
           git config user.name "CI"
 
-          # 3. Base HANDOFF.md (without leading-whitespace from heredoc)
+          # 3. Base HANDOFF.md
           cat > HANDOFF.md <<'EOF'
           ## ⏭️ NOW — 2026-06-01 (Wave 88)
           Wave 88 work in progress.
