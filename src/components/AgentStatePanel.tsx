@@ -161,7 +161,11 @@ export function AgentStatePanel({
           overflow-y: auto;
           position: relative;
         }
-        .doc-scroll:focus { outline: none; }
+        .doc-scroll:focus-visible {
+          outline: 2px solid var(--accent-arch);
+          outline-offset: 2px;
+          border-radius: 4px;
+        }
         .body-fade {
           height: 24px;
           margin-top: -24px;
