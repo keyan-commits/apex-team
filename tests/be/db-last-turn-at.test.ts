@@ -7,7 +7,6 @@ import { join } from "node:path";
 const tmpDir = mkdtempSync(join(tmpdir(), "apex-db-last-turn-at-"));
 
 describe("last_turn_at / stampTurnAt (US-052)", () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let mod: any;
 
   beforeAll(async () => {

@@ -85,7 +85,6 @@ describe("US-039 — recordStallEvent returns boolean (AC1–AC3)", () => {
 
   it("AC2 dedup: returns false and skips insert during same stall window", () => {
     const recentTs = new Date(Date.now() - 60_000).toISOString();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (mockGetLatestUnackedStallRow as any).mockReturnValue({
       id: 1, threadId: "t-84", detectedAt: recentTs, lastMergeAt: null,
       stallAgeMs: STALL_MERGE_THRESHOLD_MS + 1, backlogCount: 3,
@@ -99,7 +98,6 @@ describe("US-039 — recordStallEvent returns boolean (AC1–AC3)", () => {
 
   it("AC3 re-fire: returns true when prior unacked event is outside the merge window", () => {
     const oldTs = new Date(Date.now() - (STALL_MERGE_THRESHOLD_MS + 1)).toISOString();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (mockGetLatestUnackedStallRow as any).mockReturnValue({
       id: 2, threadId: "t-84", detectedAt: oldTs, lastMergeAt: null,
       stallAgeMs: STALL_MERGE_THRESHOLD_MS + 1, backlogCount: 3,
@@ -138,7 +136,6 @@ describe("US-039 — warn fires only on onset, not on dedup (tick-scheduler inte
 
   it("AC2: warn does NOT fire when dedup-skipped", () => {
     const recentTs = new Date(Date.now() - 60_000).toISOString();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (mockGetLatestUnackedStallRow as any).mockReturnValue({
       id: 1, threadId: "t-84", detectedAt: recentTs, lastMergeAt: null,
       stallAgeMs: STALL_MERGE_THRESHOLD_MS + 1, backlogCount: 3,

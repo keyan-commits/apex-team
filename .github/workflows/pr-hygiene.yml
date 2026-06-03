@@ -1,0 +1,34 @@
+name: PR Hygiene
+
+on:
+  pull_request:
+    types: [opened, edited]
+
+jobs:
+  validate-close-keywords:
+    name: Validate PR body close-keyword syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check close-keyword syntax
+        run: |
+          body="${{ github.event.pull_request.body }}"
+
+          # Pattern: match "closes #<num>" or "fixes #<num>" or "resolves #<num>"
+          # followed by a comma and then ANOTHER issue ref WITHOUT a keyword
+          # Example: "closes #123, #456" is FAIL (missing keyword on #456)
+          # Example: "closes #123, closes #456" is PASS (each has keyword)
+
+          if echo "$body" | grep -qiE '(closes|fixes|resolves)\s+#[0-9]+\s*,\s*#[0-9]+'; then
+            echo "❌ FAIL: PR body contains comma-list issue refs without per-issue keywords"
+            echo ""
+            echo "Issue: Found pattern like 'closes #123, #456'"
+            echo "GitHub only auto-closes the FIRST issue in a comma list."
+            echo "Other issues stay open and get re-ranked into future waves."
+            echo ""
+            echo "Fix: Use one keyword per issue:"
+            echo "  ✗ closes #123, #456, #789"
+            echo "  ✓ closes #123, closes #456, closes #789"
+            exit 1
+          fi
+
+          echo "✓ PR body close-keyword syntax is clean"

@@ -7,7 +7,7 @@
 
 import { execFileSync, spawnSync } from "node:child_process";
 import {
-  existsSync, readFileSync, writeFileSync, mkdirSync, cpSync, chmodSync,
+  existsSync, readFileSync, writeFileSync, mkdirSync, chmodSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve, dirname } from "node:path";

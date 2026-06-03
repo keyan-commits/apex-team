@@ -59,7 +59,6 @@ type ToolResult = { content: { type: string; text: string }[] };
 type ToolHandler = (args: Record<string, unknown>) => Promise<ToolResult>;
 
 function buildCapturingServer(): {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   server: any;
   getHandler: (name: string) => ToolHandler;
 } {

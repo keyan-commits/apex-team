@@ -9,7 +9,6 @@ import type {
   ChatMessage,
   Provider,
   RoleId,
-  TeamRoleId,
 } from "@/types";
 import { MessageBubble } from "./MessageBubble";
 import { AgentStatePanel } from "./AgentStatePanel";
@@ -98,7 +97,7 @@ export function AgentPane({
       setOtherText(stored);
     }
     onConfigChangeRef.current({ ...configRef.current, model: stored });
-  }, []); // eslint-disable-line
+  }, []);
 
   // Elapsed-seconds ticker — starts/resets when busy transitions to true.
   useEffect(() => {

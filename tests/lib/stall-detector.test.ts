@@ -60,7 +60,6 @@ function setMergeFailed() {
 }
 
 function setBacklog(count: number) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (mockGetPipelineState as ReturnType<typeof vi.fn>).mockReturnValue(
     count > 0 ? { value: String(count) } : null,
   );
@@ -149,7 +148,6 @@ describe("stall-detector", () => {
 
     it("skips insert when unacked event exists within STALL_MERGE_THRESHOLD_MS (dedup)", () => {
       const recentTs = new Date(Date.now() - 60_000).toISOString(); // 1 min ago
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (mockGetLatestUnackedStallRow as ReturnType<typeof vi.fn>).mockReturnValue({
         id: 1,
         threadId: "t-test",
@@ -192,7 +190,6 @@ describe("stall-detector", () => {
         hourlyTokens: 12_000,
         acknowledged: false,
       };
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (mockGetLatestUnackedStallRow as ReturnType<typeof vi.fn>).mockReturnValue(event);
       expect(getLatestUnackedStall("t-test")).toStrictEqual(event);
     });
