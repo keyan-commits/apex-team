@@ -1,16 +1,16 @@
 # CLAUDE.md — apex-team
 
-Local single-user web app that runs a **team of seven role-specialized LLM agents** working in parallel on a project. The team is driven by an external **Claude Code** session (yours, in your terminal) connected to apex-team's own **MCP server** — you talk to your Claude Code, your Claude Code drives the team via MCP tools, the web UI is the observability dashboard.
+**Subagent + workspace-conventions hub.** apex-team now ships **eight Claude Code subagents** (Product Owner + seven role specialists) plus the workspace conventions they operate against (`requirements/`, `architecture/`, `design/`, `tests/`, `ops/`, `coordination/handoffs/`). The Next.js monolith + MCP server + SQLite are retired (Wave 106, Plan C hard-cutover, 2026-06-04). Files on disk are the only state — no shared server, no database, no message bus.
 
-Built on top of [apex-engine](../apex-engine): every team member's Claude calls have apex-engine's MCP tools (`apex_synthesize`, `apex_fanout`, `doc_review`, `code`, `web_search`, `history_search`) available.
+Companion read-only viewer lives at `keyan-commits/apex-team-viewer` (sibling clone at `../apex-team-viewer/`, port `:3200`). It polls files from disk + `gh` for CI status, with a `▶ Run` button per QA test that streams `pnpm vitest run <path>` via SSE. Survives independently of this repo.
 
 ## Session pickup
 
-A fresh Claude Code session inheriting this repo should read these files in order to recover full context:
+A fresh Claude Code session inheriting this repo should read these files in order:
 
-1. `HANDOFF.md` — top NOW block: what shipped recently, what's open
+1. `HANDOFF.md` — top NOW block: cutover state + open next steps
 2. `LESSONS.md` — append-only "we hit X, it broke for Y, we now do Z" log; explains WHY conventions exist
-3. `src/lib/protocols.ts` — the encoded phased workflow each role's prompt inherits
+3. `.claude/agents/*.md` — the eight subagent definitions; each carries its role prompt + Plan C runtime adapter + skill content
 4. `architecture/decisions/` — ADRs for big design choices
 5. `requirements/INDEX.md` — current user-story backlog + status
 
@@ -20,170 +20,152 @@ Memory files at `~/.claude/projects/-Users-nikoe-Development-Study-apex-team/mem
 
 ```
    ┌──────────────────────────┐
-   │  Your Claude Code (CLI)  │  ← you talk to this in your terminal
+   │  Your Claude Code (CLI)  │  ← outer orchestrator session
    └────────────┬─────────────┘
-                │ MCP (claude mcp add apex-team --transport http http://localhost:3000/mcp)
-                ▼
-   ┌──────────────────────────┐
-   │  apex-team server.ts     │  ← custom Next.js server
-   │  /mcp     (apex-team MCP)│
-   │  /api/*   (Next.js API)  │
-   │  /        (web dashboard)│
-   └────────────┬─────────────┘
-                │ runTurn → query() with apex-engine MCP wired
+                │ Agent tool → subagent dispatch
                 ▼
    ┌────────────────────────────────────────────────────────┐
-   │  7 agents, each its own SDK session + HANDOFF doc:     │
+   │  8 subagents under .claude/agents/<role>.md            │
+   │  (also symlinked at ~/.claude/agents/ for user-scope)  │
    │                                                        │
-   │   Product Owner   — in-app orchestrator (DISPATCH)     │
+   │   product-owner    — orchestrates, dispatches peers    │
    │   ────────────────────────────────────────────────     │
-   │   Business Analyst — owns <workspace>/requirements/    │
-   │   Architect        — owns NFRs + code reviews          │
-   │   UI Developer     — frontend                          │
-   │   Backend Developer — backend / APIs                   │
-   │   QA               — all testing                       │
-   │   DevSecOps        — CI/CD + secrets + supply chain    │
+   │   business-analyst — owns requirements/                │
+   │   architect        — owns architecture/ + NFRs         │
+   │   ux-designer      — owns design/                      │
+   │   ui-developer     — frontend code                     │
+   │   backend-developer — backend / API code               │
+   │   qa               — owns tests/ (files on disk)       │
+   │   devsecops        — owns ops/ + CI/CD                 │
    └────────────────────────────────────────────────────────┘
+                │ Read/Write/Edit
+                ▼
+   ┌──────────────────────────┐
+   │  Files on disk           │
+   │  (workspace conventions) │
+   └──────────────────────────┘
+                │ poll
+                ▼
+   ┌──────────────────────────┐
+   │  apex-team-viewer        │  ← separate repo + process
+   │  http://localhost:3200   │     read-only dashboard
+   └──────────────────────────┘
 ```
 
-## The 7 roles
+Each subagent is invoked as a single-turn Claude Code subagent (`Agent` tool with `subagent_type: <role>`). No persistent process, no shared memory, no inbox bus. Cross-role coordination happens through files in `coordination/handoffs/<role>.md` and the workspace artifacts (US-NNN files, ADRs, design specs, tests, ops manifests).
 
-| Role | Ownership | Channel |
+## The 8 subagents
+
+| Role | Owns | Model |
 |---|---|---|
-| **Product Owner (PO)** | In-app orchestrator. Reads goals from you; decides who runs next. Uses `[[DISPATCH: role]]` (auto-trigger). | Auto-summons the team. |
-| **Business Analyst (BA)** | Functional / business requirements. Maintains `<workspace>/requirements/` directory (INDEX.md, scope.md, glossary.md, open-questions.md, user-stories/*). Every other role asks BA for business logic. | `[[HANDOFF: role]]` (peer inbox). |
-| **Architect** | **Non-functional requirements** (perf, security envelope, observability, scalability, deployability), **system design**, **coding standards**, **all code reviews**, design pattern guidance. Maintains `<workspace>/architecture/`. | `[[HANDOFF: role]]`. |
-| **UI Developer** | Frontend implementation. Reads requirements + architecture, writes UI code. Escalates business questions to BA, tech questions to Architect. | `[[HANDOFF: role]]`. |
-| **Backend Developer** | Backend / API / service implementation. Same escalation pattern as UI Dev. | `[[HANDOFF: role]]`. |
-| **QA** | **All testing**: unit, smoke, regression, UI, backend, security. Picks the testing tech. Does **not** do code reviews (that's Architect's lane). | `[[HANDOFF: role]]`. |
-| **DevSecOps** | CI/CD pipelines, secrets, deployments, supply-chain security (Dependabot/equivalent), runtime security (TLS, IAM). Maintains `<workspace>/ops/`. | `[[HANDOFF: role]]`. |
+| **product-owner** | Orchestration. Reads goals; emits advisory `[[DISPATCH: role]]` blocks (advisory only — the outer Claude Code orchestrator reads them and decides which subagents to invoke). | opus |
+| **business-analyst** | `requirements/` — INDEX.md, scope.md, glossary.md, open-questions.md, user-stories/, business-rules.md, domains/, data-sources.md, samples/. Authoritative on business logic. | sonnet |
+| **architect** | `architecture/` — NFRs, system design, coding standards, ADRs. Authoritative on tech/cross-cutting. All code reviews. | opus |
+| **ux-designer** | `design/` — per-feature design specs. A11y, contrast, motion gates. | sonnet |
+| **ui-developer** | Frontend code. Escalates business → BA, tech → Architect. | sonnet |
+| **backend-developer** | Backend / API / service code. Same escalation pattern. | sonnet |
+| **qa** | All testing — unit, smoke, regression, UI, backend, security. **Tests are files on disk** (US-085 discipline, absorbed into `qa.md`) — chat-bubble code does not count. | sonnet |
+| **devsecops** | `ops/` — CI/CD, secrets, deploy, supply-chain security. Sole agent that merges to main. | sonnet |
 
-**Two cross-agent channels:**
+**Coordination semantics:**
 
-- `[[HANDOFF: role]] … [[/HANDOFF]]` — peer-to-peer. Async, lands in target's inbox, does **NOT** auto-trigger. Used by all six non-PO roles.
-- `[[DISPATCH: role]] … [[/DISPATCH]]` — orchestrator-to-team. **Auto-triggers** the target's turn. Used only by PO.
-
-Both roles can emit `[[NOTES]] … [[/NOTES]]` to update their own persistent HANDOFF doc.
+- `[[HANDOFF: role]] … [[/HANDOFF]]` blocks in a subagent's output are **advisory text** describing what should happen next. They do NOT auto-trigger peer turns under the subagent runtime.
+- `[[DISPATCH: role]] … [[/DISPATCH]]` blocks from the PO are likewise advisory — the outer Claude Code session reads them and invokes the next subagent via the Agent tool.
+- `[[NOTES]] … [[/NOTES]]` blocks describe updates the subagent makes to its own `coordination/handoffs/<role>.md` file.
 
 ## How to drive the team
 
-### From your Claude Code session (recommended)
+The outer Claude Code session uses the `Agent` tool to invoke subagents:
 
-```bash
-# One-time:
-claude mcp add apex-team --transport http http://localhost:3000/mcp
+```
+Agent({
+  description: "<short>",
+  subagent_type: "business-analyst",  // or any role id from .claude/agents/
+  prompt: "<self-contained brief — the subagent has no conversation history>"
+})
 ```
 
-Then in any Claude Code session, ask it to use apex-team's tools:
+Multiple subagents can be invoked in parallel by issuing several `Agent` tool calls in a single response.
 
-- `talk_to_product_owner(message, thread_id, workspace?)` — hand the PO a goal, get back the PO's reply plus every dispatched peer's reply.
-- `talk_to_role(role, message, thread_id, workspace?)` — bypass PO, talk directly to any specific role.
-- `get_team_status(thread_id)` — busy/idle, HANDOFF doc sizes, inbox counts.
-- `read_handoff_doc(role, thread_id)` — full text of a role's working state.
-- `list_requirements(workspace?)` / `read_requirement(path, workspace?)` — access BA's requirements/.
-- `new_thread()` — mint a fresh thread id.
-- `list_team_roles()` — discover what role ids you can target.
-- `record_user_message(thread_id, message)` — drop context into a thread without triggering a turn.
-
-### From the web UI (observability + manual drive)
-
-`http://localhost:3000` — every role has its own pane:
-- PO pane at the top (full width).
-- Six peer panes below in a 3-column grid (or 2-col / 1-col on narrower screens).
-
-Each pane has its own composer (talk directly to that role) plus a collapsible HANDOFF doc panel and an inbox badge. Inbox > 0 → an orange "Process inbox" button appears.
-
-The **workspace** field in the top bar (persisted in `localStorage`) is the directory the agents' Read/Edit/Bash tools target.
+Subagents are also symlinked into `~/.claude/agents/` via `bash scripts/install-agents-user-scope.sh`, so they are available in every Claude Code session on this machine, not just within apex-team's workspace. Symlinks (not copies) — `git pull` updates propagate automatically.
 
 ## Stack
 
-- **Framework:** Next.js 15 (App Router) · React 19 · TypeScript 5
-- **Server:** custom Next.js server (`server.ts` via `tsx`) so we can mount the MCP endpoint at `/mcp` alongside the Next.js request handler.
-- **Styling:** Tailwind CSS v4 + `@tailwindcss/typography` + styled-jsx.
-- **LLM SDKs:**
-  - `@anthropic-ai/claude-agent-sdk` — Claude agents (reuses local Claude Code OAuth).
-  - `ai` (Vercel AI SDK) + `@ai-sdk/google` + `@ai-sdk/groq` — non-Claude providers.
-- **MCP server:** `@modelcontextprotocol/sdk` 1.x with Streamable HTTP transport. Tools defined in `src/mcp/tools.ts`.
-- **State:** SQLite via `better-sqlite3` (`data/apex-team.db`, gitignored). Two tables: `messages` + `agent_state`.
-- **Markdown:** `react-markdown` + `remark-gfm`.
+- **Subagents:** Claude Code native subagent runtime. No SDK, no MCP server, no process to start.
+- **Tests:** Vitest (`pnpm test:run`). QA produces test files at `tests/qa/wave-NNN/<descriptive>.test.ts` or under existing `tests/<area>/` per Architect ratification.
+- **TypeScript:** for tests and any future scripted tooling. No application source.
+- **Linting:** ESLint + `@eslint/js` + `typescript-eslint`.
 - **Package manager:** pnpm.
 
 ## File layout
 
 ```
 apex-team/
-├── server.ts                              (custom Next server + MCP mount at /mcp)
-├── src/
-│   ├── app/
-│   │   ├── page.tsx                       (7-pane dashboard)
-│   │   ├── layout.tsx, globals.css
-│   │   └── api/
-│   │       ├── chat/route.ts              (SSE — runs one turn, persists, streams)
-│   │       ├── agent-state/route.ts       (GET/PUT per-agent HANDOFF doc + inbox)
-│   │       ├── thread/route.ts            (GET — thread history)
-│   │       └── health/route.ts            (apex-engine reachability + default cwd)
-│   ├── components/
-│   │   ├── AgentPane.tsx                  (one role's pane — handles all 7)
-│   │   ├── AgentStatePanel.tsx            (collapsible HANDOFF doc viewer/editor)
-│   │   ├── OrchestratorBar.tsx            (top bar: thread id + workspace + new)
-│   │   └── MessageBubble.tsx              (markdown bubble, per-author styling)
-│   ├── lib/
-│   │   ├── roles.ts                       (7 system prompts + ALL_ROLES + TEAM_ROLES + isTeamRole)
-│   │   ├── providers.ts                   (Claude SDK + AI SDK streamers; augments system prompt)
-│   │   ├── agents.ts                      (turn driver — loads state + history + inbox)
-│   │   ├── run-turn.ts                    (shared by /api/chat + MCP tools — persists everything)
-│   │   ├── orchestrator.ts                (parses NOTES + HANDOFF + DISPATCH blocks)
-│   │   ├── mcp-config.ts                  (apex-engine MCP server config + tool allowlist)
-│   │   ├── db.ts                          (SQLite — messages + agent_state)
-│   │   ├── sse.ts, sse-client.ts          (server-side encoder + browser consumer)
-│   │   └── (no slash-commands.ts, no routing.ts — both deleted in v2)
-│   ├── mcp/
-│   │   ├── handler.ts                     (Streamable HTTP MCP handler at /mcp)
-│   │   └── tools.ts                       (8 MCP tools — talk_to_*, get_team_status, etc.)
-│   └── types.ts                           (RoleId | TeamRoleId | AccentKey + message kinds + SSE events)
-├── data/                                  (gitignored — apex-team.db)
-├── HANDOFF.md, INDEX.yaml, INDEX.md       (per /handoff-init convention)
+├── .claude/agents/                       (8 subagent .md files — the team)
+│   ├── product-owner.md
+│   ├── architect.md
+│   ├── business-analyst.md
+│   ├── ux-designer.md
+│   ├── ui-developer.md
+│   ├── backend-developer.md
+│   ├── qa.md
+│   └── devsecops.md
+├── architecture/                         (Architect-owned: ADRs, NFRs, system design, coding standards)
+├── requirements/                         (BA-owned: user stories, scope, glossary, OQs, domains, business rules)
+├── design/                               (UX-owned: per-feature design specs)
+├── tests/                                (QA-owned: tests on disk; tests/qa/wave-NNN/ is the canonical home)
+├── ops/                                  (DevSecOps-owned: CI/CD, deploy, security)
+├── coordination/handoffs/                (per-subagent working state files)
+├── scripts/
+│   ├── install-agents-user-scope.sh      (symlinks .claude/agents/ → ~/.claude/agents/)
+│   ├── git-hooks/                        (pre-commit / pre-push: HANDOFF freshness + branch policy)
+│   ├── devsecops/bootstrap-workspace.mjs (apply this repo's enforcement recipe to any external workspace)
+│   ├── memory_lint.py, memory_recall.py  (memory tooling)
+│   ├── generate_index_md.py, validate_index.py (INDEX maintenance)
+│   └── sync_memory.sh, check_handoff_fresh.sh
+├── HANDOFF.md                            (living NOW block at top)
+├── LESSONS.md                            (append-only why-log)
+├── INDEX.md, INDEX.yaml                  (machine-readable doc index)
+├── CLAUDE.md                             (this file)
 └── README.md
 ```
 
 ## Prerequisites
 
-- `../apex-engine` running with its HTTP MCP at `http://127.0.0.1:31001/mcp` (`cd ../apex-engine && pnpm setup`). Override via `APEX_MCP_URL`.
-- Claude agents need Claude Code logged in (`claude login`) — the SDK reuses that OAuth.
-- Gemini / Groq agents need their respective keys in `.env.local`.
-- For external Claude Code → apex-team MCP: `claude mcp add apex-team --transport http http://localhost:3000/mcp`.
+- Claude Code CLI installed and logged in (`claude login`).
+- pnpm installed (for `pnpm install` + `pnpm test:run`).
+- `gh` CLI for issue/PR operations (no longer required for subagent operation, but used by viewer + DevSecOps).
 
 ## Commands
 
 ```bash
-pnpm install
-pnpm dev             # http://localhost:3000  (MCP at /mcp on the same port)
-pnpm build
-pnpm type-check
-pnpm test:run
+pnpm install                              # devDeps: vitest, eslint, typescript
+pnpm test:run                             # vitest run --sequence.shuffle
+pnpm type-check                           # tsc --noEmit (against tests/)
+pnpm lint                                 # eslint .
+bash scripts/install-agents-user-scope.sh # symlink 8 subagents into ~/.claude/agents/
 ```
 
 ## Engineering standards
 
-1. **Keep it lean.** Minimal deps. Async-first. No abstraction without repetition.
-2. **Direct integration.** Provider SDKs called directly. No aggregator/proxy.
-3. **Streaming UX.** Tokens stream to the active pane the moment the provider emits them. MCP tools block until done (no streaming there).
-4. **Server-only secrets.** API keys in `process.env`; never expose to client.
-5. **One source of truth per artifact:**
-   - Functional requirements: `<workspace>/requirements/` (BA-owned).
-   - Architecture + NFRs + standards: `<workspace>/architecture/` (Architect-owned).
-   - Ops / CI / deployment: `<workspace>/ops/` (DevSecOps-owned).
-   - Working state per role per thread: `agent_state` table (volatile).
-6. **No basics-explanations in code comments.** Comments explain WHY (constraint, invariant, bug context) when non-obvious.
+1. **Files-on-disk discipline.** Every deliverable is a real file. Chat-bubble artifacts (test code, design specs, ADRs) do not count.
+2. **One source of truth per artifact:**
+   - Functional requirements: `requirements/` (BA-owned).
+   - Architecture + NFRs + coding standards: `architecture/` (Architect-owned).
+   - UX specs: `design/` (UX-owned).
+   - Tests: `tests/` (QA-owned).
+   - Ops / CI / deployment: `ops/` (DevSecOps-owned).
+   - Per-subagent working state: `coordination/handoffs/<role>.md`.
+3. **HANDOFF-in-PR rule.** Every wave's HANDOFF refresh ships in the same PR as the code change. Never a separate doc-only PR.
+4. **Living docs at the top.** `HANDOFF.md` always opens with the NOW block; older blocks demote to PREV or archive under `_archive/HANDOFF-<YYYY-MM>.md`.
+5. **No basics-explanations in code comments.** Comments explain WHY (constraint, invariant, bug context) when non-obvious.
 
 ## Caveats
 
-- **Single-user, single-machine only.** Claude Agent SDK uses local Claude Code OAuth.
-- **MCP tools block until the agent finishes its turn.** `talk_to_product_owner` is the longest because it also runs every dispatched peer sequentially.
-- **No client-side abort yet** — server respects `req.signal` but the UI has no stop button.
-- **No client-side message persistence sync** — the web UI's `messages` array is local; on reload it refetches via `/api/agent-state` per role but not the full message log. Refreshing mid-conversation loses the rendered transcript (DB still has it).
-- **Block parsing is regex-based.** Malformed blocks (whitespace inside the role token, wrong tags) get rendered as visible text.
-- **Inbox is implicit, no cursor.** Pending = handoff messages addressed to a role with id > that role's last agent turn id. Means "process inbox" without a reply still marks the items seen.
+- **Subagents are single-turn.** Each invocation gets a fresh subagent with no memory of prior runs. Brief each one self-contained.
+- **`[[DISPATCH]]` / `[[HANDOFF]]` blocks are advisory only.** Under the subagent runtime they do NOT auto-fire peer turns. The outer Claude Code orchestrator reads them and chooses what to invoke next.
+- **No process to start.** There is no dev server, no MCP server, no health endpoint. The viewer is a separate repo + process.
+- **Subagent files contain legacy text.** Each `.claude/agents/<role>.md` has a Plan C runtime adapter at the top that translates legacy monolith semantics (MCP tools, SQLite, `pnpm dev:test*`, `.restart-trigger`) into the file-only subagent runtime. Read the adapter — it's the authoritative translation contract until a fuller subagent body rewrite ships.
 
 ## Session continuity
 

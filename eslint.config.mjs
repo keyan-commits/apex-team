@@ -5,13 +5,12 @@ export default tseslint.config(
   {
     ignores: [
       "node_modules/**",
-      ".next/**",
       ".claude/**",
+      ".next/**",
       "dist/**",
       "data/**",
       "*.config.js",
       "*.config.mjs",
-      "next-env.d.ts",
     ],
   },
   js.configs.recommended,

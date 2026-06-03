@@ -1,24 +1,47 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 106 — Plan C HARD CUTOVER: full commitment, no parallel-run window)
+## ⏭️ NOW — 2026-06-04 (Wave 106 — Plan C RETIREMENT PR: monolith deleted, subagents are the team)
 
-**claude-code direct on `feature/c1-plan-c-subagent-extraction` (off origin/main `7950d02`).**
+**claude-code direct on `feature/c2-plan-c-retirement` (off origin/main `47e0d48`).**
 
-**Hard-cutover decision recorded 2026-06-04 (evening).** User committed to full Plan C with no 1–2 week parallel-run window. Consequences executed in this commit:
-- **US-085 superseded** — discipline absorbed into `.claude/agents/qa.md`; monolith `src/lib/skills/qa.ts` edit (AC4) dropped (file retires with monolith); OQ-085-001 + OQ-085-002 moot; AC5 smoke pending next subagent-driven QA wave.
-- **PR #367 closed unmerged** — US-084 AC1 conflict-marker fence in `dev-supervisor` was transition-window protection; under hard cutover the supervisor goes away with the monolith. No replacement needed under subagent runtime.
-- **Untracked stragglers committed** — `requirements/user-stories/US-085-qa-disk-artifacts.md` (with superseded resolution) + `design/issue-325-focus-visible-a11y.md` (UX design from Wave 116 #325 work).
-- **`src/lib/protocols.ts.bak` deleted** — stale backup.
+**Retirement PR — apex-team is now subagents + workspace conventions, nothing else.**
 
-**Next steps (post-merge of #373):**
-1. Run `bash scripts/install-agents-user-scope.sh` to symlink agents into `~/.claude/agents/` (this Mac + the other).
-2. Restart Claude Code (current session caches subagent registry at startup).
-3. Smoke test: `Use the business-analyst subagent to identify yourself` × 8 roles.
-4. Architect ratifies workspace conventions (`requirements/`, `architecture/`, `design/`, `tests/`, `ops/`, `coordination/handoffs/`) as the shared contract between subagents + viewer.
-5. Re-triage deferred backlog (self-heal #316–#320, a11y US-065/066, SQLite US-082, 20+ self-improvement issues) — close monolith-coupled stories, re-file surviving discipline ones against the subagent system.
-6. Update memory files (`feedback_drive_via_apex_team`, `feedback_team_v2_structure`, `feedback_po_mandatory_requirements_phase`, `feedback_pipeline_parallelism`) — rewrite for subagent model.
-7. Update root `CLAUDE.md` — currently describes Next.js + MCP architecture, on death row.
-8. **Retirement PR** (separate): delete `server.ts`, `src/`, `data/`, `next-env.d.ts`, monolith deps from `package.json`. Keep: workspace conventions, 8 `.claude/agents/*.md`, `scripts/port-subagents.ts`, `scripts/install-agents-user-scope.sh`, `HANDOFF.md`, `LESSONS.md`, `CLAUDE.md`, `README.md`. Decide post-retirement repo identity.
+The full Plan C cutover sequence is now executing end-to-end as a single PR (per user direction "Execute now, single PR"). Wave 106 progression:
+
+1. ✅ PR #373 merged 2026-06-04 (`47e0d48`) — extracted 8 subagents to `.claude/agents/*.md` + porting + install scripts.
+2. ✅ Subagents installed user-scope via `scripts/install-agents-user-scope.sh` (symlinks to `~/.claude/agents/`).
+3. ✅ All 8 subagents smoke-tested live in parallel from the outer Claude Code session — each correctly identified its role + ownership + the files-only runtime model.
+4. ✅ PR #367 closed unmerged (US-084 AC1 fence — supervisor retires with monolith).
+5. ✅ US-085 marked superseded in `requirements/INDEX.md` + story file (discipline absorbed into `qa.md`).
+6. ✅ **This PR (`feature/c2-plan-c-retirement`) — the retirement.**
+
+**What this PR deletes:**
+- `server.ts`, `src/` (entire Next.js app + MCP handler + skills + DB + types), `next.config.ts`, `next-env.d.ts`, `postcss.config.mjs`, `pnpm-workspace.yaml`, `verify-focus.mjs`.
+- `__tests__/`, `_handoff-pending/`, `testing/`, `tests/` (all 11 subdirs of monolith tests — fresh slate for subagent-driven QA at `tests/qa/wave-NNN/`).
+- Monolith ops scripts: `dev-supervisor.{mjs,d.mts}`, `post-deploy-smoke.{mjs,d.mts}`, `preflight.mjs`, `skill-scout.mjs`, `recover-dev-server.sh`, `port-subagents.ts` (one-time porting tool — `src/lib/roles.ts` source now gone), `fold-handoff.ts` (referenced `_handoff-pending/`), `branch-start.mjs` + `branch-cleanup.mjs` (referenced monolith dev scripts).
+- `package.json` stripped from 15+ deps + 18 scripts down to 6 devDeps (`typescript`, `vitest`, `eslint` + supporting) + 6 scripts (`test`, `test:run`, `type-check`, `lint`, `devsecops:bootstrap-workspace`, `postinstall`).
+- `tsconfig.json`, `vitest.config.ts`, `eslint.config.mjs` rewritten — removed Next.js plugin, `@/* → src/*` alias, `.next/types/**/*`, React JSX.
+
+**What this PR keeps:**
+- `.claude/agents/*.md` (8 subagents — the team).
+- Workspace conventions: `architecture/`, `requirements/`, `design/`, `tests/` (empty — fresh slate), `ops/`, `coordination/handoffs/` (create if absent), `docs/`.
+- Scripts: `install-agents-user-scope.sh`, `git-hooks/`, `devsecops/bootstrap-workspace.mjs`, `memory_lint.py`, `memory_recall.py`, `generate_index_md.py`, `validate_index.py`, `sync_memory.sh`, `check_handoff_fresh.sh`.
+- Living docs: `HANDOFF.md`, `LESSONS.md`, `INDEX.md`, `INDEX.yaml`, `CLAUDE.md` (fully rewritten in this PR for subagent runtime), `README.md`.
+- `.github/`, `.githooks/`.
+
+**Other artifacts updated in this PR:**
+- All 8 subagent `.md` files: Plan C runtime adapter now includes "Legacy monolith commands are historical context only" bullet — translates `pnpm dev:test*`, `.restart-trigger`, `/api/health`, `mcp__apex-team__*`, `talk_to_*` as legacy text.
+- `.claude/agents/<role>.md` "Deliverables are files" bullet updated: `Devs → src/` → `Devs → the host project's source directory`.
+- Memory files rewritten for subagent runtime: `feedback_drive_via_apex_team`, `feedback_team_v2_structure`, `feedback_po_mandatory_requirements_phase`, `feedback_pipeline_parallelism`, `feedback_auto_loop_while_in_flight`, `feedback_polling_no_resume`. `MEMORY.md` index updated.
+- Root `CLAUDE.md` fully rewritten — architecture diagram, the 8 subagents table, file layout, commands, engineering standards.
+
+**Companion repo `keyan-commits/apex-team-viewer`** stays as-is — read-only file watcher + `gh` poller, sibling clone at `../apex-team-viewer/`, port `:3200`. Continues to be the observability surface for the now-fully-subagent apex-team.
+
+**Post-merge next steps (separate work, not in this PR):**
+
+1. **Architect ratifies workspace conventions** in `architecture/workspace-conventions.md` (or as an ADR). Single source of truth on `tests/qa/wave-NNN/` path convention, `coordination/handoffs/` shape, and which directories the subagents + viewer share contractually.
+2. **Re-triage deferred backlog** — close monolith-coupled stories (#316–#320 self-heal, US-082 SQLite, US-083 runaway-restart, US-079/080/081 self-heal L1/L2/L3, dozens of `self-improvement` issues that target `src/` or MCP), re-file surviving discipline ones against the subagent system.
+3. **Smoke test surfaced gaps in subagent bodies** — `ui-developer.md` and `backend-developer.md` still reference `pnpm dev:test:ui` / `pnpm dev:test:be` in the legacy body text; `devsecops.md` has the legacy `.restart-trigger` pattern; `qa.md` references `pnpm dev:test`, Playwright MCP, `/api/health`. Body rewrites are a separate follow-up; the runtime adapter header is the translation contract until then.
 
 ---
 
