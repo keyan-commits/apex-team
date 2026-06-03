@@ -11,8 +11,8 @@ export const dynamic = "force-dynamic";
 
 const OUTPUT_CAP = 10 * 1024; // 10 KB
 
-// Recursively enumerate tests/**/*.spec.ts relative to the workspace root.
-// Returns normalized forward-slash paths (e.g. "tests/be/foo.spec.ts").
+// Recursively enumerate tests/**/*.test.ts relative to the workspace root.
+// Returns normalized forward-slash paths (e.g. "tests/be/foo.test.ts").
 export function enumerateTestFiles(root: string): string[] {
   const results: string[] = [];
   function walk(dir: string) {
@@ -26,7 +26,7 @@ export function enumerateTestFiles(root: string): string[] {
       const full = join(dir, entry.name);
       if (entry.isDirectory()) {
         walk(full);
-      } else if (entry.isFile() && entry.name.endsWith(".spec.ts")) {
+      } else if (entry.isFile() && entry.name.endsWith(".test.ts")) {
         results.push(relative(root, full).replace(/\\/g, "/"));
       }
     }

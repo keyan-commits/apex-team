@@ -68,8 +68,8 @@ function setupAllowlist() {
     }
     if (path.endsWith("be")) {
       return [
-        { name: "foo.spec.ts", isDirectory: () => false, isFile: () => true },
-        { name: "bar.spec.ts", isDirectory: () => false, isFile: () => true },
+        { name: "foo.test.ts", isDirectory: () => false, isFile: () => true },
+        { name: "bar.test.ts", isDirectory: () => false, isFile: () => true },
       ];
     }
     return [];
@@ -82,8 +82,8 @@ describe("enumerateTestFiles", () => {
   it("returns normalized forward-slash paths relative to root", () => {
     setupAllowlist();
     const results = enumerateTestFiles("/workspace");
-    expect(results).toContain("tests/be/foo.spec.ts");
-    expect(results).toContain("tests/be/bar.spec.ts");
+    expect(results).toContain("tests/be/foo.test.ts");
+    expect(results).toContain("tests/be/bar.test.ts");
     expect(results).toHaveLength(2);
   });
 
@@ -140,7 +140,7 @@ describe("POST /api/qa/run-test — validation", () => {
 
   it("returns 400 for an arbitrary string not in allowlist", async () => {
     const res = await POST(
-      makeReq({ testPath: "tests/nonexistent.spec.ts" }) as unknown as import("next/server").NextRequest,
+      makeReq({ testPath: "tests/nonexistent.test.ts" }) as unknown as import("next/server").NextRequest,
     );
     expect(res.status).toBe(400);
     const body = await res.json() as { error: { code: string } };
@@ -158,7 +158,7 @@ describe("POST /api/qa/run-test — happy path", () => {
     spawnImpl = () => makeFakeProc(0, "all tests passed") as ReturnType<typeof import("node:child_process").spawn>;
 
     const res = await POST(
-      makeReq({ testPath: "tests/be/foo.spec.ts" }) as unknown as import("next/server").NextRequest,
+      makeReq({ testPath: "tests/be/foo.test.ts" }) as unknown as import("next/server").NextRequest,
     );
     expect(res.status).toBe(200);
     expect(res.headers.get("Content-Type")).toContain("text/event-stream");
@@ -168,7 +168,7 @@ describe("POST /api/qa/run-test — happy path", () => {
     spawnImpl = () => makeFakeProc(0, "ok") as ReturnType<typeof import("node:child_process").spawn>;
 
     const res = await POST(
-      makeReq({ testPath: "tests/be/foo.spec.ts" }) as unknown as import("next/server").NextRequest,
+      makeReq({ testPath: "tests/be/foo.test.ts" }) as unknown as import("next/server").NextRequest,
     );
     // Consume the stream to let the close handler fire
     const reader = res.body!.getReader();
@@ -178,7 +178,7 @@ describe("POST /api/qa/run-test — happy path", () => {
     }
 
     expect(upsertQaTestRun).toHaveBeenCalledWith(
-      "tests/be/foo.spec.ts",
+      "tests/be/foo.test.ts",
       "pass",
       expect.any(Number),
       expect.any(String),
@@ -189,7 +189,7 @@ describe("POST /api/qa/run-test — happy path", () => {
     spawnImpl = () => makeFakeProc(1, "FAIL") as ReturnType<typeof import("node:child_process").spawn>;
 
     const res = await POST(
-      makeReq({ testPath: "tests/be/foo.spec.ts" }) as unknown as import("next/server").NextRequest,
+      makeReq({ testPath: "tests/be/foo.test.ts" }) as unknown as import("next/server").NextRequest,
     );
     const reader = res.body!.getReader();
     while (true) {
@@ -198,7 +198,7 @@ describe("POST /api/qa/run-test — happy path", () => {
     }
 
     expect(upsertQaTestRun).toHaveBeenCalledWith(
-      "tests/be/foo.spec.ts",
+      "tests/be/foo.test.ts",
       "fail",
       expect.any(Number),
       expect.any(String),
