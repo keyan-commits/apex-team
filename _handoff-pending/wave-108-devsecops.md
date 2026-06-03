@@ -3,10 +3,10 @@
 - Piece 1 (pre-commit hook): added `pnpm lint --max-warnings 0 --quiet` + `pnpm type-check` gates → commit 6f40fbb
 - Piece 2 (CI): moved Lint step ABOVE Tests, added `--max-warnings 0` flag → commit 6f40fbb
 - eslint.config.mjs: added `.claude/**` to ignores to exclude worktree build artifacts
-- Piece 4 (vitest shuffle): added `--sequence.shuffle` to `test:run` script (catches order-dependent leaks)
+- Piece 4 (vitest shuffle): added `--sequence.shuffle` to `test:run` script (catches order-dependent leaks) → commit d70ded2
+- Piece 5 (PR template): created `.github/pull_request_template.md` with visual evidence checklist
 
 ## In flight
-- Piece 5 (PR template): creating `.github/pull_request_template.md` with 5-line visual checklist
 - Piece 6 (#310 guard): implementing GitHub Actions workflow to validate PR body close-keyword syntax
 
 ## Next
