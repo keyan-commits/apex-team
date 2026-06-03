@@ -23,7 +23,7 @@ Each file = YAML frontmatter (`name`, `description`, `model`) + Plan C runtime a
 
 **US-085 baked in.** QA's subagent file includes the "tests are files on disk, not chat artifacts" discipline directly (was going to be US-085 in apex-team; absorbed during the port — apex-team PR not needed).
 
-**Companion build (separate process, already live):** read-only viewer at `apex-team-viewer/` (sibling directory, port `:3200`). Reads files on disk + polls `gh` for CI. Has Output > QA with `▶ Run` per test (streams `pnpm vitest run <path>` via SSE). Survives apex-team outages — proven during today's Wave 105 incident.
+**Companion build (separate process + separate repo, already live):** read-only viewer in standalone GitHub repo **`keyan-commits/apex-team-viewer`** (private). Sibling clone at `../apex-team-viewer/`, port `:3200`. Zero deps — runs via `node server.mjs` with optional `APEX_TEAM_ROOT` + `PORT` env vars. Reads files on disk + polls `gh` for CI. Has Output > QA with `▶ Run` per test (streams `pnpm vitest run <path>` via SSE). Survives apex-team outages — proven during today's Wave 105 incident.
 
 **PR #341 closed** as superseded by the viewer (US-071 functionality is in the viewer's Output > QA panel now).
 
