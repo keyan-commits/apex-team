@@ -246,7 +246,10 @@ export function ActiveWaveCard({
 
         .aw-poll-btn:focus-visible {
           outline: 2px solid var(--text);
-          outline-offset: 2px;
+        }
+
+        .aw-poll-selected.aw-poll-btn:focus-visible {
+          outline-color: var(--focus-ring);
         }
 
         .aw-poll-selected {

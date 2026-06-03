@@ -1,22 +1,14 @@
 ## Done
-- Wave 108 (US-065 + US-066) — verify-then-act complete. All 6 ACs are **no-ops** (prior waves fully covered them):
-  - #215 — RM guard on `.aw-poll-btn` already at `ActiveWaveCard.tsx:257–261`
-  - #216 — focus ring already uses `var(--text)` + `outline-offset:2px` in base rule
-  - #210 — `.row.row-flash`, `.issue-order-btn`, `.spinner` all guarded in `dashboard/page.tsx`
-  - #233 strip — `.issue-panel` has no CSS transition (grid-column changes only)
-  - #233 chevron — glyph swap only, no transform transition
-  - #233 drawer — no `.issue-drawer` element exists
-- Added `tests/ui/ActiveWaveCard.test.tsx` (21 tests) pinning class/aria contract so regressions surface
-- type-check: 0 · tests: 464/464 · branch: `feature/108-us065-us066-rm-a11y-focusring`
-- PR opened; awaiting UX + Architect gate before QA
+- Per-state focus ring implemented: `--focus-ring: #1a1a1a` token added to `globals.css`; unselected `.aw-poll-btn:focus-visible` retains `var(--text)` (no offset); selected override `.aw-poll-selected.aw-poll-btn:focus-visible` uses `outline-color: var(--focus-ring)` — Architect-ratified shape, resolves UX's AC3 gate-block
+- type-check: 0 · tests: 464/464 pass
 
 ## In flight
-- PR #TBD (Wave 108) — UX Designer + Architect gate
+- PR #302 awaiting UX re-gate on AC3 + AC4, then QA, then DevSecOps merge
 
 ## Next
-- After both design gates PASS → HANDOFF QA
-- After QA PASS → HANDOFF DevSecOps for squash-merge (closes #210 #215 #216 #233)
+- After UX PASS: HANDOFF QA on :3100
+- After QA PASS: HANDOFF DevSecOps squash-merge
 
 ## Notes
-- Zero code changes to ship — pure verification + test coverage
-- `design/US-062-reduced-motion-guard-remediation.md` still untracked on main; belongs in PR #284's branch (DevSecOps handles)
+- Commit on `feature/108-us065-us066-rm-a11y-focusring`
+- Do NOT push to main — gate sequence: UX → QA → DevSecOps

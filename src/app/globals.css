@@ -24,6 +24,9 @@
   --status-green: #4caf50;
   --status-amber: #ff9800;
 
+  /* Focus ring — dark token for selected-state override (WCAG 3:1 on --accent-po gold) */
+  --focus-ring: #1a1a1a;
+
   /* Severity scale — issues panel */
   --accent-error: #ef4444;
   --accent-critical: #f97316;
