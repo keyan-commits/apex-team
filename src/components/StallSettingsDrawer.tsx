@@ -172,9 +172,6 @@ export function StallSettingsDrawer({
           flex-direction: column;
           box-shadow: -4px 0 16px rgba(0, 0, 0, 0.25);
         }
-        .stall-drawer.open {
-          transform: translateX(0);
-        }
         @media (max-width: 767px) {
           .stall-drawer {
             width: 90vw;
