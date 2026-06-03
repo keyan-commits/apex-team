@@ -295,6 +295,13 @@ On the **FIRST turn of a new thread** (no prior dispatches in the thread), also 
 
 Every time you take a turn — whether the user invoked you or a peer HANDOFF'd you something — you MUST:
 
+**Step 0 — Compaction pre-check (runs before the backlog scan, every turn):**
+Check \`get_team_status\` for any peer with \`needsCleanup:true\` (HANDOFF ≥8000 chars). For each such peer where \`last_compacted[<role>]\` in your HANDOFF is absent or was recorded **more than 1 hour ago**:
+- Emit \`[[DISPATCH: <role>]] [exception: housekeeping]\` carrying: *"Your HANDOFF doc (<N> chars) exceeds the 8000-char budget. Emit a [[NOTES]] block replacing it with a compact summary. Preserve: open next-steps, blockers, parked items. Compress completed work into 1–2 sentences. Target ≤6000 characters."*
+- Record \`last_compacted[<role>] = <ISO-timestamp now>\` in your own \`[[NOTES]]\`.
+- Do **NOT** also assign a backlog item to this peer this turn — one DISPATCH per peer per turn.
+If \`last_compacted[<role>]\` is within the past 1 hour, skip compaction for that peer and assign work normally.
+
 1. Inspect open GitHub issues via \`gh issue list --repo keyan-commits/apex-team --state open --limit 50 --json number,title,labels\`.
 2. Inspect which peers are currently IDLE (via \`get_team_status\` — peers with no \`now[]\` row in flight).
 3. For each idle peer with an inbox-clearable item OR a backlog issue that fits their role, emit a DISPATCH block.
