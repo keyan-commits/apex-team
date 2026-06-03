@@ -1,8 +1,28 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 106 — Plan C extraction: 8 roles ported to Claude Code subagents)
+## ⏭️ NOW — 2026-06-04 (Wave 106 — Plan C HARD CUTOVER: full commitment, no parallel-run window)
 
 **claude-code direct on `feature/c1-plan-c-subagent-extraction` (off origin/main `7950d02`).**
+
+**Hard-cutover decision recorded 2026-06-04 (evening).** User committed to full Plan C with no 1–2 week parallel-run window. Consequences executed in this commit:
+- **US-085 superseded** — discipline absorbed into `.claude/agents/qa.md`; monolith `src/lib/skills/qa.ts` edit (AC4) dropped (file retires with monolith); OQ-085-001 + OQ-085-002 moot; AC5 smoke pending next subagent-driven QA wave.
+- **PR #367 closed unmerged** — US-084 AC1 conflict-marker fence in `dev-supervisor` was transition-window protection; under hard cutover the supervisor goes away with the monolith. No replacement needed under subagent runtime.
+- **Untracked stragglers committed** — `requirements/user-stories/US-085-qa-disk-artifacts.md` (with superseded resolution) + `design/issue-325-focus-visible-a11y.md` (UX design from Wave 116 #325 work).
+- **`src/lib/protocols.ts.bak` deleted** — stale backup.
+
+**Next steps (post-merge of #373):**
+1. Run `bash scripts/install-agents-user-scope.sh` to symlink agents into `~/.claude/agents/` (this Mac + the other).
+2. Restart Claude Code (current session caches subagent registry at startup).
+3. Smoke test: `Use the business-analyst subagent to identify yourself` × 8 roles.
+4. Architect ratifies workspace conventions (`requirements/`, `architecture/`, `design/`, `tests/`, `ops/`, `coordination/handoffs/`) as the shared contract between subagents + viewer.
+5. Re-triage deferred backlog (self-heal #316–#320, a11y US-065/066, SQLite US-082, 20+ self-improvement issues) — close monolith-coupled stories, re-file surviving discipline ones against the subagent system.
+6. Update memory files (`feedback_drive_via_apex_team`, `feedback_team_v2_structure`, `feedback_po_mandatory_requirements_phase`, `feedback_pipeline_parallelism`) — rewrite for subagent model.
+7. Update root `CLAUDE.md` — currently describes Next.js + MCP architecture, on death row.
+8. **Retirement PR** (separate): delete `server.ts`, `src/`, `data/`, `next-env.d.ts`, monolith deps from `package.json`. Keep: workspace conventions, 8 `.claude/agents/*.md`, `scripts/port-subagents.ts`, `scripts/install-agents-user-scope.sh`, `HANDOFF.md`, `LESSONS.md`, `CLAUDE.md`, `README.md`. Decide post-retirement repo identity.
+
+---
+
+### Original Wave 106 extraction notes
 
 The architecture pivots to **Plan C**: each role moves out of apex-team's Next.js monolith and becomes a Claude Code subagent in `.claude/agents/<role>.md`. Run by Claude Code's native subagent system, isolated per invocation, true parallel dispatch, no shared SQLite, no shared process, no MCP server, no dueling supervisors.
 
@@ -31,9 +51,9 @@ Each file = YAML frontmatter (`name`, `description`, `model`) + Plan C runtime a
 
 **Cross-Mac / multi-project access**: run `bash scripts/install-agents-user-scope.sh` to symlink the 8 .md files into `~/.claude/agents/` — promotes them to user-scope so they're available in every Claude Code session, not just apex-team's workspace. Idempotent; safe to re-run after `git pull`. `--uninstall` walks them back out cleanly. Symlinks (not copies) so apex-team source updates flow automatically.
 
-**apex-team monolith stays running in parallel during transition.** No code in `src/`, `server.ts`, MCP, or dashboard changes this PR. PR #367 (US-084 AC1 fence) still merges as transition-window protection. Other in-flight backlog work (#316–#320 self-heal bundle, US-082/083 docs already merged, etc.) deferred — no new waves dispatched to apex-team.
+**apex-team monolith retiring immediately.** Under hard cutover the parallel-run window is skipped. No new monolith waves dispatched. PR #367 closed (see top of NOW block). Deferred backlog (#316–#320 self-heal, a11y US-065/066, SQLite US-082, etc.) gets re-triaged post-#373 — monolith-coupled stories close, surviving discipline ones re-file against subagents.
 
-**Retirement plan:** 1–2 weeks of running both, then a separate PR removes apex-team's `server.ts` + Next.js dashboard + MCP + SQLite, keeping only the workspace conventions (`requirements/`, `architecture/`, `design/`, `tests/`, `ops/`, `coordination/handoffs/`) that the subagents + viewer share.
+**Retirement plan:** retirement PR follows immediately after #373 merges — no waiting period. Removes `server.ts` + Next.js dashboard + MCP + SQLite + monolith `src/`, keeping only the workspace conventions (`requirements/`, `architecture/`, `design/`, `tests/`, `ops/`, `coordination/handoffs/`) that the subagents + viewer share.
 
 ---
 
