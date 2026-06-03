@@ -91,6 +91,22 @@ pnpm dev:supervised   # http://localhost:3000 + auto-restart on sentinel change
 
 The team triggers a clean restart by appending a line to `.restart-trigger`. The supervisor catches the file change, SIGTERMs the server, waits up to 5s for graceful shutdown, then respawns. Use plain `pnpm dev` if you don't need this behavior.
 
+**Single-supervisor invariant:** the supervisor refuses to start a second instance. If you see `ERROR: another supervisor is already running`, stop the existing one first.
+
+**Stopping the supervisor (US-084 AC3):**
+
+```bash
+# by process title (preferred):
+pkill -f apex-team-supervisor
+
+# by pidfile:
+kill $(cat data/apex-team-supervisor.pid)
+```
+
+**Health check — stale compile detection (US-084 AC4):**
+
+`GET /api/health` returns `staleCompile: true` (HTTP 503) when source files have been modified after the server started. This surfaces the "conflict markers cleared but compile not refreshed" failure mode. Restart the server to clear it.
+
 ## Fresh-Mac Setup
 
 Complete checklist for a clean machine with no prior apex-team setup.
