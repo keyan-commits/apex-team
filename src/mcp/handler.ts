@@ -97,7 +97,7 @@ export async function handleMcpRequest(
   }
 
   const server = new McpServer(
-    { name: "apex-team", version: "0.1.0" },
+    { name: "apex-team", version: BOOT_SESSION_ID },
     {
       capabilities: { tools: {} },
     },
