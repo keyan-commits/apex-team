@@ -304,7 +304,22 @@ export default function DashboardPage() {
     return [...data.queued].sort((a, b) => (pos.get(a.id) ?? 9999) - (pos.get(b.id) ?? 9999));
   }, [data?.queued, savedOrder]);
 
-  const groupedDone = useMemo<DoneGroup[]>(() => groupDone(data?.done ?? []), [data?.done]);
+  // AC5: pre-sort done items by wave descending (nulls last) so groupDone's greedy scan clusters correctly
+  const groupedDone = useMemo<DoneGroup[]>(() => {
+    const done = data?.done ?? [];
+    const sorted = [...done].sort((a, b) => {
+      const wA = a.waves?.length ? Math.max(...a.waves) : null;
+      const wB = b.waves?.length ? Math.max(...b.waves) : null;
+      if (wA === null && wB === null) return 0;
+      if (wA === null) return 1;
+      if (wB === null) return -1;
+      return wB - wA;
+    });
+    return groupDone(sorted);
+  }, [data?.done]);
+
+  // AC1: expand Done column when Now/Queued/Blocked are all empty
+  const doneExpands = !!(data && data.now.length === 0 && sortedQueued.length === 0 && data.blocked.length === 0 && data.done.length > 0);
 
   const handleDrop = (toIdx: number) => {
     if (dragFrom === null || dragFrom === toIdx) return;
@@ -613,11 +628,11 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <div className="grid">
+      <div className="grid" data-done-expands={doneExpands ? "true" : undefined}>
 
 
         {/* NOW */}
-        <section className="panel span2">
+        <section className="panel span2" style={doneExpands ? { display: "none" } : undefined}>
           {panelHd("Now — In-Flight", "now")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : data.now.length === 0 ? empty("No active turns.") : (
             <div className="row-list">
@@ -638,7 +653,7 @@ export default function DashboardPage() {
                         ...(e.waves ?? []).map((w) => ({ kind: "wave" as const, label: `Wave ${w}`, key: `w${w}` })),
                         ...(e.tickets ?? []).map((t) => ({ kind: "ticket" as const, num: t, key: `t${t}` })),
                       ];
-                      const visible = allChips.slice(0, 3);
+                      const visible = allChips.slice(0, 2);
                       const overflow = allChips.length - visible.length;
                       return (
                         <span className="chip-strip" onClick={(ev) => ev.stopPropagation()}>
@@ -670,7 +685,7 @@ export default function DashboardPage() {
         </section>
 
         {/* QUEUED */}
-        <section className="panel span2">
+        <section className="panel span2" style={doneExpands ? { display: "none" } : undefined}>
           {panelHd("Queued — Drag to prioritize", "queued")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : sortedQueued.length === 0 ? empty("No queued tasks.") : (
             <>
@@ -713,7 +728,7 @@ export default function DashboardPage() {
         </section>
 
         {/* DONE */}
-        <section className="panel done-panel">
+        <section className="panel done-panel" data-done-expands={doneExpands ? "true" : undefined}>
           {panelHd("Done — last 24h", "done")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : data.done.length === 0 ? empty("Nothing completed yet.") : (
             <div className="row-list">
@@ -725,8 +740,9 @@ export default function DashboardPage() {
                     ...group.waves.map((w) => ({ kind: "wave" as const, label: `Wave ${w}`, key: `w${w}` })),
                     ...group.tickets.map((t) => ({ kind: "ticket" as const, num: t, key: `t${t}` })),
                   ];
-                  const visibleChips = allChips.slice(0, 4);
+                  const visibleChips = allChips.slice(0, 2);
                   const chipOverflow = allChips.length - visibleChips.length;
+                  const overflowTitle = allChips.slice(2).map((c) => c.kind === "wave" ? c.label : `#${c.num}`).join(", ");
                   return (
                     <div key={groupKey} className="row-item">
                       <div
@@ -747,7 +763,7 @@ export default function DashboardPage() {
                                   ? <a key={chip.key} className="now-chip now-chip-ticket" href={`https://github.com/${data.issues.repo}/issues/${chip.num}`} target="_blank" rel="noreferrer" onClick={(ev) => ev.stopPropagation()}>#{chip.num}</a>
                                   : <span key={chip.key} className="now-chip now-chip-ticket">#{chip.num}</span>
                             )}
-                            {chipOverflow > 0 && <span className="now-chip now-chip-overflow">+{chipOverflow}</span>}
+                            {chipOverflow > 0 && <span className="now-chip now-chip-overflow" title={overflowTitle} aria-label={overflowTitle}>+{chipOverflow}</span>}
                           </span>
                         )}
                         {roleBadge(e.role)}
@@ -770,8 +786,9 @@ export default function DashboardPage() {
                   ...group.waves.map((w) => ({ kind: "wave" as const, label: `Wave ${w}`, key: `w${w}` })),
                   ...group.tickets.map((t) => ({ kind: "ticket" as const, num: t, key: `t${t}` })),
                 ];
-                const visibleChips = allChips.slice(0, 4);
+                const visibleChips = allChips.slice(0, 2);
                 const chipOverflow = allChips.length - visibleChips.length;
+                const overflowTitle = allChips.slice(2).map((c) => c.kind === "wave" ? c.label : `#${c.num}`).join(", ");
                 return (
                   <div key={groupKey} className="row-item">
                     <div
@@ -794,7 +811,7 @@ export default function DashboardPage() {
                                     ? <a key={chip.key} className="now-chip now-chip-ticket" href={`https://github.com/${data.issues.repo}/issues/${chip.num}`} target="_blank" rel="noreferrer" onClick={(ev) => ev.stopPropagation()}>#{chip.num}</a>
                                     : <span key={chip.key} className="now-chip now-chip-ticket">#{chip.num}</span>
                               )}
-                              {chipOverflow > 0 && <span className="now-chip now-chip-overflow">+{chipOverflow}</span>}
+                              {chipOverflow > 0 && <span className="now-chip now-chip-overflow" title={overflowTitle} aria-label={overflowTitle}>+{chipOverflow}</span>}
                             </>
                         }
                       </span>
@@ -869,7 +886,7 @@ export default function DashboardPage() {
         </section>
 
         {/* BLOCKED */}
-        <section className="panel">
+        <section className="panel" style={doneExpands ? { display: "none" } : undefined}>
           {panelHd("Blocked", "blocked")}
           {!endpointReady ? notReady : !data ? empty("Loading…") : data.blocked.length === 0 ? empty("No errors.") : (
             <div className="row-list">
@@ -1343,8 +1360,10 @@ export default function DashboardPage() {
         .ctx-model-select {
           font-size: 10px; color: var(--text-dim);
           background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
-          padding: 2px 4px; cursor: pointer; width: 100%;
+          padding: 2px 4px; cursor: pointer; width: 100%; display: none;
         }
+        .ctx-card:hover .ctx-model-select,
+        .ctx-card:focus-within .ctx-model-select { display: inline-block; }
         .ctx-model-select:hover { border-color: var(--text-dim); }
         .ctx-model-select:focus { outline: 2px solid var(--accent-po); outline-offset: 1px; }
 
@@ -1395,10 +1414,12 @@ export default function DashboardPage() {
         }
 
         .peer-idle-row {
-          display: flex; align-items: center; gap: 4px; flex-wrap: wrap;
+          display: flex; align-items: center; gap: 4px; flex-wrap: nowrap; overflow-x: auto;
           padding: 4px 6px; background: var(--surface-2); border-radius: 6px;
           font-size: 11px;
         }
+        .peer-idle-row::-webkit-scrollbar { height: 4px; }
+        .peer-idle-row::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
         .peer-idle-label { color: var(--text-dim); font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; flex-shrink: 0; }
 
         .issue-label-chip {
@@ -1424,12 +1445,12 @@ export default function DashboardPage() {
         }
         .pinned-divider { height: 1px; background: var(--surface-2); opacity: 0.3; margin: 2px 0; }
         .recent-row {
-          display: flex; align-items: center; gap: 6px;
+          display: flex; align-items: center; gap: 8px;
           padding: 4px 6px; background: var(--surface-2); border-radius: 6px;
         }
         .iss-check { flex-shrink: 0; cursor: pointer; accent-color: var(--accent-po); }
         .recent-row-body {
-          display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0;
+          display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0;
           text-decoration: none; color: var(--text); font-size: 12px;
         }
         .recent-row-body:hover .iss-title { text-decoration: underline; }
@@ -1490,6 +1511,9 @@ export default function DashboardPage() {
 
         .done-panel { max-height: 60vh; overflow-y: auto; }
         @media (max-width: 767px) { .done-panel { max-height: 50vh; } }
+        @media (min-width: 1280px) {
+          .done-panel[data-done-expands] { grid-column: 1 / 4; max-height: 80vh; }
+        }
 
         .done-role-strip { flex: 1; min-width: 0; overflow: hidden; display: inline-flex; align-items: center; gap: 3px; flex-wrap: nowrap; }
         .group-row-item {

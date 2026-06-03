@@ -61,6 +61,7 @@ export function OrchestratorBar({
   const pathname = usePathname();
   const [draft, setDraft] = useState(workspace);
   const [threadDraft, setThreadDraft] = useState(threadId);
+  const [wsFocused, setWsFocused] = useState(false);
 
   useEffect(() => {
     setDraft(workspace);
@@ -99,7 +100,8 @@ export function OrchestratorBar({
           type="text"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          onBlur={commit}
+          onFocus={() => setWsFocused(true)}
+          onBlur={() => { setWsFocused(false); commit(); }}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               e.preventDefault();
@@ -109,7 +111,9 @@ export function OrchestratorBar({
           }}
           spellCheck={false}
           placeholder="/absolute/path/to/project"
-          title="Working directory shared by the top Claude Code terminal and the BA/Dev agents."
+          title={draft || "Working directory shared by the top Claude Code terminal and the BA/Dev agents."}
+          aria-label={draft ? `Workspace: ${draft}` : "Workspace path"}
+          style={!wsFocused && draft.length > 40 ? { direction: "rtl" } : undefined}
         />
         {draft !== workspace && <span className="dirty" title="Press Enter to apply">●</span>}
       </div>
