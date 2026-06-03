@@ -9,6 +9,7 @@ UX Designer owns this directory. Every spec file is listed here with its linked 
 | [US-009-010-011-agent-profile-and-dashboard-additions.md](US-009-010-011-agent-profile-and-dashboard-additions.md) | US-009 / US-010 / US-011 / Wave 32 | reviewed | Post-hoc spec: /agents/[role] profile page + scout trigger button + saturation bar. PR #78. 2 warns filed as [ux:scout] + [ux:saturation] issues. |
 | [US-063-stall-drawer-motion-cleanup.md](US-063-stall-drawer-motion-cleanup.md) | #281 / #282 | ready | Wave 105 Lane-A pre-stage. Dead-code transition removal: conditional render eliminates slide-in animation. No RM guard needed. |
 | [US-066-adaptive-issues-panel.md](US-066-adaptive-issues-panel.md) | US-066 / #144 / Wave 66 | draft | Adaptive Issues panel: 3-breakpoint responsive layout (desktop rail 280px, tablet strip 200px max-height, mobile drawer 50vh), severity chip hierarchy (blocker→nit), empty-state copy, hover/focus/filter interaction states, a11y (semantic HTML, ARIA, keyboard nav). First UX spec post-routing-fix. 3 open BA scope questions (peer-idle hints, severity defaults, queued-wave visibility). |
+| [US-070-dashboard-density.md](US-070-dashboard-density.md) | US-070 / #286 / PR #311 | reviewed | Retroactive spec (Wave 112). 7 ACs: done-panel full-width expand ≥1280px, workspace-path RTL truncation, model-select reveal-on-hover/focus-within, peer-idle row nowrap+h-scroll, done-panel wave-desc sort, ActiveWaveCard idle copy, NOW chip 2-pill cap + overflow badge. UX PASS @ 32b3ff2. |
 
 ---
 
