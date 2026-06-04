@@ -64,11 +64,13 @@ DevSecOps owns all artifacts below. The only path to change pipeline behavior is
 
 | Artifact | Purpose |
 |---|---|
-| `.github/workflows/ci.yml` | Runs `pnpm lint`, `pnpm audit --audit-level moderate`, `pnpm type-check`, `pnpm test:run` on every push and PR. Audit is `continue-on-error` so transient registry failures don't block PRs. Also runs a dedicated `merge-driver-test` job verifying `merge=union` on `HANDOFF.md`. |
+| `.github/workflows/ci.yml` | Runs `pnpm lint`, `pnpm audit --audit-level moderate`, `pnpm type-check`, `pnpm test:run` on every push and PR. Audit is `continue-on-error` so transient registry failures don't block PRs. Also runs `merge-driver-test` (union-merge fitness) and `actionlint` (workflow lint / shell-injection gate). |
 | `.github/workflows/codeql.yml` | CodeQL SAST for JS/TS. Runs on push to main + weekly Monday 05:30 UTC. Free because the repo is public. |
 | `.github/workflows/pr-hygiene.yml` | Validates PR body close-keyword syntax — rejects comma-list refs like `closes #123, #456` (GitHub only auto-closes the first). Fires on `pull_request` opened/edited events. |
+| `.github/workflows/ux-gate-check.yml` | Verifies ADR-018 UX PASS verdict in `coordination/handoffs/ux-designer.md` before merging UI-touching PRs. |
+| `.github/workflows/pass-verdict-format-check.yml` | Verifies ADR-018 verdict heading format on `coordination/handoffs/*.md` changes. Soft-warns on overdue PR #0 backfills (via `scripts/check-placeholder-ttl.py`). |
 | `.github/dependabot.yml` | Weekly CVE scan of npm deps. Minor + patch updates grouped into one PR to reduce noise. Critical CVEs in direct deps block merge until patched. |
-| `scripts/git-hooks/pre-commit` | Type-check + gitleaks secrets scan on staged files (see below). Also enforces HANDOFF.md update + INDEX.yaml integrity. |
+| `.githooks/pre-commit` | Lint + type-check gates on staged files. Requires `coordination/handoffs/<role>.md` edit (or root `HANDOFF.md`) on commits touching source, scripts, tests, CI, or agent files. |
 | `scripts/git-hooks/pre-push` | Blocks direct pushes to `origin/main` from non-DevSecOps contexts — first line of defense before GitHub branch protection. |
 
 ### CodeQL note

@@ -50,10 +50,9 @@ jobs:
           echo ""
 
           # --- Emergency override ---
-          # If PR title or body contains [skip-ux-gate], skip the check.
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          PR_BODY="${{ github.event.pull_request.body }}"
-          if echo "${PR_TITLE}${PR_BODY}" | grep -qF '[skip-ux-gate]'; then
+          # PR_TITLE/PR_BODY are injected via env: above (not interpolated here)
+          # to prevent shell injection on special characters — same fix as #378.
+          if printf '%s%s' "${PR_TITLE}" "${PR_BODY}" | grep -qF '[skip-ux-gate]'; then
             echo "SKIP: [skip-ux-gate] override present in PR title/body."
             exit 0
           fi
