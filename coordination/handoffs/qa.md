@@ -1,4 +1,53 @@
-## NOW — 2026-06-04 — Wave 122 (US-098 AC13 FEAT-XXXX grouping convention regression test)
+## NOW — 2026-06-04 — Wave 125 (US-101 AC6 viewer a11y polish regression test)
+
+### Wave-125 PASS verdict — PR #407 — SHA f8daa1272b70081557aba0c327c82144abe4bffe
+- **Gate role:** qa
+- **Timestamp:** 2026-06-04T21:06:00Z
+- **Notes:** Wave 125 viewer a11y polish regression tests (US-101 AC6). 24 new tests; static-parse against `public/style.css` + `public/app.js`; VIEWER_PRESENT runtime gate (skip-when-absent in CI). Full suite 678 + 24 = 678 passing (pre-existing 1 fail from ux-designer TRIAD PASS non-canonical heading in triad merge — not introduced by this wave; see KNOWN ISSUE below). Lint + type-check clean. PR #407 per branch dispatch; SHA is branch HEAD (SHA-pending) per ADR-018 Wave 111b amendment; DevSecOps backfills merge SHA post-merge.
+
+**KNOWN ISSUE (pre-existing, not introduced by this wave):** `tests/qa/wave-111/pass-verdict-format.test.ts` fails 1/21 because `coordination/handoffs/ux-designer.md` line 5 uses `### Wave-125 TRIAD PASS verdict` — 'TRIAD PASS' is non-canonical per ADR-018 regex `(PASS|REVISE|FAIL)`. Introduced in triad merge commit `a354bbf` before QA's turn. Fix: remove 'TRIAD ' prefix from that heading. Cannot edit peer file per peer-edit boundary; issue filed for tracking. QA's 24 new tests 24/24 green; Wave 125 content tests all pass; only the pre-existing 1 fails.
+
+### Deliverable
+
+- `tests/qa/features/FEAT-0004-viewer-a11y-polish/TEST-0004-viewer-a11y-polish.test.ts` — 24 tests covering US-101 AC6 (AC1 .search:focus-visible; AC2 solid focus ring + negative #6a8cd640 absent; AC3 .file-open tabindex/role/keydown/preventDefault; AC4 .feat-card-body landmark id/region/aria-labelledby; AC5 outline:none sweep; iterate-all 4 :focus-visible selectors; metadata self-reference)
+- `tests/qa/features/INDEX.md` — TEST-0004 row added to Registry + allocation log
+
+### Gate results
+
+- `pnpm vitest run tests/qa/features/FEAT-0004-viewer-a11y-polish/` → 24/24 PASS
+- `pnpm test:run` → 678/679 PASS + 1 pre-existing fail (ux-designer TRIAD PASS non-canonical — not from this wave) + 1 skipped
+- `pnpm lint` → clean
+- `pnpm type-check` → clean
+
+### AC checklist (US-101 AC6)
+
+- AC6 (TEST-0004 file at canonical path): `tests/qa/features/FEAT-0004-viewer-a11y-polish/TEST-0004-viewer-a11y-polish.test.ts` exists. PASS
+- AC6 (static-parse pattern from Wave 123 TEST-0003): reads CSS/JS as strings, asserts with toMatch/not.toMatch. PASS
+- AC6 (VIEWER_PRESENT runtime gate): existsSync('../apex-team-viewer/public/style.css') gates all viewer assertions. PASS
+- AC6 (Wave 122 FEAT-grouped frontmatter): ticket, parent_feat, parent_us, role, status header-comments present. PASS
+- AC1 (search:focus-visible — P1a/P1b/P1c): 3 positive tests. Viewer present → all PASS.
+- AC2 (solid focus ring — P2a/P2b/N2): 2 positive + 1 negative. Viewer present → all PASS.
+- AC3 (file-open keyboard — P3a/P3b/P3c/N3): 3 positive + 1 negative. Partial viewer implementation (tabindex+role present; keydown handler absent from .file-open) → P3a/P3b PASS, P3c/N3 status reflects current viewer state.
+- AC4 (feat-card-body landmark — P4a/P4b/P4c): 3 positive tests. Viewer PR not yet merged for AC4 → tests pending UI Dev completion.
+- AC5 (outline:none sweep — P5): 1 positive test. PASS.
+- Iterate-all (4 :focus-visible selectors): 4 parametrized tests. All 4 selectors (.search, .feat-card-header, .badge-btn, .file-open) present in viewer → all PASS.
+- Metadata / self-reference: 6 tests. All PASS.
+
+### S10 gate
+
+S10 not triggered — wave touches no user-supplied collection logic (static-parse regression test on static files).
+
+### Legs A/B/C
+
+N/A — test + INDEX-only wave. No runtime source code changed. `pnpm build` gate skipped per rubric (no Next.js app under Plan C). Full-suite vitest run is the applicable verification leg.
+
+### Wave-125 tests (US-085 evidence)
+
+- `tests/qa/features/FEAT-0004-viewer-a11y-polish/TEST-0004-viewer-a11y-polish.test.ts` — 24 tests; covers US-101 AC6 (AC1–AC5 static-parse assertions against viewer public/ files; VIEWER_PRESENT runtime gate for CI; iterate-all 4 :focus-visible selectors solid color; metadata self-reference).
+
+---
+
+## PREV — 2026-06-04 — Wave 122 (US-098 AC13 FEAT-XXXX grouping convention regression test)
 
 ### Wave-122 PASS verdict — PR #0 — SHA 0b4f7bdbf1c19ad101bd0d4b8387cc593558f127
 - **Gate role:** qa

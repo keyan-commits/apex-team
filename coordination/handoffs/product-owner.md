@@ -1,6 +1,48 @@
 # product-owner — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 114 (close-sweep — backlog at ZERO)
+## ⏭️ NOW — 2026-06-04 — Wave 125 (Viewer a11y cleanup — TRIAD DISPATCHED)
+
+### Wave-125 SCOPED verdict — PR #0 — SHA 9f9d53ee3c8f3e155a567197a489378318729c18
+- **Gate role:** product-owner
+- **Timestamp:** 2026-06-04T20:55:00Z
+- **Notes:** User authorized bundling 4 open viewer a11y issues filed as non-blocking warns during Wave 123 UX gate. Shape: ONE FEAT (FEAT-0004 `viewer-a11y-polish`) + ONE US (US-101) with 4 a11y ACs + 2 regression ACs. All 4 issues are small, related, single-file edits in the sibling viewer repo — bundling beats 4 micro-waves. Cross-repo PR pattern mirrors Wave 123: one apex-team PR (BA US + FEAT-0004 + UX spec + QA test) + one viewer PR (`public/style.css` + `public/app.js` edits). Placeholder block per ADR-018 Wave 111b amendment: `PR #0` + last-known SHA `9f9d53ee3c8f3e155a567197a489378318729c18` (HEAD of `feature/c1-plan-c-subagent-extraction` at dispatch time). DevSecOps post-merge backfill replaces with real PR # + merge SHA.
+
+**Wave goal:** Close viewer-side a11y debt surfaced during Wave 123 UX gate. 4 issues (`keyan-commits/apex-team-viewer` #5, #7, #8, #9) bundled into FEAT-0004 + US-101.
+
+**Issues addressed (bundle):**
+- **#5** — `.search` input missing `:focus-visible` replacement for `outline: none` (WCAG 2.4.11)
+- **#7** — `.feat-card-header` + `.badge-btn` 25%-alpha focus ring → ~1.8:1, fails WCAG 1.4.11 (3:1 min)
+- **#8** — `.feat-ticket-row .file-open` spans not keyboard-reachable (no tabindex/role/keydown) — pre-existing pattern now newly prominent
+- **#9** — `.feat-card-body` missing `role="region"` + `aria-labelledby` → landmark navigation broken for SR users
+
+**Shape:** SINGLE wave, TWO PRs (one apex-team + one viewer), THREE-LANE.
+- **Lane 1 (triad, parallel — this turn):** BA drafts US-101 + FEAT-0004 + features INDEX rows + requirements INDEX row. UX Designer authors `design/features/FEAT-0004-viewer-a11y-polish/UX-0001-viewer-a11y-polish.md` (this IS a UX-led wave — full spec, not no-impact). Architect ratifies NFR posture (WCAG 2.1 SC 1.4.11 + 2.4.11 + 4.1.2 binding; no new perf/sec envelope; small CSS + JS surface).
+- **Lane 2 (implement + verify, after triad):** UI Dev applies edits in sibling viewer repo (`public/style.css` for #5/#7; `public/app.js` for #8/#9). QA writes `tests/qa/features/FEAT-0004-viewer-a11y-polish/TEST-0002-viewer-a11y-polish.test.ts` asserting CSS rules + JS attributes statically (parsing `../apex-team-viewer/public/{style.css,app.js}` like Wave 123 TEST-0003).
+- **Lane 3 (merge, after Lane 2):** DevSecOps merges both PRs in order (apex-team first, then viewer). Per ADR-018 backfill, DevSecOps replaces PR #0 + last-known SHA in all gate verdicts post-merge.
+
+**Allocation (this wave assigns):**
+- BA: `FEAT-0004` (in `requirements/features/INDEX.md` allocation log), `US-101`
+- Architect: `ARCH-0001` (first Architect feature ticket under Wave 122 convention) at `architecture/features/FEAT-0004-viewer-a11y-polish/ARCH-0001-viewer-a11y-polish.md` — light ratification only (WCAG bindings + NFR cross-refs)
+- UX: `UX-0001` at `design/features/FEAT-0004-viewer-a11y-polish/UX-0001-viewer-a11y-polish.md`
+- QA: `TEST-0002` (next after Wave 122 TEST-0001) at `tests/qa/features/FEAT-0004-viewer-a11y-polish/TEST-0002-viewer-a11y-polish.test.ts`
+- UI Dev: file in sibling viewer repo (no `FE-XXXX` slot in apex-team — code lives in `../apex-team-viewer/`)
+- DevSecOps: no `OPS-XXXX` (no pipeline change)
+
+**Dispatched (parallel, this turn):** business-analyst, ux-designer, architect.
+
+**Next:** After triad returns → fire Lane 2 (UI Dev + QA in parallel). After Lane 2 returns and all gates green → fire DevSecOps for cross-repo merge.
+
+**Cross-repo PR pattern (mirroring Wave 123):**
+- apex-team PR: BA US-101 + FEAT-0004 + UX spec + Architect ARCH-0001 ratification + QA TEST-0002 + HANDOFF updates + INDEX updates
+- viewer PR (`keyan-commits/apex-team-viewer`): `public/style.css` edits (#5, #7) + `public/app.js` edits (#8, #9); references US-101 in PR body
+
+**User-directive context (this wave):**
+- User explicitly authorized bundling the 4 issues into a focused wave (this turn).
+- Standing memory: HANDOFF refresh ships in same PR as code change; UX is heavy in UX-themed waves; cross-repo waves mirror Wave 123 pattern.
+
+---
+
+## ⏭️ PREV — 2026-06-04 — Wave 114 (close-sweep — backlog at ZERO)
 
 BA triaged + closed both remaining parked items: **#205 moot** (no UX skills adopted in Wave 111b → nothing to pin), **#381 absorbed** (Wave 110 PR #385 already rewrote LESSONS.md). `gh issue list --state open` returns `[]`.
 

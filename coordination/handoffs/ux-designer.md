@@ -1,6 +1,56 @@
 # ux-designer — HANDOFF
 
-## NOW — 2026-06-04 — Wave 117 (requirements-first skill + hard-refusal clauses)
+## NOW — 2026-06-04 — Wave 125 (Viewer a11y polish — critique gate)
+
+### Wave-125 PASS verdict — PR #407 — SHA 1f644ae43bee3bce40718ed33c26597e2bae54db
+- **Gate role:** ux-designer
+- **Timestamp:** 2026-06-04T00:00:00Z
+- **Notes:** Wave 125 viewer a11y polish UX critique pass. Implementation gated on sibling viewer PR #10 (commit `f677573`) — separate PR #10 verdict block below. apex-team PR #407 carries UX-0001 spec + this gate verdict. All 6 spec criteria PASS. No block/warn. Nit filed as `keyan-commits/apex-team-viewer#11` (double keydown listener — not a block).
+
+**Status:** PASS — DevSecOps may merge PR #407.
+
+---
+
+### Wave-125 PASS verdict — PR #10 — SHA f6775734d32cfa314ac72e71522968b144c4772f
+- **Gate role:** ux-designer
+- **Timestamp:** 2026-06-04T00:00:00Z
+- **Spec file:** `design/features/FEAT-0004-viewer-a11y-polish/UX-0001-viewer-a11y-polish.md`
+- **Repo reviewed:** `keyan-commits/apex-team-viewer` branch `feature/wave-125-a11y-polish` commit `f677573`
+
+**Criterion-by-criterion results:**
+
+| # | Criterion | Result |
+|---|---|---|
+| 1 | Focus-ring token `#6a8cd6` solid, `outline-offset: 1px` on all four selectors | PASS |
+| 2 | `.file-open` spans: `tabindex="0"` + `role="button"` in ALL render paths (renderTicketRow, pipelines, ungrouped flat-row, tickets tab) | PASS |
+| 3 | Keydown fires `openFile()` on Enter AND Space; Space calls `e.preventDefault()` | PASS |
+| 4 | `.feat-card-body` has `role="region"` + `aria-labelledby="feat-header-${feat.feat}"`; header button has matching `id` | PASS |
+| 5 | AC5 sweep: `.search` and `.select` both have `outline: none` paired with `:focus-visible` companions; no orphans | PASS |
+| 6 | No layout/visual regressions on mouse paths (all new rules use `:focus-visible`) | PASS |
+
+**Full-page scan:** ≥1280px AND ≥390px viewports verified via source inspection. No layout shift introduced by positive `outline-offset: 1px` (draws outside element, not inside — no width/height contribution). Responsive breakpoints unaffected (wave introduces no layout changes per spec section 4).
+
+**No block or warn findings.** One nit filed as GitHub issue (see below).
+
+**Nit filed (out-of-scope):**
+- `renderOutput()` keydown wiring at line 296 re-queries `#tickets-list .file-open` in addition to `#output-list .file-open`, causing double keydown listener registration on Tickets rows after any Output render. Not a functional regression (tab exclusion prevents double-fire), but a code-quality issue. Filed as `bug` against `keyan-commits/apex-team-viewer`.
+
+**Status:** PASS — DevSecOps may merge PR #10.
+
+---
+
+## PREV — 2026-06-04 — Wave 125 (Viewer a11y polish — spec authored)
+
+### Wave-125 spec-verdict — PR #0 — SHA 9f9d53ee3c8f3e155a567197a489378318729c18
+- **Gate role:** ux-designer
+- **Timestamp:** 2026-06-04T21:10:00Z
+- **Notes:** Spec authored. `design/features/FEAT-0004-viewer-a11y-polish/UX-0001-viewer-a11y-polish.md` written. All four issues (#5/#7/#8/#9) specced with copy-verbatim CSS/JS snippets, contrast ratios computed, keyboard interaction spec, landmark spec, and 12-item a11y verification checklist. Status set to `in-implementation`.
+
+**Status:** Spec delivered — awaiting implementation gate (now complete above).
+
+---
+
+## PREV — 2026-06-04 — Wave 117 (requirements-first skill + hard-refusal clauses)
 
 **Verdict: No UI impact — skip UX gate.**
 

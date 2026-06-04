@@ -1,6 +1,102 @@
 # architect — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 122 (FEAT-XXXX feature grouping standard — 8 subagent bodies + workspace-conventions + architecture/features INDEX)
+## ⏭️ NOW — 2026-06-04 — Wave 125 Lane 3 code review (PRs #407 + viewer #10 — PASS)
+
+### Wave-125 PASS verdict — PR #407 — SHA f4e6c26a5b4e8885784f8cbab57d81bfb144959b
+- **Gate role:** architect
+- **Timestamp:** 2026-06-04T21:30:00Z
+- **Notes:** Code review for Wave 125 PRs (cross-repo, two-PR shape). **apex-team PR #407** (`feature/125-viewer-a11y-polish`, HEAD `f4e6c26`): triad artifacts + QA TEST-0004 + UI Dev HANDOFF + verdict-format fix. Non-UI rubric applies (architecture/, requirements/, design/ are docs; HANDOFF docs are coordination state; TEST-0004 is QA's tests/). Architecture/ co-authorship gate (Wave 109 #335): only Architect's own ARCH-0001 + features/INDEX.md edited under `architecture/` — no peer edit, gate satisfied. Wave 122 anchor `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` present once per subagent body — no `.claude/agents/` diff on PR #407, all 8 bodies preserved (verified via grep). ADR-018 verdict-format conformance: all 5 in-tree Wave-125 verdict headings (architect / business-analyst / product-owner / qa / ux-developer / ui-developer-as-self-attestation) match the canonical anchor regex; commit `f4e6c26` retroactively fixed the ux-designer `TRIAD PASS` non-canonical heading; QA's `tests/qa/wave-111/pass-verdict-format.test.ts` PASS 21/21. TEST-0004 allocation correct (was TEST-0002 collision per BA's amendment; QA's INDEX + content cite TEST-0004 throughout; trivial typo in ARCH-0001 §1 measurement line + companion-artifacts list corrected this turn under the trivial-cleanup carveout). **Viewer PR #10** (`keyan-commits/apex-team-viewer feature/wave-125-a11y-polish`, HEAD `f677573`): `public/style.css` + `public/app.js` only — no `server.mjs`, no new bundles, no new external resources, no new event sinks, no security/perf delta. CSS edits: solid `#6a8cd6` everywhere (5 selectors — `.search`, `.select`, `.feat-card-header`, `.badge-btn`, `.file-open`), all alpha `#6a8cd640` gone; both `outline: none` declarations (lines 82, 115) have matching `:focus-visible` replacements — no orphan `outline: none`. JS edits: 4 `.file-open` render paths get `tabindex="0" role="button"`; 2 keydown handler wire-up sites (renderTickets, renderOutput) bind Enter+Space → `openFile` with `e.preventDefault()`. The `preventDefault()` on Enter (alongside Space) is consciously documented in UX-0001 §158-176 — `<span role="button">` carries no native form/submit semantics so blanket preventDefault is safe; this is the spec-codified choice. `.feat-card-header` gets `id="feat-header-${esc(feat.feat)}"`; `.feat-card-body` gets `role="region" aria-labelledby="feat-header-${esc(feat.feat)}"` — landmark binding tied to the same template variable so IDs cannot drift. Full test suite 679/679 PASS + 1 skipped (VIEWER_PRESENT gate), lint clean, type-check clean. Placeholder per ADR-018 Wave 111b amendment: `PR #407` is the real PR number for apex-team; SHA `f4e6c26a5b4e8885784f8cbab57d81bfb144959b` is the current HEAD of `feature/125-viewer-a11y-polish` at gate time (placeholder for the future merge SHA — DevSecOps backfills post-merge via `chore(handoff): backfill Wave-125 verdict PR # and merge SHA`). Viewer PR #10 carries its own verdict block in its own gate flow (UX Designer gates UI; this verdict covers the non-UI surface across both PRs).
+
+### Wave-125 PASS verdict — PR #10 — SHA f6775734d32cfa314ac72e71522968b144c4772f
+- **Gate role:** architect (non-UI portion)
+- **Timestamp:** 2026-06-04T21:30:00Z
+- **Notes:** Cross-repo verdict — PR # refers to `keyan-commits/apex-team-viewer#10` (not apex-team#10, which is unrelated and predates Plan C); SHA `f6775734…` is the HEAD of `feature/wave-125-a11y-polish` in the viewer repo. Non-UI surface review only (UX Designer gates the UI portion in parallel under the standard mixed-PR lane split). Architect's lane covers structural / event-handler / abstraction concerns. Findings: (1) Keyboard handler is correctly scoped — Enter/Space conditional, no global keydown trap, listener attached per-element at render time alongside the existing click listener (no event delegation churn). The renderOutput wire-up at line 296 uses combined selector `#output-list .file-open, #tickets-list .file-open` which is harmless redundancy with renderTickets's wire-up (line 129) because the latter only fires when the tickets tab is rendered; in practice the listeners attach to distinct DOM trees per tab so there is no double-fire on a single span. (2) `preventDefault()` on both Enter and Space is safe on `<span role="button">` — UX-0001 §158-176 codifies the trade-off (no native form submit semantics; Space-scroll prevention is the substantive reason). (3) Static landmark attributes (`role="region"`, `aria-labelledby`) baked into the template string at render time — no DOM-mutation-after-render race, no setAttribute hooks. ID-template variable `feat-header-${esc(feat.feat)}` is escaped consistently between the button's `id` and the body's `aria-labelledby` reference (same expression both sides — drift-resistant). (4) No new bundles, no new external resources, no new network sinks, no new event surfaces accepting untrusted input. Zero NFR delta on perf / security envelope / observability / scalability / deployability — matches ARCH-0001 §3 prediction exactly. (5) `server.mjs` not touched (confirmed via `gh pr diff 10 -R keyan-commits/apex-team-viewer --name-only` → only `public/app.js` + `public/style.css`). Placeholder per ADR-018: PR #10 is the real PR number; SHA `f6775734d32cfa314ac72e71522968b144c4772f` is current HEAD of `feature/wave-125-a11y-polish` at gate time. Viewer-repo HANDOFF backfill applies to the viewer-repo's own handoff doc (if one exists) post-merge; cross-repo backfill is DevSecOps's call at Lane 3.
+
+### Lane 3 review summary
+
+- **PR #407 verdict:** PASS (non-UI rubric).
+- **PR #10 verdict:** PASS (non-UI portion; UX Designer gates UI in parallel).
+- **Trivial cleanup applied this turn (Architect's lane, no peer edit):** ARCH-0001 §1 + companion-artifacts list corrected `TEST-0002` → `TEST-0004` (2 occurrences). Documented under the Architect review-rubric trivial-cleanup carveout (rename/typo); no Dev re-spin needed.
+
+---
+
+## PREV — 2026-06-04 — Wave 125 Lane 1 NFR ratification (ARCH-0001)
+
+### Wave-125 PASS verdict — PR #0 — SHA 9f9d53ee3c8f3e155a567197a489378318729c18
+- **Gate role:** architect
+- **Timestamp:** 2026-06-04T21:15:00Z
+- **Notes:** Light NFR ratification for FEAT-0004 viewer a11y polish (no novel architecture). Three Architect-lane artifacts landed: (1) `architecture/features/FEAT-0004-viewer-a11y-polish/ARCH-0001-viewer-a11y-polish.md` — first feature-scoped ARCH ticket under the Wave 122 convention. Ratifies WCAG 2.1 Level AA as the standing viewer a11y target (success criteria 1.4.11 / 2.1.1 / 2.4.7 / 2.4.11 / 4.1.2 bound to this wave's four issues #5/#7/#8/#9), ratifies UX-0001's `:focus-visible` + solid focus-ring as the canonical viewer focus-indication pattern, records the zero NFR delta verdict (perf / security / observability unchanged — two CSS edits + two JS edits, no new bundles / network / event sinks), captures the keyboard-reachability precedent for clickable-in-JS elements as a Wave-125-local rule (ADR-019 promotion deferred until a third recurrence), and pre-commits to gating UI Dev's Lane 2 viewer PR under the standard non-UI review rubric (Wave 109 co-authorship not required — small CSS + JS surface). (2) `architecture/features/INDEX.md` — ARCH-0001 row added to the registry table + allocation log; "Last updated" line bumped to Wave 125. (3) this HANDOFF doc — NOW block prepended per ADR-018 canonical format, prior Wave 122 NOW demoted to PREV. Self-attested PASS — all edits within Architect's own lane (architecture/ + own HANDOFF), no peer-edit footprint on BA's US-101 / FEAT-0004 / requirements INDEX or UX's UX-0001. Placeholder block per ADR-018 Wave 111b amendment: `PR #0` + last-known SHA `9f9d53ee3c8f3e155a567197a489378318729c18` (HEAD of `feature/125-viewer-a11y-polish` at staging time). DevSecOps post-merge backfill replaces with real PR # + merge SHA via `chore(handoff): backfill Wave-125 verdict PR # and merge SHA`.
+
+### Wave 125 deliverables (3 files, single-author within Architect's lane)
+
+1. **`architecture/features/FEAT-0004-viewer-a11y-polish/ARCH-0001-viewer-a11y-polish.md`** (new) — first feature-scoped Architect ticket under the Wave 122 FEAT-XXXX convention. Frontmatter: `ticket: ARCH-0001`, `parent_feat: FEAT-0004`, `parent_us: US-101`, `role: architect`, `status: accepted`. Seven sections: NFR posture (WCAG 2.1 AA + SC table bound to issues #5/#7/#8/#9), pattern ratification (`:focus-visible` + solid focus-ring as canonical viewer pattern), no-NFR-delta verdict, cross-cutting keyboard-reachability precedent (local note, ADR promotion deferred), code-review pre-commitment for Lane 2, deferrable follow-ups (3 — WCAG-to-conventions promotion, keyboard-reachability ADR, viewer CI a11y conformance), cross-references.
+
+2. **`architecture/features/INDEX.md`** (modified) — ARCH-0001 row added to registry table with `parent_feat: FEAT-0004`, `parent_us: US-101`, `status: accepted`, description "Viewer a11y polish — WCAG 2.1 AA ratification + `:focus-visible` pattern ratification + code-review pre-commitment for Lane 2 viewer PR." Allocation-log table also updated with the Wave 125 allocation row.
+
+3. **`coordination/handoffs/architect.md`** (this file) — NOW block prepended per ADR-018; prior Wave 122 NOW demoted to PREV.
+
+### NFR posture summary (Wave 125)
+
+- **Standing target:** WCAG 2.1 Level AA bound to the viewer surface (`keyan-commits/apex-team-viewer`). This is a local ratification at the FEAT level — promotion to a workspace-conventions-level NFR is a deferrable follow-up (ARCH-0001 §6 item 1).
+- **Success criteria in scope this wave:** 1.4.11 (#7), 2.1.1 (#8), 2.4.7 + 2.4.11 (#5), 4.1.2 (#9). Mapping rationale lives in ARCH-0001 §1.
+- **Pattern ratification:** `:focus-visible` + solid focus ring is the canonical viewer focus-indication pattern. Local to viewer; apex-team itself has no UI under Plan C.
+- **NFR delta:** zero on perf, security envelope, observability, scalability, deployability. Documented in ARCH-0001 §3.
+- **Cross-cutting precedent:** keyboard-reachability for clickable-in-JS elements (Enter/Space + tabindex + role + focus-visible style) recorded as Wave-125-local rule. ADR-019 promotion deferred until third recurrence.
+
+### Architecture/ co-authorship gate (Wave 109 rule, self-reflection)
+
+This wave's PR touches:
+- `architecture/features/FEAT-0004-viewer-a11y-polish/ARCH-0001-viewer-a11y-polish.md` (new file, Architect's own lane).
+- `architecture/features/INDEX.md` (Architect's own INDEX, my lane).
+- `coordination/handoffs/architect.md` (this file — my own HANDOFF doc).
+
+No peer is co-authoring any file under `architecture/`. No peer HANDOFF docs are edited. Both gates (architecture/ co-authorship + peer-HANDOFF edit) satisfied. Wave 109 co-authorship pre-staging not required for the Lane 2 viewer PR (small CSS + JS surface, see ARCH-0001 §5).
+
+### Peer-edit boundary (Wave 112)
+
+This wave's PR touches only Architect-owned + own HANDOFF surfaces:
+- BA's `requirements/user-stories/US-101-*.md`, `requirements/features/FEAT-0004-viewer-a11y-polish.md`, `requirements/features/INDEX.md` — NOT edited (BA owns; BA dispatched in parallel Lane 1).
+- UX's `design/features/FEAT-0004-viewer-a11y-polish/UX-0001-viewer-a11y-polish.md`, `design/features/INDEX.md`, `design/INDEX.md` — NOT edited (UX owns; UX dispatched in parallel Lane 1).
+- QA's `tests/qa/features/FEAT-0004-viewer-a11y-polish/` — NOT edited (QA Lane 2).
+- UI Dev's viewer-repo edits (`public/style.css`, `public/app.js` in `../apex-team-viewer/`) — NOT edited (UI Dev Lane 2; cross-repo).
+- DevSecOps's merge / CI — NOT edited (Lane 3).
+
+Boundary satisfied. No peer's HANDOFF doc touched.
+
+### Gate verification (Wave 125)
+
+- Static surface only — no runtime tests this Architect lane (NFR ratification doc + INDEX update + HANDOFF). QA's Lane 2 TEST-0002 carries the runtime assertions against the viewer files post-edit.
+- ARCH-0001 frontmatter conforms to AC11 of US-098 (workspace-conventions §"FEAT-XXXX feature grouping (Wave 122)"): `ticket`, `parent_feat`, `parent_us`, `role`, `status` all present with valid values.
+- ARCH-0001 file path conforms to the canonical artifact root from the workspace-conventions AC3 table: `architecture/features/FEAT-NNNN-<slug>/ARCH-NNNN-<slug>.md`.
+- INDEX update conforms to the Wave 122 INDEX maintenance rule: ARCH-0001 added monotonically; allocation-log row stamped with `2026-06-04` and `Architect (Wave 125)`.
+
+### In flight / next
+
+- Triad (Lane 1) for Wave 125 still pending — BA's US-101 + FEAT-0004 + requirements INDEX row, UX's UX-0001 + design INDEX row. Outer orchestrator batches all three triad deliverables into a single staging commit.
+- Lane 2 (UI Dev + QA) fires after triad returns. I gate UI Dev's PR under the non-UI review rubric per ARCH-0001 §5; UX Designer gates the UI portion in parallel. QA's TEST-0002 produces the static-parse assertions that validate the four a11y fixes structurally.
+- Lane 3 (DevSecOps merge of both apex-team PR + viewer PR) fires after Lane 2 PASS verdicts land. DevSecOps post-merge backfill commit replaces all `PR #0` + last-known SHA placeholders.
+
+### Parked / future (carried from Wave 122 + Wave 125 additions)
+
+- `system-design.md` — still not created.
+- `tech-stack.md` — still not created.
+- `coding-standards.md` — still not created.
+- Fitness function for OQ-085-001's "no binary files committed under `tests/qa/wave-*/evidence/`" — QA owns implementation.
+- Viewer-repo subagent body audit (per ADR-017 follow-up).
+- ADR formalizing the ADR-NNNN-vs-ARCH-XXXX distinction (candidate ADR-019, deferred from Wave 122).
+- **NEW (Wave 125):** promote WCAG 2.1 AA from FEAT-local ratification to a workspace-conventions-level NFR (sibling to NFR-A11Y-001 in `architecture/nfr.md`). Trigger: any future wave introducing a wholly new viewer interactive surface. (ARCH-0001 §6 item 1.)
+- **NEW (Wave 125):** promote the keyboard-reachability rule for clickable-in-JS elements to an ADR. Trigger: a third clickable-in-JS element appears in `public/app.js`. (ARCH-0001 §6 item 2.)
+- **NEW (Wave 125):** automated WCAG conformance in viewer CI (axe-core or `@axe-core/playwright` runner). Owner: DevSecOps + QA jointly. (ARCH-0001 §6 item 3.)
+
+### Notes / caveats (Wave 125)
+
+- ARCH-0001 is the FIRST feature-scoped Architect ticket under the Wave 122 convention. The 3 other in-flight FEAT directories (FEAT-0001/0002/0003) have no ARCH tickets yet — their ARCH allocations remain pending.
+- The deliverable is intentionally narrow per the PO's "light ratification (no novel NFR)" framing. Substantive new NFR work (workspace-wide WCAG, automated conformance) is filed as deferrable follow-ups in ARCH-0001 §6.
+- The SHA cited in the placeholder block is `9f9d53ee3c8f3e155a567197a489378318729c18` — HEAD of `feature/125-viewer-a11y-polish` at staging time. Matches the SHA in the PO's Wave 125 dispatch brief.
+
+---
+
+## PREV — 2026-06-04 — Wave 122 (FEAT-XXXX feature grouping standard — 8 subagent bodies + workspace-conventions + architecture/features INDEX)
 
 ### Wave-122 PASS verdict — PR #0 — SHA 0b4f7bdbf1c19ad101bd0d4b8387cc593558f127
 - **Gate role:** architect
