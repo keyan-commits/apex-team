@@ -14,7 +14,7 @@ actionlint caught 4 real findings on its own PR — perfect self-application:
 - `pass-verdict-format-check.yml:63` — `CANDIDATE_PATTERN` unused (SC2034). Removed; canonical regex preserved as comment.
 - `ux-gate-check.yml:46-47` — `PR_NUMBER`/`HEAD_SHA` self-assignment (SC2269). Removed; env-var passthrough already in scope.
 - `ux-gate-check.yml:76,96` — `PLACEHOLDER_PASS` set-but-never-read (SC2034). Removed; `FOUND_PASS=1` path covers both cases.
-- `pr-hygiene.yml:16` — heredoc scanner flagged the template syntax inside a code comment. Rewrote comment to non-template reference.
+- `pr-hygiene.yml:16` — heredoc scanner flagged the template syntax inside a code comment. First attempt to escape failed (parser still saw the dot-glob); rewrote comment to plain prose referencing regression history.
 
 Third time we've collectively re-introduced workflow-shell anti-patterns (PR #375 / PR #388 / this PR). actionlint now closes the gap that Wave 111c surfaced.
 
