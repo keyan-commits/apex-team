@@ -4,6 +4,11 @@ Append-only. Newest first. Each entry: ~3–5 lines. Triggers: a protocol amendm
 
 ## 2026-06-04
 
+### Wave 111c — `gh pr merge --delete-branch` can close a PR without landing a merge commit on main
+**What broke:** `gh pr merge --delete-branch` is non-atomic — the close event (and optional branch deletion) fires separately from the merge commit write. A network drop, runner timeout, or concurrent merge race can leave the PR `state: closed` with `mergeCommit: null`, and the branch optionally deleted. The wave's code never lands on main, but the PR is gone from the open list and can be overlooked.
+**Why:** The `gh pr merge` command delegates to the GitHub API, which processes the close and the merge-commit write as separate operations. The CLI does not guarantee rollback if the second operation fails after the first succeeds.
+**We now do:** `.claude/agents/devsecops.md` contains an anomalous-closure playbook: detect via `gh pr view <PR#> --json state,mergeCommit` (`null` mergeCommit + `closed` state = anomalous); recover by reopening the PR (`gh pr reopen`), restoring the branch from reflog if deleted, re-confirming CI green, and retrying `gh pr merge`. Branch protection check for blocking status checks or required reviews included. Closes #301.
+
 ### Wave 110 — DevSecOps merge protocol must verify gate-role PASS is recorded in HANDOFF doc, not trust implementer's claim (closes #383)
 **What broke:** PR #231 was merged before the UX Designer recorded the post-revision PASS verdict in `coordination/handoffs/ux-designer.md`. The merge step trusted the implementer's HANDOFF claim ("UX returned PASS") rather than verifying the verdict in the gate role's own state file. Wave 109 surfaced this as a gap in `devsecops.md`'s "Deployment workflow (single turn)" step list (the review-gate rules existed; the merge-gate rule did not). Parallel failure class to #314's pre-verdict SHA-sync gap on the review step.
 **Why:** No explicit pre-merge check that the gating role's PASS was actually recorded in `coordination/handoffs/<gate-role>.md` against the PR HEAD SHA. The discipline lived in implementer prose only — "HANDOFF to DevSecOps with QA PASS + UX PASS evidence" — with no verifier on the DevSecOps side. An implementer could (accidentally or otherwise) claim a PASS that the gate role had not yet recorded.

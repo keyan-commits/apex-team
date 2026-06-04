@@ -1,10 +1,10 @@
 ## NOW — 2026-06-04 — Wave 111b Phase 3 (US-089 AC5 completeness test)
 
-### Wave 111b PASS verdict — PR #0 — SHA 09d3d16c9e1a9d6eb3a8b27a0c9e8f9e4d5c6b7a
+### Wave-111 PASS verdict — PR #387 — SHA ba0905fc75ca9788cef538e0eab078040336384a
 
 - **Gate role:** qa
 - **Timestamp:** 2026-06-04T11:26:17Z
-- **Notes:** Wave 111b completeness test (US-089 AC1-AC5) green. 34/34 new tests; full suite 220/220. Lint + type-check clean. PR #0 is the commit-time placeholder; SHA is parent-commit approximation per ADR-018 Wave 111b amendment. DevSecOps backfills real PR # and merge SHA post-merge.
+- **Notes:** Wave 111b completeness test (US-089 AC1-AC5) green. 34/34 new tests; full suite 220/220. Lint + type-check clean. Backfilled by Wave 111c: PR #387 merge SHA (was PR #0 placeholder; Wave 111b heading used non-canonical "Wave 111b" form — normalized to ADR-018 canonical "Wave-111" to keep Wave-111b and Wave-111a in same numeric wave and distinguish by PR#).
 
 ### Deliverable
 
@@ -66,10 +66,10 @@ Both `### Contract testing` and `### Mutation testing` were already present on d
 
 ## PREV — 2026-06-04 — Wave 111a (ADR-018 PASS-verdict format conformance test)
 
-### Wave-111 PASS verdict — PR #0 — SHA cae4a773e9bb0096d78062165f4c5a77959cedb6
+### Wave-111 PASS verdict — PR #386 — SHA a16c924739eddf928f63a257abdd77fbfa6fb1f8
 - **Gate role:** qa
 - **Timestamp:** 2026-06-04T10:57:30Z
-- **Notes:** Wave 111a US-088 AC5 conformance test green. 21/21 new tests; full suite 186/186. Lint + type-check clean. PR # `#0` is a pre-merge placeholder (real PR # back-filled by follow-up commit on main once known). **Chicken-and-egg gap surfaced by self-application — see ADR-018 Wave 111b amendment candidate below.**
+- **Notes:** Wave 111a US-088 AC5 conformance test green. 21/21 new tests; full suite 186/186. Lint + type-check clean. Backfilled by Wave 111c: PR #386 merge SHA (was PR #0 placeholder per ADR-018 Wave 111b amendment; chicken-and-egg gap surfaced by self-application).
 
 **ADR-018 self-application gap (flag for Architect's Wave 111b amendment):** the canonical PASS verdict format requires PR # and full 40-char HEAD SHA. Both are unknown when the verdict block is COMMITTED (PR # doesn't exist until PR opens; HEAD SHA doesn't exist until the verdict-recording commit lands). The pragmatic workaround used here: `#0` placeholder for PR # + last-known-SHA for HEAD. Real PR # and merge SHA are back-filled post-merge via a follow-up commit on main. Architect's ADR-018 should formalize this two-phase pattern (commit-time placeholders + post-merge backfill) OR specify that PASS verdicts live in the PR description, not in `coordination/handoffs/<role>.md` — a real spec choice for Wave 111b.
 

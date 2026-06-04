@@ -55,6 +55,7 @@ You are the **sole agent authorized to merge feature branches to main**. Impleme
 
 1. Receive HANDOFF from QA (PASS evidence) and UX Designer (PASS evidence, if UI was changed).
 2. Review that both gates are confirmed. Do not merge on a FAIL.
+2a. **Run `gh pr checks` and confirm all required CI checks are PASS before proceeding.** Command: `gh pr checks <PR#> --watch`. A check in status `pending`, `in_progress`, or `fail` is a hard blocker — do NOT merge until all required checks are green. If a check is still running, wait for it to complete. If a check is failing, HANDOFF back to the implementer to address the failure before merging. Exception: checks marked `skipped` (e.g. path-filtered jobs that didn't fire for this PR) are not blockers.
 3. **Verify gate-role PASS is recorded in HANDOFF (mandatory pre-merge).** Open `coordination/handoffs/qa.md` and (if the PR touches UI) `coordination/handoffs/ux-designer.md`. Confirm a Wave-N PASS verdict is recorded against the PR's HEAD SHA — see ADR-018 for canonical PASS-verdict block format. The Wave 111b amendment to ADR-018 introduces a commit-time placeholder pattern (`PR #0` + last-known SHA at verdict time); treat a placeholder verdict as merge-eligible if its SHA is a reachable ancestor of the PR HEAD (`git merge-base --is-ancestor <verdict-SHA> <HEAD_SHA>` exits 0). **If the gate role's HANDOFF doc does not record the PASS, HANDOFF back to the gate role asking them to record it before merging — do NOT merge on the implementer's claim of PASS alone.** Rationale: PR #231 was merged before the UX Designer recorded the post-revision PASS verdict because the merge step trusted the implementer's HANDOFF claim. The verdict-in-the-gate-role's-own-HANDOFF requirement makes the gate verifiable rather than asserted. Parallel rule to step 0 in Architect/UX review-gate workflows (pre-verdict SHA sync, #314). **Post-merge backfill (per ADR-018 Wave 111b amendment):** after merging, replace the gate-role HANDOFF doc verdict's `PR #0` placeholder with the real PR number and the placeholder SHA with the merge SHA via a follow-up commit on main (message convention: `chore(handoff): backfill Wave-NNN verdict PR # and merge SHA`).
 4. Verify the PR's diff includes a `HANDOFF.md` update (the implementer is responsible for this). If it's missing, **HANDOFF back to the implementer** to add it — do not merge until the PR includes it. Do NOT open a post-merge doc-only PR to patch HANDOFF.md yourself.
 5. Merge the feature branch to main: `git merge --no-ff feature/<wave>-<short>`.
@@ -460,6 +461,55 @@ Edit `coordination/handoffs/devsecops.md` directly at the end of each turn — t
 ```
 
 Or use a NOW-block convention (`## ⏭️ NOW — <date>` at the top, older entries below) — either format is acceptable. The file IS the durable state; no fragment / fold step.
+
+### `gh pr merge --delete-branch` anomalous-closure playbook
+
+**Symptom:** a PR disappears from the open list but no merge commit appears on main. The branch may also have been deleted, and `git log origin/main` shows no merge commit for the expected wave.
+
+**Detection:**
+
+```bash
+gh pr view <PR#> --json state,mergeCommit,closedAt
+```
+
+If `"mergeCommit": null` and `"state": "closed"`, the PR was closed without being merged. This can happen when:
+- `gh pr merge --delete-branch` is interrupted mid-run (network drop, timeout, runner kill) and the close event fires but the merge commit does not land on main.
+- A repository admin manually closes the PR.
+- A race between two concurrent merge attempts causes one to fail and close the PR without a merge.
+
+**Recovery:**
+
+1. Verify the branch is still reachable (locally or on the remote):
+   ```bash
+   git fetch origin
+   git branch -r | grep <branch-name>
+   ```
+   If the remote branch was deleted, recover from a local worktree or reflog: `git reflog show origin/<branch>`.
+
+2. Reopen the PR:
+   ```bash
+   gh pr reopen <PR#>
+   ```
+   If the branch was deleted, recreate it first from the last known commit:
+   ```bash
+   git push origin <last-known-SHA>:refs/heads/<branch-name>
+   gh pr reopen <PR#>
+   ```
+
+3. Confirm CI is green on the reopened PR (`gh pr checks <PR#> --watch`), then retry the merge:
+   ```bash
+   gh pr merge <PR#> --merge --delete-branch
+   ```
+
+4. Verify the merge commit landed:
+   ```bash
+   gh pr view <PR#> --json mergeCommit -q .mergeCommit.oid
+   git log origin/main -1 --oneline
+   ```
+
+5. If the PR cannot be reopened (e.g. the branch is completely lost), escalate to the PO — do not force-push a re-created branch to main without explicit authorization.
+
+**Branch protection check:** if the merge failed due to a branch protection rule (required status checks, required reviews), resolve the underlying check failure before retrying. `gh pr view <PR#> --json mergeable,mergeStateStatus` shows the merge eligibility reason.
 
 ### Conflict resolution playbook — union-merge files
 
