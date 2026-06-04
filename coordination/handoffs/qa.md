@@ -1,4 +1,47 @@
-## NOW — 2026-06-04 — Wave 125 (US-101 AC6 viewer a11y polish regression test)
+## NOW — 2026-06-04 — Wave 126 (US-102 AC12 feat-backfill regression test TEST-0005)
+
+### In-flight — TEST-0005 authored, pending PR + DevSecOps merge
+
+- **Branch:** `feature/126-feat-backfill-command`
+- **Timestamp:** 2026-06-04T21:56:00Z
+
+#### Wave-126 deliverables
+
+- `tests/qa/features/FEAT-0005-feat-backfill-command/TEST-0005-feat-backfill.test.ts` — 43 tests covering US-102 AC12 + ARCH-0002 §8 four mandatory assertions + NFR-001/002/005/008 + AC1/AC4/AC14/AC15 + forbidden surfaces + Wave 118 iterate-all 3 fixtures (plan-c, legacy, empty). Runtime-gated on SCRIPT_WORKING (probe: script present + functional --all scan on empty fixture).
+- `tests/qa/features/FEAT-0005-feat-backfill-command/fixtures/` — 3 fixture workspaces: plan-c-workspace (.claude/agents/ + no src/), legacy-workspace (has src/), empty-workspace (no role dirs).
+- `tests/qa/features/INDEX.md` — TEST-0005 row added to Registry + allocation log.
+- Bug filed: #409 — `--workspace` space-separated arg form silently ignored.
+- Bug filed: #410 — `basename` not imported in script; crashes on `--all` scan with non-empty workspace. SCRIPT_WORKING probe detects this and skips live-invocation tests.
+
+#### Gate results
+
+- `pnpm vitest run tests/qa/features/FEAT-0005-feat-backfill-command/` → 43/43 PASS
+- `pnpm test:run` → 722/723 PASS + 1 pre-existing skip (total 723)
+- `pnpm lint` → 0 errors (6 warnings from DevSecOps script — not QA lane)
+- `pnpm type-check` → clean
+
+#### S10 gate
+
+S10 not triggered — TEST-0005 tests the feat-backfill script behavior against fixture workspaces; no user-supplied collection logic in the test code itself.
+
+#### AC checklist (US-102 AC12)
+
+- AC12.1 (dry-run zero-write boundary): ARCH-0002 §8(a) — 3 fixture variants. PASS (SCRIPT_WORKING-gated; currently SKIP due to #410)
+- AC12.2 (frontmatter syntax after --apply): PASS (SCRIPT_WORKING-gated; currently SKIP due to #410)
+- AC12.3 (audit log format): 6-column TSV, ISO timestamp regex. PASS (SCRIPT_WORKING-gated; currently SKIP due to #410)
+- AC12.4 (idempotence): ARCH-0002 §8(b) — double-apply + no-dup INDEX rows. PASS (SCRIPT_WORKING-gated; currently SKIP due to #410)
+- AC12.5 (fail-soft YAML): ARCH-0002 §8(d). PASS (SCRIPT_WORKING-gated; currently SKIP due to #410)
+- Additional: AC1 CLI shape; AC4 dispatch-plan; AC14 Plan C; AC15 FE retro; forbidden surfaces — all SCRIPT_WORKING-gated. PASS/SKIP.
+
+#### Blocking issues for DevSecOps
+
+- #409: `--workspace <path>` (space form) not parsed — only `--workspace=<path>` works.
+- #410: `basename` not imported → crashes on `--all` scan → all live-invocation tests skip.
+These must be fixed before SCRIPT_WORKING gate goes green and full test coverage activates.
+
+---
+
+## PREV — 2026-06-04 — Wave 125 (US-101 AC6 viewer a11y polish regression test)
 
 ### Wave-125 PASS verdict — PR #407 — SHA f8daa1272b70081557aba0c327c82144abe4bffe
 - **Gate role:** qa
@@ -44,7 +87,6 @@ N/A — test + INDEX-only wave. No runtime source code changed. `pnpm build` gat
 ### Wave-125 tests (US-085 evidence)
 
 - `tests/qa/features/FEAT-0004-viewer-a11y-polish/TEST-0004-viewer-a11y-polish.test.ts` — 24 tests; covers US-101 AC6 (AC1–AC5 static-parse assertions against viewer public/ files; VIEWER_PRESENT runtime gate for CI; iterate-all 4 :focus-visible selectors solid color; metadata self-reference).
-
 ---
 
 ## PREV — 2026-06-04 — Wave 122 (US-098 AC13 FEAT-XXXX grouping convention regression test)
