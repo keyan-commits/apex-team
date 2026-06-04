@@ -1,5 +1,6 @@
 # Requirements Index
 
+_Auto-maintained by Business Analyst. Last updated: 2026-06-04 (Wave 108 triad — US-087 added (subagent body rewrite traceability wrapper))._
 _Auto-maintained by Business Analyst. Last updated: 2026-06-04 (Wave 107 — US-086 added (workspace-conventions traceability wrapper); monolith-era backlog re-triaged: US-079/080/081/082/083/084 closed (monolith-coupled), US-065/066 closed (monolith-coupled); 30+ GitHub issues closed at Plan C cutover; ~25 issues retained as still applicable under subagent runtime)._
 _Auto-maintained by Business Analyst. Last updated: 2026-06-04 (Wave 106 hard cutover — user committed to full Plan C; US-085 superseded by subagent extraction (discipline absorbed into `.claude/agents/qa.md`); OQ-085-001/002 moot; PR #367 closed; retirement PR queued post-#373 merge)._
 
@@ -51,6 +52,7 @@ _Auto-maintained by Business Analyst. Last updated: 2026-06-04 (Wave 106 hard cu
 | [user-stories/US-084-apex-team-self-instability-hardening.md](user-stories/US-084-apex-team-self-instability-hardening.md) | US-084: apex-team self-instability hardening — **CLOSED 2026-06-04 (monolith-coupled)**: AC1 PR #367 closed unmerged at cutover; AC2–AC5 target `scripts/dev-supervisor.mjs` which retired with the monolith. | 2026-06-04 |
 | [user-stories/US-085-qa-disk-artifacts.md](user-stories/US-085-qa-disk-artifacts.md) | US-085: QA tests as files on disk — **superseded** 2026-06-04 by Plan C subagent extraction (PR #373). Discipline absorbed into `.claude/agents/qa.md`; monolith `src/lib/skills/qa.ts` edit (AC4) dropped — file retires with monolith. OQ-085-001 + OQ-085-002 moot under subagent runtime. AC5 smoke pending next subagent-driven QA wave. | 2026-06-04 |
 | [user-stories/US-086-workspace-conventions.md](user-stories/US-086-workspace-conventions.md) | US-086: Workspace directory contract — single authoritative doc (`architecture/workspace-conventions.md`) specifying canonical homes for all role-lane artifacts; linked from CLAUDE.md; resolves OQ-085-001 + OQ-085-002; traceability wrapper for Wave 107 Deliverable 1 (Architect authors the doc, BA owns this story); status: **accepted** | 2026-06-04 |
+| [user-stories/US-087-subagent-body-rewrite.md](user-stories/US-087-subagent-body-rewrite.md) | US-087: Subagent prompt bodies reference only Plan C runtime — all 8 `.claude/agents/*.md` body files purged of legacy monolith patterns; ADR-NNN (Wave 108) codifies forbidden-pattern enumeration + allowlist exceptions + adapter-header decision; QA regression test at `tests/qa/wave-108/no-legacy-refs.test.ts`; cross-linked from `architecture/workspace-conventions.md`; status: **accepted** | 2026-06-04 |
 
 ## Closed user stories (monolith-coupled, Plan C cutover 2026-06-04)
 

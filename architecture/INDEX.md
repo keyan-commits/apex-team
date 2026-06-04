@@ -1,6 +1,6 @@
 # Architecture Index
 
-Last updated: 2026-06-04 (Wave 107 — `workspace-conventions.md` ratified as the directory contract for the Plan C subagent runtime; resolves OQ-085-001 + OQ-085-002)
+Last updated: 2026-06-04 (Wave 108 — ADR-017 lands the subagent body rewrite rule pack; ADR-014 superseded under the subagent runtime)
 
 ## Decision Records
 
@@ -17,8 +17,10 @@ Last updated: 2026-06-04 (Wave 107 — `workspace-conventions.md` ratified as th
 | [ADR-010](decisions/ADR-010-build-dev-mode-prerender-bypass.md) | `pnpm build` prerender fix via dev-mode bundle (`next.config.ts`) | Accepted |
 | [ADR-011](decisions/ADR-011-user-directive-supremacy.md) | User-Directive Supremacy as a Foundational Agentic Invariant | Accepted |
 | [ADR-013](decisions/ADR-013-merge-train-conflict-resilience.md) | Merge-Train Conflict Resilience (`merge=union` + mergeable-state rescue, recovered stub — Wave 92) | Accepted |
-| [ADR-014](decisions/ADR-014-handoff-fragment-pattern.md) | Towncrier-style HANDOFF Fragment Pattern (composes with ADR-013) | Accepted |
+| [ADR-014](decisions/ADR-014-handoff-fragment-pattern.md) | Towncrier-style HANDOFF Fragment Pattern (composes with ADR-013) | Superseded by ADR-017 (under subagent runtime) |
 | [ADR-015](decisions/ADR-015-no-redis-mq.md) | No Redis / MQ — in-process SQLite + single-process suffices (+ tripwire) | Accepted |
+| [ADR-016](decisions/ADR-016-mcp-client-rebind-strategy.md) | MCP client rebind strategy | Accepted |
+| [ADR-017](decisions/ADR-017-subagent-body-rewrite-rules.md) | Subagent prompt body rewrite rules (Plan C runtime) — retires legacy monolith imperatives from `.claude/agents/*.md` bodies | Accepted |
 
 ## Flat docs
 

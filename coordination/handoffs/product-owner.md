@@ -1,6 +1,36 @@
 # product-owner — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 107 (first wave under subagent runtime)
+## ⏭️ NOW — 2026-06-04 — Wave 108 (subagent body rewrites — COMPLETE, ready to merge)
+
+**Wave goal:** Eliminate ~105 legacy monolith references from the 8 `.claude/agents/*.md` body prose. Prevent the PR #376 class of slip (DevSecOps body instructing `_handoff-pending/<wave>-devsecops.md` writes).
+
+**Charter decisions (PO):**
+- Rewrite-rule home → new ADR by Architect (ADR-017) + cross-link amendment in `architecture/workspace-conventions.md`.
+- Implementer → Architect (single hand, 8 files, coding-standards owner). Rejected option (c) self-edit because each subagent reading its legacy prompt during edit reproduces PR #376's slip pattern.
+- QA regression test → IN Wave 108 as `tests/qa/wave-108/subagent-body-cleanliness.test.ts`. First concrete tests-as-files artifact under US-085 AC5 discipline.
+- Plan C runtime adapter header (lines 6-19) → **REMOVED** per Architect's ADR-017 ratification (bodies are clean, adapter is redundant).
+
+**Returned (all 4 lanes):**
+- ✅ Architect — `architecture/decisions/ADR-017-subagent-body-rewrite-rules.md` (15 rewrite rules, inline-quote rule, adapter-header removal rationale, allowlist). Executed 8 file edits: 95 legacy refs → 0 (modulo 8 allowlisted "You do NOT have `mcp__apex-team__*` tools" sentences). Cross-doc updates: `architecture/INDEX.md` (ADR-016 + ADR-017 added; ADR-014 status flipped to Superseded), `architecture/workspace-conventions.md` (amendment), `architecture/decisions/ADR-014-handoff-fragment-pattern.md` (status header amended).
+- ✅ UX Designer — "No UI impact — skip UX gate" verdict in `coordination/handoffs/ux-designer.md`.
+- ✅ BA — US-087 filed (`requirements/user-stories/US-087-subagent-body-rewrite.md`) with 5 ACs; `requirements/INDEX.md` updated.
+- ✅ QA — `tests/qa/wave-108/subagent-body-cleanliness.test.ts` written + run: **153/153 PASS in 125ms**. Verdict: PASS. **First US-085 AC5 smoke proof artifact on disk.**
+
+**Wave 108 PR bundle:**
+- New: ADR-017, US-087, `tests/qa/wave-108/subagent-body-cleanliness.test.ts`, `coordination/handoffs/qa.md`.
+- Modified: 8 `.claude/agents/*.md` files, `architecture/INDEX.md`, `architecture/workspace-conventions.md`, `architecture/decisions/ADR-014-handoff-fragment-pattern.md`, `requirements/INDEX.md`, `coordination/handoffs/{architect,business-analyst,ux-designer,product-owner}.md`.
+
+**Next PO turn (post-merge):**
+- Wave 109 candidates per Architect + QA HANDOFFs:
+  - **DevSecOps CI hook** to run `tests/qa/wave-108/subagent-body-cleanliness.test.ts` on every PR touching `.claude/agents/*.md` (Architect flagged this as the Wave 109 sweetspot; QA's test is the regression guard, DevSecOps wires it into CI).
+  - Viewer-repo coordination (`apex-team-viewer` sibling repo conventions).
+  - BA's retained-annotated backlog menu.
+
+**Parked:** viewer-repo subagent bodies (separate codebase, out of scope).
+
+---
+
+## ⏭️ PREV — 2026-06-04 — Wave 107 (first wave under subagent runtime)
 
 **Wave goal:** Three deliverables on the new Plan C runtime (main `ebc83c5`):
 1. Architect ratifies `architecture/workspace-conventions.md` — directory contract single source of truth, resolves OQ-085-001 + OQ-085-002.

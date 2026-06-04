@@ -1,6 +1,35 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 107 — first wave under subagent runtime: workspace conventions + backlog re-triage + #375 fix)
+## ⏭️ NOW — 2026-06-04 (Wave 108 — subagent body rewrites: ADR-017 + 95→0 legacy refs + first US-085 AC5 smoke proof)
+
+**claude-code direct on `feature/wave-108-subagent-body-rewrites` (off origin/main `3df219d`).**
+
+**Wave 108 — second wave under the Plan C subagent runtime.** PO charter → 4-lane parallel dispatch (Architect, UX, BA, QA-deferred) → all deliverables landed → QA verdict PASS. Bundles into a single PR.
+
+**Problem this wave solved:** Each `.claude/agents/*.md` body contained 7–23 legacy monolith references (total ~105). The Plan C runtime adapter header at the top translated them as "historical context only" — but bodies still actively guided subagents into legacy patterns. Concrete failure prevented: PR #376's `_handoff-pending/107-devsecops.md` slip, where DevSecOps's body said `_handoff-pending/<wave>-devsecops.md` is the HANDOFF home + `pnpm fold-handoff` is the close step (both deleted in retirement).
+
+**Deliverables:**
+
+1. ✅ **Architect ratified `architecture/decisions/ADR-017-subagent-body-rewrite-rules.md`.** 15 rewrite rules keyed by legacy pattern (Pattern → Action → Rationale). Inline-quote rule for protocols whose source files (`src/lib/protocols.ts`, `src/lib/skills/*`) are gone. **Adapter-header decision: REMOVED post-rewrite** (rationale: bodies are clean, adapter is redundant). Allowlist: exactly 8 lines total — one `You do NOT have \`mcp__apex-team__*\` tools` sentence per subagent file. Cross-linked from `architecture/workspace-conventions.md` amendment + `architecture/INDEX.md` (ADR-016 + ADR-017 rows added; ADR-014 status flipped to "Superseded by ADR-017 under the subagent runtime").
+
+2. ✅ **8 `.claude/agents/*.md` subagent body rewrites executed.** Per-file legacy ref count: **95 → 0** (modulo the 8 allowlisted lines). architect.md, backend-developer.md, business-analyst.md, devsecops.md, product-owner.md, qa.md, ui-developer.md, ux-designer.md. All 4 ADR-017 grep tests pass.
+
+3. ✅ **US-087 filed by BA** (`requirements/user-stories/US-087-subagent-body-rewrite.md`) — 5 ACs traceability wrapper. `requirements/INDEX.md` updated.
+
+4. ✅ **QA regression test landed at `tests/qa/wave-108/subagent-body-cleanliness.test.ts`.** 153 tests, 153 passed in 125ms. Translates ADR-017's 4 grep tests + allowlist into Vitest assertions parametrized over 8 files. **First concrete US-085 AC5 smoke proof artifact** — tests-as-files-on-disk discipline proven end-to-end (test code committed, runnable via `pnpm vitest run tests/qa/wave-108/`, no chat-bubble copy-paste).
+
+5. ✅ **UX Designer verdict: no UI impact, skip UX gate.**
+
+**Plan C runtime dogfooding (Wave 108):** Outer Claude Code invoked PO subagent → PO returned 4-lane advisory charter → outer fired Architect + UX + BA in parallel (3 concurrent Agent calls) → after Architect's ADR landed, outer fired QA → QA test green → outer bundles PR. All coordination via `coordination/handoffs/<role>.md`. Zero MCP, zero SQLite, zero shared process.
+
+**Surfaced gaps / Wave 109 candidates:**
+- **DevSecOps CI hook** to run the wave-108 regression test on every PR touching `.claude/agents/*.md` (Architect flagged this as the Wave 109 sweetspot; QA's test is the regression guard, DevSecOps wires it into CI).
+- Viewer-repo coordination (`apex-team-viewer` sibling repo needs its own conventions / cross-link).
+- BA's retained-annotated backlog menu.
+
+---
+
+## ⏭️ PREV — 2026-06-04 (Wave 107 — first wave under subagent runtime: workspace conventions + backlog re-triage + #375 fix)
 
 **claude-code direct on `feature/wave-107-conventions-and-backlog` (off origin/main `749843d`).**
 

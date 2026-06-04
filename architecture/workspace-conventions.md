@@ -127,4 +127,5 @@ Renames or deletions of an entire convention class (e.g. removing `coordination/
 - `architecture/INDEX.md` — lists this doc in its flat-docs section.
 - `requirements/open-questions.md` — OQ-085-001 + OQ-085-002 resolution lines point here.
 - `requirements/user-stories/US-085-qa-disk-artifacts.md` — superseded marker references this doc as the ratified home of the QA path convention.
-- `architecture/decisions/ADR-014-handoff-fragment-pattern.md` — defines the `_handoff-pending/<wave>-<role>.md` fragment mechanism cited above.
+- `architecture/decisions/ADR-014-handoff-fragment-pattern.md` — historical: defined the `_handoff-pending/<wave>-<role>.md` fragment mechanism. **Superseded under the subagent runtime by ADR-017** — each subagent now edits `coordination/handoffs/<role-id>.md` directly.
+- `architecture/decisions/ADR-017-subagent-body-rewrite-rules.md` — Wave 108 amendment: the rewrite-rule pack governing legacy-pattern removal from `.claude/agents/*.md` bodies. Companion to this directory contract.
