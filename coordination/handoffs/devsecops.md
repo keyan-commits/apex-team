@@ -8,6 +8,16 @@
 - **Timestamp:** 2026-06-04T12:30:00Z
 - **Notes:** Wave 112 deliverables A/B/C complete (PR open). PR #0 is commit-time placeholder per ADR-018 Wave 111b amendment; SHA filled at commit time. DevSecOps backfills real PR # and merge SHA post-merge with `chore(handoff): backfill Wave-112 verdict PR # and merge SHA`.
 
+### Wave 112 — actionlint self-application catches (PR #392 own lint job)
+
+actionlint caught 4 real findings on its own PR — perfect self-application:
+- `pass-verdict-format-check.yml:63` — `CANDIDATE_PATTERN` unused (SC2034). Removed; canonical regex preserved as comment.
+- `ux-gate-check.yml:46-47` — `PR_NUMBER`/`HEAD_SHA` self-assignment (SC2269). Removed; env-var passthrough already in scope.
+- `ux-gate-check.yml:76,96` — `PLACEHOLDER_PASS` set-but-never-read (SC2034). Removed; `FOUND_PASS=1` path covers both cases.
+- `pr-hygiene.yml:16` — heredoc scanner flagged the template syntax inside a code comment. Rewrote comment to non-template reference.
+
+Third time we've collectively re-introduced workflow-shell anti-patterns (PR #375 / PR #388 / this PR). actionlint now closes the gap that Wave 111c surfaced.
+
 ### Wave 112 — DevSecOps triple-track (#389 + #390 + shell-injection lint)
 
 **Issues addressed:**

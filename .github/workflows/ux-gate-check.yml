@@ -43,8 +43,6 @@ jobs:
           set -euo pipefail
 
           HANDOFF_FILE="coordination/handoffs/ux-designer.md"
-          PR_NUMBER="${PR_NUMBER}"
-          HEAD_SHA="${HEAD_SHA}"
 
           echo "PR #${PR_NUMBER}  HEAD SHA: ${HEAD_SHA}"
           echo ""
@@ -73,7 +71,6 @@ jobs:
           FOUND_PASS=0
           FOUND_REVISE_OR_FAIL=0
           STALE_PASS=0
-          PLACEHOLDER_PASS=0
 
           while IFS= read -r line; do
             # Match: ### Wave-NNN (PASS|REVISE|FAIL) verdict — PR #N — SHA <40hex>
@@ -93,7 +90,6 @@ jobs:
                   elif git merge-base --is-ancestor "${VERDICT_SHA}" "${HEAD_SHA}" 2>/dev/null; then
                     # Placeholder / ancestor SHA — valid per ADR-018 Wave 111b amendment
                     FOUND_PASS=1
-                    PLACEHOLDER_PASS=1
                     echo "PASS (placeholder): UX PASS verdict SHA ${VERDICT_SHA} is a reachable ancestor of HEAD ${HEAD_SHA}."
                     echo "       PR #${VERDICT_PR} placeholder — valid pre-merge per ADR-018 Wave 111b amendment."
                   else
