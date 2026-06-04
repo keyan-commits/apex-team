@@ -1,12 +1,16 @@
-# DevSecOps — HANDOFF (Wave 112)
+# DevSecOps — HANDOFF (Wave 113)
 
-## ⏭️ NOW — 2026-06-04 (Wave 112)
+## ⏭️ NOW — 2026-06-04 (Wave 113)
 
-### Wave-112 PASS verdict — PR #0 — SHA 8ba1bbbb0b0aa12ed707d51957870e42ff39542a
+### Wave-113 PASS verdict — PR #0 — SHA 75266d3898fcd9cd0d3e3e48d9fb52cef4fbbf7d
 
 - **Gate role:** devsecops
-- **Timestamp:** 2026-06-04T12:30:00Z
-- **Notes:** Wave 112 deliverables A/B/C complete (PR open). PR #0 is commit-time placeholder per ADR-018 Wave 111b amendment; SHA filled at commit time. DevSecOps backfills real PR # and merge SHA post-merge with `chore(handoff): backfill Wave-112 verdict PR # and merge SHA`.
+- **Timestamp:** 2026-06-04T13:35:00Z
+- **Notes:** Wave 113 US-092 AC1-AC3 complete. `pass-verdict-format-check.yml` extended with `push: branches: [main]` + `schedule: cron 0 6 * * *` triggers; jobs split into `verdict-format-check` (PR-only) and `placeholder-ttl-check` (all triggers). Soft-fail semantics preserved (exit 0 on warning). Concurrency group added. 308/308 PASS. PR #0 is commit-time placeholder per ADR-018; backfill post-merge.
+
+---
+
+## PREV — 2026-06-04 (Wave 112)
 
 ### Wave 112 — actionlint self-application catches (PR #392 own lint job)
 

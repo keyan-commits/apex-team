@@ -1,17 +1,28 @@
 name: Pass Verdict Format Check
 
-# Verifies ADR-018 canonical PASS-verdict format on PRs.
+# Verifies ADR-018 canonical PASS-verdict format.
 #
-# Two checks per run:
-#   1. Format check — every Wave-111+ verdict heading in PR-touched
-#      coordination/handoffs/*.md files must match the ADR-018 canonical regex.
-#      Line-by-line output on failure.
+# Trigger matrix:
+#   pull_request  (paths: coordination/handoffs/**)
+#     → format-check job (hard-fail on format violations)
+#     → ttl-check job    (soft-warn on overdue PR #0 placeholders)
+#   push to main
+#     → ttl-check job only (no PR context; format-check is skipped)
+#   schedule (nightly 06:00 UTC)
+#     → ttl-check job only (ambient sweep; format-check is skipped)
 #
-#   2. Placeholder TTL check — flag `PR #0` placeholder verdicts whose
+# Two check jobs:
+#   1. verdict-format-check — every Wave-111+ verdict heading in any
+#      coordination/handoffs/*.md file must match the ADR-018 canonical
+#      regex. Line-by-line output on failure. PR context required — runs
+#      on pull_request events only.
+#
+#   2. placeholder-ttl-check — flag `PR #0` placeholder verdicts whose
 #      wrapping PR merged >1h ago. Soft-fail (warning, non-blocking) —
-#      placeholders are legitimate pre-merge; this catches missed backfills.
+#      placeholders are legitimate pre-merge; this catches missed
+#      backfills. Runs on ALL triggers (PR + push + schedule).
 #
-# Allowlists:
+# Allowlists (format-check only):
 #   - PRs whose title/body contain [skip-verdict-check] (emergency override)
 #
 # Spec: architecture/decisions/ADR-018-pass-verdict-format.md
@@ -21,15 +32,30 @@ on:
     branches: ["**"]
     paths:
       - "coordination/handoffs/**"
+  push:
+    branches: ["main"]
+  schedule:
+    # Nightly at 06:00 UTC — ambient sweep to catch missed backfills.
+    - cron: "0 6 * * *"
+
+# Prevent cron and push from racing on the TTL check.
+# cancel-in-progress: false keeps the older run alive (it may already be
+# reporting; cancelling would hide the warning).
+concurrency:
+  group: "ttl-check"
+  cancel-in-progress: false
 
 permissions:
   contents: read
   pull-requests: read
 
 jobs:
-  pass-verdict-format-check:
-    name: "ADR-018 — verdict format + backfill TTL check"
+  verdict-format-check:
+    name: "ADR-018 — verdict format check (PR only)"
     runs-on: ubuntu-latest
+    # Format check requires PR context (title/body for skip-override, PR number
+    # for the canonical heading match). Do not run on push or schedule.
+    if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -113,6 +139,17 @@ jobs:
 
           echo "OK: All Wave-${FORMAT_REQUIRED_FROM_WAVE}+ verdict headings match ADR-018 canonical format."
 
+  placeholder-ttl-check:
+    name: "ADR-018 — placeholder TTL check (all triggers)"
+    runs-on: ubuntu-latest
+    # Runs on pull_request, push to main, and schedule. No PR context needed.
+    # Soft-fail semantics: always exits 0 even when overdue placeholders found.
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: "Install gh CLI (already present on ubuntu-latest; verify)"
+        run: gh --version
+
       - name: "ADR-018 placeholder TTL check (PR #0 on merged PRs > 1h)"
         env:
           GH_TOKEN: ${{ github.token }}
@@ -127,6 +164,10 @@ jobs:
           #
           # Logic lives in scripts/check-placeholder-ttl.py (extracted Wave 112,
           # #390) — separately testable and free of YAML heredoc escape hazards.
+          #
+          # On push/schedule events there is no PR context — gh pr list still
+          # works because it queries the repo (not the current event) and the
+          # script reads coordination/handoffs/*.md from the checked-out tree.
 
           export NOW_EPOCH
           NOW_EPOCH=$(date +%s)
@@ -142,7 +183,7 @@ jobs:
               | python3 scripts/check-placeholder-ttl.py; then
             echo ""
             echo "WARNING: One or more PR #0 verdict placeholders are overdue for backfill."
-            echo "This is a soft warning — the PR is NOT blocked. DevSecOps should backfill."
+            echo "This is a soft warning — the check exits 0. DevSecOps should backfill."
             echo "See ADR-018 Wave 111b amendment: architecture/decisions/ADR-018-pass-verdict-format.md"
-            # Soft fail: exit 0 (warning only, not a hard block)
+            # Soft fail: exit 0 (warning only, not a hard block) — AC3
           fi
