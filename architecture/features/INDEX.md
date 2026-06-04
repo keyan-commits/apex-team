@@ -1,7 +1,7 @@
 # Architect Features Index
 
 _Owned by Architect. Updated at ARCH ticket creation, status change, or retirement._
-_Last updated: 2026-06-04 (Wave 125 — ARCH-0001 allocated for FEAT-0004 viewer a11y polish)._
+_Last updated: 2026-06-04 (Wave 126 — ARCH-0002 allocated for FEAT-0005 feat-backfill command — NFR posture + orchestration protocol)._
 
 ---
 
@@ -26,6 +26,7 @@ ADR allocations are tracked separately in `architecture/INDEX.md`; this index is
 | Ticket | Parent FEAT | Parent US | Status | Description |
 |---|---|---|---|---|
 | ARCH-0001 | FEAT-0004 | US-101 | accepted | Viewer a11y polish — WCAG 2.1 AA ratification + `:focus-visible` pattern ratification + code-review pre-commitment for Lane 2 viewer PR. |
+| ARCH-0002 | FEAT-0005 | US-102 | accepted | FEAT backfill command — NFR posture (idempotence, dry-run-first, audit-log) + orchestration protocol (script does FS IO, subagents return proposal JSON, dispatch-plan markdown over CLI invocation) + cross-workspace portability + forbidden-surface list + conflict-resolution rule. |
 
 ---
 
@@ -36,6 +37,7 @@ Architect updates this table when a new `ARCH-NNNN` is assigned. Numbers are all
 | ARCH | Allocated | Allocated by | Context |
 |---|---|---|---|
 | ARCH-0001 | 2026-06-04 | Architect (Wave 125) | First Architect feature ticket. Light NFR ratification for FEAT-0004 viewer a11y polish (WCAG 2.1 AA binding + `:focus-visible` pattern). No novel architecture; pre-commits to gating UI Dev's Lane 2 viewer PR. |
+| ARCH-0002 | 2026-06-04 | Architect (Wave 126) | Second Architect feature ticket. NFR posture + orchestration protocol for FEAT-0005 retroactive backfill command. Eight NFRs ratified (idempotence, dry-run-first, subagent-orchestration boundary, cross-workspace portability, audit log, forbidden surfaces, conflict resolution, test posture). Critical design call codified in §3: dispatch-plan markdown over CLI invocation. |
 
 ---
 

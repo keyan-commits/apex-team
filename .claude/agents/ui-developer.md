@@ -53,6 +53,8 @@ Every UI Developer source file that scopes to a single BA-defined feature MUST f
 
 5. **Cross-workspace applicability.** This convention applies in ANY workspace, not just apex-team. When invoked on a downstream project (LFM, bidshop, etc.), follow the same convention there — create the per-feature `src/features/FEAT-NNNN-<slug>/` directory in that project's source layout, link the `FE` deliverable to the BA's `FEAT-NNNN` allocation in that project, and maintain that project's `src/features/INDEX.md` (or project-equivalent — adapt the path if the project uses a non-`src/` source root).
 
+**Plan C workspaces (no `src/`):** When the workspace has no `src/` directory (e.g. apex-team under Plan C), use `frontend/features/FEAT-NNNN-<slug>/FE-NNNN-<slug>.md` (resp. `backend/features/FEAT-NNNN-<slug>/BE-NNNN-<slug>.md`) — a summary doc linking to the sibling-repo PR and commit. Author this artifact on every wave where you edit code in a sibling repo.
+
 Cross-reference: `architecture/workspace-conventions.md` §"FEAT-XXXX feature grouping (Wave 122)" is the durable spec; US-098 is the driving story; FEAT-0001 is the meta-feature dogfooding the convention.
 
 ### Your boundaries

@@ -1,6 +1,7 @@
 # Features Index
 
 _Owned by Business Analyst. Updated at FEAT creation, status change, or retirement._
+_Last updated: 2026-06-04 (Wave 126 — FEAT-0005 added (retroactive FEAT backfill command: CLI script to retroactively group legacy workspace artifacts under FEAT-XXXX identifiers via frontmatter injection; cross-workspace capable; parent of US-102))._
 _Last updated: 2026-06-04 (Wave 125 — FEAT-0004 added (viewer a11y polish: bundles 4 WCAG gaps from Wave 123 UX gate warns — issues #5/#7/#8/#9); FEAT-0002 + FEAT-0003 rows backfilled from existing files)._
 
 ---
@@ -24,6 +25,7 @@ Full context (wave, US-NNN refs, open questions) lives in the FEAT-XXXX file its
 | FEAT-0002 | viewer-feat-grouped-rendering | active | 0 | 0 | 1 | 0 | 0 | 0 |
 | FEAT-0003 | devsecops-reusable-pipelines | active | 0 | 0 | 1 | 0 | 0 | 0 |
 | FEAT-0004 | viewer-a11y-polish | active | 1 | 1 | 0 | 0 | 0 | 0 |
+| FEAT-0005 | feat-backfill-command | active | 0 | 0 | 0 | 0 | 0 | 0 |
 
 ---
 
@@ -39,6 +41,7 @@ retains its number (never reused) but changes status to `deferred`.
 | FEAT-0002 | 2026-06-04 | BA (Wave 123) | Viewer FEAT-grouped rendering — per-role Output tabs render FEAT cards instead of flat file list. |
 | FEAT-0003 | 2026-06-04 | BA (Wave 124) | DevSecOps reusable pipelines + CLI runner — `ops/pipelines/` scaffolding + `pnpm run ops:run` + `pnpm run qa:feat`. |
 | FEAT-0004 | 2026-06-04 | BA (Wave 125) | Wave 125 — bundles 4 viewer a11y issues (#5/#7/#8/#9) filed as warns during Wave 123 UX gate. |
+| FEAT-0005 | 2026-06-04 | BA (Wave 126) | Wave 126 — retroactive backfill command applying Wave 122 FEAT-XXXX convention to legacy assets. CLI script + `pnpm run feat:backfill`; cross-workspace capable; dry-run default + `--apply` opt-in; frontmatter injection only (no file moves). |
 
 ---
 

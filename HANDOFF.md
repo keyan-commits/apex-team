@@ -1,8 +1,25 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04
+## ⏭️ NOW — 2026-06-04 (Wave 126 — Retroactive FEAT-XXXX backfill command + Plan C FE/BE canonical-path correction)
 
-Next wave TBD. Backlog open.
+**Branch `feature/126-feat-backfill-command` (off main `5c7a23d`).** Wave 125 (viewer a11y) merged; Wave 126 is a meta-wave that builds `pnpm run feat:backfill` — a CLI that orchestrates each role subagent to investigate its own owned directory, propose FEAT-XXXX clusters for the 54+ ungrouped legacy assets per role, emit a proposal report, then on `--apply` write `parent_feat:` frontmatter so the viewer renders legacy docs under FEAT cards.
+
+**Triggered by user (verbatim):** *"add a command to apex-team so that all the roles will investigate existing assets (eg: requirements, tests, scripts, etc) and group them accordingly to apex-team-viewer in such a way that FEAT-0001 was executed. I should be able to select a feature or all features."*
+
+**Plan C FE/BE canonical-path gap (surfaced this wave):** User observed FE Dev tab empty in the viewer. Root cause: Wave 122 spec'd FE-XXXX at `src/features/FEAT-NNNN-<slug>/FE-NNNN-<slug>.tsx` — but Plan C apex-team has no `src/`. UI Dev edits sibling viewer repo (`../apex-team-viewer/public/`) without leaving an apex-team-side artifact. Fold-in: US-102 amended to add canonical Plan C paths (`frontend/features/FEAT-NNNN-<slug>/FE-NNNN-<slug>.md`, `backend/features/FEAT-NNNN-<slug>/BE-NNNN-<slug>.md` — summary docs linking to sibling-repo PRs) + retroactive backfill of prior FE work (Waves 119/121/123/125).
+
+**Lane 2 status (this commit):** DevSecOps's deliverables landed (`scripts/feat-backfill.mjs`, `frontend/features/` retro FE summaries, `ops/features/OPS-0004`, `ops/README.md`, `package.json`, `.gitignore` for runtime artifacts). QA's TEST-0005 fixture gap (missing `empty-workspace/` empty dir) fixed with `.gitkeep`. Full suite: **722/722 PASS + 1 skipped** with live `SCRIPT_WORKING=true` invocations. Bugs #409 + #410 the QA agent flagged were already fixed in the DevSecOps working tree before commit (basename import, --workspace space form). UI Dev + BE Dev body amendments for AC16 Plan-C clauses landed in earlier commits.
+
+**Lane 1 (triad, earlier commits):**
+- BA: FEAT-0005 + US-102 (13 ACs + 3 to be amended for Plan-C correction).
+- Architect: ARCH-0002 (8 NFRs ratified — idempotence, dry-run-first, audit log, cross-workspace, forbidden patterns, conflict resolution, orchestration boundary, test posture).
+- UX: no-impact verdict pending re-emission (lost in branch switch).
+
+**Lane 2 (next):** DevSecOps (`scripts/feat-backfill.mjs` + `package.json` + `ops/README.md`) + QA (TEST-0005). BA pass-2 (amend US-102 for FE/BE canonical-path).
+
+**Lane 3 (verify + merge):** Architect code-review PASS verdict landed for PR #411 SHA `feef082` (commit `542553f`). Two non-blocking findings — OPS-0001 → OPS-0004 backfill in FEAT-0005 parent doc (this commit fixes it) + script dead-code `_insertIndexRow` deferred to a future `--ba-approved` wave. Open PRs to merge: #411 (apex-team Wave 126), #412 (apex-team Wave 127 HANDOFF), viewer #12 (Wave 127 FE→UI rename).
+
+## PREV — 2026-06-04 (Wave 125 — viewer a11y polish, merged via PRs #407 + #10 + backfill #408)
 
 ---
 

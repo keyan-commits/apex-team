@@ -15,6 +15,7 @@ artifacts scoped to specific features.
 | OPS-0001 | FEAT-0003   | US-100    | in-flight | `ops/pipelines/dev.sh` — dev environment template     |
 | OPS-0002 | FEAT-0003   | US-100    | in-flight | `ops/pipelines/staging.sh` — staging environment template |
 | OPS-0003 | FEAT-0003   | US-100    | in-flight | `ops/pipelines/prod.sh` — production environment template |
+| OPS-0004 | FEAT-0005   | US-102    | in-flight | `scripts/feat-backfill.mjs` — retroactive FEAT backfill CLI script + `pnpm run feat:backfill` wrapper |
 
 ## Allocation rules
 

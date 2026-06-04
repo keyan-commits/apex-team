@@ -19,6 +19,13 @@
 - UI-touching change → UX Designer gates; server-side path extension → Architect may review
 - No apex-team source code changed; this apex-team PR is doc-only HANDOFF refresh
 
+## ⏭️ PREV — 2026-06-04 — Wave 126: US-102 AC16 — Plan C clause in Wave 122 standard (merged in PR #411)
+
+### Wave-126 PASS verdict — PR #411 — SHA 60a2c750eeef9faa10a5c19ac07c060774efb6df
+- **Gate role:** ui-developer (self-attestation — single-file body amendment, no runtime code)
+- **Timestamp:** 2026-06-04T21:41:00Z
+- **Notes:** AC16 of US-102 implemented. Inserted Plan C clause as a new paragraph within the existing `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` section of `.claude/agents/ui-developer.md`. Anchor heading unchanged (byte-identical). Verification: cleanliness 153/153, FEAT-0001 38/38.
+
 ## ⏭️ PREV — 2026-06-04 — Wave 125: viewer a11y polish (US-101 AC1-AC5)
 
 ### Wave-125 PASS verdict — PR #407 — SHA 16f3fa0067537aeed4c21622df03e2c7296fe93b
