@@ -1,18 +1,32 @@
 # ux-designer — HANDOFF
 
-## NOW — 2026-06-04 — Wave 110 (triad participation)
+## NOW — 2026-06-04 — Wave 111a (triad participation)
 
-**Task:** UX-impact verdict for Wave 110 — subagent body completeness test, devsecops merge-protocol prose, LESSONS.md prose, CI workflow evaluation, ops/README.md rewrite.
+**Task:** UX-impact verdict for Wave 111a — ADR-018 (PASS-verdict format spec for coordination/handoffs/<role>.md), US-088 wrapper, QA conformance test.
 
 **Verdict: No UI impact — skip UX gate.**
 
-Reasoning: Wave 110 touches `.claude/agents/devsecops.md`, `LESSONS.md`, `tests/qa/wave-110/subagent-body-completeness.test.ts`, `.github/workflows/ci.yml`, and `ops/README.md`. None of these paths match the UX gate detection rule (`src/app/**/page.tsx`, `src/app/**/layout.tsx`, `src/components/**/*.tsx`, `src/app/globals.css`). The apex-team monolith is decommissioned (Plan C, Wave 106). apex-team-viewer is a separate repo not touched by this wave. Zero rendered UI surface across all 4 lanes — gate does not fire.
+Reasoning: Wave 111a touches `architecture/decisions/ADR-018-*.md`, `requirements/user-stories/US-088-*.md`, and `tests/qa/wave-111/` conformance test(s). None of these paths match the UX gate detection rule (`src/app/**/page.tsx`, `src/app/**/layout.tsx`, `src/components/**/*.tsx`, `src/app/globals.css`). These are internal protocol/doc/test artifacts with no rendered pixel surface. apex-team-viewer is a separate repo untouched by this wave. Zero UX surface area — gate does not fire.
+
+**Parked for Wave 111b:** issue #199 design-skill ecosystem (Impeccable, figma-implement-design, playwright-skill, theme-factory, accesslint, Excalidraw). Will require UX gate when dispatched.
 
 **Status:** Complete — verdict delivered.
 
 ---
 
-## PREV — 2026-06-04 — Wave 109 (triad participation)
+## PREV — 2026-06-04 — Wave 110 (triad participation)
+
+**Task:** UX-impact verdict for Wave 110 — subagent body completeness test, devsecops merge-protocol prose, LESSONS.md prose, CI workflow evaluation, ops/README.md rewrite.
+
+**Verdict: No UI impact — skip UX gate.**
+
+Reasoning: Wave 110 touches `.claude/agents/devsecops.md`, `LESSONS.md`, `tests/qa/wave-110/subagent-body-completeness.test.ts`, `.github/workflows/ci.yml`, and `ops/README.md`. None of these paths match the UX gate detection rule. The apex-team monolith is decommissioned (Plan C, Wave 106). Zero rendered UI surface — gate does not fire.
+
+**Status:** Complete — verdict delivered.
+
+---
+
+## Previous — 2026-06-04 — Wave 109 (triad participation)
 
 **Task:** UX-impact verdict for Wave 109 Slice 1 — docs-only review-gate hardening.
 

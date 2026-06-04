@@ -1,4 +1,66 @@
-## NOW — 2026-06-04 — Wave 110 (subagent-body completeness regression test)
+## NOW — 2026-06-04 — Wave 111a (ADR-018 PASS-verdict format conformance test)
+
+### Wave-111 PASS verdict — PR #0 — SHA cae4a773e9bb0096d78062165f4c5a77959cedb6
+- **Gate role:** qa
+- **Timestamp:** 2026-06-04T10:57:30Z
+- **Notes:** Wave 111a US-088 AC5 conformance test green. 21/21 new tests; full suite 186/186. Lint + type-check clean. PR # `#0` is a pre-merge placeholder (real PR # back-filled by follow-up commit on main once known). **Chicken-and-egg gap surfaced by self-application — see ADR-018 Wave 111b amendment candidate below.**
+
+**ADR-018 self-application gap (flag for Architect's Wave 111b amendment):** the canonical PASS verdict format requires PR # and full 40-char HEAD SHA. Both are unknown when the verdict block is COMMITTED (PR # doesn't exist until PR opens; HEAD SHA doesn't exist until the verdict-recording commit lands). The pragmatic workaround used here: `#0` placeholder for PR # + last-known-SHA for HEAD. Real PR # and merge SHA are back-filled post-merge via a follow-up commit on main. Architect's ADR-018 should formalize this two-phase pattern (commit-time placeholders + post-merge backfill) OR specify that PASS verdicts live in the PR description, not in `coordination/handoffs/<role>.md` — a real spec choice for Wave 111b.
+
+**Test file:** `tests/qa/wave-111/pass-verdict-format.test.ts`
+
+**Test run output:**
+```
+Test Files  1 passed (1)
+     Tests  21 passed (21)
+  Start at  10:57:30
+  Duration  115ms (transform 16ms, setup 0ms, import 22ms, tests 6ms, environment 0ms)
+```
+
+**Full suite (pnpm test:run):**
+```
+Test Files  3 passed (3)
+     Tests  186 passed (186)
+  Start at  10:57:37
+  Duration  148ms
+```
+
+**pnpm lint:** clean (no warnings, no errors)
+**pnpm type-check:** clean
+
+**AC checklist:**
+
+- AC1 (ADR-018 existence at `architecture/decisions/ADR-018-pass-verdict-format.md`): file exists and non-empty. PASS
+- AC2a (wave field in spec): `wave` term present in ADR-018. PASS
+- AC2b (PR number in spec): `PR #` present in ADR-018. PASS
+- AC2c (SHA field in spec): `SHA` present in ADR-018. PASS
+- AC2d (gate role field in spec): `gate role` present in ADR-018. PASS
+- AC2e (timestamp / ISO 8601 field in spec): `ISO 8601` present in ADR-018. PASS
+- AC3 (REVISE counterpart specified): `REVISE verdict` section present in ADR-018. PASS
+- AC4a (grep-able SHA capture group `[0-9a-f]{40}`): present in ADR-018. PASS
+- AC4b (PASS|REVISE|FAIL alternation): present in ADR-018. PASS
+- AC4c (Wave- prefix with digit qualifier): `Wave-.*\d` present in ADR-018. PASS
+- AC5a (backward-compat section exists): `backward-compat` heading present in ADR-018. PASS
+- AC5b (grandfathered language): `grandfather` present in ADR-018. PASS
+- AC5c (Wave 111 cutover named): `pre-Wave-111` present in ADR-018. PASS
+- AC5b conformance (per-file in handoffs/): 0 Wave-111+ verdict headings found in any HANDOFF doc (expected; first wave using the format). PASS
+
+**S10:** Not triggered — wave touches no user-supplied collection logic (grep-based regression test on static files).
+
+**Legs A/B/C:** N/A — this wave adds only a test file and a HANDOFF update; no runtime code, no UI changes. `pnpm build` gate skipped per rubric (doc/test-only wave). Full-suite vitest run (`pnpm test:run`) is the applicable verification leg.
+
+**US-085 note:** `tests/qa/wave-111/pass-verdict-format.test.ts` is on disk, runnable via
+`pnpm vitest run tests/qa/wave-111/pass-verdict-format.test.ts`. 21 tests covering AC1–AC5 + AC5b conformance subset.
+
+**Implementation notes:**
+- Detection heuristic for AC5b required two rounds of tightening: initial broad heuristic (`\b(PASS|REVISE|FAIL)\b` + `verdict|Wave-`) matched prose lines; second version using `^### .*\b(PASS|REVISE|FAIL)\s+verdict\b` still matched `### Canonical PASS verdict snippet` headings in architect.md; final version requires `^### Wave-\d{1,4}\b` prefix, which is the canonical ADR-018 shape and correctly excludes prose section headings.
+- PR number placeholder `#TBD` will be updated to the real PR number once the PR is opened.
+
+HANDOFF to DevSecOps: Wave 111a Lane B PASS. Test file: `tests/qa/wave-111/pass-verdict-format.test.ts`. 21/21 green. Wave 108 + 110 suites still 165/165; Wave 111 adds 21. Combined: 186/186. Ready to merge.
+
+---
+
+## PREV — 2026-06-04 — Wave 110 (subagent-body completeness regression test)
 
 ### Verdict: PASS
 
@@ -44,36 +106,3 @@ Test Files  2 passed (2)
 **Implementation note:** Wave 109 Architect HANDOFF recorded canonical grep targets. The failing test in AC-1 exposed that `co-authorship.*architecture\/` requires the `/i` flag (actual text begins `Co-authorship gate` — capital C). Fixed before final run; all 12 tests green.
 
 HANDOFF to DevSecOps: Wave 110 Lane B PASS. Test file: `tests/qa/wave-110/subagent-body-completeness.test.ts`. 12/12 green. Wave 108 cleanliness suite still 153/153. Combined: 165/165. Ready to merge.
-
----
-
-## PREV — 2026-06-04 — Wave 108 (subagent body cleanliness regression test)
-
-### Verdict: PASS
-
-**Commit exercised:** HEAD of `feature/c1-plan-c-subagent-extraction` (3df219d as reported by PO)
-
-**Test run output:**
-```
-Test Files  1 passed (1)
-     Tests  153 passed (153)
-  Start at  08:04:10
-  Duration  125ms
-```
-
-**Test file:** `tests/qa/wave-108/subagent-body-cleanliness.test.ts`
-
-**AC checklist (ADR-017 §Concrete grep test):**
-- AC-1 (Pattern 1): `mcp__apex-team__` — 0 non-allowlisted matches across all 8 files. Allowlist total: exactly 8 (one per file). PASS
-- AC-2 (Pattern 2): Broad legacy patterns (`pnpm dev:test`, `_handoff-pending`, `talk_to_product_owner`, `:3100`, etc.) — 0 matches. PASS
-- AC-3 (Pattern 3): Dangling `src/lib/*.ts` pointers — 0 matches. PASS
-- AC-4 (Pattern 4): `## Plan C runtime adapter` header — 0 matches in all 8 files. PASS
-- AC-5 (Allowlist total): Exactly 8 `mcp__apex-team__` occurrences across 8 files. PASS
-
-**S10:** Not triggered — wave touches no user-supplied collection logic (grep-based regression test on static files).
-
-**Leg A (pnpm build):** Not run — doc/test only wave. No src/ changes.
-
-**Leg B/C:** N/A — no runtime or UI changes.
-
-**US-085 note:** First wave-scoped QA test delivered as a file on disk per the US-085 discipline. Runnable via `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts`.

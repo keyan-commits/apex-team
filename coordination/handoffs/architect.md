@@ -1,6 +1,98 @@
 # architect — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 110 Lanes A + D-#381 (DevSecOps merge protocol + LESSONS stale-ref sweep)
+## ⏭️ NOW — 2026-06-04 — Wave 111a Cluster 5 foundation (ADR-018 canonical PASS-verdict format)
+
+**Deliverable:** `architecture/decisions/ADR-018-pass-verdict-format.md`. Specifies the heading-anchored markdown block + 4 field lines that gate-role HANDOFF docs (`coordination/handoffs/qa.md`, `ux-designer.md`, `architect.md`) MUST emit on PASS / REVISE / FAIL verdicts dated >= Wave 111. Consumed by `.claude/agents/devsecops.md` line 58 (step 3, Wave 110); mechanically enforced by Wave 111c CI.
+
+### Canonical PASS verdict snippet (verbatim — for QA + BA grep-reuse)
+
+```markdown
+### Wave-111 PASS verdict — PR #999 — SHA abc1234567890abcdef1234567890abcdef12345
+- **Gate role:** qa
+- **Timestamp:** 2026-06-04T15:32:00Z
+- **Notes:** Full vitest suite green (165/165). Leg A/B/C all clean.
+```
+
+Required fields, in order: heading line, `Gate role`, `Timestamp`, `Notes`. The 40-char lowercase hex SHA is the load-bearing identifier (matches `gh pr view --json headRefOid`). Em-dash separators are U+2014 (NOT U+002D hyphen or U+2013 en-dash). Multi-line free-form prose ABOUT the verdict (test output blocks, AC checklists, evidence dumps) is permitted and encouraged BELOW the four required field lines; CI parses only the heading + four fields.
+
+### REVISE / FAIL counterpart
+
+```markdown
+### Wave-111 REVISE verdict — PR #999 — SHA abc1234567890abcdef1234567890abcdef12345
+- **Gate role:** ux-designer
+- **Timestamp:** 2026-06-04T15:32:00Z
+- **Blocks:** 2
+- **Notes:** Spec drift on focus-ring color (block); copy mismatch on error pill (block). HANDOFF to ui-developer.
+```
+
+REVISE and FAIL share the same shape (only the verdict token differs in the heading). Both add a `- **Blocks:** N` field above `Notes` — integer count of block-severity findings. Cluster 4 CI treats them identically at parse time; the FAIL vs REVISE semantic distinction is internal to the gate role's workflow.
+
+### Grep-able anchor regex (Cluster 4's heading-line scan)
+
+```regex
+^### Wave-(\d{1,4}) (PASS|REVISE|FAIL) verdict — PR #(\d{1,6}) — SHA ([0-9a-f]{40})$
+```
+
+Capture groups (in order): wave number, verdict type, PR number, full 40-char HEAD SHA. The em-dash MUST be embedded as the literal U+2014 character — escape sequences (`—`) vary across grep dialects. macOS BSD `grep` users should invoke `rg` (ripgrep) which handles Unicode without flag fiddling.
+
+After heading match, field-extraction regexes (lines 2-5 below the heading):
+
+```regex
+^- \*\*Gate role:\*\* (qa|ux-designer|architect)$
+^- \*\*Timestamp:\*\* (\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)$
+^- \*\*Blocks:\*\* (\d+)$            # REVISE/FAIL only
+^- \*\*Notes:\*\* (.*)$              # may be empty after colon
+```
+
+### Backward-compat decision: Option (c) — grandfather pre-Wave-111 entries; format binds Wave 111+ only
+
+Existing PASS-shaped prose (`coordination/handoffs/qa.md` Waves 108/110; `ux-designer.md` Waves 107-110 advisory replies; `architect.md` historical prose) is **grandfathered**. No retroactive rewrite. Cluster 4 CI's regex scopes its check to verdicts where `wave >= 111` — pre-111 prose is invisible to the check by construction.
+
+Reasoning: (a) annotate-inline adds reading noise and CI allowlist complexity for zero audit gain (pre-111 verdicts are for already-merged PRs); (b) sweep churns commit history and risks breaking external references citing the old prose by line; (c) forward-binding has zero migration cost — gate roles begin emitting the new format on Wave 111+ verdicts. Note: ux-designer's "Verdict: No UI impact — skip UX gate." replies are triad-phase advisory replies, NOT gate-role PASS verdicts under this ADR — they're explicitly out of scope.
+
+### Cross-reference bundling decision: DEFERRED to Wave 111b
+
+Bundled in 111a: ADR-018 + `architecture/INDEX.md` entry only. Atomic PR; spec-only.
+
+Deferred to 111b: cross-references in `.claude/agents/devsecops.md` step 3, `.claude/agents/architect.md` review rubric step 7, `.claude/agents/ux-designer.md` Gate verdict format section (lines 360-377), `.claude/agents/qa.md` Deployment-gate verification section. Each role pastes the canonical block as a fill-in template into its own body.
+
+Reasoning: (1) 111a's user prompt explicitly framed this as "Cluster 5 foundation. PASS-verdict format spec" — single deliverable focus. (2) Four subagent body edits enlarge this PR meaningfully and each is small + parallelizable in 111b. (3) DevSecOps step 3's instruction is already self-contained ("Confirm a Wave-N PASS verdict is recorded against the PR's HEAD SHA") — the format spec doesn't change WHAT DevSecOps verifies; until Wave 111c CI lands, DevSecOps reads by eye anyway. No pointer is dangling because step 3 doesn't reference the format spec — it just exists. (4) ADR-017 grep-test (`tests/qa/wave-108/subagent-body-cleanliness.test.ts`) gets nothing to evaluate this wave since no subagent files were touched; verified clean (153/153).
+
+### Files landed this turn
+
+1. `architecture/decisions/ADR-018-pass-verdict-format.md` (new) — full spec with rationale, regex, state semantics for DevSecOps step 3, backward-compat policy, follow-ups for 111b + 111c.
+2. `architecture/INDEX.md` — added ADR-018 row to Decision Records table; updated "Last updated" line to Wave 111a.
+
+### Verification (this turn)
+
+- `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` → 153/153 PASS (no subagent files touched; sanity-check the ADR-018 templates contain no ADR-017-denylisted patterns).
+- No subagent-body edits this wave → no ADR-017 co-authorship concerns; no architect.md self-review needed beyond ADR-018 itself, which is Architect-authored in Architect's own lane.
+
+### In flight / next
+
+- This slice is ready for code review. As Architect-authored `architecture/` edits (new ADR + INDEX row), this is single-author within my own lane — no co-authorship gate fires.
+- Wave 111b (parallel candidate, deferred): four subagent body edits to embed the canonical block as a template in each gate role's body. Recommend parallel dispatch to qa + ux-designer + (self for architect.md + devsecops.md) — each edit is small and confined to one file's review/critique workflow section.
+- Wave 111c (gated on 111b): DevSecOps wires the regex into CI. Workflow: fetch PR HEAD SHA, grep gate-role HANDOFF docs, fail PR if `Wave-N PASS — PR #<N> — SHA <HEAD_SHA>` missing for a runtime-code PR.
+
+### Parked / future (carried forward)
+
+- `system-design.md` — still not created.
+- `tech-stack.md` — still not created (Vitest + ESLint + TS + pnpm is the entire stack).
+- `coding-standards.md` — still not created.
+- Fitness function for OQ-085-001's "no binary files committed under `tests/qa/wave-*/evidence/`" — QA owns implementation.
+- Viewer-repo subagent body audit (per ADR-017 follow-up).
+- Wave 111+ candidate (post-Cluster-5): a small `scripts/emit-verdict.sh` helper that takes `--wave --pr --sha --role --notes` and appends a canonical block to the role's HANDOFF doc, eliminating hand-typing errors.
+- Wave 111+ candidate (post-Cluster-5): REVISE verdict `- **Re-review target SHA:** <SHA>` field — deferred since stale-PASS detection (`PASS heading exists but SHA mismatches current HEAD`) already covers the case without an extra field.
+
+### Notes / caveats
+
+- The canonical block in ADR-018 deliberately uses an example PR number (`#999`) and a placeholder 40-char SHA (`abc1234567890abcdef1234567890abcdef12345`). When gate roles paste the block into their HANDOFF, they replace both with real values. The placeholder hex passes the regex (it's lowercase hex, 40 chars) but cannot collide with a real Git SHA in practice — `999` is way below current PR numbering (~380s) so even if a real PR #999 existed someday, its HEAD SHA would not be the placeholder.
+- The format intentionally records seconds-precision timestamps, not milliseconds — ordering is human-skim-deterministic at second granularity, and machine clock skew between subagent invocations on the same host is sub-second in practice.
+- CONCERNS verdicts (Architect's "ship with caveats" outcome from `.claude/agents/architect.md` line 50) are deliberately EXCLUDED from this format. CONCERNS is advisory and logged in `architecture/decisions/`, not consumed by DevSecOps step 3. If a future wave wants CONCERNS to be a structured fourth verdict type (for trend analysis), it's an additive change to the regex.
+
+---
+
+## PREV — 2026-06-04 — Wave 110 Lanes A + D-#381 (DevSecOps merge protocol + LESSONS stale-ref sweep)
 
 **Closes / addresses:**
 - #383 — DevSecOps merge protocol: require gate-role PASS recorded in HANDOFF doc before merge (newly filed this turn; ACs 1–3 all satisfied by this PR).

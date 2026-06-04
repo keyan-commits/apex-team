@@ -1,6 +1,41 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 110 — gate-discipline hardening + docs-integrity sweep)
+## ⏭️ NOW — 2026-06-04 (Wave 111a — ADR-018 PASS-verdict format foundation)
+
+**claude-code direct on `feature/wave-111a-pass-verdict-format` (off origin/main `cae4a77`).**
+
+**Wave 111 split into 3 sub-waves per PO charter** (user picked "all 5" Wave 110 close-out candidates — too large for one wave). Ordering: 111a (Cluster 5 foundation) → 111b (Clusters 1+2+3 fan-out: lessons + UX skills + 7-subagent skill proposals) → 111c (Cluster 4 CI/process). 5 → 1+2+3 → 4 because Wave 111c's CI grep needs the format spec ratified first.
+
+**Wave 111a deliverables (this PR):**
+
+1. ✅ **ADR-018 PASS-verdict format ratified (Architect)** — `architecture/decisions/ADR-018-pass-verdict-format.md`. Canonical block:
+   ```
+   ### Wave-NNN PASS|REVISE|FAIL verdict — PR #N — SHA <40-char-lowercase-hex>
+   - **Gate role:** <role-id>
+   - **Timestamp:** <ISO 8601 UTC>
+   - **Notes:** (optional)
+   ```
+   Grep anchor regex: `^### Wave-(\d{1,4}) (PASS|REVISE|FAIL) verdict — PR #(\d{1,6}) — SHA ([0-9a-f]{40})$`. Backward-compat option (c) chosen: grandfather pre-Wave-111 records. AC6 cross-ref edits in `.claude/agents/*.md` deferred to 111b (parallel fan-out).
+
+2. ✅ **US-088 filed (BA)** — `requirements/user-stories/US-088-pass-verdict-format.md` with 6 ACs; `requirements/INDEX.md` updated.
+
+3. ✅ **Conformance test (QA)** — `tests/qa/wave-111/pass-verdict-format.test.ts`, **21/21 PASS** in 115ms. Full suite **186/186 PASS** (108: 153 + 110: 12 + 111a: 21).
+
+4. ✅ **UX verdict** — no UI impact.
+
+**Self-application gap surfaced (Wave 111b ADR-018 amendment candidate):** canonical format requires PR # + 40-char HEAD SHA, but both are unknown at commit-time (PR # doesn't exist until PR opens; HEAD SHA doesn't exist until verdict-recording commit lands). QA used `#0` placeholder + last-known-SHA pragmatically. Architect's Wave 111b should formalize the two-phase pattern (commit-time placeholders + post-merge backfill) OR specify verdicts live in PR description.
+
+**Verification (all green):** lint clean, type-check clean, full suite 186/186, ADR-017 cleanliness (153) still green, Wave 110 completeness (12) still green, new Wave 111a conformance (21) green.
+
+**Plan C dogfooding:** First wave under the subagent runtime where a deliverable caught its own pre-merge bug pre-emptively (Architect's 39-char SHA placeholder) AND surfaced a real spec gap via self-application (QA's `#TBD` placeholder triggered conformance failure → revealed commit-time placeholder need).
+
+**Wave 111b candidates (parked):** Clusters 1+2+3 (lessons-in-bodies for top-3 drift-prone subagents + UX #199 design-skill ecosystem + 7-subagent skill proposals fan-out spanning #292/#293/#294/#295/#359/#361/#362/#363/#364/#365/#366/#368/#369), plus ADR-018 self-application amendment.
+
+**Wave 111c candidates (parked):** Cluster 4 CI/process — #240 residual `gh pr checks` step, #246 UX gate CI check, #301 merge playbook + LESSONS entry, #324 deps bump verification, plus CI grep wiring for ADR-018 PASS verdicts.
+
+---
+
+## ⏭️ PREV — 2026-06-04 (Wave 110 — gate-discipline hardening + docs-integrity sweep)
 
 **claude-code direct on `feature/wave-110-completeness-and-merge-protocol` (off origin/main `cb14be2`).**
 

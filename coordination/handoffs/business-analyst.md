@@ -1,6 +1,23 @@
 # business-analyst — HANDOFF
 
-## NOW — 2026-06-04 — Wave 110 triad confirmation
+## NOW — 2026-06-04 — Wave 111a: US-088 issued
+
+**Deliverables this turn:**
+- `requirements/user-stories/US-088-pass-verdict-format.md` — authored, status: **accepted**
+- `requirements/INDEX.md` — US-088 row added; header timestamp updated
+
+**US-088 summary:** PASS-verdict format for `coordination/handoffs/<role>.md`. 6 ACs: ADR-018 existence (AC1, Architect-owned), required fields spec (AC2), REVISE/FAIL counterpart (AC3), grep-able anchor regex (AC4), QA conformance test (AC5), cross-refs in 4 agent files (AC6 — deferred-landing option to 111b noted explicitly in story).
+
+**Peer context:**
+- Architect dispatched in parallel to author ADR-018. AC1 traceability anchor is Architect's deliverable.
+- QA dispatched after triad returns to write `tests/qa/wave-111/pass-verdict-format.test.ts` (AC5). QA should read ADR-018 before writing the test (backward-compat exemption marker is Architect's decision).
+- AC6 (agent file cross-refs) may land 111a or 111b per Architect's HANDOFF. US-088 remains `accepted` until AC6 ships.
+
+**Last-processed user message:** Wave 111a dispatch prompt (2026-06-04).
+
+---
+
+## PREV — 2026-06-04 — Wave 110 triad confirmation
 
 **Verdict: no US-088.**
 Wave 110 deliverables are docs/rules-only (devsecops.md prose edit, LESSONS.md correction, ops/README.md rewrite, QA presence test). The QA test asserts presence of already-shipped rules — it does not introduce new behavioral user-facing surface. Wave 109 precedent confirmed: docs/rules-only = skip US. Wave 108 precedent (US-087) was for a full subagent body-rewrite bundle + new test discipline; Wave 110 is a narrower prose-correction + presence-assertion wave, not comparable scope.
