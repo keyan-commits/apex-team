@@ -1,4 +1,66 @@
-## NOW — 2026-06-04 — Wave 119 (US-095 AC9 viewer workspace-switcher fixtures + tests)
+## NOW — 2026-06-04 — Wave 120 (US-096 AC5 pre-commit verdict-format gate regression test)
+
+### Wave-120 PASS verdict — PR #0 — SHA 017145022ee78d2849356f9ef3d56ddb42adf577
+- **Gate role:** qa
+- **Timestamp:** 2026-06-04T18:12:00Z
+- **Notes:** Wave 120 pre-commit verdict-format gate tests (US-096 AC5). 59 new tests; full suite 507/507 (448 prior + 59). Lint + type-check clean. PR #0 is commit-time placeholder per ADR-018 Wave 111b amendment; SHA is branch HEAD `017145022ee78d2849356f9ef3d56ddb42adf577`. DevSecOps backfills real PR # and merge SHA post-merge.
+
+### Deliverable
+
+- `requirements/samples/wave-120-verdict-format/bad-pending-sha.md` — SHA (pending) fixture (Wave 112/115 failure pattern)
+- `requirements/samples/wave-120-verdict-format/bad-short-sha.md` — 7-char short SHA fixture
+- `requirements/samples/wave-120-verdict-format/bad-extra-word.md` — "viewer" extra word before PR (Wave 119 failure pattern)
+- `requirements/samples/wave-120-verdict-format/bad-en-dash.md` — en-dash (U+2013) separators instead of em-dash (U+2014)
+- `requirements/samples/wave-120-verdict-format/good-canonical.md` — canonical PASS verdict fixture
+- `requirements/samples/wave-120-verdict-format/good-revise.md` — canonical REVISE verdict fixture
+- `requirements/samples/wave-120-verdict-format/grandfathered-pre-111.md` — Wave-105 prose (grandfathered, wave < 111)
+- `requirements/samples/wave-120-verdict-format/mixed.md` — one good + one bad verdict in same file
+- `tests/qa/wave-120/pre-commit-verdict-gate.test.ts` — 59 tests covering US-096 AC5 with positive + negative + edge + iterate-all-8-fixtures coverage
+
+### Gate results
+
+- `pnpm vitest run tests/qa/wave-120/` → 59/59 PASS
+- `pnpm test:run` → 507/507 PASS (448 prior + 59 new)
+- `pnpm lint` → clean
+- `pnpm type-check` → clean
+
+### AC checklist (US-096 AC5)
+
+- AC5a (bad verdict headings flagged — 4 negative fixtures):
+  - bad-pending-sha.md (`SHA (pending)`) → violation detected. PASS (test: Negative block)
+  - bad-short-sha.md (7-char SHA) → violation detected. PASS (test: Negative block)
+  - bad-extra-word.md ("viewer" extra word) → violation detected. PASS (test: Negative block)
+  - bad-en-dash.md (en-dash U+2013 separators) → violation detected. PASS (test: Negative block)
+- AC5b (good verdict headings pass — 2 positive fixtures):
+  - good-canonical.md (canonical PASS) → 0 violations. PASS (test: Positive block)
+  - good-revise.md (canonical REVISE) → 0 violations. PASS (test: Positive block)
+- AC5c (grandfathered pre-Wave-111 — 1 edge fixture):
+  - grandfathered-pre-111.md (Wave-105 prose) → 0 violations, wave < 111 skip confirmed. PASS (test: Edge block)
+- AC5d (all three cases covered — positive, negative, edge):
+  - All three coverage classes present. PASS
+- AC5 iterate-all (parametrized loop over all 8 fixture files):
+  - Parametrized `for (const fixture of FIXTURE_CASES)` loop iterates all 8. PASS (tests: Iterate-all block)
+- AC2 source-of-truth co-presence (CI workflow references canonical regex):
+  - CI workflow contains `CANONICAL_PATTERN=` with em-dash. PASS (test: AC2 co-presence block)
+  - Pre-commit hook co-presence: auto-skipped until DevSecOps lands AC1–AC4 hook changes. Runtime gate active.
+- AC5e prior-wave regression:
+  - All 448 prior-wave tests still green in 507/507 total. PASS
+
+### S10 gate
+
+S10 not triggered — wave touches no user-supplied collection logic (test + fixture authoring only; no source code changes to collection-processing logic).
+
+### Legs A/B/C
+
+N/A — test + fixture only wave. No runtime source code changed. `pnpm build` gate skipped per rubric (no Next.js app). Full-suite vitest run is the applicable verification leg.
+
+### Wave-120 tests (US-085 evidence)
+
+- `tests/qa/wave-120/pre-commit-verdict-gate.test.ts` — 59 tests; covers US-096 AC5 (pre-commit verdict-format gate). Test classes: positive (2 good fixtures → 0 violations), negative (4 bad fixtures → violations), edge (grandfathered pre-111, mixed good+bad, boundary Wave-110/111, FAIL type, empty file), iterate-all (parametrized loop over all 8 known fixtures), canonical-regex unit tests (5 valid + 12 invalid lines), AC2 source-of-truth co-presence (CI workflow regex anchor + em-dash), integration runtime-gated (auto-skips until hook PR lands), metadata/self-reference.
+
+---
+
+## PREV — 2026-06-04 — Wave 119 (US-095 AC9 viewer workspace-switcher fixtures + tests)
 
 ### Wave-119 PASS verdict — PR #0 — SHA c795ab5174eea6ff29bfffa5ffc8af58b675955f
 

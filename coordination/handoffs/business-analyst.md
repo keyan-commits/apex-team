@@ -1,6 +1,42 @@
 # business-analyst — HANDOFF
 
-## NOW — 2026-06-04 — Wave 119: US-095 authored (viewer workspace switcher)
+## NOW — 2026-06-04 — Wave 120: US-096 authored (pre-commit verdict-format gate)
+
+**Deliverables this turn:**
+
+- `requirements/user-stories/US-096-pre-commit-verdict-format-gate.md` — authored, status: **accepted**
+- `requirements/INDEX.md` — US-096 row added; Wave 120 timestamp header prepended
+
+**US-096 summary:** 6 ACs covering the pre-commit verdict-format gate scope:
+- AC1: `.githooks/pre-commit` extended with ADR-018 verdict-format step against staged `coordination/handoffs/*.md`
+- AC2: same canonical regex as CI workflow (`pass-verdict-format-check.yml`); no local/CI drift; regex source: `ADR-018-pass-verdict-format.md`
+- AC3: Wave-111+ enforcement, pre-Wave-111 grandfathered (same threshold as CI)
+- AC4: `--no-verify` bypass works; hook prints bypass reminder on violation
+- AC5: `tests/qa/wave-120/pre-commit-verdict-gate.test.ts` — bad/good/grandfathered case assertions
+- AC6: body clause in all 8 role subagent files referencing the new pre-commit gate
+
+**Trigger incidents:** 5+ repeated format violations (Waves 112, 115, 117, 118, 119) each costing a CI cycle. Local pre-commit has no verdict-format check.
+
+**Dispatch routing (Wave 120 auto-routing clause):**
+- HANDOFF to DevSecOps: implement AC1–AC4 (hook extension); own AC6 body edits for all 8 agents (or coordinate with Architect on the `architect.md` wording).
+- HANDOFF to QA: author `tests/qa/wave-120/pre-commit-verdict-gate.test.ts` (AC5). Can start in parallel with DevSecOps.
+
+**PASS verdict (ADR-018 canonical format):**
+
+### Wave-120 PASS verdict — PR #0 — SHA 017145022ee78d2849356f9ef3d56ddb42adf577
+- **Gate role:** business-analyst
+- **Timestamp:** 2026-06-04T00:00:00Z
+- **Notes:** Requirements phase only — US-096 authored + INDEX.md updated. No code or architecture edits. Architecture gate does not fire (no `architecture/` edits). Peer-edit boundary respected: only own HANDOFF + own US-096 file + INDEX.md (BA-owned) edited. PR #0 placeholder per ADR-018 Wave 111b amendment; DevSecOps to backfill with real PR # + merge SHA post-merge.
+
+**Architecture gate:** no `architecture/` edits. Gate doesn't fire.
+
+**Peer-edit boundary:** no peer HANDOFF edits. Only own HANDOFF + own US authoring + INDEX.md edited.
+
+**Last-processed user message:** Wave 120 BA dispatch (2026-06-04, main `0171450`).
+
+---
+
+## PREV — 2026-06-04 — Wave 119: US-095 authored (viewer workspace switcher)
 
 **Deliverables this turn:**
 
