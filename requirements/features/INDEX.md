@@ -1,7 +1,7 @@
 # Features Index
 
 _Owned by Business Analyst. Updated at FEAT creation, status change, or retirement._
-_Last updated: 2026-06-04 (Wave 122 amendment — column shape updated to canonical form; per-role ticket prefixes ratified)._
+_Last updated: 2026-06-04 (Wave 125 — FEAT-0004 added (viewer a11y polish: bundles 4 WCAG gaps from Wave 123 UX gate warns — issues #5/#7/#8/#9); FEAT-0002 + FEAT-0003 rows backfilled from existing files)._
 
 ---
 
@@ -21,6 +21,9 @@ Full context (wave, US-NNN refs, open questions) lives in the FEAT-XXXX file its
 | FEAT | Slug | Status | ARCH | UX | TEST | FE | BE | OPS |
 |---|---|---|---|---|---|---|---|---|
 | FEAT-0001 | feat-grouping-convention | active | 0 | 0 | 0 | 0 | 0 | 0 |
+| FEAT-0002 | viewer-feat-grouped-rendering | active | 0 | 0 | 1 | 0 | 0 | 0 |
+| FEAT-0003 | devsecops-reusable-pipelines | active | 0 | 0 | 1 | 0 | 0 | 0 |
+| FEAT-0004 | viewer-a11y-polish | active | 1 | 1 | 0 | 0 | 0 | 0 |
 
 ---
 
@@ -33,6 +36,9 @@ retains its number (never reused) but changes status to `deferred`.
 | FEAT | Allocated | Allocated by | Context |
 |---|---|---|---|
 | FEAT-0001 | 2026-06-04 | BA (Wave 122) | Meta-feature: the FEAT-XXXX grouping convention itself. Dogfooding example + template. |
+| FEAT-0002 | 2026-06-04 | BA (Wave 123) | Viewer FEAT-grouped rendering — per-role Output tabs render FEAT cards instead of flat file list. |
+| FEAT-0003 | 2026-06-04 | BA (Wave 124) | DevSecOps reusable pipelines + CLI runner — `ops/pipelines/` scaffolding + `pnpm run ops:run` + `pnpm run qa:feat`. |
+| FEAT-0004 | 2026-06-04 | BA (Wave 125) | Wave 125 — bundles 4 viewer a11y issues (#5/#7/#8/#9) filed as warns during Wave 123 UX gate. |
 
 ---
 

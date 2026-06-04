@@ -1,7 +1,7 @@
 # Architect Features Index
 
 _Owned by Architect. Updated at ARCH ticket creation, status change, or retirement._
-_Last updated: 2026-06-04 (Wave 122 — initial scaffold, no ARCH tickets yet)._
+_Last updated: 2026-06-04 (Wave 125 — ARCH-0001 allocated for FEAT-0004 viewer a11y polish)._
 
 ---
 
@@ -25,8 +25,7 @@ ADR allocations are tracked separately in `architecture/INDEX.md`; this index is
 
 | Ticket | Parent FEAT | Parent US | Status | Description |
 |---|---|---|---|---|
-
-_(no ARCH tickets allocated yet — first allocation will be ARCH-0001)_
+| ARCH-0001 | FEAT-0004 | US-101 | accepted | Viewer a11y polish — WCAG 2.1 AA ratification + `:focus-visible` pattern ratification + code-review pre-commitment for Lane 2 viewer PR. |
 
 ---
 
@@ -36,8 +35,7 @@ Architect updates this table when a new `ARCH-NNNN` is assigned. Numbers are all
 
 | ARCH | Allocated | Allocated by | Context |
 |---|---|---|---|
-
-_(no allocations yet)_
+| ARCH-0001 | 2026-06-04 | Architect (Wave 125) | First Architect feature ticket. Light NFR ratification for FEAT-0004 viewer a11y polish (WCAG 2.1 AA binding + `:focus-visible` pattern). No novel architecture; pre-commits to gating UI Dev's Lane 2 viewer PR. |
 
 ---
 

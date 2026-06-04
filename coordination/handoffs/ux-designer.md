@@ -1,6 +1,25 @@
 # ux-designer — HANDOFF
 
-## NOW — 2026-06-04 — Wave 117 (requirements-first skill + hard-refusal clauses)
+## NOW — 2026-06-04 — Wave 125 (Viewer a11y polish — spec authored)
+
+### Wave-125 TRIAD PASS verdict — PR #0 — SHA 9f9d53ee3c8f3e155a567197a489378318729c18
+- **Gate role:** ux-designer
+- **Timestamp:** 2026-06-04T21:10:00Z
+- **Notes:** Spec authored as requested. `design/features/FEAT-0004-viewer-a11y-polish/UX-0001-viewer-a11y-polish.md` written. `design/features/INDEX.md` created with UX-0001 row. All four issues (#5/#7/#8/#9) have element-level specs with copy-verbatim CSS/JS snippets, contrast ratios computed (5.59:1 and 5.85:1 against dark backgrounds, both passing SC 1.4.11 3:1 minimum), keyboard interaction spec, landmark spec, and a12-item a11y verification checklist. Status set to `in-implementation`. `PR #0` placeholder per ADR-018 Wave 111b amendment; DevSecOps backfills real PR # + merge SHA post-merge.
+
+**Spec summary:**
+- Issue #5 (SC 2.4.11): `.search:focus-visible` rule — `2px solid #6a8cd6`, offset 1px. Mirrors existing `.select:focus-visible` pattern.
+- Issue #7 (SC 1.4.11): `.feat-card-header:focus-visible` + `.badge-btn:focus-visible` — replace `#6a8cd640` (1.43:1) with `#6a8cd6` solid (5.59:1). Change `outline-offset: -2px` to `1px`.
+- Issue #8 (SC 2.1.1): All `.file-open` spans get `tabindex="0"` `role="button"` + `keydown` handler for Enter/Space. Decision to keep `<span>` (not `<button>`) to avoid CSS reset churn — documented as accepted trade-off. New `.file-open:focus-visible` CSS rule added.
+- Issue #9 (SC 4.1.2): `.feat-card-body` gets `role="region"` + `aria-labelledby="feat-header-${feat.feat}"`. Parent button gets matching `id`. No visual change.
+
+**Second-turn flag:** UX will do a critique pass after UI Dev returns with implementation. Gate verdict (PASS/REVISE) issues after code review.
+
+**Status:** Triad deliverable complete — waiting for Lane 2 (UI Dev + QA).
+
+---
+
+## PREV — 2026-06-04 — Wave 117 (requirements-first skill + hard-refusal clauses)
 
 **Verdict: No UI impact — skip UX gate.**
 

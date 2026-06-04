@@ -1,6 +1,46 @@
 # business-analyst — HANDOFF
 
-## NOW — 2026-06-04 — Wave 122 (amended): US-098 + FEAT-0001 + features/INDEX.md updated
+## NOW — 2026-06-04 — Wave 125: US-101 + FEAT-0004 + INDEX updates authored
+
+**Deliverables this turn (Wave 125 requirements phase):**
+
+- `requirements/features/FEAT-0004-viewer-a11y-polish.md` — new FEAT-0004 file; status: **active**. Bundles 4 viewer a11y issues (#5/#7/#8/#9) from Wave 123 UX gate into one focused wave.
+- `requirements/user-stories/US-101-viewer-a11y-polish.md` — new user story; status: **in-flight**. 6 ACs: AC1 `.search:focus-visible` (#5); AC2 solid focus ring `.feat-card-header`+`.badge-btn` (#7); AC3 `.file-open` keyboard accessibility (#8); AC4 `.feat-card-body` landmark regions (#9); AC5 regression sweep; AC6 QA TEST-0004 static-parse test.
+- `requirements/features/INDEX.md` — FEAT-0004 row added to Registry + allocation log. FEAT-0002 + FEAT-0003 rows also backfilled (were missing from Registry).
+- `requirements/INDEX.md` — US-101 row added; Wave 125 "Last updated" line prepended.
+- `coordination/handoffs/business-analyst.md` — this file, Wave 125 NOW updated.
+
+**TEST-0004 correction (explicit):**
+PO's Wave 125 HANDOFF draft referenced `TEST-0002` for the QA test. Correct allocation is
+**TEST-0004** — the TEST ticket sequence is monotonically allocated per Wave 122 convention,
+and TEST-0003 was the last allocated (Wave 123 for FEAT-0002). QA must use TEST-0004 when
+authoring `tests/qa/features/FEAT-0004-viewer-a11y-polish/TEST-0004-viewer-a11y-polish.test.ts`.
+
+**Scope calls:**
+- AC1 canonical `:focus-visible` pattern (solid `#6a8cd6`, 2px, 1px offset) is in the US spec. UX-0001 will codify this pattern; UI Dev follows it.
+- AC2 contrast: `#6a8cd6` vs `#131318` — ≥3:1 requirement called out explicitly; prior alpha version `#6a8cd640` was ~1.8:1.
+- AC3 covers FEAT card rows, Tickets-tab rows, AND ungrouped rows — all three `.file-open` locations.
+- AC4 requires `id="feat-header-${feat.feat}"` on the header element so the `aria-labelledby` reference resolves.
+- AC6 is runtime-gated on `existsSync('../apex-team-viewer/public/style.css')` — matching Wave 123 TEST-0003 practice.
+
+**Peer-edit boundary:** Only BA-owned files edited this turn: `requirements/features/FEAT-0004-viewer-a11y-polish.md`, `requirements/user-stories/US-101-viewer-a11y-polish.md`, `requirements/features/INDEX.md`, `requirements/INDEX.md`, `coordination/handoffs/business-analyst.md`. No peer HANDOFF files touched.
+
+**PASS verdict (ADR-018 canonical format):**
+
+### Wave-125 PASS verdict — PR #0 — SHA 9f9d53ee3c8f3e155a567197a489378318729c18
+- **Gate role:** business-analyst
+- **Timestamp:** 2026-06-04T00:00:00Z
+- **Notes:** Requirements phase — FEAT-0004 + US-101 authored; features/INDEX.md + requirements/INDEX.md updated; TEST-0004 correction documented (PO draft had TEST-0002; correct monotonic allocation is TEST-0004, current high water TEST-0003). No code or architecture edits. Architecture gate does not fire (no `architecture/` edits). Peer-edit boundary respected. PR #0 placeholder per ADR-018 Wave 111b amendment; DevSecOps to backfill with real PR # + merge SHA post-merge.
+
+**Architecture gate:** no `architecture/` edits. Gate doesn't fire.
+
+**Branch:** `feature/125-viewer-a11y-polish` off main `9f9d53ee3c8f3e155a567197a489378318729c18`. Staged but not committed (outer orchestrator batches triad before committing).
+
+**Last-processed user message:** Wave 125 BA dispatch (2026-06-04, main `9f9d53e`).
+
+---
+
+## PREV — 2026-06-04 — Wave 122 (amended): US-098 + FEAT-0001 + features/INDEX.md updated
 
 **Deliverables this turn (original Wave 122 + amendment):**
 
