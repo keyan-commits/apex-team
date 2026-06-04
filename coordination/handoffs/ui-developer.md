@@ -2,10 +2,10 @@
 
 ## ⏭️ NOW — 2026-06-04 — Wave 119: viewer workspace switcher (US-095 AC1-AC8)
 
-### Wave-119 PASS verdict — viewer PR #3 — SHA 467e9a7a889053f3571ad05e33b29f82ba0c1960
-- **Gate role:** ui-developer (self-attested implementation; pending Architect + QA gate)
-- **Timestamp:** 2026-06-04T00:00:00Z
-- **Notes:** All AC1-AC8 implemented and manually verified. apex-team `pnpm test:run` 448/448 PASS (AC10). Viewer PR #3 open at `keyan-commits/apex-team-viewer`. No `architecture/` edits; no peer HANDOFF docs edited. All changes committed to sibling viewer repo, not apex-team.
+### Wave-119 PASS verdict — PR #0 — SHA 467e9a7a889053f3571ad05e33b29f82ba0c1960
+- **Gate role:** ui-developer
+- **Timestamp:** 2026-06-04T18:00:00Z
+- **Notes:** All AC1-AC8 implemented and manually verified. apex-team `pnpm test:run` 448/448 PASS (AC10). Viewer changes shipped in **sibling-repo PR `keyan-commits/apex-team-viewer#3`** (merged at `0bb1e2d`); apex-team-side PR #0 placeholder per ADR-018 Wave 111b amendment — DevSecOps backfills post-merge with the real apex-team PR # + merge SHA. No `architecture/` edits; no peer HANDOFF docs edited.
 
 **Deliverables (all in `keyan-commits/apex-team-viewer` PR #3, SHA `467e9a7a889053f3571ad05e33b29f82ba0c1960`):**
 
