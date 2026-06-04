@@ -1,32 +1,30 @@
 # ui-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 126: US-102 AC16 — Plan C clause in Wave 122 standard
+## ⏭️ NOW — 2026-06-04 — Wave 127: viewer FE Dev → UI Dev rename
 
-### Wave-126 PASS verdict — PR #0 — SHA 60a2c750eeef9faa10a5c19ac07c060774efb6df
+### Wave-127 PASS verdict — PR #412 — SHA 9c05edf7656a6fe8bfcd88d53d63e06fb42d48b1
+- **Gate role:** ui-developer (self-attestation — viewer-only rename, no runtime logic change)
+- **Timestamp:** 2026-06-04T00:00:00Z
+- **Notes:** Renamed "FE Dev" tab to "UI Dev" in sibling viewer repo PR `keyan-commits/apex-team-viewer#12` (branch `feature/wave-127-ui-dev-rename`). Consistent with apex-team role id `ui-developer`. Also extended `ROLE_PATHS['ui-developer']` paths to include `frontend/features` + `frontend` dirs so Wave 126 FE artifacts surface in the tab. apex-team-side artifact = this HANDOFF refresh on PR #412.
+
+**Deliverables (all in `keyan-commits/apex-team-viewer` PR #12):**
+1. `public/index.html` — `data-role="fe-developer"` → `"ui-developer"`, button text `FE Dev` → `UI Dev`
+2. `server.mjs` — `ROLE_PATHS` key `'fe-developer'` → `'ui-developer'`; paths extended to `['frontend/features', 'frontend', 'src/features', 'src']`
+
+**Verification:**
+- `curl 'http://localhost:3200/api/artifacts?role=ui-developer'` → `{ "role": "ui-developer", ... }` PASS
+- No `fe-developer` key remaining in `ROLE_PATHS`
+
+**Gate routing:**
+- UI-touching change → UX Designer gates; server-side path extension → Architect may review
+- No apex-team source code changed; this apex-team PR is doc-only HANDOFF refresh
+
+## ⏭️ PREV — 2026-06-04 — Wave 126: US-102 AC16 — Plan C clause in Wave 122 standard (merged in PR #411)
+
+### Wave-126 PASS verdict — PR #411 — SHA 60a2c750eeef9faa10a5c19ac07c060774efb6df
 - **Gate role:** ui-developer (self-attestation — single-file body amendment, no runtime code)
 - **Timestamp:** 2026-06-04T21:41:00Z
-- **Notes:** AC16 of US-102 implemented. Inserted Plan C clause as a new paragraph within the existing `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` section of `.claude/agents/ui-developer.md`. No other sections touched. Anchor heading unchanged (byte-identical). Boundary: only own body file + own HANDOFF doc.
-
-**Deliverables:**
-1. `.claude/agents/ui-developer.md` — Plan C clause added after bullet 5 within the Wave 122 standard section:
-   - Text: "**Plan C workspaces (no `src/`):** When the workspace has no `src/` directory (e.g. apex-team under Plan C), use `frontend/features/FEAT-NNNN-<slug>/FE-NNNN-<slug>.md` ... Author this artifact on every wave where you edit code in a sibling repo."
-
-**Verification (all PASS):**
-1. `grep -c "### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)" .claude/agents/ui-developer.md` → 1
-2. `grep -c "FE-XXXX" .claude/agents/ui-developer.md` → 1
-3. `grep -c "Plan C" .claude/agents/ui-developer.md` → 1
-4. `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` → 153/153 PASS
-5. `pnpm vitest run tests/qa/features/FEAT-0001-feat-grouping-convention/` → 38/38 PASS
-
-## In flight
-- Wave 126 commit on `feature/126-feat-backfill-command` — awaiting DevSecOps merge after gate.
-
-## Next
-- AC16 backend-developer.md counterpart is BE Dev's lane (parallel, separate dispatch).
-- After merge: update HANDOFF SHA with real PR# per ADR-018.
-
-## Notes
-- This is a doc-only change to an agent body file — no rendered UI, no runtime code. UX gate not required per deployment-gate discipline. Architect may wish to review anchor stability; Wave 122 TEST-0001 passes.
+- **Notes:** AC16 of US-102 implemented. Inserted Plan C clause as a new paragraph within the existing `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` section of `.claude/agents/ui-developer.md`. Anchor heading unchanged (byte-identical). Verification: cleanliness 153/153, FEAT-0001 38/38.
 
 ## ⏭️ PREV — 2026-06-04 — Wave 125: viewer a11y polish (US-101 AC1-AC5)
 
