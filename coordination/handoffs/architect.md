@@ -1,6 +1,86 @@
 # architect — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 130 code-review re-gate (viewer PR #13 — PASS)
+## ⏭️ NOW — 2026-06-05 — Wave 131 security gate (viewer PR #16 — PASS, closes #14)
+
+### Wave-131 PASS verdict — PR #16 — SHA 847b7c45037f7933ad95f66433c91b30c46c6f12
+- **Gate role:** architect (non-UI security rubric — viewer PR #16, `feature/wave-131-shell-injection-fix`, HEAD `847b7c4`).
+- **Cross-repo verdict:** PR # refers to `keyan-commits/apex-team-viewer#16`. SHA `847b7c45037f7933ad95f66433c91b30c46c6f12` is HEAD of `feature/wave-131-shell-injection-fix` in the viewer repo at gate time.
+- **Timestamp:** 2026-06-05T00:08:00Z
+- **Closure of CONCERN 2 (Wave 130):** `server.mjs:885` (was line 887 pre-fix, +2 line drift from inserted comment) no longer has any `shell:` option in the `runTest` spawn call. `grep -nE 'shell\s*:' server.mjs` returns only comment lines (885, 887 — narrative explaining why the option is absent). Wave 130's CONCERN 2 (Gradle wrapper command-injection vector via `shell: command === './gradlew'` interpolating shell metacharacters in class-name args derived from `basename(absPath, '.java')`) is fully closed. `keyan-commits/apex-team-viewer#14` can be closed by DevSecOps post-merge.
+- **Argv-array safety re-verified:** the `spawn(command, args, { cwd, env })` call at server.mjs:882 now passes through Node's `posix_spawn`/`posix_spawnp` without `/bin/sh -c` interpolation. A class-name containing shell metacharacters (`Bad$(touch${IFS}tmp-pwned)Test`, `Evil` `id` `Test`, etc.) is delivered as a literal argv element to `gradle --tests` and `mvn -Dtest=`. Gradle/Maven receive a missing-class error rather than executing the metacharacter expression. Threat-model: closed.
+- **Audit completeness:** comprehensive grep across `server.mjs` confirms ONLY two `spawn(...)` sites: (a) line 882 — `runTest` — now shell-free per this fix; (b) line 919 — `runGh` — hardcoded `spawn('gh', args, { cwd: root })` with no `shell:` option, no untrusted argv (the `args` are constructed inline by `getCi`/`getPrs` from constant strings). No `exec`/`execSync`/`execFile` shell-out sites in viewer source. Threat surface is exhaustively reduced.
+- **Regression test soundness:** new `__tests__/spawn-safety.test.ts` (7 tests, 144 lines):
+  - 3 class-name-literal tests: gradle wrapper with `$(...)`, gradle bare with backtick `\`id\``, maven with `$(...)`. Each asserts the resolver-extracted className lands in the args array as a verbatim string (no shell interpretation upstream of spawn).
+  - 4 spawn-shape contract tests: gradle (wrapper) / gradle (bare) / maven / playwright resolver return values assert `expect(result).not.toHaveProperty('shell')` — defence-in-depth catching any future refactor that smuggles `shell:true` back into the resolver's return shape.
+  - Full viewer suite at HEAD `847b7c4`: **28/28 PASS** (`Test Files 2 passed, Tests 28 passed`, Duration 250ms). Wave 130's 21 resolver tests preserved + 7 new spawn-safety tests added — no regression.
+- **Functional regression check — relative `./gradlew` resolution under posix_spawn:** Node's `child_process.spawn` calls libuv's `uv_spawn`, which on POSIX systems performs `posix_spawnp` when the command contains no `/` (PATH lookup) and `posix_spawn` when it does. `./gradlew` contains a `/` so it resolves relative to the spawn's `cwd` parameter via the documented `chdir → execve` semantics in libuv's `process.c`. This is well-defined POSIX behavior — gradle wrapper invocation continues to work exactly as before for benign filenames. The shell branch was only there as historical paranoia about wrapper executability; the `+x` bit on `./gradlew` is the project's own responsibility (standard `gradle init` makes it executable). No platform-specific Windows concern in scope (viewer is not Windows-targeted; Node on Windows uses its own command-line tokenizer rather than `posix_spawn`, but that's irrelevant here).
+- **No new NFR delta:** security envelope tightens (one fewer command-injection vector); perf unchanged (saving `/bin/sh` startup actually shaves a few ms per spawn); observability unchanged (start-event SSE shape preserved — `command/cwd/runner` JSON still emitted at server.mjs:880); deployment unchanged. Matches Wave 130 ARCH posture exactly minus the CONCERN-2 caveat.
+- **Architecture/ co-authorship gate (Wave 109 #335):** `git diff origin/main..HEAD -- architecture/` empty. This Wave 131 architect-gate PR touches only `coordination/handoffs/architect.md` — Architect's own HANDOFF doc, my lane only. Peer-edit boundary (Wave 112): no peer HANDOFF doc touched. Both gates satisfied.
+
+### Per-gate-criterion verification matrix (Wave 131 brief)
+
+| Criterion | Verification | Result |
+|---|---|---|
+| **1. Vulnerability closed (no `shell: ...` on `runTest` spawn)** | `grep -nE 'shell\s*:' ../apex-team-viewer/server.mjs` → only comment lines at 885+887 explaining absence. `server.mjs:882` spawn options block: `{ cwd, env: ... }` only. | PASS |
+| **2. Audit completeness (no other `shell:true` spawn/exec in viewer)** | Two spawn sites total: `runTest` (now shell-free) + `runGh` (hardcoded `'gh'`, no shell option, no untrusted argv). No `exec`/`execSync`/`execFile` shell-string sites. | PASS |
+| **3. Regression-test soundness (28/28 incl. literal-preservation + spawn-shape contract)** | `npm run test` at viewer HEAD `847b7c4` → `Test Files 2 passed (2), Tests 28 passed (28)`. 7 new + 21 Wave-130 preserved. Spec covers `$(...)`, backtick, and the no-shell contract across all four JVM/E2E runners. | PASS |
+| **4. Functional regression (relative `./gradlew` still resolves under posix_spawn with cwd)** | Node `child_process.spawn` → libuv `uv_spawn` → `posix_spawn` for paths containing `/`. `./gradlew` resolved relative to `cwd` parameter per documented libuv `chdir+execve` semantics. Wrapper executability is `gradle init`'s contract. Behavior preserved for benign filenames. | PASS |
+| **5. No new NFR delta (security improves; perf/observability unchanged)** | Security envelope tightens (Wave 130 CONCERN 2 closed). Perf saves `/bin/sh` startup per spawn. Observability: SSE start-event shape (`command/cwd/runner` JSON) preserved at server.mjs:880. Deployment unchanged. | PASS |
+
+### Verdict
+
+**PASS** for non-UI security rubric. Closes Wave 130 CONCERN 2. Closes `keyan-commits/apex-team-viewer#14`. UI Dev's threat-model analysis in the PR body is accurate (low-likelihood, real — attacker-planted Java filename + user-clicked ▶ Run). The fix is the minimum viable patch — drop the `shell:` option entirely; the inline comment correctly documents the rationale for future maintainers.
+
+Per ADR-018 the verdict heading uses the real PR # (16) and the real 40-char HEAD SHA (`847b7c45037f7933ad95f66433c91b30c46c6f12`). DevSecOps post-merge will backfill the merge SHA if it differs from HEAD.
+
+### Routing — QA + DevSecOps next
+
+- **QA:** new spawn-safety regression tests live in the viewer repo. Architect PASS opens the QA gate on viewer PR #16; QA may dispatch a smoke run against the patched code (gradle wrapper + maven runner still produces expected output for benign filenames; ideally a manual confirmation with a `FooTest.java` in a real workspace). Test soundness is already validated by the 7-test regression suite.
+- **DevSecOps:** may merge viewer PR #16 once QA gate clears + close `keyan-commits/apex-team-viewer#14` referencing the merge commit. Standard merge-and-backfill flow.
+- **No UI gate needed:** PR #16 touches only `server.mjs` + `__tests__/spawn-safety.test.ts`. Zero UI surface — no `.tsx`, no `globals.css`, no `public/app.js`. UX Designer not required for this PR.
+
+### Architecture/ co-authorship gate (Wave 109 rule, self-reflection for this gate PR)
+
+This Wave 131 architect-gate PR (apex-team `feature/wave-131-architect-gate` off `main@f43eded`) touches exactly one file: `coordination/handoffs/architect.md`. Zero peer files edited. Zero `architecture/` files edited (Wave 131 is a security-fix gate, not an architecture artifact change — no novel NFRs surfaced; the shell-injection class is already covered by Wave 130 ARCH posture). Both gates satisfied.
+
+### Peer-edit boundary (Wave 112)
+
+This PR touches only my own HANDOFF doc. No peer HANDOFF doc touched. UI Dev's own viewer PR is theirs (cross-repo), BA's requirements/ untouched, UX's design/ untouched, QA's tests/ untouched, DevSecOps's ops/ untouched. Boundary satisfied.
+
+### In flight / next
+
+- **DONE:** Gated viewer PR #16 at HEAD `847b7c4`. Posted PASS verdict to PR #16 comment. Closed CONCERN 2 from Wave 130. `apex-team-viewer#14` ready for DevSecOps to close on merge.
+- **QA next:** smoke verification + green-light for DevSecOps merge.
+- **DevSecOps next:** merge viewer PR #16 → close `apex-team-viewer#14` → merge this apex-team Wave 131 architect-gate PR.
+- **Wave 130 follow-ups still tracked:** Wave 130 architect-gate PR (#418) merged at `8e36637`. Wave 128b PR # + SHA already backfilled in Wave 130 commit `201e8fa` (verified in main log).
+
+### Parked / future (carried from Wave 130 + Wave 131 additions)
+
+- `system-design.md` — still not created.
+- `tech-stack.md` — still not created.
+- `coding-standards.md` — still not created. Wave 117 + Wave 118 + Wave 122 + Wave 128 + Wave 131 discipline (argv-array spawn / no shell:true for any user-data-derived argv) are candidate entries once seeded.
+- Fitness function for OQ-085-001's "no binary files committed under `tests/qa/wave-*/evidence/`" — QA owns implementation.
+- Viewer-repo subagent body audit (per ADR-017 follow-up).
+- ADR formalizing the ADR-NNNN-vs-ARCH-XXXX distinction (candidate ADR-019, deferred from Wave 122).
+- WCAG 2.1 AA promotion from FEAT-local ratification to workspace-conventions-level NFR (carried from Wave 125).
+- ADR for the keyboard-reachability rule (carried from Wave 125).
+- Automated WCAG conformance in viewer CI (carried from Wave 125).
+- CI automation for Wave 128 artifact disciplines (S1/S5/S6/S7) — LibreOffice headless + image diff + contrast gate + deploy-verification (carried from Wave 128b).
+- Structured QA verdict-block schema attesting S1–S9 (ADR-018 amendment candidate, carried from Wave 128b).
+- Resolver decision-tree codification candidate ADR (or `architecture/features/FEAT-NNNN-polyglot-run/ARCH-NNNN-runner-resolver-decisions.md` if the viewer adopts the Wave 122 convention) — carried from Wave 130.
+- **NEW (Wave 131):** ADR candidate "No `shell:true` on user-data-derived argv" — promotes Wave 131's reinforced rule to a durable cross-cutting standard (sibling to NFR-SEC-001 once `nfr.md` exists). Trigger: third recurrence of a `shell:true` regression on a `spawn`/`exec` call where ANY argv element is derived from filesystem/user input. The viewer's two-strikes (CONCERN 2 in Wave 130 → fix in Wave 131) doesn't quite meet the threshold yet; the next time we see it anywhere in the workspace, the rule should be promoted.
+- **NEW (Wave 131):** Architectural lint candidate — a CI grep gate that fails any PR introducing `shell:\s*(true|.*===)` on a `spawn`/`exec` call. DevSecOps lane. Low-effort, high-precision regression prevention. Currently uncovered by the test suite (spawn-safety tests cover the resolver-shape contract but not future regressions in unrelated spawn sites). Filed inline here rather than as a github issue because the rule is one-line.
+
+### Notes / caveats (Wave 131)
+
+- The shell-injection class is a textbook command-injection vector — UI Dev's threat-model description ("attacker plants malicious Java filename + user clicks ▶ Run") is the minimal viable scenario. Real-world likelihood depends on supply-chain hygiene (an SCM-imported test fixture; a compromised dependency that drops files into `src/test/java/`). Low likelihood, high blast radius if it lands — the right tier of fix is exactly this: drop the `shell:` option, no shell-escape gymnastics, no allowlist regex on class names. Defense-in-depth wins over defense-in-string.
+- The PR description's claim "Backward compatibility — `spawn('./gradlew', args, { cwd })` resolves correctly without a shell" is accurate per libuv's `uv_spawn` semantics. I verified the documentation chain (Node `child_process.spawn` → libuv `process.c` → POSIX `posix_spawn`). Windows is not in supported targets; if it ever enters scope, Node's Windows command-line tokenizer has its own quoting rules that would need a separate audit.
+- The 2 new untracked files in the viewer repo (`pnpm-lock.yaml`, `pnpm-workspace.yaml`) are NOT part of PR #16 and are out-of-scope for this gate. They appear to be local-only artifacts (probably from a stray `pnpm install` in the viewer repo). Flagging for UI Dev to either gitignore or commit deliberately in a follow-up; not a gate blocker.
+- Cross-repo verdict means SHA `847b7c45037f7933ad95f66433c91b30c46c6f12` is the viewer's HEAD at gate time, not apex-team's. apex-team's main HEAD at gate time is `f43eded` (post-Wave 130 SHA-backfill commit `201e8fa` merged via PR #419).
+
+---
+
+## PREV — 2026-06-04 — Wave 130 code-review re-gate (viewer PR #13 — PASS)
 
 ### Wave-130 PASS verdict — PR #13 — SHA dd70fffa4e4499c9a9ee0778e06fc78a1c8b9d11
 - **Gate role:** architect (non-UI rubric — re-gate of viewer PR #13 after UI Dev applied the 1-line fix for prior CONCERN 1).
