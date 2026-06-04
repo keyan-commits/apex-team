@@ -1,6 +1,47 @@
 # business-analyst — HANDOFF
 
-## NOW — 2026-06-04 — Wave 125: US-101 + FEAT-0004 + INDEX updates authored
+## NOW — 2026-06-04 — Wave 126: US-102 + FEAT-0005 + INDEX updates authored
+
+**Deliverables this turn (Wave 126 requirements phase):**
+
+- `requirements/features/FEAT-0005-feat-backfill-command.md` — new FEAT-0005 file; status: **active**. Retroactive FEAT backfill command; cross-workspace capable; frontmatter injection only (no file moves); Wave 126.
+- `requirements/user-stories/US-102-retroactive-feat-backfill-command.md` — new user story; status: **in-flight**. 13 ACs covering CLI shape, dry-run default, proposal report, dispatch-plan, role-scoped directory access, frontmatter-only mutation, PO reconciliation, --feat constraints, ungrouped bucket, idempotence, audit log, regression test (TEST-0005), and viewer smoke check. Cross-workspace clause embedded.
+- `requirements/features/INDEX.md` — FEAT-0005 row added to Registry + allocation log. Wave 126 context note added.
+- `requirements/INDEX.md` — US-102 row added; Wave 126 "Last updated" line prepended.
+- `coordination/handoffs/business-analyst.md` — this file, Wave 126 NOW updated.
+
+**Allocation verification:**
+- FEAT-0004 confirmed as previous high water → FEAT-0005 allocated.
+- US-101 confirmed as previous high water → US-102 allocated.
+- TEST-0005 is the QA allocation (TEST-0004 is current high water per Wave 125).
+
+**Scope calls:**
+- AC13 is a smoke check (NOT a test) — requires a running viewer instance. Documented as user-facing acceptance, not automated.
+- `--force` flag (overwrite existing `feat:` value) is explicitly out of scope; documented in AC10.
+- File moves deferred to Wave 127+; explicit in Out-of-scope section of US-102.
+- Viewer UI changes not in scope; viewer already renders FEAT cards.
+- ARCH-0002 is the Architect ticket (next after ARCH-0001 from Wave 125); pending Wave 126 Architect lane.
+- OPS-0001 is the DevSecOps ticket (first OPS ticket); pending Wave 126 implementation.
+- UX impact TBD — CLI-only command; expect UX to return no-impact.
+
+**Peer-edit boundary:** Only BA-owned files edited this turn. No peer HANDOFF files touched.
+
+**Branch:** `feature/126-feat-backfill-command` off main `16f3fa0067537aeed4c21622df03e2c7296fe93b`. Staged but not committed (outer orchestrator batches triad before committing).
+
+**PASS verdict (ADR-018 canonical format):**
+
+### Wave-126 PASS verdict — PR #0 — SHA 9207be4d8270565f5ac510dbb324cfe1ef405724
+- **Gate role:** business-analyst
+- **Timestamp:** 2026-06-04T00:00:00Z
+- **Notes:** Requirements phase — FEAT-0005 + US-102 authored; features/INDEX.md + requirements/INDEX.md updated with Wave 126 rows. 13 ACs specified; cross-workspace clause embedded in US-102. No code or architecture edits. Architecture gate does not fire (no `architecture/` edits). Peer-edit boundary respected. Branch `feature/126-feat-backfill-command` created off main `16f3fa0067537aeed4c21622df03e2c7296fe93b`. Staged, not committed — outer orchestrator batches triad. PR #0 placeholder per ADR-018 Wave 111b amendment; DevSecOps to backfill with real PR # + merge SHA post-merge.
+
+**Architecture gate:** no `architecture/` edits. Gate doesn't fire.
+
+**Last-processed user message:** Wave 126 BA dispatch (2026-06-04, main `16f3fa0`).
+
+---
+
+## PREV — 2026-06-04 — Wave 125: US-101 + FEAT-0004 + INDEX updates authored
 
 **Deliverables this turn (Wave 125 requirements phase):**
 
