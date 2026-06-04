@@ -77,7 +77,7 @@ authoring `tests/qa/features/FEAT-0004-viewer-a11y-polish/TEST-0004-viewer-a11y-
 
 **PASS verdict (ADR-018 canonical format):**
 
-### Wave-125 PASS verdict — PR #0 — SHA 9f9d53ee3c8f3e155a567197a489378318729c18
+### Wave-125 PASS verdict — PR #407 — SHA 16f3fa0067537aeed4c21622df03e2c7296fe93b
 - **Gate role:** business-analyst
 - **Timestamp:** 2026-06-04T00:00:00Z
 - **Notes:** Requirements phase — FEAT-0004 + US-101 authored; features/INDEX.md + requirements/INDEX.md updated; TEST-0004 correction documented (PO draft had TEST-0002; correct monotonic allocation is TEST-0004, current high water TEST-0003). No code or architecture edits. Architecture gate does not fire (no `architecture/` edits). Peer-edit boundary respected. PR #0 placeholder per ADR-018 Wave 111b amendment; DevSecOps to backfill with real PR # + merge SHA post-merge.
