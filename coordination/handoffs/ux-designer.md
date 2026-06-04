@@ -2,6 +2,15 @@
 
 ## NOW — 2026-06-04 — Wave 125 (Viewer a11y polish — critique gate)
 
+### Wave-125 PASS verdict — PR #407 — SHA 1f644ae43bee3bce40718ed33c26597e2bae54db
+- **Gate role:** ux-designer
+- **Timestamp:** 2026-06-04T00:00:00Z
+- **Notes:** Wave 125 viewer a11y polish UX critique pass. Implementation gated on sibling viewer PR #10 (commit `f677573`) — separate PR #10 verdict block below. apex-team PR #407 carries UX-0001 spec + this gate verdict. All 6 spec criteria PASS. No block/warn. Nit filed as `keyan-commits/apex-team-viewer#11` (double keydown listener — not a block).
+
+**Status:** PASS — DevSecOps may merge PR #407.
+
+---
+
 ### Wave-125 PASS verdict — PR #10 — SHA f6775734d32cfa314ac72e71522968b144c4772f
 - **Gate role:** ux-designer
 - **Timestamp:** 2026-06-04T00:00:00Z
