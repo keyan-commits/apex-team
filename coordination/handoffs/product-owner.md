@@ -1,6 +1,22 @@
 # product-owner — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 112 Phase 2 (PO self-edit, #196 partial)
+## ⏭️ NOW — 2026-06-04 — Wave 114 (close-sweep — backlog at ZERO)
+
+BA triaged + closed both remaining parked items: **#205 moot** (no UX skills adopted in Wave 111b → nothing to pin), **#381 absorbed** (Wave 110 PR #385 already rewrote LESSONS.md). `gh issue list --state open` returns `[]`.
+
+**Session ends with backlog at zero.** 17 PRs merged across Waves 107–114. 324/324 tests passing. Plan C subagent runtime dogfooded end-to-end.
+
+No Wave 115 candidates. Substantive future work would need to be filed fresh.
+
+---
+
+## ⏭️ PREV — 2026-06-04 — Wave 113 (backfill enforcement + #332 close — COMPLETE)
+
+PR #394 merged. Workflow split: format-check (PR-only) + TTL check (PR + cron + push). #332 closed won't-fix. US-092 + 16/16 Wave 113 test.
+
+---
+
+## ⏭️ PREV — 2026-06-04 — Wave 112 Phase 2 (PO self-edit, #196 partial)
 
 ### Wave-112 PASS verdict — PR #0 — SHA 4a455f0141f6b30f3d84b5d004a42852fcef588d
 - **Gate role:** product-owner
