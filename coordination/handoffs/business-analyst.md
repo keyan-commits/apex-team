@@ -1,6 +1,40 @@
 # business-analyst — HANDOFF
 
-## NOW — 2026-06-04 — Wave 113: US-092 authored (backfill enforcement)
+## NOW — 2026-06-04 — Wave 114: close-sweep complete (backlog zeroed)
+
+**Deliverables this turn:** `coordination/handoffs/business-analyst.md` Wave 114 NOW section (this file). No code edits. No new US-NNN. No architecture/ edits.
+
+**Triage table — all open issues as of Wave 114:**
+
+| Issue | Title (short) | Verdict | Action | Replacement |
+|---|---|---|---|---|
+| #205 | Supply-chain: pin community UX skills | close: moot | `gh issue close 205` executed | None — no skills adopted in Wave 111b; nothing to pin. `.claude/agents/ux-designer.md` '## Design tools' carries the evaluation record. |
+| #381 | LESSONS.md stale `_handoff-pending/` refs | close: absorbed | `gh issue close 381` executed | None — PR #385 (Wave 110, cae4a77) rewrote the Wave 93 entry; current LESSONS.md lines 40-43 correctly reference `coordination/handoffs/<role-id>.md`. |
+
+**Verification:**
+
+- `#205` rationale: Wave 111b (PR #387) evaluated all 6 skills (Impeccable, figma-implement-design, playwright-skill, theme-factory, accesslint, Excalidraw). Outcome: 3 Reject, 3 Defer — none adopted. Supply-chain pinning only applies to adopted dependencies. Nothing to pin. Issue is structurally moot.
+- `#381` rationale: LESSONS.md line 40 (`### Wave 93 → Wave 108`) currently reads "The earlier `_handoff-pending/<wave>-<role>.md` fragment + `pnpm fold-handoff` step were retired in PR #374 (commit `ebc83c5`)". The stale reference was fully replaced by Architect's Wave 110 rewrite. No further edit needed.
+- Post-close `gh issue list --state open --limit 100` → `[]`. Backlog is at zero.
+
+**Wave 115 candidates:** None. Both open issues were clean closes (moot + absorbed). No substantive items surfaced requiring a new wave.
+
+**PASS verdict (ADR-018 canonical format):**
+
+### Wave-114 PASS verdict — PR #0 — SHA 9e490bb5544a62108547467cde6a8c34b06e6c4c
+- **Gate role:** business-analyst
+- **Timestamp:** 2026-06-04T14:00:00Z
+- **Notes:** Docs-only close-sweep. No code edits, no new US-NNN, no architecture/ edits, no peer HANDOFF edits. Two `gh issue close` actions executed (#205, #381). Backlog zeroed. Peer-edit boundary respected. PR #0 + last-known SHA placeholder per ADR-018 Wave 111b amendment; DevSecOps to backfill with real PR # + merge SHA post-merge.
+
+**Architecture gate:** no `architecture/` edits. Gate doesn't fire.
+
+**Peer-edit boundary:** no peer HANDOFF edits. Only own HANDOFF edited.
+
+**Last-processed user message:** Wave 114 BA dispatch (2026-06-04, main 9e490bb).
+
+---
+
+## PREV — 2026-06-04 — Wave 113: US-092 authored (backfill enforcement)
 
 **Deliverables this turn:**
 
@@ -22,7 +56,7 @@
 
 **PASS verdict (ADR-018 canonical format):**
 
-### Wave-113 PASS verdict — PR #0 — SHA 09d3d16dbc96f4e4e6a41bf4c03d9e5793f4c8a5
+### Wave-113 PASS verdict — PR #0 — SHA 9e490bb5544a62108547467cde6a8c34b06e6c4c
 - **Gate role:** business-analyst
 - **Timestamp:** 2026-06-04T13:00:00Z
 - **Notes:** BA requirements phase only — US-092 authored + INDEX.md updated. No code or architecture edits. Architecture gate does not fire (no `architecture/` edits). Peer-edit boundary respected: only own HANDOFF + own US authoring.
@@ -61,7 +95,7 @@
 
 **PASS verdict (ADR-018 canonical format):**
 
-### Wave-112 PASS verdict — PR #0 — SHA 09d3d16dbc96f4e4e6a41bf4c03d9e5793f4c8a5
+### Wave-112 PASS verdict — PR #0 — SHA 9e490bb5544a62108547467cde6a8c34b06e6c4c
 - **Gate role:** business-analyst
 - **Timestamp:** 2026-06-04T12:42:30Z
 - **Notes:** BA self-edit only — tail-appended `## Lessons from prior incidents` to `.claude/agents/business-analyst.md`. Region-disjoint from Architect's Phase 1 mid-file boundary clauses. All 249 tests pass. Token discipline preserved (Wave 108 cleanliness test 153/153). PR #0 + last-known SHA placeholder per ADR-018 Wave 111b amendment; DevSecOps to backfill with real PR # + merge SHA post-merge.
