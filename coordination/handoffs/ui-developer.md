@@ -1,12 +1,14 @@
 # ui-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 130: viewer polyglot ▶ RUN
+## ⏭️ NOW — 2026-06-04 — Wave 130: viewer polyglot ▶ RUN (SHIPPED)
 
-### Wave-130 IN FLIGHT — viewer PR #13 — apex-team SHA b6a8515449146695ebbcbcb83f9bf70e2cfe552a
+### Wave-130 PASS verdict — viewer PR #13 — merge SHA 6d7f0fdb0c9af73a27303407175ec4a8b956a03b
 
-- **Gate role:** ui-developer (implementation complete; awaiting Architect + QA gates on viewer PR #13)
+- **Gate role:** ui-developer (implementation complete; all gates PASS — Architect PASS @ `dd70fff`, UX PASS @ `b205ec1`, merged 2026-06-04)
 - **Timestamp:** 2026-06-04T00:00:00Z
-- **Viewer PR:** `keyan-commits/apex-team-viewer#13` (branch `feature/wave-130-polyglot-run`, commit `b205ec1`)
+- **Viewer PR:** `keyan-commits/apex-team-viewer#13` (merged, SHA `6d7f0fdb0c9af73a27303407175ec4a8b956a03b`)
+- **apex-team HANDOFF refresh PR:** #416 merged, SHA `0fbbd620d3e018430942d5d558867e8d6e9d7616`
+- **Merge SHA backfill (DevSecOps 2026-06-04):** viewer PR #13 → `6d7f0fdb0c9af73a27303407175ec4a8b956a03b`; apex-team PR #416 → `0fbbd620d3e018430942d5d558867e8d6e9d7616`.
 
 **Deliverables (all in `keyan-commits/apex-team-viewer` PR #13):**
 

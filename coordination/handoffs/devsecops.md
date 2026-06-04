@@ -1,6 +1,27 @@
-# DevSecOps — HANDOFF (Wave 126)
+# DevSecOps — HANDOFF (Wave 130)
 
-## ⏭️ NOW — 2026-06-04 (Wave 126)
+## ⏭️ NOW — 2026-06-04 (Wave 130)
+
+### Wave-130 MERGE COMPLETE — all 4 PRs merged 2026-06-04
+
+- **Viewer PR #13** (`keyan-commits/apex-team-viewer`) — polyglot runner resolver + nested discovery + runner badge + SSE start event extension + 21/21 resolver tests. Merge SHA: `6d7f0fdb0c9af73a27303407175ec4a8b956a03b`
+- **apex-team PR #416** (UI Dev HANDOFF refresh) — Merge SHA: `0fbbd620d3e018430942d5d558867e8d6e9d7616`
+- **apex-team PR #417** (UX Designer gate verdict) — Merge SHA: `107955007d5b299b72f181bc51949e8816d7e153`
+- **apex-team PR #418** (Architect re-gate verdict) — Merge SHA: `8e36637f4529d6f8d3207734f08a9f18215ac5c1`
+
+**Post-merge verification:**
+- apex-team `pnpm test:run` → 17/17 files, 722 passed + 1 skipped (baseline HOLDS)
+- viewer restart confirmed on port 3200
+- `GET /api/artifacts?role=qa` → returns `runner` + `cwd` fields on all discovered test objects (nested discovery LIVE)
+- viewer PR #13 `dd70fff` re-gate PASS (Architect); `b205ec1` UX PASS — both confirmed in merge
+
+**CONCERN 2 acknowledged and tracked:** `keyan-commits/apex-team-viewer#14` — Gradle wrapper `shell: true` command-injection vector at `server.mjs:887`. Filed as `bug`. NOT merged silently — confirmed in this verdict. Deferred to Wave 130b or 131; must be patched before any user is encouraged to ▶ Run Gradle test files in production.
+
+**SHA backfill PR:** `chore/wave-130-sha-backfill` — updates verdict SHAs in `coordination/handoffs/{architect,ux-designer,ui-developer,devsecops}.md` + Wave 128b `PR #0` placeholder in architect.md (PR #414, SHA `44b311033c419939ef5fb94652c3f8535bb1aa4a`).
+
+---
+
+## ⏭️ PREV — 2026-06-04 (Wave 126)
 
 ### Wave-126 PASS verdict — PR #0 — SHA f098f9cdd261cd584adc915efeaa47c44f8839fb
 
