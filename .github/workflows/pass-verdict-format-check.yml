@@ -58,9 +58,8 @@ jobs:
           FORMAT_REQUIRED_FROM_WAVE=111
           # ADR-018 canonical regex for the heading line (em-dash is U+2014)
           # ^### Wave-NNN (PASS|REVISE|FAIL) verdict — PR #N — SHA <40hex>$
+          # shellcheck disable=SC2034  # used downstream via grep -qE "${CANONICAL_PATTERN}"
           CANONICAL_PATTERN='^### Wave-[0-9]{1,4} (PASS|REVISE|FAIL) verdict — PR #[0-9]{1,6} — SHA [0-9a-f]{40}$'
-          # Detection pattern: any "### Wave-NNN" heading that contains a verdict token
-          CANDIDATE_PATTERN='^### Wave-[0-9]{1,4}[[:space:]]'
 
           violations=()
           files_checked=0
@@ -117,91 +116,33 @@ jobs:
       - name: "ADR-018 placeholder TTL check (PR #0 on merged PRs > 1h)"
         env:
           GH_TOKEN: ${{ github.token }}
+          GRACE_SECONDS: "3600"
+          HANDOFFS_DIR: "coordination/handoffs"
         run: |
           set -euo pipefail
 
           # Soft-fail: emit a warning when PR #0 placeholders exist for PRs that
           # have been merged for > 1 hour. Pre-merge placeholders are expected;
           # this catches missed post-merge backfills.
+          #
+          # Logic lives in scripts/check-placeholder-ttl.py (extracted Wave 112,
+          # #390) — separately testable and free of YAML heredoc escape hazards.
 
-          HANDOFFS_DIR="coordination/handoffs"
-          WARN=0
+          export NOW_EPOCH
           NOW_EPOCH=$(date +%s)
-          GRACE_SECONDS=3600   # 1 hour
 
-          for f in "${HANDOFFS_DIR}"/*.md; do
-            [ -f "${f}" ] || continue
-            lineno=0
-            while IFS= read -r line; do
-              lineno=$((lineno + 1))
-              # Look for Wave-111+ PASS verdicts with PR #0 placeholder
-              if echo "${line}" | grep -qE '^### Wave-[0-9]{1,4} PASS verdict — PR #0 — SHA [0-9a-f]{40}$'; then
-                wave_num=$(echo "${line}" | grep -oE 'Wave-[0-9]{1,4}' | head -1 | grep -oE '[0-9]{1,4}')
-                if [ -z "${wave_num}" ] || [ "${wave_num}" -lt 111 ]; then
-                  continue
-                fi
-                # Extract the placeholder SHA and check if it corresponds to a merged PR
-                placeholder_sha=$(echo "${line}" | grep -oE 'SHA [0-9a-f]{40}' | grep -oE '[0-9a-f]{40}')
-                echo "Found Wave-${wave_num} PR #0 placeholder at ${f}:${lineno} (SHA: ${placeholder_sha})"
-
-                # Use gh to find merged PRs whose merge commit matches the placeholder SHA
-                # (or check all recently merged PRs for a SHA match in the merge chain).
-                # Approximation: query the 20 most recently merged PRs and check if the
-                # placeholder SHA is an ancestor of any merge commit.
-                merged_info=$(gh pr list \
-                  --repo "${{ github.repository }}" \
-                  --state merged \
-                  --limit 20 \
-                  --json number,mergedAt,mergeCommit \
-                  2>/dev/null || echo "[]")
-
-                if echo "${merged_info}" | python3 -c "
-          import json, sys, time, subprocess
-          prs = json.load(sys.stdin)
-          placeholder = '${placeholder_sha}'
-          grace = ${GRACE_SECONDS}
-          now = ${NOW_EPOCH}
-          for pr in prs:
-              mc = pr.get('mergeCommit') or {}
-              merge_sha = mc.get('oid', '')
-              merged_at = pr.get('mergedAt', '')
-              if not merge_sha or not merged_at:
-                  continue
-              # Check if placeholder is an ancestor of the merge commit
-              result = subprocess.run(
-                  ['git', 'merge-base', '--is-ancestor', placeholder, merge_sha],
-                  capture_output=True
-              )
-              if result.returncode != 0:
-                  continue
-              # It's an ancestor -- check the merge age
-              from datetime import datetime, timezone
-              merged_dt = datetime.fromisoformat(merged_at.replace('Z', '+00:00'))
-              merged_epoch = int(merged_dt.timestamp())
-              age = now - merged_epoch
-              if age > grace:
-                  print(f'PR #{pr[\"number\"]} merged {age//3600}h{(age%3600)//60}m ago -- backfill overdue')
-                  sys.exit(1)
-          sys.exit(0)
-          " 2>/dev/null; then
-                  : # No overdue backfill found for this placeholder
-                else
-                  echo "WARNING: PR #0 placeholder at ${f}:${lineno} appears to correspond to a PR merged >1h ago."
-                  echo "         DevSecOps should run the post-merge backfill:"
-                  echo "         chore(handoff): backfill Wave-${wave_num} verdict PR # and merge SHA"
-                  WARN=1
-                fi
-              fi
-            done < "${f}"
-          done
-
-          if [ "${WARN}" = "1" ]; then
+          # gh outputs [] if the list is empty (no merged PRs) — pipe directly.
+          # Allow the gh call to fail gracefully (no network = empty list).
+          if ! gh pr list \
+                --repo "${{ github.repository }}" \
+                --state merged \
+                --limit 20 \
+                --json number,mergedAt,mergeCommit \
+                2>/dev/null \
+              | python3 scripts/check-placeholder-ttl.py; then
             echo ""
             echo "WARNING: One or more PR #0 verdict placeholders are overdue for backfill."
             echo "This is a soft warning — the PR is NOT blocked. DevSecOps should backfill."
             echo "See ADR-018 Wave 111b amendment: architecture/decisions/ADR-018-pass-verdict-format.md"
-            # Soft fail: exit 0 (warning only)
-            exit 0
+            # Soft fail: exit 0 (warning only, not a hard block)
           fi
-
-          echo "OK: No overdue PR #0 placeholders found."

@@ -8,8 +8,10 @@ fi
 
 staged=$(git diff --cached --name-only)
 
-# Skip if no runtime code is staged (doc-only commits don't need HANDOFF.md refresh)
-if ! echo "$staged" | grep -qE '^(src/|scripts/|tests/|\.github/|package\.json$|server\.ts$|tsconfig\.json$)'; then
+# Skip if no substantive work is staged (pure coordination-only or doc-only commits are OK without an
+# additional HANDOFF update — editing your own coordination/handoffs/<role>.md IS the HANDOFF update).
+# Substantive work = source, scripts, tests, CI config, package manifests.
+if ! echo "$staged" | grep -qE '^(src/|scripts/|tests/|\.github/|\.claude/|package\.json$|tsconfig\.json$)'; then
   exit 0
 fi
 
@@ -21,16 +23,17 @@ if command -v pnpm >/dev/null 2>&1 && [ -f "pnpm-lock.yaml" ]; then
   pnpm type-check
 fi
 
-# Code is staged — require either a HANDOFF.md edit OR a _handoff-pending/*.md fragment.
-# (Wave 93+: roles write per-wave fragments instead of editing HANDOFF.md directly.)
+# Code is staged — require a coordination/handoffs/<role>.md edit (Plan C canonical pattern).
+# _handoff-pending/ was retired in Wave 112 (#389). Direct edits to coordination/handoffs/
+# are the only supported pattern. HANDOFF.md root updates are also accepted (legacy compat).
 has_handoff=$(echo "$staged" | grep -qx 'HANDOFF.md' && echo 1 || echo 0)
-has_fragment=$(echo "$staged" | grep -qE '^_handoff-pending/.+\.md$' && echo 1 || echo 0)
-if [ "$has_handoff" = "0" ] && [ "$has_fragment" = "0" ]; then
-  echo "✗ pre-commit: code is staged but neither HANDOFF.md nor a _handoff-pending/*.md fragment is." >&2
+has_role_handoff=$(echo "$staged" | grep -qE '^coordination/handoffs/.+\.md$' && echo 1 || echo 0)
+if [ "$has_handoff" = "0" ] && [ "$has_role_handoff" = "0" ]; then
+  echo "✗ pre-commit: code is staged but no HANDOFF doc is updated." >&2
   echo "" >&2
-  echo "  Option A (Wave 93+): add _handoff-pending/<wave>-<role>.md with Done/In-flight/Next/Notes." >&2
-  echo "  Option B (legacy):   update the HANDOFF.md NOW block and re-stage it." >&2
-  echo "  Bypass once:         git commit --no-verify" >&2
-  echo "  Disable always:      git config handoff.requireOnCommit false" >&2
+  echo "  Update your role's coordination/handoffs/<role-id>.md with this wave's work." >&2
+  echo "  (Root HANDOFF.md edits also accepted for legacy/non-role commits.)" >&2
+  echo "  Bypass once:  git commit --no-verify" >&2
+  echo "  Disable always: git config handoff.requireOnCommit false" >&2
   exit 1
 fi

@@ -1,78 +1,75 @@
-# DevSecOps — HANDOFF (Wave 111c)
+# DevSecOps — HANDOFF (Wave 112)
 
-## ⏭️ NOW — 2026-06-04 (Wave 111c)
+## ⏭️ NOW — 2026-06-04 (Wave 112)
+
+### Wave-112 PASS verdict — PR #0 — SHA 8ba1bbbb0b0aa12ed707d51957870e42ff39542a
+
+- **Gate role:** devsecops
+- **Timestamp:** 2026-06-04T12:30:00Z
+- **Notes:** Wave 112 deliverables A/B/C complete (PR open). PR #0 is commit-time placeholder per ADR-018 Wave 111b amendment; SHA filled at commit time. DevSecOps backfills real PR # and merge SHA post-merge with `chore(handoff): backfill Wave-112 verdict PR # and merge SHA`.
+
+### Wave 112 — actionlint self-application catches (PR #392 own lint job)
+
+actionlint caught 4 real findings on its own PR — perfect self-application:
+- `pass-verdict-format-check.yml:63` — `CANDIDATE_PATTERN` unused (SC2034). Removed (only `CANDIDATE_PATTERN` was truly unused; `CANONICAL_PATTERN` is referenced downstream and kept with a shellcheck-disable directive).
+- `ux-gate-check.yml:46-47` — `PR_NUMBER`/`HEAD_SHA` self-assignment (SC2269). Removed; env-var passthrough already in scope.
+- `ux-gate-check.yml:76,96` — `PLACEHOLDER_PASS` set-but-never-read (SC2034). Removed; `FOUND_PASS=1` path covers both cases.
+- `pr-hygiene.yml:16` — heredoc scanner flagged the template syntax inside a code comment. First attempt to escape failed (parser still saw the dot-glob); rewrote comment to plain prose referencing regression history.
+
+Third time we've collectively re-introduced workflow-shell anti-patterns (PR #375 / PR #388 / this PR). actionlint now closes the gap that Wave 111c surfaced.
+
+### Wave 112 — DevSecOps triple-track (#389 + #390 + shell-injection lint)
+
+**Issues addressed:**
+
+- **Deliverable A / #389** — `_handoff-pending/` directory retired entirely (`git rm -r`). Two stale fragment files deleted. Pre-commit hook (`.githooks/pre-commit`) updated: check now requires a `coordination/handoffs/*.md` edit OR root `HANDOFF.md` edit. Skip condition broadened to include `.claude/` alongside `.github/`, `scripts/`, `tests/`. Fragment/fold pattern references removed.
+
+- **Deliverable B / #390** — Python TTL heredoc extracted from `pass-verdict-format-check.yml` to standalone `scripts/check-placeholder-ttl.py`. CLI-invokable: reads merged-PR JSON from stdin, exits 1 on overdue-backfill finding, exits 0 on clean. Workflow updated to pipe `gh pr list` output to the script. Local tests: known-bad (far-future `NOW_EPOCH` + ancestor SHA) exits 1 with correct message; known-good (PR within 1h grace) exits 0.
+
+- **Deliverable C / shell-injection lint** — `actionlint` CI job added to `ci.yml`. Pinned to v1.7.12 via `go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12` (supply-chain safe). Problem-matcher JSON at `.github/actionlint-matcher.json` enables inline PR diff annotations. Also fixed: shell-injection bug in `ux-gate-check.yml` — redundant `${{ github.event.pull_request.title/body }}` direct interpolation removed from `run:` block (env-passthrough vars `$PR_TITLE`/`$PR_BODY` already set in `env:`). Action SHA-pinning applied across `ci.yml` (was using mutable `@v4` tags; now SHA-pinned for all 3 actions including new `actions/setup-go`).
+
+**Files touched:**
+- `_handoff-pending/` — deleted (git rm -r) [Deliverable A]
+- `.githooks/pre-commit` — HANDOFF check updated to coordination/handoffs/ [Deliverable A]
+- `scripts/check-placeholder-ttl.py` — new standalone script [Deliverable B]
+- `.github/workflows/pass-verdict-format-check.yml` — TTL step calls script [Deliverable B]
+- `.github/workflows/ux-gate-check.yml` — injection bug fix lines 54-55 [Deliverable C]
+- `.github/workflows/ci.yml` — actionlint job + SHA-pin all actions [Deliverable C]
+- `.github/actionlint-matcher.json` — new problem-matcher [Deliverable C]
+- `.claude/agents/devsecops.md` — actionlint skill doc added [Deliverable C]
+- `coordination/handoffs/devsecops.md` — this file (Wave 112 state)
+
+**Gates:**
+- `pnpm test:run` — 249/249 PASS
+- `pnpm lint --max-warnings 0` — clean
+- `pnpm type-check` — clean
+
+---
+
+## PREV — 2026-06-04 (Wave 111c)
 
 ### Wave-111 PASS verdict — PR #0 — SHA 10c002b723ea2da2e757e57ab42f832253310c0b
 
 - **Gate role:** devsecops
 - **Timestamp:** 2026-06-04T12:00:00Z
-- **Notes:** Wave 111c deliverables AC1-AC5 complete (PR #388 open). PR #0 is commit-time placeholder per ADR-018 Wave 111b amendment; SHA is branch HEAD at commit time. DevSecOps backfills real PR # and merge SHA post-merge with `chore(handoff): backfill Wave-111c verdict PR # and merge SHA`.
+- **Notes:** Wave 111c deliverables AC1-AC5 complete. PR #388 merged (39298fbb). Backfill pending: PR #0 → PR #388, placeholder SHA → 39298fbb1caf5e38b9f7d3b09f4cf11a8a879074.
 
 ### Wave 111c — Cluster 4 CI/process discipline (#240, #246, #301, #324) + Wave 111a/111b verdict backfills
 
-**Issues addressed:**
-
-- **AC1 / #240** — `gh pr checks` step added to `.claude/agents/devsecops.md` merge protocol (step 2a). Command: `gh pr checks <PR#> --watch`. Pending/in-progress/fail = hard blocker; skipped = OK.
-
-- **AC2 / #246** — New workflow `.github/workflows/ux-gate-check.yml`. Fires on PRs touching `src/**`, `design/**`, and `tests/qa/wave-*/ui-*` / `ux-*`. Greps `coordination/handoffs/ux-designer.md` for ADR-018 canonical UX PASS verdict matching PR# + HEAD SHA (or reachable-ancestor placeholder per ADR-018 Wave 111b amendment). Fails PR if missing. `[skip-ux-gate]` override in PR title/body bypasses for emergencies.
-
-- **AC3 / #301** — `gh pr merge --delete-branch` anomalous-closure playbook added to `.claude/agents/devsecops.md` under new section `### \`gh pr merge --delete-branch\` anomalous-closure playbook`. Matching LESSONS.md entry added (newest-first, top of 2026-06-04 block).
-
-- **AC4 / #324** — `pnpm outdated` returned no output (no outdated deps). Closing #324 with comment: snapshot from Wave 98 is stale; current lockfile is clean.
-
-- **AC5 — ADR-018 CI wiring:** New workflow `.github/workflows/pass-verdict-format-check.yml`. Separate job (PO lean toward (b) accepted). Checks: (1) format check — Wave-111+ verdict headings in `coordination/handoffs/*.md` match canonical regex, line-by-line failure output; (2) placeholder TTL check — soft-warn on PR #0 placeholders for PRs merged >1h ago.
-
-- **AC5 — Wave 111a backfill:** `coordination/handoffs/qa.md` line 69: `### Wave-111 PASS verdict — PR #0 — SHA cae4a773...` → `### Wave-111 PASS verdict — PR #386 — SHA a16c924739eddf928f63a257abdd77fbfa6fb1f8`.
-
-- **AC5 — Wave 111b backfill:** `coordination/handoffs/qa.md` line 3: `### Wave 111b PASS verdict — PR #0 — SHA 09d3d16c...` (non-canonical: space not hyphen, alpha suffix) → normalized to `### Wave-111 PASS verdict — PR #387 — SHA ba0905fc75ca9788cef538e0eab078040336384a`. Alpha-suffix decision: kept regex strict (`\d{1,4}` only); normalized heading to `Wave-111` and distinguished by PR# (#386 vs #387). HANDOFF to Architect to ratify this interpretation (or amend ADR-018 to allow alpha suffixes) filed below.
-
-**Alpha-suffix spec gap decision:**
-The Wave 111b verdict used `### Wave 111b PASS verdict` (space + alpha). The ADR-018 canonical regex `Wave-(\d{1,4})` requires a hyphen and pure digits. Two options considered: (i) update ADR-018 to allow optional alpha suffix in wave field; (ii) normalize existing verdicts to pure-digit form and distinguish by PR#. Chose (ii) for this PR: one Wave-111 entry per PR (PR #386 = 111a, PR #387 = 111b), regex unchanged, no ADR edit needed. Filed HANDOFF to Architect to ratify. If Architect prefers (i), ADR-018 amendment + test update in a follow-up.
-
-**Files touched:**
-- `.claude/agents/devsecops.md` — AC1 step 2a + AC3 playbook section
-- `.github/workflows/ux-gate-check.yml` — new (AC2)
-- `.github/workflows/pass-verdict-format-check.yml` — new (AC5)
-- `LESSONS.md` — AC3 entry (newest-first)
-- `coordination/handoffs/qa.md` — Wave 111a + 111b backfills (AC5)
-- `coordination/handoffs/devsecops.md` — this file (Wave 111c state + PASS verdict)
+- AC1 (#240): `gh pr checks` step added to devsecops.md merge protocol (step 2a)
+- AC2 (#246): ux-gate-check.yml workflow shipped
+- AC3 (#301): anomalous-closure playbook in devsecops.md + LESSONS.md entry
+- AC4 (#324): pnpm outdated clean; #324 closed
+- AC5: pass-verdict-format-check.yml — format check + placeholder TTL soft-warn
+- AC5 backfills: Wave 111a PR #386 SHA a16c924...; Wave 111b PR #387 SHA ba0905f...
 
 ---
 
 ## PREV — 2026-06-04 (Wave 110)
 
-### Wave 110 — CI hook eval (Deliverable C)
-
-**Verdict: Already covered — no new path-conditional job needed.**
-
-`ci.yml` runs `pnpm test:run` globally on every push and PR (`branches: ["**"]`). Vitest globs `tests/**`, which includes `tests/qa/wave-108/subagent-body-cleanliness.test.ts`. Test runs clean locally (153 tests, 124ms). A path-conditional job filtering on `.claude/agents/` changes would not save wall-clock (the global `Tests` job runs regardless), would add YAML complexity, and would produce a duplicate failure signal. The generic "Tests" job failure on an agent-body violation is sufficient — the failing test name makes the cause clear from the test output. No new job added.
-
 ### Wave 110 — ops/README.md rewrite (Deliverable D, closes #380)
 
-**Files touched:**
 - `ops/README.md` — full rewrite for Plan C runtime
-
-**Retired content removed:**
-- Environments table (`:3100/:3110/:3120/:3130` ports, `pnpm dev:test:*` scripts)
-- Per-role isolated work section (`pnpm branch:start`, `pnpm branch:cleanup`, worktree workflows)
-- `.restart-trigger` reference from merge + deploy flow
-- `pnpm fold-handoff` / `_handoff-pending/` references
-- `scripts/post-deploy-smoke.mjs` + `pnpm smoke` references (script does not exist)
-- `APEX_MCP_URL`, `APEX_TEAM_DB_PATH` env vars (no server to connect to)
-
-**Plan C equivalents added:**
-- Runtime table: `coordination/handoffs/<role-id>.md`, Agent tool invocation, `pnpm vitest run`, `scripts/install-agents-user-scope.sh`
-- Cross-links to `architecture/workspace-conventions.md` and `architecture/decisions/ADR-017-subagent-body-rewrite-rules.md`
-- `pr-hygiene.yml` documented in pipeline table (was missing from old README)
-
-**Preserved accurate sections:**
-- `## Secrets` (trimmed to Plan C-relevant vars only)
-- `## Pipeline & security tooling` (all 4 active workflows + 2 hooks confirmed)
-- `## Branch protection (US-006)`
-- `## Portable workspace bootstrap (US-007)` (bootstrap script verified clean — no retired command refs)
-- `## Infrastructure as Code (IaC)` (updated prose for subagent runtime)
-
-**Follow-up issues filed:** none. Bootstrap script stub is generic and accurate. No new operational procedures needed.
 
 ## Done (prior waves)
 
@@ -83,6 +80,6 @@ The Wave 111b verdict used `### Wave 111b PASS verdict` (space + alpha). The ADR
 
 ## Notes
 
-- Gates clean: `pnpm lint` (0 warnings), `pnpm type-check` (0 errors), `pnpm test:run` (153 passed)
-- Wave-108 cleanliness test (153 tests) still passes — `ops/README.md` does not touch `.claude/agents/*.md`
-- No Architect co-authorship gate: `architecture/` not touched this wave
+- Wave 112 PR #0 backfill needed post-merge
+- Wave 111c backfill also pending: PR #0 → PR #388, placeholder SHA → 39298fbb1caf5e38b9f7d3b09f4cf11a8a879074
+- No Architect co-authorship gate this wave: `architecture/` not touched

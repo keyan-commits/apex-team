@@ -43,17 +43,14 @@ jobs:
           set -euo pipefail
 
           HANDOFF_FILE="coordination/handoffs/ux-designer.md"
-          PR_NUMBER="${PR_NUMBER}"
-          HEAD_SHA="${HEAD_SHA}"
 
           echo "PR #${PR_NUMBER}  HEAD SHA: ${HEAD_SHA}"
           echo ""
 
           # --- Emergency override ---
-          # If PR title or body contains [skip-ux-gate], skip the check.
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          PR_BODY="${{ github.event.pull_request.body }}"
-          if echo "${PR_TITLE}${PR_BODY}" | grep -qF '[skip-ux-gate]'; then
+          # PR_TITLE/PR_BODY are injected via env: above (not interpolated here)
+          # to prevent shell injection on special characters — same fix as #378.
+          if printf '%s%s' "${PR_TITLE}" "${PR_BODY}" | grep -qF '[skip-ux-gate]'; then
             echo "SKIP: [skip-ux-gate] override present in PR title/body."
             exit 0
           fi
@@ -74,7 +71,6 @@ jobs:
           FOUND_PASS=0
           FOUND_REVISE_OR_FAIL=0
           STALE_PASS=0
-          PLACEHOLDER_PASS=0
 
           while IFS= read -r line; do
             # Match: ### Wave-NNN (PASS|REVISE|FAIL) verdict — PR #N — SHA <40hex>
@@ -94,7 +90,6 @@ jobs:
                   elif git merge-base --is-ancestor "${VERDICT_SHA}" "${HEAD_SHA}" 2>/dev/null; then
                     # Placeholder / ancestor SHA — valid per ADR-018 Wave 111b amendment
                     FOUND_PASS=1
-                    PLACEHOLDER_PASS=1
                     echo "PASS (placeholder): UX PASS verdict SHA ${VERDICT_SHA} is a reachable ancestor of HEAD ${HEAD_SHA}."
                     echo "       PR #${VERDICT_PR} placeholder — valid pre-merge per ADR-018 Wave 111b amendment."
                   else

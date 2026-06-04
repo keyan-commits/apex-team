@@ -383,6 +383,7 @@ steps:
 - SAST in the PR pipeline, not just at release. A security finding that blocks a deploy is expensive; one that blocks a PR is cheap.
 - Dependency vulnerability scan on every merge to main, not just on a schedule.
 - Secrets scanning pre-commit (e.g. gitleaks, detect-secrets). The earlier in the flow, the lower the blast radius of a leak.
+- **GitHub Actions workflow linting (actionlint):** run `actionlint` on every PR touching `.github/workflows/`. It catches: shell-injection (`${{ ... }}` interpolated directly in `run:` outside `env:`), deprecated action versions, expression type errors, invalid contexts. Pinned to a specific version via `go install github.com/rhysd/actionlint/cmd/actionlint@<version>` — supply-chain safe, no `curl | bash` at build time. The problem-matcher JSON (`.github/actionlint-matcher.json`) enables inline PR annotations. Three injections of the same pattern shipped in waves 107/111c before the CI check existed (Wave 112, #391); actionlint catches the class structurally. Local test: `go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 && actionlint .github/workflows/*.yml`.
 
 ### Policy-as-code gates
 

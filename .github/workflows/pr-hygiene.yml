@@ -11,13 +11,13 @@ jobs:
     steps:
       - name: Check close-keyword syntax
         run: |
-          # Read PR body from the GitHub event payload file. Using
-          # $GITHUB_EVENT_PATH (a runner env var, always set) avoids putting
-          # any ${{ github.event.pull_request.* }} expression in the YAML env:
-          # block — which caused registration failures on push events because
-          # GitHub's static context-availability validator rejects pull_request
-          # context access in non-pull_request event contexts, even with || ''
-          # fallbacks or job-level if: guards (#376 regression root cause).
+          # Read PR body from the GitHub event payload file via
+          # $GITHUB_EVENT_PATH (runner env var, always set). This avoids any
+          # YAML template expansion of the pull_request payload at workflow
+          # registration time. Registration validation runs on push events;
+          # pull_request payload is null in that context and the template
+          # would fail validation even with default-empty fallbacks. See
+          # PR #378 + #392 for the regression history.
           #
           # $GITHUB_EVENT_PATH is safe: it is set by the runner, not by user
           # input, so it is not subject to shell injection. The node -e invocation
