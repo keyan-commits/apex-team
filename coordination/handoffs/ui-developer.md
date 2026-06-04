@@ -2,10 +2,10 @@
 
 ## ⏭️ NOW — 2026-06-04 — Wave 125: viewer a11y polish (US-101 AC1-AC5)
 
-### Wave-125 PASS verdict — viewer PR #10 — apex-team branch a354bbfac6f441231a39b2a87945c4e6fa42a7b5
-- **Gate role:** ui-developer (self-attestation — implementation complete, awaiting UX + QA gate)
+### Wave-125 PASS verdict — PR #407 — SHA 1f644ae43bee3bce40718ed33c26597e2bae54db
+- **Gate role:** ui-developer
 - **Timestamp:** 2026-06-04T00:00:00Z
-- **Notes:** All five ACs implemented. Viewer changes in **sibling-repo PR `keyan-commits/apex-team-viewer#10`** (branch `feature/wave-125-a11y-polish`, viewer commit `f677573`). No `architecture/` edits; no peer HANDOFF docs edited.
+- **Notes:** Wave 125 viewer a11y polish (US-101 AC1–AC4) implemented in sibling viewer PR #10 (`keyan-commits/apex-team-viewer#10`, commit `f677573`). apex-team-side artifacts on this PR #407 (branch `feature/125-viewer-a11y-polish`): updated `coordination/handoffs/ui-developer.md` Wave 125 NOW. No `architecture/` edits; no peer HANDOFF docs edited.
 
 **Deliverables (all in `keyan-commits/apex-team-viewer` PR #10):**
 
