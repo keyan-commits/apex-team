@@ -2,11 +2,11 @@
 
 ## ⏭️ NOW — 2026-06-04 (Wave 120)
 
-### Wave-120 PASS verdict — PR #0 — SHA 017145022ee78d2849356f9ef3d56ddb42adf577
+### Wave-120 PASS verdict — PR #401 — SHA 017145022ee78d2849356f9ef3d56ddb42adf577
 
 - **Gate role:** devsecops
 - **Timestamp:** 2026-06-04T18:15:00Z
-- **Notes:** Wave 120 US-096 AC1-AC4 + AC6 complete. `.githooks/pre-commit` extended with ADR-018 verdict-format step. All 8 subagent bodies updated with verdict-format pre-commit gate clause (AC6). 507/507 PASS. PR #0 is commit-time placeholder per ADR-018; backfill post-merge.
+- **Notes:** Wave 120 US-096 AC1-AC4 + AC6 complete. `.githooks/pre-commit` extended with ADR-018 verdict-format step. All 8 subagent bodies updated with verdict-format pre-commit gate clause (AC6). 507/507 PASS. PR #401. SHA is parent commit (Phase-1 placeholder per ADR-018 amendment); merge SHA backfill post-merge.
 
 ---
 
