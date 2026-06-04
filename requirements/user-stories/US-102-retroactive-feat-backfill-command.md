@@ -299,6 +299,106 @@ a running viewer instance and visual/API-response verification.
 
 ---
 
+### AC14 — Plan C canonical paths
+
+Under Plan C (apex-team workspace has no `src/` directory, only `.claude/agents/`), the canonical
+artifact paths for FE Dev and BE Dev differ from the Wave 122 `src/features/` paths:
+
+- **FE Dev canonical path:** `frontend/features/FEAT-NNNN-<slug>/FE-NNNN-<slug>.md`
+  A summary markdown doc linking to the sibling-repo PR, commit SHA, and scope of change.
+- **BE Dev canonical path:** `backend/features/FEAT-NNNN-<slug>/BE-NNNN-<slug>.md`
+  Identical shape to the FE summary doc.
+
+These Plan C paths SUPERSEDE the Wave 122 `src/features/` paths when the workspace is
+Plan-C-shaped (no `src/` directory, has `.claude/agents/`).
+
+**Script detection rule:** The backfill script MUST detect Plan-C-shaped workspaces by checking:
+1. Does `<workspace>/src/` exist? If **no** → Plan C workspace.
+2. Does `<workspace>/.claude/agents/` exist? If **yes** → confirms Plan C shape.
+
+When Plan C is detected:
+- The `ui-developer` role directory scanned is `frontend/` (not `src/`).
+- The `backend-developer` role directory scanned is `backend/` (not `src/`).
+- Role-scoped directory access table (AC5) entry for `ui-developer` and `backend-developer`
+  reads `frontend/` and `backend/` respectively, with a warning printed when neither `src/`
+  nor `frontend/`/`backend/` exists yet (no error — they may not have been created yet).
+
+In dry-run mode, if `frontend/` or `backend/` is absent and Plan C is detected, the proposal
+report notes: `"Plan C workspace detected; frontend/ or backend/ does not yet exist — retro
+FE/BE summary docs cannot be scanned but can be seeded by AC15."`.
+
+---
+
+### AC15 — Retroactive FE Dev backfill
+
+When `--all` or a `--feat` matching the relevant FEAT cluster runs against apex-team, the
+script MUST seed retroactive FE summary docs for the following prior waves where UI Dev
+performed work in the sibling viewer repo (`../apex-team-viewer/`) without leaving an
+apex-team-side artifact:
+
+| Wave | US | Description | FE ticket | Parent FEAT |
+|---|---|---|---|---|
+| Wave 119 | US-095 | Viewer workspace switcher | FE-0001 | FEAT TBD (see note) |
+| Wave 121 | US-097 | Viewer auto-follow | FE-0002 | FEAT TBD (see note) |
+| Wave 123 | US-099 | FEAT-grouped rendering | FE-0003 | FEAT-0002 |
+| Wave 125 | US-101 | Viewer a11y polish | FE-0004 | FEAT-0004 |
+
+**FEAT assignment note for Wave 119 + 121:** Waves 119 and 121 predate the FEAT-XXXX grouping
+convention (Wave 122). In dry-run mode, the script reports these as:
+`"Wave 119 viewer code → FEAT TBD (pre-convention wave; BA reconciliation required)"` and
+`"Wave 121 viewer code → FEAT TBD (pre-convention wave; BA reconciliation required)"`.
+The FEAT assignment for FE-0001 and FE-0002 is deferred to BA reconciliation — do not
+auto-assign a FEAT number in `--apply` mode for these two.
+
+**Retro summary doc shape** (30–80 lines, YAML frontmatter + markdown body):
+
+```yaml
+---
+ticket: FE-NNNN
+parent_feat: FEAT-NNNN   # or "TBD" for pre-convention waves
+parent_us: US-NNN
+wave: NNN
+role: ui-developer
+status: retro
+---
+```
+
+Body sections (all required):
+- `## Scope` — list of files changed in the viewer repo (`../apex-team-viewer/`).
+- `## Viewer PR` — PR number (or "not filed as separate PR" if committed direct to viewer main).
+- `## Viewer commit SHA` — the commit SHA in the viewer repo.
+- `## Apex-team-side artifacts` — list of any apex-team artifacts already shipped in that wave
+  (e.g. US-NNN file, design spec, QA test). If none: `"none — this is the only apex-team artifact"`.
+- `## Notes` — any context (e.g. "pre-convention wave; FEAT TBD pending BA reconciliation").
+
+---
+
+### AC16 — Update Wave 122 standard in agent bodies
+
+The `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` section in BOTH
+`.claude/agents/ui-developer.md` AND `.claude/agents/backend-developer.md` MUST be amended to
+include a **Plan C clause** documenting the `frontend/features/` and `backend/features/`
+canonical paths.
+
+The exact amendment text to append (as a new sub-bullet or paragraph within the existing section):
+
+> **Plan C workspaces (no `src/`):** When the workspace has no `src/` directory
+> (e.g. apex-team under Plan C), use `frontend/features/FEAT-NNNN-<slug>/FE-NNNN-<slug>.md`
+> (resp. `backend/features/FEAT-NNNN-<slug>/BE-NNNN-<slug>.md`) — a summary doc linking to
+> the sibling-repo PR and commit. Author this artifact on every wave where you edit code in
+> a sibling repo.
+
+This amendment ensures the Wave 122 standard section is self-contained for Plan C operators
+and does not require cross-referencing US-102 to understand the alternate path.
+
+**Scope note:** `.claude/agents/ui-developer.md` and `.claude/agents/backend-developer.md`
+are role-self-owned sections within role bodies. The amendment is scoped to the existing
+Wave 122 standard section only — no other part of those files is in scope. Architect ratifies
+the anchor phrase stability (byte-for-byte grep); the body edit itself is UI Dev's and BE Dev's
+own lane per the peer-edit protocol.
+
+---
+
 ## Out of scope (explicit)
 
 The following are explicitly out of scope for US-102 and FEAT-0005:

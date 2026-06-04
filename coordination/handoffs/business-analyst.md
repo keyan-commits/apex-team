@@ -37,7 +37,16 @@
 
 **Architecture gate:** no `architecture/` edits. Gate doesn't fire.
 
-**Last-processed user message:** Wave 126 BA dispatch (2026-06-04, main `16f3fa0`).
+**Wave 126 in-wave amendment (Plan C FE/BE canonical-path correction):**
+- US-102 amended with 3 new ACs (AC14–AC16). Total ACs: 16.
+- AC14: Plan C canonical paths — `frontend/features/FE-NNNN.md` + `backend/features/BE-NNNN.md`; script detects Plan C shape (no `src/`, has `.claude/agents/`).
+- AC15: Retro FE Dev backfill seeding for Waves 119/121/123/125 → FE-0001–FE-0004; pre-convention waves (119/121) report FEAT TBD in dry-run; retro doc shape specified (30–80 lines).
+- AC16: Wave 122 standard sections in `ui-developer.md` + `backend-developer.md` amended with Plan C clause; role-self-owned sections, Architect ratifies anchor phrase stability.
+- Root cause addressed: viewer FE Dev tab empty because UI Dev edits sibling viewer repo without leaving an apex-team-side artifact.
+- `requirements/INDEX.md` updated: amendment note prepended + US-102 table row refreshed to reflect 16 ACs.
+- AC16 body edits are NOT in BA's lane — dispatched to UI Dev + BE Dev; Architect ratifies anchor stability.
+
+**Last-processed user message:** Wave 126 BA dispatch (2026-06-04, main `16f3fa0`). Wave 126 amendment: Plan C FE/BE path correction (same session).
 
 ---
 
