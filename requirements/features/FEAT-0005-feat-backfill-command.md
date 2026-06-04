@@ -12,7 +12,7 @@ related-us: US-102
 related-arch: "ARCH-0002 (pending — Wave 126 Architect lane)"
 related-design: "TBD (UX impact TBD — Wave 126 UX lane)"
 related-tests: "tests/qa/features/FEAT-0005-feat-backfill-command/TEST-0005-feat-backfill-command.test.ts"
-related-ops: "OPS-0001 (pending — DevSecOps `pnpm run feat:backfill` script + ops/pipelines/ integration)"
+related-ops: "OPS-0004 (DevSecOps `pnpm run feat:backfill` script + ops/pipelines/ integration; OPS-0001..0003 taken by Wave 124 pipeline templates)"
 ---
 
 # FEAT-0005 — FEAT Backfill Command
@@ -91,7 +91,7 @@ Out of scope:
 | QA | TEST-0005 | `tests/qa/features/FEAT-0005-feat-backfill-command/TEST-0005-feat-backfill-command.test.ts` | pending — Wave 126 implementation |
 | FE Dev | (not applicable — no UI surface) | — | not applicable |
 | BE Dev | (not applicable — CLI script, no server) | — | not applicable |
-| DevSecOps | OPS-0001 | `ops/features/FEAT-0005-feat-backfill-command/OPS-0001-feat-backfill-command.md` + `pnpm run feat:backfill` script wiring | pending — Wave 126 implementation |
+| DevSecOps | OPS-0004 | `ops/features/FEAT-0005-feat-backfill-command/OPS-0004-feat-backfill-script.md` + `pnpm run feat:backfill` script wiring | done — Wave 126 shipped |
 
 ---
 

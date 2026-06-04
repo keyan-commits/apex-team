@@ -17,7 +17,7 @@
 
 **Lane 2 (next):** DevSecOps (`scripts/feat-backfill.mjs` + `package.json` + `ops/README.md`) + QA (TEST-0005). BA pass-2 (amend US-102 for FE/BE canonical-path).
 
-**Lane 3 (verify + merge):** Architect code-review; QA verification; DevSecOps merges PR #409 (apex-team only — no sibling viewer changes in this wave).
+**Lane 3 (verify + merge):** Architect code-review PASS verdict landed for PR #411 SHA `feef082` (commit `542553f`). Two non-blocking findings — OPS-0001 → OPS-0004 backfill in FEAT-0005 parent doc (this commit fixes it) + script dead-code `_insertIndexRow` deferred to a future `--ba-approved` wave. Open PRs to merge: #411 (apex-team Wave 126), #412 (apex-team Wave 127 HANDOFF), viewer #12 (Wave 127 FE→UI rename).
 
 ## PREV — 2026-06-04 (Wave 125 — viewer a11y polish, merged via PRs #407 + #10 + backfill #408)
 
