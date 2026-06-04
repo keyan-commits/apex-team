@@ -1,6 +1,32 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 112 — Architect #391 + 5-body Lessons fan-out + Wave 112 completeness test)
+## ⏭️ NOW — 2026-06-04 (Wave 114 — close-sweep, backlog at zero)
+
+**claude-code direct on `feature/wave-114-closeout` (off origin/main `9e490bb`).**
+
+BA triaged the two parked items + ran full backlog scan:
+
+1. **#205 closed as moot** — Wave 111b (PR #387) evaluated 6 community UX skills; none adopted. Nothing to pin.
+2. **#381 closed as absorbed** — Wave 110 (PR #385) already rewrote LESSONS.md Wave 93 entry. No stale refs remain.
+3. **`gh issue list --state open` → `[]`.** Backlog at zero.
+
+**No Wave 115 candidates.** Future substantive work would need to be filed fresh.
+
+**Session totals (Waves 107–114):**
+- **17 PRs merged**
+- **6 ADRs/standards** (ADR-017 body rewrite rules, ADR-018 PASS-verdict + Wave 111b amendment, workspace-conventions, peer-edit protocol, etc.)
+- **7 user stories** (US-086 → US-092)
+- **6 wave regression test suites** in `tests/qa/wave-NNN/` — full suite **324/324 PASS**
+- **8 subagent bodies** fully cleaned + carrying Lessons + skill additions + peer-edit + architecture co-authorship boundaries
+- **4 CI workflows** under fitness function: actionlint, pass-verdict-format-check (PR + nightly cron + push), ux-gate-check, pr-hygiene
+- **60+ GH issues closed**
+- Plan C subagent runtime dogfooded across **8 waves end-to-end**
+
+Also catches HANDOFF.md + product-owner.md up to Wave 114 state (prior Wave 113 PR had Edit-collision misses).
+
+---
+
+## ⏭️ PREV — 2026-06-04 (Wave 113 — backfill enforcement CI extension + #332 close)
 
 **claude-code direct on `feature/wave-112-phase1-2-3` (off origin/main `4a455f0`).**
 
