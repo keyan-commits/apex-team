@@ -1,6 +1,14 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 123 + Wave 124 — viewer FEAT-grouped rendering + DevSecOps reusable pipelines/CLI)
+## ⏭️ NOW — 2026-06-04
+
+Next wave TBD. Backlog open.
+
+---
+
+## PREV — 2026-06-04 (Wave 123 + Wave 124 — viewer FEAT-grouped rendering + DevSecOps reusable pipelines/CLI)
+
+**Status:** merged via PR #405 + PR #6 on 2026-06-04. Merge SHAs: apex-team `21aefaa7673f0ee57321dbdfef6ec8efc801fa2a`, viewer `7df5cda1c9c55e05e8b72480f4c0ac551ffe95e8`. Test baseline confirmed: 655 passed + 1 skipped.
 
 **claude-code orchestrator on `feature/124-devsecops-pipelines` (off main `a4ce3c7`).** Two waves co-landing in PR #405 (apex-team) + PR #6 (sibling viewer repo).
 
@@ -13,10 +21,6 @@
 - `pnpm lint`, `pnpm type-check` clean
 - `sh -n ops/pipelines/{dev,staging,prod}.sh` syntax clean; `node --check` clean on both `scripts/*.mjs`
 - Viewer manual sanity: `/api/artifacts?role=ba` returns `features[]` + `ungrouped[]`; DevSecOps tab shows `pipelines[]`
-
-**In flight / next:**
-- PR #405 (apex-team) + PR #6 (viewer) — Architect + UX gate pending → DevSecOps merges
-- HANDOFF refresh shipped in same PRs per HANDOFF-in-PR rule
 
 ## PREV — 2026-06-04 (Wave 122 — FEAT-XXXX feature grouping convention + autonomous-on-any-project standard)
 
