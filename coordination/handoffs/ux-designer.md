@@ -1,6 +1,41 @@
 # ux-designer — HANDOFF
 
-## NOW — 2026-06-04 — Wave 126 (FEAT backfill command — no UI impact)
+## NOW — 2026-06-04 — Wave 130 (Runner badge UX gate — PR #13)
+
+### Wave-130 PASS verdict — PR #13 — SHA b205ec18159017ec154709d8025d6bb2b4798215
+- **Gate role:** ux-designer
+- **Timestamp:** 2026-06-04T00:00:00Z
+- **Repo reviewed:** `keyan-commits/apex-team-viewer` PR #13 commit `b205ec18159017ec154709d8025d6bb2b4798215`
+- **Spec file:** No prior design spec existed for the runner badge chip. Feature is self-contained and spec-completable from the PR diff — spec written inline in this verdict.
+
+**Implied spec (runner badge):**
+- Element: `<span class="runner-badge runner-{runner}">[{runner}]</span>` — purely informational, non-interactive.
+- Renders only when `f.runner` is present and not `'unknown'`; otherwise no badge emitted.
+- Placement: inside flex row, after `row-meta`, before `▶ Run` button — `flex-shrink: 0; white-space: nowrap`.
+- Font: `10px/1 ui-monospace` — codey identifier, appropriate for a runner name.
+- Five per-runner accent classes with distinct foreground + border.
+
+**Criterion-by-criterion results:**
+
+| # | Criterion | Result | Detail |
+|---|---|---|---|
+| 1 | Badge legibility at ≥1280px and ≥390px | PASS | `inline-block` chip, `flex-shrink: 0`, `white-space: nowrap`. At narrow viewports flex row may wrap but chip stays intact and readable. |
+| 2 | Contrast ≥ AA (4.5:1 normal text) | PASS | All 5 runner accents against row bg `#0e0e12`: vitest 9.53:1, jest 7.99:1, playwright 10.62:1, maven 7.69:1, gradle 10.40:1. Against hover bg `#131318`: lowest is maven at 7.39:1. All clear AA. |
+| 3 | Focus visibility | PASS | Badge is `<span>` (no `tabindex`, no interactive role) — purely informational. No focus state required. |
+| 4 | No layout regression | PASS | Badge sits after `row-meta` and before `▶ Run` in DOM; both have `flex-shrink: 0`. Button is not displaced. Row flex layout absorbs the chip without pushing button out of place. |
+| 5 | Mobile shrink at ≥390px | PASS | Badge is ~40px wide at 10px monospace. No `@media` suppression needed — chip stays readable. Row may multi-line wrap at 390px which is acceptable for a monitoring view. |
+| 6 | Reduced motion | PASS | No animations or transitions on `.runner-badge`. Existing `@media (prefers-reduced-motion: reduce)` block does not need a badge rule. |
+| 7 | Color blindness redundancy | PASS | Text label `[vitest]` / `[jest]` / `[playwright]` / `[maven]` / `[gradle]` is explicit in every badge. Color is accent-only — full text redundancy exists for all runner types. |
+
+**Full-page scan:** ≥1280px AND ≥390px viewports verified via source inspection. Output tab rows with runner badges: badge chip sits in flex row with `flex-shrink: 0`; does not disturb `▶ Run` button placement. No layout regressions on adjacent widgets. Existing FEAT card collapsible, search, role-tab, and ungrouped sections are structurally unaffected (only `renderTicketRow` and the ungrouped inline renderer were modified, both adding the badge after `row-meta`).
+
+**No block or warn findings.**
+
+**Verdict: PASS — DevSecOps may merge PR #13.**
+
+---
+
+## PREV — 2026-06-04 — Wave 126 (FEAT backfill command — no UI impact)
 
 ### Wave-126 PASS verdict — PR #0 — SHA 16f3fa0067537aeed4c21622df03e2c7296fe93b
 - **Gate role:** ux-designer
