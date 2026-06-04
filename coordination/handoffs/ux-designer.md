@@ -1,6 +1,17 @@
 # ux-designer — HANDOFF
 
-## NOW — 2026-06-04 — Wave 125 (Viewer a11y polish — critique gate)
+## NOW — 2026-06-04 — Wave 126 (FEAT backfill command — no UI impact)
+
+### Wave-126 PASS verdict — PR #0 — SHA 7778a8387d52964e1c27d8a32c10995dd16dedfc
+- **Gate role:** ux-designer
+- **Timestamp:** 2026-06-04T00:00:00Z
+- **Notes:** Wave 126 deliverables are CLI script + markdown reports + frontmatter mutations on legacy `.md` files. No viewer code changes. Backfilled docs flow through the existing Wave-123 FEAT-card rendering path, which carries Wave 125 a11y conformance (UX-0001). No new UX surface. Skip UX gate. Advisory nits: CLI ergonomics (`--feat=FEAT-XXXX` autocomplete + invalid-FEAT error messaging) are implementer-level copy concerns; non-blocking.
+
+**Status:** Skip UX gate — no UI impact.
+
+---
+
+## PREV — 2026-06-04 — Wave 125 (Viewer a11y polish — critique gate)
 
 ### Wave-125 PASS verdict — PR #407 — SHA 1f644ae43bee3bce40718ed33c26597e2bae54db
 - **Gate role:** ux-designer
