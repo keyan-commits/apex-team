@@ -1,101 +1,92 @@
 # product-owner — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 110 (gate-discipline hardening + docs-integrity sweep — COMPLETE)
+## ⏭️ NOW — 2026-06-04 — Wave 111a (ADR-018 PASS-verdict format foundation — COMPLETE)
 
-**Wave goal:** Land all 4 user-ratified candidates from Wave 109's close-out menu.
+**Wave goal:** Foundation for Wave 111c CI checks — Architect ratifies PASS-verdict format for `coordination/handoffs/<role>.md`; QA writes conformance test.
 
-**PR bundling note:** Wave 110 shipped as TWO PRs, not one (DevSecOps's #384 went first; Architect+QA bundle is the second). Charter intent was one PR; DevSecOps shipped the ops/README rewrite as a separate PR before Architect's HANDOFF landed. Pragmatic outcome — both PRs are docs-only, no conflict risk.
+**Wave 111 split:** 111a (Cluster 5 foundation) → 111b (Clusters 1+2+3 fan-out) → 111c (Cluster 4 CI/process). 5 → 1+2+3 → 4 ordering because Wave 111c's CI grep needs the format spec ratified first.
 
-**Returned (all 5 lanes):**
-- ✅ **Architect (Lane A + D-#381)** — Filed **issue #383** (`DevSecOps merge protocol: require gate-role PASS recorded in HANDOFF doc before merge`). Edited `.claude/agents/devsecops.md` line 58 inserting step 3 "Verify gate-role PASS is recorded in HANDOFF (mandatory pre-merge)." Original steps 3–8 renumbered. LESSONS.md: new Wave 110 entry tying rule to PR #231; rewrote Wave 93 stale entry to reference `coordination/handoffs/<role-id>.md` + ADR-017 supersession; annotated three other stale-ops entries with "Superseded by Wave 106 (Plan C)" notes. Wave 108 regression test still 153/153 PASS.
-- ✅ **DevSecOps (Lane C + D-#380)** — **PR #384 merged at `cb14be2`** (closes #380). Verdict on C: already covered by global `Tests` job — no new path-conditional job needed. Rewrote `ops/README.md` for Plan C runtime (removed `:3100/:3110/:3120/:3130` ports, `pnpm dev:test:*`, `.restart-trigger`, `pnpm fold-handoff` references; added Plan C runtime table, cross-links to workspace-conventions + ADR-017).
-- ✅ **BA** — confirmed no-US for Wave 110; INDEX.md no-op verified.
-- ✅ **UX** — no UI impact, skip UX gate.
-- ✅ **QA (Lane B)** — `tests/qa/wave-110/subagent-body-completeness.test.ts` — **12/12 PASS in 99ms**. Full suite 165/165 (wave-108 153 + wave-110 12). 7 ACs all green: AC-1 Architect co-authorship gate, AC-2 6 implementer body co-authorship clauses, AC-3/4 SHA-sync in Architect/UX, AC-5a/b/c devsecops.md merge-protocol clause (title + load-bearing imperative + co-present qa/ux HANDOFF refs).
+**Returned (all 4 lanes):**
+- ✅ **Architect** — `architecture/decisions/ADR-018-pass-verdict-format.md`. Canonical block: `### Wave-NNN PASS|REVISE|FAIL verdict — PR #N — SHA <40-char>` + role/timestamp/notes. Grep anchor regex specified. Backward-compat option (c): grandfather pre-111. AC6 cross-ref edits deferred to 111b. Caught own pre-merge bug — 39-char placeholder SHA fixed to 40.
+- ✅ **BA** — US-088 filed; INDEX.md updated.
+- ✅ **UX** — no UI impact.
+- ✅ **QA** — `tests/qa/wave-111/pass-verdict-format.test.ts` — 21/21 PASS. Full suite 186/186.
 
-**Architect's #383 (merge-protocol rule) is now load-bearing on Wave 110's own PR:** per the new step 3, DevSecOps must verify QA's PASS in `coordination/handoffs/qa.md` against Wave 110 PR's HEAD SHA before merging. QA's Wave 110 HANDOFF records the PASS verdict; the PR can merge.
-
-**Wave 110 follow-up PR scope (this commit):**
-- Modified: `.claude/agents/devsecops.md` (Architect-A step 3), `LESSONS.md` (3 entries + stale annotations), 6 `coordination/handoffs/*.md` updates (architect, business-analyst, product-owner, qa, ux-designer + already-merged devsecops).
-- New: `tests/qa/wave-110/subagent-body-completeness.test.ts` (QA-B).
-- Closes: #383 (Architect's merge-protocol issue).
-
-**Wave 111 candidates (parked):**
-- Issue #196 (encode lessons into role bodies — BA's Wave 109 Slice 3)
-- Issue #199 (UX design-skill ecosystem)
-- Remaining retained backlog from Wave 109 BA menu (#240, #246, #295, #301, #324, #335, #359, #362, #363, #364, #365, #366, #368, #369, etc.)
+**Self-application gap surfaced (Wave 111b ADR-018 amendment candidate):** canonical format requires PR # + 40-char HEAD SHA, but both are unknown at commit-time. QA used `#0` placeholder + last-known-SHA pragmatically. Architect's 111b should formalize the two-phase pattern (commit-time placeholders + post-merge backfill) OR move verdicts to PR descriptions.
 
 ---
 
-## ⏭️ PREV — 2026-06-04 — Wave 110 (gate-discipline hardening — DISPATCHED)
+## ⏭️ PREV — 2026-06-04 — Wave 111 (5-cluster close-out — SPLIT into 111a/111b/111c — DISPATCHED Wave 111a)
 
-**Wave goal:** All 4 user-ratified candidates from Wave 109 close-out menu.
+**Charter (user-ratified all 5 clusters from Wave 110 close-out menu):**
+- Cluster 1 — #196 lessons-in-bodies (top-3 drift-prone bodies: devsecops/qa/architect)
+- Cluster 2 — #199 UX design-skill ecosystem (evaluate community skills, add to ux-designer.md)
+- Cluster 3 — Skill proposals (11 issues: #292/#293 BA, #294/#295/#359 Architect, #361/#362 UI, #363/#364 BE, #365/#366 QA, #368/#369 DevSecOps)
+- Cluster 4 — CI/process discipline (#240 residual `gh pr checks`, #246 UX-gate bypass CI check, #301 merge playbook + LESSONS, #324 deps verify)
+- Cluster 5 — PASS-verdict format spec for `coordination/handoffs/<role>.md` (foundational; tightens DevSecOps Wave 110 step 3)
 
-**Charter decisions:**
-- No new US — gate-protocol prose / regression test for already-shipped rules / CI eval / docs-accuracy rewrites.
-- Lanes: A (Architect, merge-protocol rule + #383 issue + devsecops.md step 3 + LESSONS), B (QA, completeness test, sequenced after A), C (DevSecOps, CI eval), D-#380 (DevSecOps, ops/README), D-#381 (Architect, LESSONS:17-19 rewrite).
-- BA confirms no-US; UX no-impact.
+**Shape decision: SPLIT into 3 sub-waves.** Mega-wave rejected (review burden + dependency ordering). Hybrid rejected (collapses to this split anyway).
 
----
+**Wave 111a — Foundation (Cluster 5) — DISPATCHED THIS TURN:**
+- US-088 = PASS-verdict format spec. Architect authors `architecture/decisions/ADR-018-pass-verdict-format.md` (or workspace-conventions amendment). QA writes `tests/qa/wave-111/pass-verdict-format.test.ts` asserting the format in existing PASS records. BA wraps US-088.
+- Single PR. Small, fast. Blocks 111b/c.
+- Why first: Cluster 4's `gh pr checks` + UX-gate-bypass CI checks (#240, #246) need a precise format to grep against. Wave 110's DevSecOps step 3 currently checks "PASS recorded against HEAD SHA" by prose — once formalized, the check can be a deterministic grep.
 
-## ⏭️ PREV — 2026-06-04 — Wave 109 (close-sweep + Slice 1 review-gate hardening — COMPLETE, merged at c068c58)
+**Wave 111b — Skills + lessons fan-out (Clusters 1+2+3) — PARKED, fires after 111a merges:**
+- US-089 = subagent skill additions + lessons sections. 7 subagents fan out in parallel.
+- **Cluster 1 (Architect-owned)**: Architect authors `## Lessons from prior incidents` sections in `architect.md`, `qa.md`, `devsecops.md` (3-5 bullets each, Date/Wave/Rule/Why/Apply format pulled from LESSONS.md). Reason: lesson selection is judgment-bearing; cleaner to centralize than fan out.
+- **Cluster 2 (UX-owned)**: UX evaluates 6 proposed community skills (Impeccable, figma-implement-design, playwright-skill, theme-factory, accesslint, Excalidraw) → proposes adds to `ux-designer.md`. Cross-checked with DevSecOps supply-chain (#205 sister issue — pin versions). Per CLAUDE.md note that skills can live as Skill-tool invocations or `~/.claude/skills/` references, UX picks the mechanism per skill.
+- **Cluster 3 (per-subagent self-edit)**: Each subagent self-edits its own body to add the skill from its assigned issue(s). Wave 108 cleanliness + Wave 110 completeness tests both green → self-edit regression risk is bounded.
+  - BA: #292 + #293
+  - Architect: #294 + #295 + #359 (Architect verifies #294 against Wave 108/110 fitness tests — may close as already-done)
+  - UI Dev: #361 + #362
+  - BE Dev: #363 + #364
+  - QA: #365 + #366
+  - DevSecOps: #368 + #369
+- All Cluster 3 edits gated by Architect co-authorship review (Wave 109 rule). Single PR per wave (not per cluster).
+- Triad: BA drafts US-089; Architect ratifies skill-section structure; UX no-impact for non-UX bodies + ratifies own Cluster 2 changes.
 
-**Returned (all 3 lanes):**
-- ✅ **BA** — closed 6 issues (#322 #217 #211 #289 #126 #194) with one-line rationale citing Wave 108 absorption or monolith decommission. Filed 2 new docs-integrity issues: **#380** (`ops/README.md` stale monolith refs) + **#381** (`LESSONS.md:17-19` stale `_handoff-pending/` references). INDEX.md no-op (no closed issues touched active US rows). HANDOFF at `coordination/handoffs/business-analyst.md`.
-- ✅ **Architect** — 8 files modified: 7 subagent bodies (`architect.md`, `business-analyst.md`, `ui-developer.md`, `backend-developer.md`, `qa.md`, `devsecops.md`, `ux-designer.md`) + `LESSONS.md` (2 entries placed at top per "Newest first" header). Pre-verdict SHA sync + co-authorship gate live in Architect rubric; co-authorship clause in 6 implementer "Your boundaries" sections; SHA sync also live in UX critique workflow. All gates green: vitest 153/153 (ADR-017 still clean), lint clean, type-check clean, denylist grep clean, allowlist count = 8. HANDOFF at `coordination/handoffs/architect.md` with canonical clause text for grep-reuse.
-- ✅ **UX** — "No UI impact — skip UX gate" recorded.
+**Wave 111c — CI/process discipline (Cluster 4) — PARKED, fires after 111b merges:**
+- US-090 = CI/process gates. DevSecOps + Architect.
+- #240 residual: `gh pr checks` step in DevSecOps merge protocol (`devsecops.md` step 2 or step 3 amendment).
+- #246 UX-gate bypass CI check: workflow that fails if an implementer-authored PR touching `src/` or equivalent lands without a recorded UX PASS for the wave (parallel to Wave 110's merge-protocol rule).
+- #301 merge playbook update + LESSONS entry for `gh pr merge --delete-branch` anomalous closure.
+- #324 deps verify: re-run `pnpm outdated`, bump if still applicable.
+- Triad: BA drafts US-090; Architect ratifies; UX no-impact.
 
-**Architect surfaced an out-of-scope gap (Wave 110 candidate):** `devsecops.md` step 2 "Review that both gates are confirmed" trusts the implementer's claim of PASS rather than verifying the gating role recorded PASS in `coordination/handoffs/<gate-role>.md`. This is the PR #231 class of bypass; a parallel rule to #314's pre-verdict SHA sync, but for the merge step.
+**Dispatched this turn (Wave 111a triad — parallel):**
+- Architect — author ADR-018 (or workspace-conventions amendment) spec'ing PASS-verdict format
+- BA — draft US-088 wrapper at `requirements/user-stories/US-088-pass-verdict-format.md`
+- UX — courtesy triad slot, expected no-impact
 
-**Wave 109 PR bundle:**
-- Modified: 7 `.claude/agents/*.md`, `LESSONS.md`, 4 `coordination/handoffs/*.md` (architect, business-analyst, product-owner, ux-designer).
-- GH actions: 6 issues closed (#322 #217 #211 #289 #126 #194), 2 new issues filed (#380, #381).
-- No new ADR, no new US.
+QA dispatches after triad returns (single test file).
 
-**Wave 110 candidates (parked):**
-- DevSecOps merge-protocol gap (Architect flagged) — file an issue, add rule to `devsecops.md` requiring `coordination/handoffs/<gate-role>.md` PASS verification pre-merge.
-- Slice 2 completeness test (`tests/qa/wave-109/subagent-body-completeness.test.ts`) — QA-owned.
-- DevSecOps CI hook for `tests/qa/wave-108/subagent-body-cleanliness.test.ts`.
-- Address #380 + #381 docs-integrity bugs from this wave.
-
----
-
-## ⏭️ PREV — 2026-06-04 — Wave 109 (close-sweep + Slice 1 review-gate hardening — dispatched)
-
-**Wave goal:** Burn down the 6-issue retained backlog from Wave 108 (close as absorbed/moot) + file 2 fresh issues BA flagged + ship Slice 1 review-gate hardening (#335 co-authorship rule, #314 fetch-before-verdict, LESSONS entries for PR #311 + PR #231).
-
-**Charter decisions (PO):**
-- **No US-088 traceability wrapper.** BA's call confirmed: Slice 1 is docs-only (review-rule prose + LESSONS entries). Wave 108's US-087 wrapped a body-rewrite that also introduced a regression test (behavioral surface). Slice 1 has no behavioral surface — skip the wrapper. If BA wants traceability for the closures, the `gh issue close` commit messages + INDEX.md edits ARE the audit trail.
-- **QA out for Slice 1.** No behavioral surface to test. Slice 2's completeness test (proposed for Wave 110) is the natural home.
-- **Co-authorship rule applies to ALL 6 non-Architect implementers.** BA + UX included alongside BE/UI/QA/DevSecOps. The "no unilateral edits to `architecture/`" rule is universal — BA/UX absence would leave a documented loophole.
-
-**Dispatched (parallel, this turn):**
-- **BA** — close-sweep of #322, #217, #211, #289, #126, #194 with one-line per-issue rationale; file 2 new issues (stale `ops/README.md`; `LESSONS.md:17-19` stale `_handoff-pending/` references); update `requirements/INDEX.md` if any closures touch active US rows; HANDOFF update.
-- **Architect** — owns Slice 1 edits: (a) `architect.md` review rubric — flag any `architecture/` file modified by non-Architect without prior HANDOFF; (b) co-authorship rule into 6 implementer bodies (`business-analyst.md`, `ui-developer.md`, `backend-developer.md`, `qa.md`, `devsecops.md`, `ux-designer.md`); (c) `architect.md` + `ux-designer.md` — pre-verdict `git fetch origin <branch> && git checkout <PR HEAD SHA>` step + PR #311 false-REVISE callout inline; (d) `LESSONS.md` — 2 entries for PR #311 (stale-checkout false-REVISE) and PR #231 (UX gate bypassed before re-gate PASS). HANDOFF update.
-- **UX** — courtesy triad slot. Expected verdict: no UI impact (only `ux-designer.md` body edit + LESSONS, no rendered surface). HANDOFF update with verdict.
-
-**Parked:**
-- Slice 2 (review-gate completeness test) → Wave 110 candidate (QA-owned).
-- Viewer-repo conventions (separate codebase).
-
-**Wave 109 PR bundle (anticipated):**
-- Modified: 6 `.claude/agents/*.md` (review rules + co-authorship), `LESSONS.md` (2 entries), `requirements/INDEX.md` (if touched), 3-4 `coordination/handoffs/*.md`.
-- GH actions: 6 issues closed with rationale, 2 new issues filed.
-- No new ADR (the rule changes are scoped to body prose + existing review rubric; ADR-017 already covers body-rewrite discipline).
-
-**Next PO turn (post-merge):**
-- Plan Wave 110: Slice 2 completeness test (QA) + DevSecOps CI hook for `tests/qa/wave-108/subagent-body-cleanliness.test.ts` (Architect's Wave 108 sweetspot, deferred).
+**Wave 110 lessons applied to 111 planning:**
+- HANDOFF-in-PR rule: each sub-wave's HANDOFF refresh ships in its own PR.
+- Co-authorship gate (Wave 109): all Cluster 3 self-edits gated by Architect review pre-merge.
+- Pre-verdict SHA sync (Wave 109): Architect/UX gates fetch + checkout HEAD before each sub-wave's verdict.
+- Merge protocol step 3 (Wave 110): DevSecOps verifies QA PASS (and UX PASS where applicable) in HANDOFF docs against HEAD SHA pre-merge.
 
 ---
 
-## ⏭️ PREV — 2026-06-04 — Wave 108 (subagent body rewrites — COMPLETE, ready to merge)
+## ⏭️ PREV — 2026-06-04 — Wave 110 (gate-discipline hardening + docs-integrity sweep — COMPLETE, merged at cae4a77)
 
-Eliminated ~105 legacy monolith references from 8 `.claude/agents/*.md` body prose. ADR-017 (15 rewrite rules + allowlist) ratified. QA regression test `tests/qa/wave-108/subagent-body-cleanliness.test.ts` 153/153 PASS. UX no-impact verdict. BA US-087. All 4 lanes returned PASS. Working tree ready for single Wave 108 PR.
+Both PRs merged: DevSecOps #384 (`cb14be2`, ops/README Plan C rewrite) + Architect+QA #385 (`cae4a77`, merge-protocol rule + 12/12 completeness test + LESSONS cleanup). Architect's #383 (merge-protocol gate-role PASS verification) closed. Full suite 165/165 (108 cleanliness 153 + 110 completeness 12). Wave 111 candidates parked.
+
+---
+
+## ⏭️ PREV — 2026-06-04 — Wave 109 (close-sweep + Slice 1 review-gate hardening — merged at c068c58)
+
+6 issues closed (#322 #217 #211 #289 #126 #194), 2 new filed (#380 #381). Co-authorship gate + pre-verdict SHA sync live in 7 subagent bodies + LESSONS. Architect surfaced DevSecOps merge-protocol gap (became Wave 110 #383).
+
+---
+
+## ⏭️ PREV — 2026-06-04 — Wave 108 (subagent body rewrites — merged)
+
+~105 legacy refs eliminated from 8 `.claude/agents/*.md` bodies. ADR-017 ratified. Regression test 153/153.
 
 ---
 
 ## ⏭️ PREV — 2026-06-04 — Wave 107 (first wave under subagent runtime)
 
-Architect ratified `architecture/workspace-conventions.md` (OQ-085-001 RESOLVED, OQ-085-002 CLOSED). BA filed US-086 + executed re-triage (44 GH issues closed, 8 US status-flipped, 31 retained). DevSecOps shipped PR #376 (shell-injection fix, MERGED at `749843d`). Architect PASS on PR #376.
-
-**Workflow notes (Plan C runtime):** DISPATCH = advisory; HANDOFF docs at `coordination/handoffs/<role>.md` are the only durable per-role state. No auto-trigger, no peer inbox, no SQLite. Files-on-disk only.
+Workspace-conventions doc ratified (OQ-085-001/002 resolved). US-086 + Plan C re-triage (44 issues closed). PR #376 shell-injection fix merged. Plan C runtime semantics: DISPATCH advisory; HANDOFF docs at `coordination/handoffs/<role>.md` only durable state; files-on-disk only.
