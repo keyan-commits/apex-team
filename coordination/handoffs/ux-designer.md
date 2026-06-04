@@ -1,6 +1,20 @@
 # ux-designer — HANDOFF
 
-## NOW — 2026-06-04 — Wave 113 (CI extension, QA tests, issue #332)
+## NOW — 2026-06-04 — Wave 117 (requirements-first skill + hard-refusal clauses)
+
+**Verdict: No UI impact — skip UX gate.**
+
+SHA reviewed: `7c994a1c8b835266049e20c835dab926ad875f1e`
+
+Reasoning: Wave 117 ships `.claude/skills/requirements-first/SKILL.md`, hard-refusal clauses in implementer subagent bodies (`.claude/agents/*.md`), a BA auto-routing clause, and a QA regression test (`tests/qa/`). None of these paths match the UX gate detection rule (`src/app/**/page.tsx`, `src/app/**/layout.tsx`, `src/components/**/*.tsx`, `src/app/globals.css`). No `design/` surface, no rendered pixel surface. Gate does not fire.
+
+**Flag to PO:** If `requirements-first/SKILL.md` hard-refusal logic names only BA + Architect as mandatory triad members (omitting ux-designer for UI-touching tasks), that is a latent bypass path for the UX requirements-phase gate. Recommend verifying the skill references all three triad roles before merge.
+
+**Status:** Complete — verdict delivered.
+
+---
+
+## PREV — 2026-06-04 — Wave 113 (CI extension, QA tests, issue #332)
 
 **Verdict: No UI impact — skip UX gate.**
 

@@ -77,6 +77,47 @@ Each `coordination/handoffs/<role-id>.md` file is **owned exclusively by `<role-
 
 **Discovered:** Wave 111c. DevSecOps's PR #388 edited `coordination/handoffs/architect.md` directly to surface an ADR-018 ratification request. The edit was self-corrected by Architect's overwrite of the NOW section, but the cleaner protocol — a `[[HANDOFF: architect]]` advisory block in DevSecOps's own state — would have left both roles' verdict chains intact. Filed as issue #391; codified here Wave 112.
 
+## Requirements-first enforcement (Wave 117)
+
+Every implementation request — in apex-team itself or in any host workspace driven by the eight user-scoped subagents — MUST pass through the business-analyst subagent before any developer or QA writes code. The enforcement runs at three layers, weakest to strongest:
+
+1. **Orchestrator-side skill (`requirements-first`).** `.claude/skills/requirements-first/SKILL.md` is the source-of-truth checklist for the outer Claude Code session: detect implementation work, identify the active workspace, check for an existing US reference, dispatch BA first if absent, then dispatch QA + Dev in parallel after BA returns. The repo's `scripts/install-agents-user-scope.sh` symlinks the skill into `~/.claude/skills/requirements-first/SKILL.md` so it travels with the user-scoped subagents.
+2. **BA auto-routing clause.** `.claude/agents/business-analyst.md` carries a clause titled "Auto-routing on raw user requirements (Wave 117)". When BA is invoked with a raw user requirement, BA writes the US file AND emits parallel HANDOFF advisory blocks to QA and the implementing developer in the same response — so the outer orchestrator can fan out QA + Dev in parallel after BA returns.
+3. **Implementer hard-refusal pre-flight gate.** `.claude/agents/{backend-developer,ui-developer,qa,devsecops}.md` each carry a clause titled "Requirements-first pre-flight gate (Wave 117 — MANDATORY)". Before writing any code, the implementer MUST verify a US-NNN file exists in the active workspace's `requirements/user-stories/` directory. If absent and no exception tag is named, the implementer HALTS and emits a `[[HANDOFF: business-analyst]]` advisory block. For QA, "code" includes test code. For DevSecOps, "code" includes new CI workflow YAML and deploy manifest edits with runtime-visible effect (the merge step itself is outside this gate's scope — it operates on already-merged upstream work).
+
+The seven exception tags (`[exception: trivial-ops]`, `[exception: gate-verdict]`, `[exception: scout-issue]`, `[exception: housekeeping]`, `[exception: revise-redispatch]`, `[exception: emergency-rollback]`, `[exception: security-hotfix]`) carve out narrow classes where the requirements phase is already satisfied or structurally unnecessary. The implementer pre-flight gate honors the same tag list as the REQUIREMENTS_PHASE_PROTOCOL exceptions documented in each subagent body.
+
+**Trigger incident:** a downstream Mac running apex-team's user-scoped subagents was given an implementation task. The outer Claude Code dispatched an implementing developer directly, skipping BA. The existing implementer-side "Refuse work without a user-story reference" clauses caught format-violations on dispatch prompts, but the orchestrator never reached them — the orchestrator-side guidance was advisory only. Wave 117 hardens the discipline at all three layers.
+
+**Cross-references:**
+- `.claude/skills/requirements-first/SKILL.md` — orchestrator checklist.
+- `.claude/agents/business-analyst.md` §"Auto-routing on raw user requirements (Wave 117)" — BA's response shape.
+- `.claude/agents/backend-developer.md`, `ui-developer.md`, `qa.md`, `devsecops.md` §"Requirements-first pre-flight gate (Wave 117 — MANDATORY)" — implementer hard backstop.
+- `scripts/install-agents-user-scope.sh` — symlinks both agents AND skills into `~/.claude/`.
+- §"Comprehensive testing (Wave 118)" below — the downstream sibling enforcement that fires AFTER BA writes the US, ensuring QA's tests cover the four mandatory classes (positive / negative / edge / all-known-samples) before any PASS verdict.
+
+## Comprehensive testing (Wave 118)
+
+Every QA dispatch that authors tests for a user story — in apex-team itself or in any host workspace driven by the eight user-scoped subagents — MUST satisfy four mandatory test classes before QA emits any PASS verdict. The enforcement runs at two layers:
+
+1. **Orchestrator-side skill (`comprehensive-testing`).** `.claude/skills/comprehensive-testing/SKILL.md` is the source-of-truth checklist + decision tree + walk-through. The skill is symlinked into `~/.claude/skills/comprehensive-testing/SKILL.md` via the existing `scripts/install-agents-user-scope.sh` (Wave 117's `SKILLS_SRC_DIR` glob picks up new skill directories without code change).
+2. **QA hard-rule clause.** `.claude/agents/qa.md` carries a clause titled "Comprehensive test coverage (Wave 118 — MANDATORY)" placed immediately after the Wave 117 requirements-first pre-flight gate (region-disjoint addition). The clause names the four mandatory test classes and the procedure QA follows before emitting any PASS verdict.
+
+The four mandatory test classes per US:
+- **Positive** — happy-path test per acceptance criterion.
+- **Negative** — explicit-rejection test per AC with a non-trivial input surface (null / undefined / empty / wrong-type / out-of-domain inputs).
+- **Edge** — boundary conditions on every input axis the AC exposes (empty collection, single item, max size, off-by-one, unicode, timezone / DST, date format variants, whitespace, numeric precision, concurrent mutations).
+- **All known sample inputs** — for ACs that depend on parsing/processing/rendering files from a known input directory, iterate over every file in `requirements/samples/**` (or the project's equivalent — `fixtures/`, `test-data/`, `examples/`, `__fixtures__/`). Parameterized / loop test, not a hand-picked representative. If only one sample file exists, flag the lack of variety as a coverage gap and file an issue requesting BA / domain experts surface additional sample inputs.
+
+**Trigger incident:** the LFM Add-PO project shipped a date-fix feature that QA validated against ONE sample file (`20260524`, ISO date format) out of 9 sample files in `requirements/samples/2026-05-28-bk-daily-pos/`. The outlier (`20260525`, US-slash format `5/27/2026`) slipped past, broke production, required a hot-fix. Root cause: single-sample testing. The Wave 118 enforcement is the durable fix so this pattern cannot recur.
+
+**Cross-references:**
+- `.claude/skills/comprehensive-testing/SKILL.md` — orchestrator-side skill: full decision tree, walk-through example, unconventional-workspace handling.
+- `.claude/agents/qa.md` §"Comprehensive test coverage (Wave 118 — MANDATORY)" — QA hard-rule clause, ~50 lines, region-disjoint from Wave 117's pre-flight gate.
+- `.claude/agents/qa.md` §"Edge-case enumeration" — pre-existing checklist; Wave 118 makes it MANDATORY per US.
+- `scripts/install-agents-user-scope.sh` — symlinks both agents AND skills into `~/.claude/` (no script change needed for Wave 118 — `SKILLS_SRC_DIR` glob from Wave 117 already picks up new skill directories).
+- §"Requirements-first enforcement (Wave 117)" above — upstream sibling enforcement; this clause is the downstream half that covers "what tests are mandatory" after BA writes the US.
+
 ## OQ-085-001 — Test artifact retention policy (RESOLVED)
 
 **Question (original framing, Wave 106):** Are artifacts under `tests/qa/wave-NNN/` gitignored, retained, or pruned after N waves?

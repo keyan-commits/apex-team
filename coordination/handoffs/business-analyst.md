@@ -1,6 +1,72 @@
 # business-analyst — HANDOFF
 
-## NOW — 2026-06-04 — Wave 115: US triage close-sweep (39 pending stories classified)
+## NOW — 2026-06-04 — Wave 118: US-094 authored (QA comprehensive coverage)
+
+**Deliverables this turn:**
+
+- `requirements/user-stories/US-094-qa-comprehensive-coverage.md` — authored, status: **in-flight**
+- `requirements/INDEX.md` — US-094 row added; Wave 118 timestamp header prepended
+
+**US-094 summary:** 5 ACs covering QA comprehensive-coverage scope:
+- AC1: `tests/qa/wave-118/comprehensive-coverage.test.ts` asserts skill exists with correct frontmatter (a), `qa.md` contains Architect-ratified anchor phrase (b), per-clause co-presence anchors all present (c), `architecture/workspace-conventions.md` contains "Comprehensive testing (Wave 118)" section (d), all prior-wave regression tests green (e)
+- AC2: `.claude/skills/comprehensive-testing/SKILL.md` — skill content: positive/negative/edge-case rule + enumerate every known sample in `requirements/samples/` + any project-specific sample directory disclosed in `data-sources.md` or `domains/*.md`
+- AC3: hard-rule clause in `qa.md` body — Architect must ratify anchor phrase in Wave 118 NOW before body edits land
+- AC4: `architecture/workspace-conventions.md` "Comprehensive testing (Wave 118)" section; Wave 117 requirements-first section gains cross-reference
+- AC5: `scripts/install-agents-user-scope.sh` updated to symlink new skill
+
+**Trigger incident:** LFM Add-PO project — QA tested date-fix against 1 of 9 sample files (ISO `20260524`), missed slash-format `5/27/2026`, feature shipped + failed production, required second hot-fix.
+
+**Blocking dependency:** Architect must ratify canonical anchor phrase (AC1b, AC1c) in `coordination/handoffs/architect.md` Wave 118 NOW before `qa.md` body edits land. BA is not blocked from filing the story; body edits wait on ratification.
+
+**PASS verdict (ADR-018 canonical format):**
+
+### Wave-118 PASS verdict — PR #0 — SHA 7c994a1c8b835266049e20c835dab926ad875f1e
+- **Gate role:** business-analyst
+- **Timestamp:** 2026-06-04T00:00:00Z
+- **Notes:** Requirements phase only — US-094 authored + INDEX.md updated. No code or architecture edits. Architecture gate does not fire (no `architecture/` edits). Peer-edit boundary respected: only own HANDOFF + own US-094 file + INDEX.md (BA-owned) edited. PR #0 placeholder per ADR-018 Wave 111b amendment; DevSecOps to backfill with real PR # + merge SHA post-merge.
+
+**Architecture gate:** no `architecture/` edits. Gate doesn't fire.
+
+**Peer-edit boundary:** no peer HANDOFF edits. Only own HANDOFF + own US authoring + INDEX.md edited.
+
+**Last-processed user message:** Wave 118 BA dispatch (2026-06-04, main `7c994a1`).
+
+---
+
+## PREV — 2026-06-04 — Wave 117: US-093 authored (requirements-first enforcement)
+
+**Deliverables this turn:**
+
+- `requirements/user-stories/US-093-requirements-first-enforcement.md` — authored, status: **in-flight**
+- `requirements/INDEX.md` — US-093 row added; Wave 117 timestamp header added
+
+**US-093 summary:** 5 ACs covering the requirements-first enforcement scope:
+- AC1: `tests/qa/wave-117/requirements-first.test.ts` asserts skill exists + symlinked, 4 implementer bodies contain hard-refusal anchor, BA body contains auto-routing anchor, all regression tests green
+- AC2: `.claude/skills/requirements-first/SKILL.md` — skill content: no-code-without-US rule, BA-routing, QA-parallel-scaffold routing, exception tags
+- AC3: hard-refusal clause in 4 implementer bodies (BE Dev, UI Dev, QA, DevSecOps) — exact wording ratified by Architect in Wave 117 NOW before body edits land
+- AC4: auto-routing clause in BA body — author US on any implementation request, then HANDOFF to QA + PO
+- AC5: `scripts/install-agents-user-scope.sh` updated to symlink `.claude/skills/requirements-first/SKILL.md` → `~/.claude/skills/requirements-first/SKILL.md`
+
+**Trigger incident:** downstream Mac bypassed BA and went straight to BE Dev without a US. Existing REQUIREMENTS_PHASE_PROTOCOL in PO body was advisory-only; no mechanical hard-stop existed in implementer bodies.
+
+**Blocking dependency:** Architect must ratify the canonical anchor phrases (AC1b for implementers, AC1c for BA) in `coordination/handoffs/architect.md` Wave 117 NOW before body edits land. BA is not blocked from filing the story; body edits wait on Architect's ratification.
+
+**PASS verdict (ADR-018 canonical format):**
+
+### Wave-117 PASS verdict — PR #0 — SHA 7c994a1c8b835266049e20c835dab926ad875f1e
+- **Gate role:** business-analyst
+- **Timestamp:** 2026-06-04T00:00:00Z
+- **Notes:** Requirements phase only — US-093 authored + INDEX.md updated. No code or architecture edits. Architecture gate does not fire (no `architecture/` edits). Peer-edit boundary respected: only own HANDOFF + own US-093 file + INDEX.md (BA-owned) edited. PR #0 placeholder per ADR-018 Wave 111b amendment; DevSecOps to backfill with real PR # + merge SHA post-merge.
+
+**Architecture gate:** no `architecture/` edits. Gate doesn't fire.
+
+**Peer-edit boundary:** no peer HANDOFF edits. Only own HANDOFF + own US authoring + INDEX.md edited.
+
+**Last-processed user message:** Wave 117 BA dispatch (2026-06-04, main `7c994a1`).
+
+---
+
+## PREV — 2026-06-04 — Wave 115: US triage close-sweep (39 pending stories classified)
 
 **Deliverables this turn:** 39 user-story files status-updated; `requirements/INDEX.md` rows updated to match; Wave 115 triage table below. No code edits. No architecture/ edits. No peer HANDOFF edits.
 

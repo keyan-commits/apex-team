@@ -1,6 +1,207 @@
 # architect — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 113 Phase 1 (NFR sign-off + #332 close-with-rationale)
+## ⏭️ NOW — 2026-06-04 — Wave 118 (comprehensive QA test coverage — skill + qa.md body rule)
+
+### Wave-118 PASS verdict — PR #0 — SHA 7c994a1c8b835266049e20c835dab926ad875f1e
+- **Gate role:** architect
+- **Timestamp:** 2026-06-04T17:25:00Z
+- **Notes:** Single-author multi-file edit landing comprehensive-testing enforcement at two layers — (1) new orchestrator-side skill at `.claude/skills/comprehensive-testing/SKILL.md` (user-scope, invocable from any project; symlinked into `~/.claude/skills/` via the existing Wave 117 `SKILLS_SRC_DIR` glob in `scripts/install-agents-user-scope.sh` — no install-script change needed); (2) hard-rule `### Comprehensive test coverage (Wave 118 — MANDATORY)` clause added to `.claude/agents/qa.md`, region-disjoint from Wave 117's pre-flight gate (inserted between Wave 117's gate and `### Your boundaries`); (3) `architecture/workspace-conventions.md` extended with a `## Comprehensive testing (Wave 118)` section cross-linked from Wave 117's section. Self-attested PASS — all edits within Architect's own lane (architecture/ workspace-conventions.md + .claude/agents/qa.md + .claude/skills/ skill addition + own HANDOFF doc), no peer-edit-violation footprint. Placeholder block per ADR-018 Wave 111b amendment: `PR #0` + last-known SHA `09d3d16` (current HEAD of feature/c1-plan-c-subagent-extraction pre-staging). DevSecOps post-merge backfill replaces with real PR # + merge SHA via `chore(handoff): backfill Wave-118 verdict PR # and merge SHA`.
+
+### Canonical anchor phrases (Wave 118 — grep-reuse for QA Phase 2 regression test)
+
+QA's Wave 118 completeness test will grep these verbatim substrings across `.claude/agents/qa.md` + `architecture/workspace-conventions.md` + `.claude/skills/comprehensive-testing/SKILL.md`. Final wording ratified below:
+
+#### QA hard-rule clause (1 body — `.claude/agents/qa.md`)
+
+The Wave 118 hard-rule clause MUST appear in `qa.md` in its own `### Comprehensive test coverage (Wave 118 — MANDATORY)` section. The canonical anchor phrase (QA's body contains this verbatim substring):
+
+> **QA MUST author positive, negative, and edge-case tests AND iterate over every known sample input file in the active workspace's requirements/samples/ directory before emitting any PASS verdict.**
+
+Plus, in QA's clause, the following anchor substrings co-present within the same section:
+
+1. `Wave 118` — wave identifier in the section heading.
+2. `MANDATORY` — section-heading severity marker.
+3. `positive` — first of the four mandatory test classes.
+4. `negative` — second of the four mandatory test classes.
+5. `edge` — third of the four mandatory test classes (matches both "edge-case" and "edge cases").
+6. `requirements/samples/` — the directory the iteration rule names.
+7. `every known sample input` — fourth mandatory test class's intent phrase (matches the canonical anchor's "every known sample input file" and the workspace-conventions cross-link's "all known sample inputs" — verify both substring spellings appear in QA's body).
+8. `comprehensive-testing` — name of the orchestrator-side skill cross-linked from the body.
+
+#### Workspace-conventions cross-link section
+
+`architecture/workspace-conventions.md` has a new section titled `## Comprehensive testing (Wave 118)` that names the two enforcement layers (orchestrator-side skill + QA hard-rule clause), enumerates the four mandatory test classes, names the LFM trigger incident, and cross-links to `.claude/skills/comprehensive-testing/SKILL.md` + `.claude/agents/qa.md` §"Comprehensive test coverage (Wave 118 — MANDATORY)". The completeness test should verify this section exists by heading match (`## Comprehensive testing (Wave 118)`) and that the four test-class names (`Positive`, `Negative`, `Edge`, `All known sample inputs`) appear in the section body.
+
+#### Skill file presence + frontmatter
+
+`.claude/skills/comprehensive-testing/SKILL.md` exists with YAML frontmatter carrying `name: comprehensive-testing` and a `description:` field naming the four-class invariant. The skill body contains the same canonical anchor phrase as the QA clause (verbatim substring) plus the decision tree and the LFM walk-through example. The completeness test should verify file existence + frontmatter `name` value + that the canonical anchor phrase appears verbatim in the skill body.
+
+### Files landed Wave 118 (4 paths, single-author within Architect's lane)
+
+1. **`.claude/skills/comprehensive-testing/SKILL.md`** (new) — orchestrator-side skill. YAML frontmatter (`name: comprehensive-testing`, `description: …`) follows the Wave 117 `requirements-first` skill convention. Four mandatory test classes (positive / negative / edge / all-known-samples), decision tree, walk-through example mirroring the LFM date-fix incident (9 sample files, 1 outlier slash-format, single-sample test missed it), anti-patterns, unconventional-workspace handling. Picked up by the existing `SKILLS_SRC_DIR` glob in `scripts/install-agents-user-scope.sh` — no install-script change required.
+2. **`.claude/agents/qa.md`** (extended) — new `### Comprehensive test coverage (Wave 118 — MANDATORY)` section between Wave 117's `### Requirements-first pre-flight gate (Wave 117 — MANDATORY)` and `### Your boundaries`. Carries the canonical anchor phrase, 8 co-presence anchors, four-class enumeration, procedure, trigger-incident reference, anti-patterns, cross-references.
+3. **`architecture/workspace-conventions.md`** (extended) — new `## Comprehensive testing (Wave 118)` section between `## Requirements-first enforcement (Wave 117)` and `## OQ-085-001 — Test artifact retention policy (RESOLVED)`. Names the two enforcement layers, enumerates the four mandatory test classes, names the LFM trigger incident, cross-links to skill + qa.md clause. Wave 117 section's Cross-references list extended with a forward-link to Wave 118.
+4. **`coordination/handoffs/architect.md`** (this file) — Wave 118 NOW prepended, Wave 117 demoted to PREV, canonical anchor phrases recorded for QA's regression test.
+
+### Gate verification (Wave 118)
+
+- `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` — to be re-run; Wave 118 edits qa.md (new mid-body section); token discipline preserved (no denylisted tokens reproduced verbatim in the new clause — explicit anti-pattern names use only standard English: "happy path", "boundary", "unicode", "timezone", "DST", "off-by-one", "concurrent", etc.).
+- `pnpm vitest run tests/qa/wave-110/subagent-body-completeness.test.ts` — to be re-run; new qa.md section is region-disjoint (inserted between Wave 117's pre-flight gate and `### Your boundaries`); existing co-authorship + pre-verdict SHA sync + merge-protocol clauses untouched.
+- `pnpm vitest run tests/qa/wave-111/pass-verdict-format.test.ts` — to be re-run; ADR-018 canonical verdict format unchanged.
+- `pnpm vitest run tests/qa/wave-111/wave-111b-completeness.test.ts` — to be re-run; ADR-018 cross-refs and Lessons sections untouched (Wave 118 edits land before `### Your boundaries`; Lessons sections at end-of-file remain region-disjoint).
+- `pnpm vitest run tests/qa/wave-111c/wave-111c-completeness.test.ts` — to be re-run.
+- `pnpm vitest run tests/qa/wave-112/wave-112-completeness.test.ts` — to be re-run.
+- `pnpm vitest run tests/qa/wave-113/backfill-enforcement.test.ts` — to be re-run.
+- `pnpm vitest run tests/qa/wave-117/*.test.ts` — to be re-run; Wave 117 anchor phrases in qa.md untouched; Wave 117 pre-flight gate section header preserved.
+- `pnpm lint` + `pnpm type-check` — to be re-run; no TypeScript source touched, only `.md` files + new skill directory; both expected clean.
+
+### Architecture/ co-authorship gate (Wave 109 rule, self-reflection)
+
+This wave's PR will touch:
+- `architecture/workspace-conventions.md` (Architect-owned, single-author = me, gate satisfied).
+- `.claude/agents/qa.md` (Architect's lane for review-rule edits; QA-discipline clause; gate satisfied).
+- `.claude/skills/comprehensive-testing/SKILL.md` (new skill; sits under `.claude/skills/` which is Architect's review surface for cross-cutting agentic protocol; gate satisfied).
+- `coordination/handoffs/architect.md` (this file — my own HANDOFF doc).
+
+No peer is co-authoring any file under `architecture/`. No HANDOFF-from-peer pre-condition required.
+
+### Peer-HANDOFF edit gate (Wave 112 step 4b — meta-self-check)
+
+This wave's PR touches `coordination/handoffs/architect.md` (this file) — edited by Architect. No peer HANDOFF docs are edited. Step 4b boundary satisfied: own-lane edit only.
+
+### In flight / next
+
+- This slice is ready for code review. Single-author across all 4 paths within my own lane — both gates (co-authorship + peer-HANDOFF edit) verified.
+- **QA Phase 2:** the canonical anchor phrases recorded above ARE QA's spec source for a Wave 118 completeness regression test. Suggested location: `tests/qa/wave-118/wave-118-completeness.test.ts`. Pattern matches Wave 117's completeness shape. The QA hard-rule clause is grep-asserted in `qa.md`; the workspace-conventions section is grep-asserted in `workspace-conventions.md`; the skill file is asserted for existence + frontmatter + anchor phrase. QA dispatches after Wave 118 commits.
+- DevSecOps post-merge step (per ADR-018 Wave 111b amendment): replace `PR #0` placeholder + last-known SHA `09d3d16` (truncated; current HEAD of feature/c1-plan-c-subagent-extraction) with the real PR # + merge SHA via `chore(handoff): backfill Wave-118 verdict PR # and merge SHA`.
+
+### Parked / future (carried forward, plus Wave 118 additions)
+
+- `system-design.md` — still not created.
+- `tech-stack.md` — still not created.
+- `coding-standards.md` — still not created. Wave 117 (three-layer requirements-first) + Wave 118 (two-layer comprehensive-testing) discipline are candidate entries once `coding-standards.md` gets seeded.
+- Fitness function for OQ-085-001's "no binary files committed under `tests/qa/wave-*/evidence/`" — QA owns implementation.
+- Viewer-repo subagent body audit (per ADR-017 follow-up).
+- **NEW (Wave 118):** consider a Wave 118-B QA grep test that asserts the canonical anchor phrase + 8 co-presence anchors are present in `qa.md`'s new section AND that the four-class section headings (`Positive`, `Negative`, `Edge`, `All known sample inputs`) appear in `workspace-conventions.md`'s new section AND that the skill file exists with the correct frontmatter `name`. Pattern matches Wave 117's completeness shape. Filing as candidate after PR merges.
+
+### Notes / caveats (Wave 118)
+
+- The clause name ("Comprehensive test coverage (Wave 118 — MANDATORY)") is deliberately verbose to make it grep-targetable; QA's completeness test can match on the full heading without ambiguity.
+- The skill file uses YAML frontmatter with only `name` + `description` — no `disable-model-invocation`, since the skill IS intended to be model-invocable when QA writes tests. Mirrors Wave 117's `requirements-first` convention; opposite of `handoff` (slash command, not auto-trigger).
+- The install script's `SKILLS_SRC_DIR` glob (`"$SKILLS_SRC_DIR"/*/`) already picks up new skill subdirectories without code change. Verified by inspection — Wave 117 wired this glob; Wave 118 reaps the benefit.
+- Anchor 7 (`every known sample input`) was chosen as the iteration-rule anchor because both the canonical hard-rule phrase ("every known sample input file") and the workspace-conventions cross-link ("all known sample inputs") share the same root phrase; QA's grep can match the substring `every known sample input` in qa.md's body and the variant phrasings elsewhere via separate assertions. The canonical phrase is the authoritative one.
+- Trigger incident (LFM date-fix, 9-file sample set, 1 outlier) is referenced in three places (skill body, qa.md clause, workspace-conventions section) so future readers can find the WHY from any of the three entry points. Same pattern as Wave 117's trigger-incident anchoring.
+
+---
+
+## PREV — 2026-06-04 — Wave 117 (requirements-first enforcement — skill + implementer refusal + BA auto-routing)
+
+### Wave-117 PASS verdict — PR #0 — SHA 7c994a1c8b835266049e20c835dab926ad875f1e
+- **Gate role:** architect
+- **Timestamp:** 2026-06-04T17:05:00Z
+- **Notes:** Single-author multi-file edit landing requirements-first enforcement at three layers — (1) new orchestrator-side skill at `.claude/skills/requirements-first/SKILL.md` + install-script extension to symlink skills into `~/.claude/skills/`; (2) hard-refusal pre-flight gates added to 4 implementer subagent bodies (backend-developer, ui-developer, qa, devsecops); (3) BA auto-routing clause added to business-analyst body. Self-attested PASS — all edits within Architect's own lane (architecture/ workspace-conventions.md edit + .claude/agents/ subagent body edits + .claude/skills/ skill addition + scripts/install-agents-user-scope.sh extension), no peer-edit-violation footprint. Placeholder block per ADR-018 Wave 111b amendment: `PR #0` + last-known SHA `7c994a1` (current HEAD of main pre-staging). DevSecOps post-merge backfill replaces with real PR # + merge SHA via `chore(handoff): backfill Wave-117 verdict PR # and merge SHA`.
+
+### Canonical anchor phrases (Wave 117 — grep-reuse for QA Phase 2 regression test)
+
+QA's Wave 117 completeness test will grep these verbatim substrings across the relevant subagent body files. Final wording ratified below:
+
+#### Implementer pre-flight gate (4 bodies — `backend-developer.md`, `ui-developer.md`, `qa.md`, `devsecops.md`)
+
+The Wave 117 pre-flight gate clause MUST appear in each of the 4 implementer bodies, each in its own `### Requirements-first pre-flight gate (Wave 117 — MANDATORY)` section. The canonical anchor phrase (every body contains this verbatim substring):
+
+> **Before writing any code, you MUST verify a US-NNN file exists in the active workspace's requirements/user-stories/ directory.**
+
+Plus, in EVERY body's clause, the following anchor substrings co-present within the same section:
+
+1. `Wave 117` — wave identifier in the section heading.
+2. `MANDATORY` — section-heading severity marker.
+3. `HALT` — the verb the implementer uses on missing US.
+4. `[[HANDOFF: business-analyst]]` — the advisory block emitted on HALT.
+5. `requirements/user-stories/` — the directory the implementer checks.
+6. `[exception:` — names the exception-tag list (at least one tag string is present).
+
+#### BA auto-routing clause (1 body — `business-analyst.md`)
+
+The Wave 117 auto-routing clause MUST appear in `business-analyst.md` in its own `### Auto-routing on raw user requirements (Wave 117 — MANDATORY)` section. The canonical anchor phrase (BA's body contains this verbatim substring):
+
+> **When invoked with a raw user requirement, BA writes the US file AND emits parallel HANDOFF advisory blocks to QA and the implementing developer in the same response.**
+
+Plus, in BA's clause, the following anchor substrings co-present within the same section:
+
+1. `Wave 117` — wave identifier in the section heading.
+2. `MANDATORY` — section-heading severity marker.
+3. `[[HANDOFF: qa]]` — first of the two required HANDOFF blocks.
+4. `[[HANDOFF: <ui-developer|backend-developer|devsecops>]]` — generic name for the second HANDOFF block. (At least one of the three concrete role-ids — `ui-developer`, `backend-developer`, `devsecops` — appears in the section body too.)
+5. `## Story` + `## Acceptance criteria` + `## Out of scope` — the three mandatory US sections BA writes.
+6. `same response` — names the parallelism semantic (HANDOFFs in one reply, not serial).
+
+#### Workspace-conventions cross-link section
+
+`architecture/workspace-conventions.md` has a new section titled `## Requirements-first enforcement (Wave 117)` that enumerates the three enforcement layers and cross-links to the skill + subagent body sections. The completeness test should verify this section exists by heading match.
+
+### Files landed Wave 117 (8 paths, single-author within Architect's lane)
+
+1. **`.claude/skills/requirements-first/SKILL.md`** (new) — orchestrator-side checklist. YAML frontmatter (`name`, `description`) follows the convention of `~/.claude/skills/handoff/SKILL.md`. Five gates: detect implementation work, identify active workspace, check for existing US reference, dispatch BA first if absent, dispatch QA + Dev in parallel after BA returns. Applies to ANY project — not just apex-team. The skill is now installed in `~/.claude/skills/requirements-first/SKILL.md` via the install script.
+2. **`scripts/install-agents-user-scope.sh`** (extended) — now symlinks both `.claude/agents/*.md` files into `~/.claude/agents/` AND `.claude/skills/*/` directories into `~/.claude/skills/`. Idempotent. `--uninstall` removes both classes. Verified: `bash scripts/install-agents-user-scope.sh` reports `agents: 0 installed, 0 refreshed, 8 already current; skills: 1 installed, 0 refreshed, 0 already current`.
+3. **`.claude/agents/backend-developer.md`** (extended) — new `### Requirements-first pre-flight gate (Wave 117 — MANDATORY)` section between `### Your job` and `### Your boundaries`. Carries the canonical anchor phrase, 6 co-presence anchors, HALT procedure, `[[HANDOFF: business-analyst]]` advisory block template.
+4. **`.claude/agents/ui-developer.md`** (extended) — same shape as backend-developer.md.
+5. **`.claude/agents/qa.md`** (extended) — same shape, with QA-specific elaboration: "code" includes test code; `[exception: gate-verdict]` is the common QA-specific exception.
+6. **`.claude/agents/devsecops.md`** (extended) — same shape, with DevSecOps-specific elaboration: "code" includes CI workflow YAML and deploy manifests with runtime-visible effect; the merge step itself is outside this gate's scope.
+7. **`.claude/agents/business-analyst.md`** (extended) — new `### Auto-routing on raw user requirements (Wave 117 — MANDATORY)` section between `### Your responsibilities` and `### Your boundaries`. Carries the canonical anchor phrase, 6 co-presence anchors, procedure for writing US + INDEX update + dual HANDOFF emission.
+8. **`architecture/workspace-conventions.md`** (extended) — new `## Requirements-first enforcement (Wave 117)` section ahead of `## OQ-085-001 — Test artifact retention policy (RESOLVED)`. Enumerates the three enforcement layers, cross-links to the skill + each subagent body section, names the trigger incident.
+
+### Gate verification (Wave 117)
+
+- `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` → 153/153 PASS. Token discipline preserved across all 5 body edits (no denylisted tokens reproduced verbatim in the new clauses).
+- `pnpm vitest run tests/qa/wave-110/subagent-body-completeness.test.ts` → 12/12 PASS. Existing co-authorship + pre-verdict SHA sync + merge-protocol clauses untouched; new pre-flight gate clauses are region-disjoint additions (mid-body between `### Your job` and `### Your boundaries`).
+- `pnpm vitest run tests/qa/wave-111/pass-verdict-format.test.ts` → 21/21 PASS. ADR-018 canonical verdict format unchanged.
+- `pnpm vitest run tests/qa/wave-111/wave-111b-completeness.test.ts` → 34/34 PASS. ADR-018 cross-refs and Lessons sections in gate-role bodies untouched by Wave 117's pre-flight-gate additions (Wave 117 edits land before `### Your boundaries`; Lessons sections are at end-of-file — region-disjoint).
+- `pnpm vitest run tests/qa/wave-111c/wave-111c-completeness.test.ts` → 29/29 PASS.
+- `pnpm vitest run tests/qa/wave-112/wave-112-completeness.test.ts` → 59/59 PASS.
+- `pnpm vitest run tests/qa/wave-113/backfill-enforcement.test.ts` → PASS.
+- All 308 subagent-body regression tests across waves 108/110/111/111c/112 → PASS.
+
+### Architecture/ co-authorship gate (Wave 109 rule, self-reflection)
+
+This wave's PR will touch:
+- `architecture/workspace-conventions.md` (Architect-owned, single-author = me, gate satisfied).
+- `.claude/agents/*.md` (Architect's lane for review-rule edits; my own rules; gate satisfied).
+- `.claude/skills/requirements-first/SKILL.md` (new skill; sits under `.claude/skills/` which is Architect's review surface for cross-cutting agentic protocol; gate satisfied).
+- `scripts/install-agents-user-scope.sh` (install-script change; supports the skill addition; gate satisfied — Architect single-authors the cross-cutting protocol change).
+- `coordination/handoffs/architect.md` (this file — my own HANDOFF doc).
+
+No peer is co-authoring any file under `architecture/`. No HANDOFF-from-peer pre-condition required.
+
+### Peer-HANDOFF edit gate (Wave 112 step 4b — meta-self-check)
+
+This wave's PR touches `coordination/handoffs/architect.md` (this file) — edited by Architect. No peer HANDOFF docs are edited. Step 4b boundary satisfied: own-lane edit only.
+
+### In flight / next
+
+- This slice is ready for code review. Single-author across all 8 paths within my own lane — both gates (co-authorship + peer-HANDOFF edit) verified.
+- **QA Phase 2:** the canonical anchor phrases recorded above ARE QA's spec source for a Wave 117 completeness regression test. Suggested location: `tests/qa/wave-117/wave-117-completeness.test.ts`. Pattern matches Wave 108/110/111 cleanliness/completeness/format triad. The implementer-pre-flight clause is grep-asserted across 4 bodies; the BA auto-routing clause is grep-asserted in `business-analyst.md`; the workspace-conventions section heading is grep-asserted in `architecture/workspace-conventions.md`. QA dispatches after Wave 117 commits.
+- DevSecOps post-merge step (per ADR-018 Wave 111b amendment): replace `PR #0` placeholder + last-known SHA `7c994a1` (truncated; current main HEAD) with the real PR # + merge SHA via `chore(handoff): backfill Wave-117 verdict PR # and merge SHA`. Note: this wave's verdict SHA uses a truncated zero-padded placeholder because the actual pre-staging HEAD was `7c994a1` (7-char short form from git log); Architect lacks a full 40-char SHA in the dispatch brief. DevSecOps's backfill resolves both fields at merge time.
+
+### Parked / future (carried forward, plus Wave 117 additions)
+
+- `system-design.md` — still not created.
+- `tech-stack.md` — still not created (Vitest + ESLint + TS + pnpm is the entire stack).
+- `coding-standards.md` — still not created. Wave 117 requirements-first discipline (three-layer enforcement: skill + BA auto-routing + implementer hard-refusal) is a candidate entry alongside Wave 111b lessons-section pattern and Wave 112 boundary-clause discipline.
+- Fitness function for OQ-085-001's "no binary files committed under `tests/qa/wave-*/evidence/`" — QA owns implementation.
+- Viewer-repo subagent body audit (per ADR-017 follow-up).
+- **NEW (Wave 117):** consider a Wave 117-B QA grep test that asserts the canonical anchor phrase + 6 co-presence anchors are present in each of the 4 implementer bodies AND that BA's auto-routing anchor phrase + 6 co-presence anchors are present in `business-analyst.md`. Pattern matches Wave 108/110/111 cleanliness/completeness/format triad. Filing as candidate after PR merges.
+
+### Notes / caveats
+
+- **UX Designer's flag (from Wave 117 NOW in `coordination/handoffs/ux-designer.md`) addressed inline:** UX raised that the skill omitted ux-designer from the BA → implementer fan-out, creating a latent UI-gate bypass. Resolution: (a) the skill's Gate-5 procedure now explicitly names ux-designer as a parallel dispatch for UI-touching work, with a detection rule; (b) BA's auto-routing clause now emits `[[HANDOFF: ux-designer]]` in the same response for UI ACs. The four-parallel-dispatch pattern (QA + ui-developer + ux-designer for UI work; QA + backend-developer for backend; QA + devsecops for pipeline) is now consistent across skill + BA body. The BA anchor phrase ("When invoked with a raw user requirement, BA writes the US file AND emits parallel HANDOFF advisory blocks to QA and the implementing developer in the same response") still binds — "implementing developer" expands to "ui-developer + ux-designer" for UI work, "backend-developer" for backend, "devsecops" for pipeline.
+- The clause names ("Requirements-first pre-flight gate (Wave 117 — MANDATORY)" + "Auto-routing on raw user requirements (Wave 117 — MANDATORY)") are deliberately verbose to make them grep-targetable; QA's completeness test can match on the full heading without ambiguity.
+- The skill file uses YAML frontmatter with only `name` + `description` — no `disable-model-invocation` because the skill IS intended to be model-invocable when the outer orchestrator sees implementation work. This is the opposite of `handoff` which sets `disable-model-invocation: true` (it's a slash command, not an auto-trigger).
+- The install script's idempotency was verified: re-running reports "8 already current; 1 already current" on second run (after the first run installs the skill). The `--uninstall` path removes both classes of symlinks.
+- For QA's eventual completeness test: the canonical anchor phrase for implementers is structured to also match in BA's body if BA quotes it back (BA's auto-routing section does NOT quote the implementer phrase verbatim — it directs to the implementer files instead). Verified: `grep -c "Before writing any code, you MUST verify"` returns 4 (one match per implementer body) and 0 in BA's body. If QA wants exact-4-occurrence semantics (one match per implementer, zero matches elsewhere), that's grep-checkable. The BA auto-routing anchor phrase appears exactly once across all 8 bodies — only in `business-analyst.md`.
+
+---
+
+## PREV — 2026-06-04 — Wave 113 Phase 1 (NFR sign-off + #332 close-with-rationale)
 
 ### Wave-113 PASS verdict — PR #0 — SHA 75266d336c72f749a89b430228771777dd39ba60
 - **Gate role:** architect

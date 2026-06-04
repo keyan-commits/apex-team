@@ -1,4 +1,117 @@
-## NOW — 2026-06-04 — Wave 113 (US-092 AC4 backfill-enforcement completeness test)
+## NOW — 2026-06-04 — Wave 118 (US-094 AC1 comprehensive-coverage completeness test)
+
+### Wave-118 PASS verdict — PR #0 — SHA 7c994a1c8b835266049e20c835dab926ad875f1e
+
+- **Gate role:** qa
+- **Timestamp:** 2026-06-04T17:22:04Z
+- **Notes:** Wave 118 completeness test (US-094 AC1) green. 30/30 new tests; full suite 423/423 (108: 153 + 110: 12 + 111a: 21 + 111b: 34 + 111c: 29 + 112: 59 + 113: 16 + 117: 69 + 118: 30). Lint + type-check clean. PR #0 is commit-time placeholder per ADR-018 Wave 111b amendment; SHA is branch HEAD `7c994a1c8b835266049e20c835dab926ad875f1e`. DevSecOps backfills real PR # and merge SHA post-merge.
+
+### Deliverable
+
+- `tests/qa/wave-118/wave-118-completeness.test.ts` — 30 tests covering US-094 AC1 (comprehensive-coverage enforcement: QA hard-rule anchor in qa.md exactly once; anchor absent from 7 other bodies; 8 co-presence anchors in qa.md Wave 118 section; workspace-conventions heading exactly once; 4 test-class names in workspace-conventions section; SKILL.md existence + frontmatter + canonical anchor phrase).
+
+### Gate results
+
+- `pnpm vitest run tests/qa/wave-118/wave-118-completeness.test.ts` → 30/30 PASS
+- `pnpm test:run` → 423/423 PASS (108: 153 + 110: 12 + 111a: 21 + 111b: 34 + 111c: 29 + 112: 59 + 113: 16 + 117: 69 + 118: 30)
+- `pnpm lint` → clean
+- `pnpm type-check` → clean
+
+### AC checklist (US-094 AC1)
+
+- AC1b (QA hard-rule anchor — qa.md exactly once):
+  - `qa.md` contains hard-rule anchor exactly once. PASS (test 1-2)
+  - 7 other bodies (architect, business-analyst, backend-developer, devsecops, product-owner, ui-developer, ux-designer) contain hard-rule anchor zero times. PASS (tests 3-9)
+- AC1c (8 co-presence anchors in qa.md Wave 118 section):
+  - Section heading `Comprehensive test coverage (Wave 118` present. PASS (section-exist check)
+  - `Wave 118` present in section. PASS (test 10)
+  - `MANDATORY` present in section. PASS (test 11)
+  - `positive` present in section. PASS (test 12)
+  - `negative` present in section. PASS (test 13)
+  - `edge` present in section. PASS (test 14)
+  - `requirements/samples/` present in section. PASS (test 15)
+  - `every known sample input` present in section. PASS (test 16)
+  - `comprehensive-testing` present in section. PASS (test 17)
+- AC1d (`## Comprehensive testing (Wave 118)` in workspace-conventions.md exactly once):
+  - Heading present exactly once. PASS (tests 18-19)
+  - `Positive` present in section body. PASS (test 20)
+  - `Negative` present in section body. PASS (test 21)
+  - `Edge` present in section body. PASS (test 22)
+  - `All known sample inputs` present in section body. PASS (test 23)
+- AC2 (SKILL.md existence + frontmatter + anchor phrase):
+  - `.claude/skills/comprehensive-testing/SKILL.md` exists. PASS (test 24)
+  - SKILL.md frontmatter contains `name: comprehensive-testing`. PASS (test 25)
+  - SKILL.md body contains canonical hard-rule anchor verbatim. PASS (test 26)
+- Self-reference + US-094 metadata. PASS (tests 27-29... 30)
+
+### S10 gate
+
+S10 not triggered — wave touches no user-supplied collection logic (grep-based regression test on static files).
+
+### Legs A/B/C
+
+N/A — doc/test-only wave. No runtime code, no UI changes. `pnpm build` gate skipped per rubric. Full-suite vitest run is the applicable verification leg.
+
+### Wave-118 tests (US-085 evidence)
+
+- `tests/qa/wave-118/wave-118-completeness.test.ts` — 30 tests; mechanically asserts US-094 AC1 (comprehensive-coverage enforcement: QA hard-rule anchor exactly once in qa.md, absent from 7 other bodies; 8 co-presence anchors in Wave 118 section; workspace-conventions Wave 118 heading + 4 test-class names; SKILL.md existence + frontmatter + canonical anchor phrase verbatim).
+
+---
+
+## PREV — 2026-06-04 — Wave 117 (US-093 AC1 requirements-first completeness test)
+
+### Wave-117 PASS verdict — PR #0 — SHA 7c994a1c8b835266049e20c835dab926ad875f1e
+
+- **Gate role:** qa
+- **Timestamp:** 2026-06-04T17:11:25Z
+- **Notes:** Wave 117 completeness test (US-093 AC1) green. 69/69 new tests; full suite 393/393 (108: 153 + 110: 12 + 111a: 21 + 111b: 34 + 111c: 29 + 112: 59 + 113: 16 + 117: 69). Lint + type-check clean. PR #0 is commit-time placeholder per ADR-018 Wave 111b amendment; SHA is main HEAD `7c994a1c8b835266049e20c835dab926ad875f1e`. DevSecOps backfills real PR # and merge SHA post-merge.
+
+### Deliverable
+
+- `tests/qa/wave-117/wave-117-completeness.test.ts` — 69 tests covering US-093 AC1 (requirements-first enforcement: implementer pre-flight anchor, BA auto-routing anchor, skill file, install script, workspace-conventions section).
+
+### Gate results
+
+- `pnpm vitest run tests/qa/wave-117/wave-117-completeness.test.ts` → 69/69 PASS
+- `pnpm test:run` → 393/393 PASS (108: 153 + 110: 12 + 111a: 21 + 111b: 34 + 111c: 29 + 112: 59 + 113: 16 + 117: 69)
+- `pnpm lint` → clean
+- `pnpm type-check` → clean
+
+### AC checklist (US-093 AC1)
+
+- AC1a (skill file + install script):
+  - `.claude/skills/requirements-first/SKILL.md` exists. PASS (test 28)
+  - SKILL.md frontmatter contains `name: requirements-first`. PASS (test 29)
+  - `scripts/install-agents-user-scope.sh` contains `SKILLS_SRC_DIR`. PASS (test 30)
+- AC1b (implementer pre-flight anchor — 4 bodies exactly once):
+  - `backend-developer.md` anchor present exactly once. PASS (test 1-2)
+  - `ui-developer.md` anchor present exactly once. PASS (test 3-4)
+  - `qa.md` anchor present exactly once. PASS (test 5-6)
+  - `devsecops.md` anchor present exactly once. PASS (test 7-8)
+  - All 4 non-implementer bodies (business-analyst, architect, ux-designer, product-owner) contain anchor zero times. PASS (tests 9-16)
+  - 6 co-presence anchors (Wave 117, MANDATORY, HALT, [[HANDOFF: business-analyst]], requirements/user-stories/, [exception:) present in each of 4 implementer pre-flight sections. PASS (tests 17-40 inclusive)
+- AC1c (BA auto-routing anchor):
+  - `business-analyst.md` contains BA auto-routing anchor exactly once. PASS (tests 41-42)
+  - 7 other agent bodies contain BA auto-routing anchor zero times. PASS (tests 43-49)
+  - 6 co-presence anchors (Wave 117, MANDATORY, [[HANDOFF: qa]], implementer HANDOFF target, all 3 US section headers, same response) present in BA auto-routing section. PASS (tests 50-57)
+- Workspace-conventions section `## Requirements-first enforcement (Wave 117)` present exactly once. PASS (tests 58-59)
+- Self-reference + US-093 metadata. PASS (tests 60-62... 67-69)
+
+### S10 gate
+
+S10 not triggered — wave touches no user-supplied collection logic (grep-based regression test on static files).
+
+### Legs A/B/C
+
+N/A — doc/test-only wave. No runtime code, no UI changes. `pnpm build` gate skipped per rubric. Full-suite vitest run is the applicable verification leg.
+
+### Wave-117 tests (US-085 evidence)
+
+- `tests/qa/wave-117/wave-117-completeness.test.ts` — 69 tests; mechanically asserts US-093 AC1 (requirements-first enforcement: pre-flight anchor in 4 implementer bodies, absent from 4 non-implementer bodies; 6 co-presence anchors per implementer section; BA auto-routing anchor; 6 BA co-presence anchors; workspace-conventions section; SKILL.md existence + frontmatter; install-script SKILLS_SRC_DIR).
+
+---
+
+## PREV — 2026-06-04 — Wave 113 (US-092 AC4 backfill-enforcement completeness test)
 
 ### Wave-113 PASS verdict — PR #0 — SHA fa682cc624b0791e437115a3503db1721203be2c
 
