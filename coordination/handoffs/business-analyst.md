@@ -1,6 +1,60 @@
 # business-analyst — HANDOFF
 
-## NOW — 2026-06-04 — Wave 120: US-096 authored (pre-commit verdict-format gate)
+## NOW — 2026-06-04 — Wave 122 (amended): US-098 + FEAT-0001 + features/INDEX.md updated
+
+**Deliverables this turn (original Wave 122 + amendment):**
+
+- `requirements/user-stories/US-098-feat-grouping-convention.md` — amended; status: **accepted**
+  - AC3 updated: per-role ticket prefix table with `Per-role INDEX` column; `ADR-NNNN` vs `ARCH-XXXX` distinction added
+  - AC4 updated: new canonical column shape `FEAT | Slug | Status | ARCH | UX | TEST | FE | BE | OPS` (Wave + US-NNN refs columns removed from table; full context lives in FEAT file)
+  - AC11 updated: mandatory frontmatter spec with per-role INDEX.md maintenance rule; valid `role:` values enumerated
+  - AC12 updated (formerly "Autonomous role standard"): exact anchor phrase `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` codified; 5 inline rules specified (prefix, dir layout, frontmatter, INDEX maintenance, cross-workspace applicability); byte-for-byte grep-stability required
+  - AC13 updated (Regression): QA test must assert anchor phrase in all 8 bodies + role-specific prefix per body + FEAT-0001 file exists + features/INDEX.md column shape correct + all prior tests green
+  - Out of scope: subagent body amendments promoted to IN scope for Wave 122 (Architect's lane, AC12)
+- `requirements/features/FEAT-0001-feat-grouping-convention.md` — amended:
+  - Per-role ticket prefix table added (ratified FEAT/ARCH/UX/TEST/FE/BE/OPS)
+  - Mandatory frontmatter spec section added
+  - Autonomous-standard amendment section added (exact anchor phrase documented)
+  - Per-role artifact directories table updated with ticket column
+  - AC checklist updated to 13 ACs; AC11 = mandatory frontmatter (done), AC12 = autonomous standard (pending Architect), AC13 = regression (pending QA)
+  - Status history: amendment row added
+- `requirements/features/INDEX.md` — updated to canonical column shape:
+  - Columns: `FEAT | Slug | Status | ARCH | UX | TEST | FE | BE | OPS`
+  - Per-role ticket prefix reference table added
+  - Directive supersessions table: two rows documenting column-shape change + anchor phrase MANDATORY suffix
+- `coordination/handoffs/business-analyst.md` — this file, Wave 122 NOW updated
+
+**US-098 final AC summary (13 ACs):**
+- AC1: FEAT-NNNN naming format
+- AC2: FEAT frontmatter block spec (BA-owned YAML)
+- AC3: Per-role ticket prefixes + directory layout + per-role INDEX.md (ratified)
+- AC4: `requirements/features/INDEX.md` canonical column shape
+- AC5: US-NNN Option B coexistence
+- AC6: QA test-type decision discipline
+- AC7: Reusable DevSecOps pipelines (deferred)
+- AC8: `pnpm run qa:feat` script (deferred)
+- AC9: Viewer FEAT-grouped cards (deferred US-099+)
+- AC10: `architecture/workspace-conventions.md` FEAT section (Architect, pending)
+- AC11: Mandatory deliverable frontmatter spec + per-role INDEX maintenance rule
+- AC12: Autonomous standard — `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` in all 8 subagent bodies (Architect, pending)
+- AC13: Wave 122 regression test (QA, pending)
+
+**PASS verdict (ADR-018 canonical format):**
+
+### Wave-122 PASS verdict — PR #0 — SHA 0b4f7bdbf1c19ad101bd0d4b8387cc593558f127
+- **Gate role:** business-analyst
+- **Timestamp:** 2026-06-04T00:00:00Z
+- **Notes:** Requirements phase + Wave 122 amendment — US-098 + FEAT-0001 + features/INDEX.md amended with per-role ticket prefixes, mandatory frontmatter spec, autonomous-standard AC (exact anchor phrase `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)`), and new features/INDEX.md column shape. No code or architecture edits. Architecture gate does not fire (no `architecture/` edits). Peer-edit boundary respected: only own HANDOFF + own US/FEAT/INDEX files (BA-owned) edited. PR #0 placeholder; DevSecOps to backfill with real PR # + merge SHA post-merge.
+
+**Architecture gate:** no `architecture/` edits. Gate doesn't fire.
+
+**Peer-edit boundary:** no peer HANDOFF edits. Only own HANDOFF + own US authoring + features/ dir + INDEX.md edited.
+
+**Last-processed user message:** Wave 122 amendment dispatch (2026-06-04, main `0b4f7bdbf1c19ad101bd0d4b8387cc593558f127`).
+
+---
+
+## PREV — 2026-06-04 — Wave 120: US-096 authored (pre-commit verdict-format gate)
 
 **Deliverables this turn:**
 

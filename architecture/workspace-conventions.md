@@ -95,6 +95,7 @@ The seven exception tags (`[exception: trivial-ops]`, `[exception: gate-verdict]
 - `.claude/agents/backend-developer.md`, `ui-developer.md`, `qa.md`, `devsecops.md` §"Requirements-first pre-flight gate (Wave 117 — MANDATORY)" — implementer hard backstop.
 - `scripts/install-agents-user-scope.sh` — symlinks both agents AND skills into `~/.claude/`.
 - §"Comprehensive testing (Wave 118)" below — the downstream sibling enforcement that fires AFTER BA writes the US, ensuring QA's tests cover the four mandatory classes (positive / negative / edge / all-known-samples) before any PASS verdict.
+- §"FEAT-XXXX feature grouping (Wave 122)" below — the organizing convention that groups every role's deliverable for a feature under a shared FEAT-NNNN identifier, layered on top of US-NNN (Option B coexistence).
 
 ## Comprehensive testing (Wave 118)
 
@@ -117,6 +118,94 @@ The four mandatory test classes per US:
 - `.claude/agents/qa.md` §"Edge-case enumeration" — pre-existing checklist; Wave 118 makes it MANDATORY per US.
 - `scripts/install-agents-user-scope.sh` — symlinks both agents AND skills into `~/.claude/` (no script change needed for Wave 118 — `SKILLS_SRC_DIR` glob from Wave 117 already picks up new skill directories).
 - §"Requirements-first enforcement (Wave 117)" above — upstream sibling enforcement; this clause is the downstream half that covers "what tests are mandatory" after BA writes the US.
+- §"FEAT-XXXX feature grouping (Wave 122)" below — applies the four-class testing discipline per test TYPE within a FEAT grouping; QA's `TEST-PLAN.md` records type rationale.
+
+## FEAT-XXXX feature grouping (Wave 122)
+
+Every deliverable in this workspace — and in any downstream workspace driven by the eight user-scoped subagents — groups under a shared `FEAT-XXXX` identifier. The convention makes artifacts discoverable, cross-linked, and groupable in the apex-team-viewer without hunting across flat file lists. US-098 is the driving story; FEAT-0001 is the meta-feature that dogfoods the convention.
+
+### Per-role ticket prefixes (AC3)
+
+Ticket numbers are allocated monotonically per role, independently of other roles. `ARCH-XXXX` is feature-scoped Architect work; `ADR-NNNN` stays for cross-cutting Architect decisions (the two coexist — an ADR can be authored alongside one or more ARCH tickets, or independently when the decision is repo-wide). The ratified prefix table:
+
+| Role | Ticket prefix | Per-feature artifact root | Per-role INDEX |
+|---|---|---|---|
+| BA | `FEAT-XXXX` | `requirements/features/FEAT-NNNN-<slug>.md` | `requirements/features/INDEX.md` |
+| Architect | `ARCH-XXXX` | `architecture/features/FEAT-NNNN-<slug>/ARCH-NNNN-<slug>.md` | `architecture/features/INDEX.md` |
+| UX Designer | `UX-XXXX` | `design/features/FEAT-NNNN-<slug>/UX-NNNN-<slug>.md` | `design/features/INDEX.md` |
+| QA | `TEST-XXXX` | `tests/qa/features/FEAT-NNNN-<slug>/TEST-NNNN-<slug>.test.ts` | `tests/qa/features/INDEX.md` |
+| FE Developer | `FE-XXXX` | `src/features/FEAT-NNNN-<slug>/FE-NNNN-<slug>.tsx` (project-equivalent) | `src/features/INDEX.md` |
+| BE Developer | `BE-XXXX` | `src/features/FEAT-NNNN-<slug>/BE-NNNN-<slug>.ts` (project-equivalent) | shared with FE |
+| DevSecOps | `OPS-XXXX` | `ops/features/FEAT-NNNN-<slug>/OPS-NNNN-<slug>.sh` + `ops/pipelines/<env>.sh` reusable templates | `ops/features/INDEX.md` |
+
+FE Dev and BE Dev share the `src/features/FEAT-NNNN-<slug>/` tree but carry distinct ticket prefixes; their files coexist in the same per-feature directory. Product Owner orchestrates and does not produce per-feature deliverables under this convention.
+
+### Option B — US-NNN coexistence with FEAT-XXXX (AC5)
+
+A FEAT-XXXX document is the feature parent that groups one or more US-NNN user stories as children. Existing US-NNN files are not retired or renamed; they carry a `parent-feat:` frontmatter field referencing their parent FEAT when one is assigned. New features always start with a FEAT document; the associated US-NNN stories link back to it. Rationale: retiring US-NNN would lose story-level granularity and break the US → BR → test traceability chain (`requirements/traceability.md`). Option B preserves feature-level grouping for the viewer AND story-level granularity for acceptance criteria.
+
+### QA test-type decision discipline (AC6)
+
+QA selects test types for each FEAT-XXXX grouping based on the feature's requirements and ACs — not on how the developer implemented the feature. The test-type decision is QA's professional judgment. Available types (non-exhaustive): unit, integration, smoke, regression, end-to-end, UI (visual regression), performance, security (static + DAST). QA documents the rationale for type selection in a `TEST-PLAN.md` at the root of `tests/qa/features/FEAT-NNNN-<slug>/`. The Wave 118 comprehensive-testing discipline (positive / negative / edge / all-known-samples) applies per test TYPE within the feature grouping — not just per story.
+
+### Mandatory deliverable frontmatter (AC11)
+
+Every role deliverable file MUST include a frontmatter (Markdown) or header-comment block (non-Markdown) with at minimum:
+
+```yaml
+---
+ticket: <PREFIX-NNNN>       # this role's ticket — prefix must match AC3 table
+parent_feat: FEAT-NNNN      # the BA feature this belongs to
+parent_us: US-NNN           # the BA user story (omit if no US exists)
+role: <role-id>             # e.g. architect, qa, ui-developer
+status: <status>            # proposed | accepted | in-flight | done | superseded
+---
+```
+
+For non-Markdown files (`.ts`, `.tsx`, `.sh`, `.py`, etc.), use the file's native top-of-file comment syntax with the same fields. BA's FEAT-XXXX files use `feat:` (not `parent_feat:`) — they ARE the parent.
+
+`parent_feat:` is the primary cross-link: it is what the viewer uses to group artifacts by FEAT card and what `grep parent_feat: FEAT-XXXX` uses to compute the count columns in `requirements/features/INDEX.md`.
+
+**Per-role INDEX maintenance rule:** each role MUST maintain an allocation index at `<role-dir>/features/INDEX.md` (paths per the AC3 table). When a role creates a new ticket file, it MUST add a row to its own INDEX before the wave closes. Ticket numbers are allocated monotonically per role; numbers are never reused after retirement. The BA's `requirements/features/INDEX.md` aggregates counts across all role INDEXes — it does not replace them.
+
+### Autonomous role standard (AC12)
+
+Each role's subagent body (`.claude/agents/<role-id>.md`) carries a section with the exact heading:
+
+```
+### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)
+```
+
+The heading is the canonical grep anchor. QA's Wave 122 regression test grep-asserts this exact string in all 8 subagent body files. Each body's section codifies role-specifically:
+
+1. **Ticket prefix** — the role's own prefix from the AC3 table (stated explicitly, not as a reference).
+2. **Directory layout** — the canonical artifact root for this role's per-feature files, stated as a concrete path pattern.
+3. **Frontmatter rule** — inline restatement of the AC11 fields, not a cross-reference. The subagent carries the rule without needing to read US-098.
+4. **INDEX maintenance** — allocate ticket numbers monotonically; add a row to `<role-dir>/features/INDEX.md` before the wave closes.
+5. **Cross-workspace applicability** — the convention applies in ANY workspace, not just apex-team. When invoked on a downstream project (LFM, bidshop, etc.), follow the same convention there.
+
+The autonomous-standard section is the mechanism that makes the convention self-propagating: a role subagent invoked fresh in a new workspace applies the convention without explicit instruction. The Wave 121 viewer auto-follow means a single subagent body edit on apex-team propagates to every project using user-scope subagents.
+
+Architect single-authored all 8 body amendments in Wave 122 (the Plan C subagent runtime treats `.claude/agents/*.md` edits as Architect's lane for cross-cutting agentic protocol). PO does not produce per-feature deliverables under this convention; the PO body's section documents the absence explicitly so QA's grep-coverage assertion passes against all 8 files.
+
+### `requirements/features/INDEX.md` registry shape (AC4)
+
+The BA-owned registry uses this canonical column shape:
+
+```
+| FEAT | Slug | Status | ARCH | UX | TEST | FE | BE | OPS |
+```
+
+Wave + US-NNN refs columns are dropped from the table; full context lives in the FEAT-XXXX file's frontmatter. The ARCH / UX / TEST / FE / BE / OPS counts are derived by grepping `parent_feat: FEAT-XXXX` across each role's `features/` directory. BA updates counts when a peer notifies BA that a new role ticket has been filed, or on any wave-close sweep.
+
+### Cross-references
+
+- `requirements/user-stories/US-098-feat-grouping-convention.md` — driving story; ratified ACs.
+- `requirements/features/FEAT-0001-feat-grouping-convention.md` — meta-feature; dogfoods the convention.
+- `requirements/features/INDEX.md` — top-level feature registry.
+- §"Requirements-first enforcement (Wave 117)" above — the upstream gate that ensures a US-NNN exists before implementation; FEAT-XXXX grouping is the post-US organizing layer.
+- §"Comprehensive testing (Wave 118)" above — applies per test TYPE within a FEAT grouping (AC6).
+- `.claude/agents/<role-id>.md` §"FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)" — autonomous role standard, present in all 8 bodies.
 
 ## OQ-085-001 — Test artifact retention policy (RESOLVED)
 

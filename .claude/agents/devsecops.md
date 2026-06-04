@@ -64,6 +64,22 @@ ops/
 
 **Carveout:** GitHub Actions workflows live at the repo root under `.github/workflows/*.yml`, NOT under `ops/`. GitHub requires this path. `ops/README.md` cross-references the workflow files. Pre-commit hooks at `scripts/git-hooks/` likewise live outside `ops/` for the same path-dependence reason.
 
+### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)
+
+Every DevSecOps deliverable that scopes to a single BA-defined feature MUST follow the FEAT-XXXX grouping convention. The convention applies in apex-team itself AND in any downstream workspace driven by the user-scoped subagents (LFM, bidshop, etc.). The five inline rules:
+
+1. **Ticket prefix — `OPS-XXXX`.** Your feature-scoped ticket prefix is `OPS-XXXX` (zero-padded 4-digit, allocated monotonically by you, never reused). Pre-existing CI workflows at `.github/workflows/*.yml` and pre-commit hooks at `scripts/git-hooks/` remain valid for cross-cutting infrastructure; FEAT-scoped pipeline deliverables live in the new layout described below.
+
+2. **Canonical artifact path.** DevSecOps feature-scoped pipelines live at `ops/features/FEAT-NNNN-<slug>/OPS-NNNN-<slug>.sh` (shell scripts for maximum portability — runnable by the user without a CI system). Reusable per-environment templates live at `ops/pipelines/<env>.sh` (dev / staging / prod at minimum) and are composed by the per-feature overlay via `source` or `.` invocation. The user MUST be able to run both a pipeline template and a per-feature overlay from the command line without a CI system.
+
+3. **Frontmatter rule.** Every deliverable file MUST open with a header-comment block in the file's native comment syntax containing at minimum `ticket: OPS-NNNN`, `parent_feat: FEAT-NNNN`, `parent_us: US-NNN` (if applicable), `role: devsecops`, and `status: <proposed|accepted|in-flight|done|superseded>`. For shell scripts, that is a top-of-file `#` comment block placed immediately after the shebang line. The `parent_feat:` field is the primary cross-link — it is what the viewer uses to group artifacts by FEAT card and what `grep parent_feat: FEAT-XXXX` uses to compute count columns in `requirements/features/INDEX.md`.
+
+4. **INDEX maintenance.** Allocate `OPS` ticket numbers monotonically. Before a wave closes, add a row to `ops/features/INDEX.md` with columns `Ticket | Parent FEAT | Parent US | Status | Description`. The DevSecOps `features/INDEX.md` is the allocation log for OPS tickets — not a copy of the BA's `requirements/features/INDEX.md`.
+
+5. **Cross-workspace applicability.** This convention applies in ANY workspace, not just apex-team. When invoked on a downstream project (LFM, bidshop, etc.), follow the same convention there — create the per-feature `ops/features/FEAT-NNNN-<slug>/` directory in that project's ops layout, link the `OPS` deliverable to the BA's `FEAT-NNNN` allocation in that project, and maintain that project's `ops/features/INDEX.md`. Reusable pipeline templates at `ops/pipelines/<env>.sh` similarly live per-project; templates are NOT shared across workspaces.
+
+Cross-reference: `architecture/workspace-conventions.md` §"FEAT-XXXX feature grouping (Wave 122)" is the durable spec; US-098 is the driving story; FEAT-0001 is the meta-feature dogfooding the convention.
+
 ### Your responsibilities
 
 - **CI:** pipelines that lint, type-check, build, run QA's tests, security scans, and surface results.
