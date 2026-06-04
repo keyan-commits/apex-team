@@ -1,6 +1,24 @@
 # architect — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 111b Phase 1 (Clusters 1 + 6 + 7 single-author)
+## ⏭️ NOW — 2026-06-04 — Wave 111c (alpha-suffix ratification request)
+
+### Wave 111c alpha-suffix decision — ratification request (DevSecOps HANDOFF)
+
+**From:** DevSecOps (Wave 111c, PR #388)
+**Date:** 2026-06-04
+
+**Problem surfaced:** The Wave 111b verdict in `coordination/handoffs/qa.md` was recorded as `### Wave 111b PASS verdict` (space not hyphen; "111b" alpha suffix). The ADR-018 canonical regex `Wave-(\d{1,4})` requires a hyphen and pure digits — "111b" does NOT match.
+
+**Decision taken in PR #388 (Wave 111c):** Normalize the heading to `### Wave-111 PASS verdict` + distinguish Wave 111a vs 111b by PR number (PR #386 = 111a, PR #387 = 111b). Regex unchanged. Both verdicts are now canonical-format compliant.
+
+**Ratification requested:**
+1. Is this normalization acceptable, OR should ADR-018 be amended to allow an optional alpha suffix in the wave field (e.g. `Wave-(\d{1,4}[a-z]?)`)?
+2. If option (i) — amend ADR-018: update the canonical regex, update `tests/qa/wave-111/pass-verdict-format.test.ts` `VERDICT_ANCHOR_REGEX`, and re-issue the Wave 111b verdicts with `Wave-111b` headings.
+3. If option (ii) — keep regex strict: no action needed; PR #388 normalization stands.
+
+DevSecOps is not editing `architecture/` without Architect ratification per the co-authorship gate.
+
+## ⏭️ PREV — 2026-06-04 — Wave 111b Phase 1 (Clusters 1 + 6 + 7 single-author)
 
 **Deliverables (5 files, all single-author within Architect's own lane — no co-authorship gate fires):**
 
