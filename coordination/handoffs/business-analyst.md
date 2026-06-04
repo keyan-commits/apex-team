@@ -52,7 +52,7 @@
 
 **PASS verdict (ADR-018 canonical format):**
 
-### Wave-115 PASS verdict — PR #0 — SHA (pending)
+### Wave-115 PASS verdict — PR #0 — SHA d58a350126e7d546db051451800bbfdbd8e9e9f9
 - **Gate role:** business-analyst
 - **Timestamp:** 2026-06-04T15:00:00Z
 - **Notes:** Docs-only close-sweep. 39 US files updated (32 superseded, 7 done). INDEX.md rows updated. No code edits, no architecture/ edits, no peer HANDOFF edits. Peer-edit boundary respected. PR #0 + SHA (pending) per ADR-018 Wave 111b amendment; DevSecOps to backfill with real PR # + merge SHA post-merge.
