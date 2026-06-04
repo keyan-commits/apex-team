@@ -6,6 +6,8 @@
 - **Timestamp:** 2026-06-04T17:50:00Z
 - **Notes:** Wave 119 viewer workspace-switcher fixtures + tests (US-095 AC9). 25/25 new tests; full suite 448/448 (108: 153 + 110: 12 + 111a: 21 + 111b: 34 + 111c: 29 + 112: 59 + 113: 16 + 117: 69 + 118: 30 + 119: 25). Lint + type-check clean. PR #0 is commit-time placeholder per ADR-018 Wave 111b amendment; SHA is branch HEAD `c795ab5174eea6ff29bfffa5ffc8af58b675955f`. DevSecOps backfills real PR # and merge SHA post-merge.
 
+**Follow-up commit:** the sibling-path metadata test was asserting `existsSync(VIEWER_ROOT)` unconditionally, which fails in CI (sibling viewer repo isn't checked out). Patched to skip gracefully when sibling absent; live-server tests already self-skip via `VIEWER_READY` gate. No behavior change; 25/25 still PASS locally + green expected in CI.
+
 ### Deliverable
 
 - `requirements/samples/wave-119-viewer-workspaces/workspace-happy/requirements/user-stories/US-001-sample.md` — valid US fixture (H1 + Status: accepted)
