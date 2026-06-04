@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-06-05 — Wave 131: viewer shell-injection fix (SHIPPED)
 
-### Wave-131 PASS verdict — viewer PR #16 — apex-team HANDOFF refresh PR (pending merge)
+### Wave-131 PASS verdict — PR #420 — SHA f43eded0ccd3ab93723b63c661806d52c723b158
 
 - **Gate role:** ui-developer (security fix — self-attested; Architect gate required before merge)
 - **Timestamp:** 2026-06-05T00:00:00Z
@@ -31,7 +31,7 @@
 
 ## ⏭️ PREV — 2026-06-04 — Wave 130: viewer polyglot ▶ RUN (SHIPPED)
 
-### Wave-130 PASS verdict — viewer PR #13 — merge SHA 6d7f0fdb0c9af73a27303407175ec4a8b956a03b
+### Wave-130 PASS verdict — PR #13 — SHA 6d7f0fdb0c9af73a27303407175ec4a8b956a03b
 
 - **Gate role:** ui-developer (implementation complete; all gates PASS — Architect PASS @ `dd70fff`, UX PASS @ `b205ec1`, merged 2026-06-04)
 - **Timestamp:** 2026-06-04T00:00:00Z

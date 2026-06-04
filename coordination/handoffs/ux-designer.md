@@ -2,7 +2,7 @@
 
 ## NOW — 2026-06-04 — Wave 130 (Runner badge UX gate — PR #13)
 
-### Wave-130 PASS verdict — PR #13 — SHA b205ec18159017ec154709d8025d6bb2b4798215 (merge SHA: 6d7f0fdb0c9af73a27303407175ec4a8b956a03b)
+### Wave-130 PASS verdict — PR #13 — SHA 6d7f0fdb0c9af73a27303407175ec4a8b956a03b
 - **Gate role:** ux-designer
 - **Timestamp:** 2026-06-04T00:00:00Z
 - **Repo reviewed:** `keyan-commits/apex-team-viewer` PR #13 commit `b205ec18159017ec154709d8025d6bb2b4798215`
