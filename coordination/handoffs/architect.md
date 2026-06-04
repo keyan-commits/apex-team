@@ -1,109 +1,80 @@
 # architect — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 126 Lane 1 NFR ratification (ARCH-0002 — FEAT-0005 feat-backfill command)
+## ⏭️ NOW — 2026-06-04 — Wave 126 Lane 3 code-review gate (PR #411 — PASS)
 
-### Wave-126 PASS verdict — PR #0 — SHA 5c7a23d24a720eafdfda0e43053cab92ac9d13f8
-- **Gate role:** architect
-- **Timestamp:** 2026-06-04T22:00:00Z
-- **Notes:** NFR posture + orchestration protocol for FEAT-0005 retroactive FEAT-grouping backfill command. Three Architect-lane artifacts staged: (1) `architecture/features/FEAT-0005-feat-backfill-command/ARCH-0002-feat-backfill-protocol.md` — second feature-scoped ARCH ticket under the Wave 122 convention. Eight NFRs ratified across ten sections (idempotence MUST, dry-run-first MUST, subagent-orchestration boundary MUST, cross-workspace portability MUST, audit log MUST, forbidden surfaces MUST, conflict resolution MUST, NFR test posture MUST + deferrable follow-ups + cross-refs). (2) `architecture/features/INDEX.md` — ARCH-0002 row added to registry table + allocation log row; "Last updated" line bumped to Wave 126. (3) this HANDOFF doc — NOW block prepended per ADR-018 canonical; prior Wave 125 Lane 3 NOW demoted to PREV. Critical design call resolved in ARCH-0002 §3: backfill script emits dispatch-plan markdown for outer orchestrator to consume rather than shelling out via `claude --agents` — rationale documented (no precedent in apex-team scripts; outer orchestrator owns API-key + model + parallel-dispatch budget; dispatch-plan markdown is human-reviewable + idempotent across session interruption; the user's standing no-API-key constraint makes script-driven CLI invocation infeasible). Self-attested PASS — all edits within Architect's own lane (`architecture/` + own HANDOFF), no peer-edit footprint on BA's US-102 / FEAT-0005 / requirements INDEX or UX's UX-0002. Placeholder block per ADR-018 Wave 111b amendment: `PR #0` + last-known SHA `5c7a23d24a720eafdfda0e43053cab92ac9d13f8` (HEAD of `feature/126-feat-backfill-command` at staging time, prior to Architect's Lane 1 commit). DevSecOps post-merge backfill replaces with real PR # + merge SHA via `chore(handoff): backfill Wave-126 verdict PR # and merge SHA`.
+### Wave-126 PASS verdict — PR #411 — SHA feef0820621674b101c4f56f289e2e4a75a72c40
+- **Gate role:** architect (non-UI rubric — pure CLI / Node script + docs surface; no UI files in diff)
+- **Timestamp:** 2026-06-04T22:18:00Z
+- **Notes:** Code-review gate for `feature/126-feat-backfill-command` HEAD `feef082`. Scope: `scripts/feat-backfill.mjs` (1282 lines — note brief said "641 lines" which is stale; actual is 1282; flagged as observation only), `.claude/agents/ui-developer.md` + `backend-developer.md` Plan-C additive clauses, `frontend/features/` retro summary docs (FE-0001..FE-0004), `ops/features/FEAT-0005-feat-backfill-command/OPS-0004-feat-backfill-script.md`, and `tests/qa/features/FEAT-0005-feat-backfill-command/TEST-0005-feat-backfill.test.ts`. Architecture/ co-authorship gate (Wave 109 #335): `git diff main..HEAD -- architecture/` shows only `architecture/features/FEAT-0005-feat-backfill-command/ARCH-0002-feat-backfill-protocol.md` (new — my own work) + `architecture/features/INDEX.md` (my own INDEX row + allocation log) — gate satisfied, no peer edits under `architecture/`. All eight ARCH-0002 NFRs verified against the implementation. Full test suite: 17/17 files, 722/722 tests pass + 1 skipped, lint clean, zero failures.
 
-### Wave 126 Lane 1 deliverables (3 files, single-author within Architect's lane)
+### Per-NFR verification matrix (ARCH-0002 §§1-8 vs implementation)
 
-1. **`architecture/features/FEAT-0005-feat-backfill-command/ARCH-0002-feat-backfill-protocol.md`** (new) — second feature-scoped Architect ticket under the Wave 122 FEAT-XXXX convention. Frontmatter: `ticket: ARCH-0002`, `parent_feat: FEAT-0005`, `parent_us: US-102`, `role: architect`, `status: accepted`. Ten sections: NFR-1 idempotence (with three-case frontmatter detection + INDEX row de-dup), NFR-2 dry-run-first (the safety boundary), NFR-3 subagent-orchestration boundary (script does FS IO, subagents return proposal JSON, dispatch-plan markdown over CLI invocation — codified design call), NFR-4 cross-workspace portability (`--workspace=<path>` flag mandatory), NFR-5 audit-log shape (append-only, tab-separated, surviving cross-runs), NFR-6 forbidden patterns (10 forbidden surfaces enumerated + complementary allowed-surface list), NFR-7 conflict resolution (lower-number wins, higher voided in INDEX allocation Notes), NFR-8 test posture (TEST-0005's four mandatory assertions), deferrable follow-ups (4 — live orchestration, `--ba-approved` flag, cross-workspace dogfood, audit-log rotation policy), cross-references.
+| NFR | Verification | Result |
+|---|---|---|
+| **NFR-001 idempotence** | `injectFrontmatter` (scripts/feat-backfill.mjs:526-580) re-reads file, calls `parseFrontmatter`, returns `applied-noop` at line 546 if both `feat` + `parent_feat` match. Conflict path at line 550 leaves file untouched. TEST-0005 §8(b) double-invocation test (test.ts:429-531) asserts byte-identical state after run 2. | PASS |
+| **NFR-002 dry-run-first** | All 15 write sites audited. Lines 132-134 → outDir scaffolding (always `coordination/feat-backfill/`); 558, 578 → `injectFrontmatter` (callable only from `runApply` at line 1196, which is itself gated on `flagApply` at line 1235); 625, 628 → `_insertIndexRow` (scaffolded but uninvoked in MVP — underscore-prefix); 741, 780 → `seedFERetroDoc` writes (callable only from `runApply` at line 1216, also `flagApply`-gated); 998-999, 1088, 1092 → proposal/dispatch/brief writes (all under `outDir`). Dry-run path `runPhase1()` writes EXCLUSIVELY under `coordination/feat-backfill/`. TEST-0005 §8(a) (test.ts:322-381) asserts dry-run writes ONLY under that prefix across all three fixtures. | PASS |
+| **NFR-003 orchestration boundary** | Single `execSync` site at line 124 — `git rev-parse --show-toplevel` for workspace resolution (read-only, allowed). No `claude` CLI shell-out. No `Agent` invocation. The string "Agent tool calls" at line 1010 is in the emitted dispatch-plan markdown that the OUTER orchestrator reads; script never invokes it. Subagent JSON proposals consumed via `parseResponseFiles` (line 491) reading `coordination/feat-backfill/responses/*.md`. | PASS |
+| **NFR-004 cross-workspace** | `--workspace=<path>` parsed at line 95, resolved at line 115-128 with `existsSync` precondition + git-toplevel fallback. `walkDir` (line 289) tolerates missing dirs via `if (!existsSync(dir)) return results;`. `classifyRoleFiles` (line 340) returns empty buckets + a Plan-C note when role dir absent. TEST-0005 sections 5-9 parameterize over `plan-c-workspace`, `legacy-workspace`, `empty-workspace` fixtures. | PASS |
+| **NFR-005 audit log** | `audit()` at line 317-322 uses `appendFileSync` — never `writeFileSync`, never truncates. Tab-separated `[ts, mode, role, relFile, feat, action].join('\t')`. TEST-0005 §8(c) (test.ts:537-599) asserts post-run-2 size strictly > post-run-1 + validates the canonical regex format. | PASS |
+| **NFR-006 forbidden surfaces** | `grep -n "git add\|git commit\|git push\|\.claude/agents\|coordination/handoffs\|architecture/decisions\|ADR-"` against the script returns ONLY line 1079, which is the emitted-text WARNING in the dispatch plan (the script TELLS subagents not to do those — never does them itself). No `rename` / `mv` / file-deletion calls anywhere. TEST-0005 forbidden-surfaces describe block (test.ts:1053-1142) parameterizes 3 surfaces (HANDOFFs / `.claude/agents/` / ADRs) × 3 fixtures = 9 tests, all PASS. | PASS |
+| **NFR-007 conflict resolution** | `resolveConflicts` at line 434-468 sorts by `parseInt(p.proposedFeat.replace('FEAT-', ''), 10)` ascending — lower wins. Voided entries pushed to `conflicts` array → emitted in proposal `## Reconciliation notes` (line 941-946) and `propose-conflict` audit row (line 828). `--ba-approved` parsed at line 97 with the `_flagBaApproved` underscore-prefix indicating MVP placeholder per ARCH-0002 §9 item 2 ("Wave 126's MVP can ship without the flag — always halts on conflict in `--apply`"). Acceptable per ARCH-0002 §9 deferral. | PASS |
+| **NFR-008 frontmatter parser fail-soft** | `parseFrontmatter` at line 241-268 wraps key-extraction in try/catch (line 255-266), sets `parseError`, returns `frontmatterParsed: null` without throwing. Unclosed block at line 246-248 returns `parseError: 'unclosed frontmatter block'` cleanly. `classifyRoleFiles` line 361-364 reads `parseError` and pushes file to `skipped` (treated as ungrouped) — file untouched on disk. TEST-0005 §8(d) (test.ts:605-700) covers corrupt YAML + unclosed block + no-frontmatter fixtures. | PASS |
 
-2. **`architecture/features/INDEX.md`** (modified) — ARCH-0002 row added to registry table with `parent_feat: FEAT-0005`, `parent_us: US-102`, `status: accepted`. Allocation log row stamped `2026-06-04` and `Architect (Wave 126)`. "Last updated" line bumped to Wave 126.
+### Surface 2 — subagent Plan-C additive clauses
 
-3. **`coordination/handoffs/architect.md`** (this file) — NOW block prepended per ADR-018 canonical format; prior Wave 125 Lane 3 NOW demoted to PREV.
+- `.claude/agents/ui-developer.md` + `backend-developer.md` diffs are 100% additive — a single new bullet under the existing Wave 122 anchor heading. The Wave 122 anchor `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` is unchanged (no `^-` lines touch that heading or any pre-existing bullet). Wave 122 TEST-0001 anchor-stability assertion will continue to pass.
+- The clause is content-aligned with the script's Plan-C detection logic (script line 144-145: `isPlanC = !hasSrc && hasAgents`) and the `ROLE_DIRS` switch (line 170-171: `'ui-developer': isPlanC ? 'frontend' : 'src'`).
 
-### NFR posture summary (Wave 126)
+### Surface 3 — frontend retro summary docs
 
-- **Idempotence (NFR-FEATBACKFILL-001):** `--apply` twice MUST be byte-identical (excluding audit log). Frontmatter detection tolerates three cases (none / partial-missing-parent_feat / fully-formed). INDEX row de-dup by ticket id.
-- **Dry-run-first (NFR-FEATBACKFILL-002):** Default mode writes ONLY under `coordination/feat-backfill/`. `--apply` is the sole mode that touches role-owned files. Non-negotiable safety boundary.
-- **Orchestration boundary (NFR-FEATBACKFILL-003):** Script does ALL FS IO; subagents return JSON proposals to dispatch-plan files. Subagents do NOT mutate workspace files in Wave 126. Outer-orchestrator fans out via Agent tool (the canonical apex-team pattern); script does NOT shell out via `claude --agents`.
-- **Cross-workspace portability (NFR-FEATBACKFILL-004):** `--workspace=<path>` mandatory flag; defaults to git toplevel. Tolerates absent role directories. Script is workspace-agnostic.
-- **Audit log (NFR-FEATBACKFILL-005):** Append-only at `<workspace>/coordination/feat-backfill/audit.log`. Tab-separated `<ts>\t<mode>\t<role>\t<file>\t<FEAT-XXXX|ungrouped>\t<action>`. Survives across runs; never rotated by the script.
-- **Forbidden surfaces (NFR-FEATBACKFILL-006):** 10 forbidden actions including: no file moves, no renames, no FEAT reassignment, no existing-FEAT-parent-doc edits, no HANDOFF/`.claude/agents/`/ADR mutations, no git state, no network calls, no deletions.
-- **Conflict resolution (NFR-FEATBACKFILL-007):** Lower FEAT number wins. Higher voided in `requirements/features/INDEX.md` allocation-log Notes. Tie-on-new-FEAT halts apply for manual resolution.
-- **Test posture (NFR-FEATBACKFILL-008 via TEST-0005):** Four mandatory assertions — (a) dry-run writes only under `coordination/feat-backfill/`; (b) `--apply` idempotent under double-invocation; (c) audit log append-only; (d) frontmatter parser fail-soft (corrupt YAML → ungrouped, never crash, never overwrite).
+- `FE-0001-tbd/FE-0001-viewer-workspace-switcher.md` + `FE-0002-tbd/FE-0002-viewer-auto-follow.md`: `parent_feat: TBD` for pre-convention waves 119/121 — schema-correct (BA reconciles to a real FEAT later). Directory placement `FE-NNNN-tbd/` is consistent with the "no FEAT bound yet" semantics.
+- `FEAT-0002-feat-grouped-rendering/FE-0003-feat-grouped-rendering.md`: `parent_feat: FEAT-0002` — valid (FEAT-0002 ships in requirements/features/INDEX.md).
+- `FEAT-0004-viewer-a11y-polish/FE-0004-viewer-a11y-polish.md`: `parent_feat: FEAT-0004` — valid (FEAT-0004 is the wave-125 viewer-a11y feature; my own ARCH-0001 covers it).
+- All four carry consistent frontmatter (`ticket`, `parent_feat`, `parent_us`, `wave`, `role: ui-developer`, `status: retro`). Schema clean.
 
-### Critical design call resolved (this turn)
+### Surface 4 — OPS-0004 allocation + BA stale reference
 
-**Question:** does the script invoke subagents via `claude --agents <role> --prompt "..."` or emit dispatch-plan markdown for the outer Claude Code session to consume?
+- `ops/features/FEAT-0005-feat-backfill-command/OPS-0004-feat-backfill-script.md` — correct ticket number (OPS-0001..0003 were Wave 124; OPS-0004 is the next available slot for Wave 126). Frontmatter clean (`ticket: OPS-0004`, `parent_feat: FEAT-0005`, `parent_us: US-102`, `role: devsecops`, `status: in-flight`).
+- **DISCREPANCY FLAGGED for BA:** `requirements/features/FEAT-0005-feat-backfill-command.md` line 15 cites `OPS-0001 (pending — DevSecOps …)` and line 94 (`| DevSecOps | OPS-0001 | …`) still cites OPS-0001. Stale reference — should be `OPS-0004`. This is the BA's own parent doc; non-blocking for the wave, but BA should backfill in a follow-up edit. Filing as a HANDOFF note rather than a github issue since the fix is one-line and BA is already active on this wave.
 
-**Decision:** dispatch-plan markdown. Codified in ARCH-0002 §3.
+### Surface 5 — TEST-0005 ARCH-0002 §8 coverage
 
-**Four rationale points:**
+- All four mandatory assertions present:
+  - §8(a) — dry-run zero-write boundary (test.ts:322 + parameterized across 3 fixtures).
+  - §8(b) — `--apply` idempotence (test.ts:429 + parameterized).
+  - §8(c) — audit log append-only (test.ts:537 + regex validation at 581-595).
+  - §8(d) — fail-soft YAML parser (test.ts:605 + 3 corrupt-YAML subcases).
+- Beyond §8 minimum: forbidden-surfaces (test.ts:1053), dispatch-plan emission (test.ts:866), Plan-C FE retro seeding, cross-workspace fixture coverage — exceeds the Wave 118 comprehensive-testing skill bar.
+- Full run: 43 tests pass on the single file; 722 tests pass overall.
 
-1. **No precedent.** Every multi-subagent wave in Wave 107+ has been driven by the outer Claude Code orchestrator fanning out via the Agent tool. Inventing a CLI-invocation pattern doubles the surface area for race conditions, auth failures, and prompt-contract drift.
-2. **Context boundaries.** Outer orchestrator already owns API-key context, model selection, parallel-dispatch budget. A script trying to shell out would re-derive (and would get wrong) context the user's standing no-API-key memory rules out.
-3. **Reviewability.** Dispatch-plan markdown is human-reviewable. A user inspecting the file before re-dispatching sees a clear preview of every subagent brief; CLI invocation hides that preview behind subprocess output.
-4. **Idempotence across interruption.** The dispatch plan persists on disk. If the outer orchestrator interrupts mid-wave, the next session resumes from the plan file.
+### Maintainability observations (non-blocking, for follow-up wave)
 
-### Architecture/ co-authorship gate (Wave 109 rule, self-reflection)
+- `_insertIndexRow` at scripts/feat-backfill.mjs:591 is scaffolded but never invoked. Underscore-prefix convention communicates "intentionally unused" but the dead branch is real (lines 591-632, 42 LOC). Per ARCH-0002 §9 follow-up #2 (`--ba-approved` flag), this becomes the implementation site for in-band conflict resolution. Acceptable to defer; flagged in case the conflict-resolution wave doesn't fire soon.
+- `runPhase1` at scripts/feat-backfill.mjs:789 is ~340 LOC — borderline long for a single function. Three internal sections (classification → proposal markdown → dispatch plan) could each be a private helper. Not blocking — function is procedural and reads top-to-bottom — but a refactor candidate when the script next changes substantively.
+- Brief said "scripts/feat-backfill.mjs — 641 lines" — actual is 1282 lines. Likely the brief was drafted against an earlier interim diff. Documenting for traceability; not a defect.
 
-This wave's PR touches:
-- `architecture/features/FEAT-0005-feat-backfill-command/ARCH-0002-feat-backfill-protocol.md` (new file, Architect's own lane).
-- `architecture/features/INDEX.md` (Architect's own INDEX, my lane).
-- `coordination/handoffs/architect.md` (this file — my own HANDOFF doc).
+### Architecture/ co-authorship gate (Wave 109 #335) — self-reflection
 
-No peer is co-authoring any file under `architecture/`. No peer HANDOFF docs are edited. Both gates (architecture/ co-authorship + peer-HANDOFF edit) satisfied.
+`git diff main..HEAD --stat -- architecture/` produces exactly two files:
+- `architecture/features/FEAT-0005-feat-backfill-command/ARCH-0002-feat-backfill-protocol.md` (new — Architect's lane).
+- `architecture/features/INDEX.md` (modified — Architect's INDEX row + allocation log).
 
-### Peer-edit boundary (Wave 112)
+Zero peer co-authorship on any `architecture/` file. Gate satisfied.
 
-This wave's PR touches only Architect-owned + own HANDOFF surfaces:
-- BA's `requirements/user-stories/US-102-*.md`, `requirements/features/FEAT-0005-feat-backfill-command.md`, `requirements/features/INDEX.md` — NOT edited (BA owns; BA dispatched in parallel Lane 1).
-- UX's `design/features/FEAT-0005-feat-backfill-command/UX-0002-*.md`, `design/features/INDEX.md`, `design/INDEX.md` — NOT edited (UX owns; UX dispatched in parallel Lane 1).
-- QA's `tests/qa/features/FEAT-0005-feat-backfill-command/` — NOT edited (QA Lane 2).
-- BE Dev / DevSecOps's `scripts/feat-backfill/` — NOT edited (Lane 2).
-- DevSecOps's merge / CI — NOT edited (Lane 3).
+### Verdict
 
-Boundary satisfied. No peer's HANDOFF doc touched.
+**PASS** for non-UI rubric. No UI surface in PR — pure CLI/Node script + docs/tests. UX Designer gate not required (verified: no `.tsx`, no `globals.css`, no `page.tsx` / `layout.tsx` in diff). QA gates next on `:3100` test instance.
 
-### Gate verification (Wave 126)
-
-- Static surface only — no runtime tests this Architect lane (NFR ratification doc + INDEX update + HANDOFF). QA's Lane 2 TEST-0005 carries the runtime assertions against the script post-implementation.
-- ARCH-0002 frontmatter conforms to AC11 of US-098 (workspace-conventions §"FEAT-XXXX feature grouping (Wave 122 — MANDATORY)"): `ticket`, `parent_feat`, `parent_us`, `role`, `status` all present with valid values.
-- ARCH-0002 file path conforms to the canonical artifact root from the workspace-conventions AC3 table: `architecture/features/FEAT-NNNN-<slug>/ARCH-NNNN-<slug>.md`.
-- INDEX update conforms to the Wave 122 INDEX maintenance rule: ARCH-0002 added monotonically; allocation-log row stamped with `2026-06-04` and `Architect (Wave 126)`.
-- ADR-018 PASS verdict heading conforms to canonical regex: `### Wave-126 PASS verdict — PR #0 — SHA 5c7a23d24a720eafdfda0e43053cab92ac9d13f8` (40-char SHA verified).
-
-### In flight / next
-
-- Triad (Lane 1) for Wave 126 still pending — BA's US-102 + FEAT-0005 parent doc + requirements INDEX row, UX's UX-0002 + design INDEX row (expected no-impact CLI surface). Outer orchestrator batches all three triad deliverables into a single staging commit.
-- Lane 2 (BE Dev script implementation + QA TEST-0005) fires after triad returns. I gate the script PR under the non-UI review rubric. UX Designer gates only if a UI surface is added (none expected — pure CLI).
-- Lane 3 (DevSecOps merge of the apex-team PR) fires after Lane 2 PASS verdicts land. DevSecOps post-merge backfill commit replaces the `PR #0` + last-known SHA placeholder.
-
-### Parked / future (carried from Wave 125 + Wave 126 additions)
-
-- `system-design.md` — still not created.
-- `tech-stack.md` — still not created.
-- `coding-standards.md` — still not created.
-- Fitness function for OQ-085-001's "no binary files committed under `tests/qa/wave-*/evidence/`" — QA owns implementation.
-- Viewer-repo subagent body audit (per ADR-017 follow-up).
-- ADR formalizing the ADR-NNNN-vs-ARCH-XXXX distinction (candidate ADR-019, deferred from Wave 122).
-- Promote WCAG 2.1 AA from FEAT-local ratification (ARCH-0001) to a workspace-conventions-level NFR. Trigger: future wave introducing a wholly new viewer interactive surface.
-- Promote the keyboard-reachability rule (ARCH-0001 §4) to an ADR. Trigger: a third clickable-in-JS element appears in `public/app.js`.
-- Automated WCAG conformance in viewer CI (axe-core or `@axe-core/playwright`). Owner: DevSecOps + QA jointly.
-- **NEW (Wave 126):** live orchestration of the backfill — Wave 126 ships the script + spec; running it in anger against an accumulated backlog of ungrouped artifacts is a separate execution event. Trigger: BA observes >~5 ungrouped role-owned files across the workspace. (ARCH-0002 §9 item 1.)
-- **NEW (Wave 126):** `--ba-approved` flag implementation for in-band conflict resolution under `--apply`. MVP halts on conflict; v2 enhancement adds the flag. Trigger: first real backfill run that surfaces a conflict the user wants resolved in-band. (ARCH-0002 §9 item 2.)
-- **NEW (Wave 126):** cross-workspace dogfood — first non-apex-team workspace to adopt FEAT grouping is the target. Trigger: sibling repo accumulates enough role-owned artifacts to benefit. (ARCH-0002 §9 item 3.)
-- **NEW (Wave 126):** audit-log rotation policy — needed if any workspace exceeds 1 MB log size. Trigger: audit-log size threshold breach. (ARCH-0002 §9 item 4.)
-
-### Notes / caveats (Wave 126)
-
-- ARCH-0002 is the SECOND feature-scoped Architect ticket under the Wave 122 convention. ARCH-0001 (Wave 125, FEAT-0004 viewer a11y) is the only prior ticket; ARCH-0002 follows the same frontmatter shape, allocation-log pattern, and Architect-lane-only scope.
-- The deliverable is the NFR posture document, not the script source. BE Dev / DevSecOps own the script implementation in Lane 2. My Lane 1 deliverable is the ratification of HOW the backfill MUST behave; their Lane 2 deliverable is the working implementation.
-- The dispatch-plan-markdown design choice is the single most load-bearing call in this ARCH ticket. Reversing it later would invalidate large parts of §3 + §5 (audit log shape) + §7 (conflict resolution mechanics). Documented with four-point rationale so a future reader has the full forces-at-play context.
-- The SHA cited in the placeholder block is `5c7a23d24a720eafdfda0e43053cab92ac9d13f8` — HEAD of `feature/126-feat-backfill-command` at staging time (prior to Architect's Lane 1 commit). The branch already existed when I picked it up (likely created by BA's parallel triad turn or a prior session).
+Per ADR-018 the verdict heading uses the real PR # (411) and the real 40-char HEAD SHA (`feef0820621674b101c4f56f289e2e4a75a72c40`). DevSecOps post-merge will backfill the merge SHA if it differs from HEAD.
 
 ---
 
 ## PREV — 2026-06-04 — Wave 125 Lane 3 code review (PRs #407 + viewer #10 — PASS)
 
-### Wave-125 PASS verdict — PR #407 — SHA f4e6c26a5b4e8885784f8cbab57d81bfb144959b
+### Wave-125 PASS verdict — PR #407 — SHA 16f3fa0067537aeed4c21622df03e2c7296fe93b
 - **Gate role:** architect
 - **Timestamp:** 2026-06-04T21:30:00Z
-- **Notes:** Code review for Wave 125 PRs (cross-repo, two-PR shape). **apex-team PR #407** (`feature/125-viewer-a11y-polish`, HEAD `f4e6c26`): triad artifacts + QA TEST-0004 + UI Dev HANDOFF + verdict-format fix. Non-UI rubric applies (architecture/, requirements/, design/ are docs; HANDOFF docs are coordination state; TEST-0004 is QA's tests/). Architecture/ co-authorship gate (Wave 109 #335): only Architect's own ARCH-0001 + features/INDEX.md edited under `architecture/` — no peer edit, gate satisfied. Wave 122 anchor `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` present once per subagent body — no `.claude/agents/` diff on PR #407, all 8 bodies preserved (verified via grep). ADR-018 verdict-format conformance: all 5 in-tree Wave-125 verdict headings (architect / business-analyst / product-owner / qa / ux-developer / ui-developer-as-self-attestation) match the canonical anchor regex; commit `f4e6c26` retroactively fixed the ux-designer `TRIAD PASS` non-canonical heading; QA's `tests/qa/wave-111/pass-verdict-format.test.ts` PASS 21/21. TEST-0004 allocation correct (was TEST-0002 collision per BA's amendment; QA's INDEX + content cite TEST-0004 throughout; trivial typo in ARCH-0001 §1 measurement line + companion-artifacts list corrected this turn under the trivial-cleanup carveout). **Viewer PR #10** (`keyan-commits/apex-team-viewer feature/wave-125-a11y-polish`, HEAD `f677573`): `public/style.css` + `public/app.js` only — no `server.mjs`, no new bundles, no new external resources, no new event sinks, no security/perf delta. CSS edits: solid `#6a8cd6` everywhere (5 selectors — `.search`, `.select`, `.feat-card-header`, `.badge-btn`, `.file-open`), all alpha `#6a8cd640` gone; both `outline: none` declarations (lines 82, 115) have matching `:focus-visible` replacements — no orphan `outline: none`. JS edits: 4 `.file-open` render paths get `tabindex="0" role="button"`; 2 keydown handler wire-up sites (renderTickets, renderOutput) bind Enter+Space → `openFile` with `e.preventDefault()`. The `preventDefault()` on Enter (alongside Space) is consciously documented in UX-0001 §158-176 — `<span role="button">` carries no native form/submit semantics so blanket preventDefault is safe; this is the spec-codified choice. `.feat-card-header` gets `id="feat-header-${esc(feat.feat)}"`; `.feat-card-body` gets `role="region" aria-labelledby="feat-header-${esc(feat.feat)}"` — landmark binding tied to the same template variable so IDs cannot drift. Full test suite 679/679 PASS + 1 skipped (VIEWER_PRESENT gate), lint clean, type-check clean. Placeholder per ADR-018 Wave 111b amendment: `PR #407` is the real PR number for apex-team; SHA `f4e6c26a5b4e8885784f8cbab57d81bfb144959b` is the current HEAD of `feature/125-viewer-a11y-polish` at gate time (placeholder for the future merge SHA — DevSecOps backfills post-merge via `chore(handoff): backfill Wave-125 verdict PR # and merge SHA`). Viewer PR #10 carries its own verdict block in its own gate flow (UX Designer gates UI; this verdict covers the non-UI surface across both PRs).
+- **Notes:** Code review for Wave 125 PRs (cross-repo, two-PR shape). **apex-team PR #407** (`feature/125-viewer-a11y-polish`, HEAD `f4e6c26`): triad artifacts + QA TEST-0004 + UI Dev HANDOFF + verdict-format fix. Non-UI rubric applies (architecture/, requirements/, design/ are docs; HANDOFF docs are coordination state; TEST-0004 is QA's tests/). Architecture/ co-authorship gate (Wave 109 #335): only Architect's own ARCH-0001 + features/INDEX.md edited under `architecture/` — no peer edit, gate satisfied. Wave 122 anchor `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` present once per subagent body — no `.claude/agents/` diff on PR #407, all 8 bodies preserved (verified via grep). ADR-018 verdict-format conformance: all 5 in-tree Wave-125 verdict headings (architect / business-analyst / product-owner / qa / ux-developer / ui-developer-as-self-attestation) match the canonical anchor regex; commit `f4e6c26` retroactively fixed the ux-designer `TRIAD PASS` non-canonical heading; QA's `tests/qa/wave-111/pass-verdict-format.test.ts` PASS 21/21. TEST-0004 allocation correct (was TEST-0002 collision per BA's amendment; QA's INDEX + content cite TEST-0004 throughout; trivial typo in ARCH-0001 §1 measurement line + companion-artifacts list corrected this turn under the trivial-cleanup carveout). **Viewer PR #10** (`keyan-commits/apex-team-viewer feature/wave-125-a11y-polish`, HEAD `f677573`): `public/style.css` + `public/app.js` only — no `server.mjs`, no new bundles, no new external resources, no new event sinks, no security/perf delta. CSS edits: solid `#6a8cd6` everywhere (5 selectors — `.search`, `.select`, `.feat-card-header`, `.badge-btn`, `.file-open`), all alpha `#6a8cd640` gone; both `outline: none` declarations (lines 82, 115) have matching `:focus-visible` replacements — no orphan `outline: none`. JS edits: 4 `.file-open` render paths get `tabindex="0" role="button"`; 2 keydown handler wire-up sites (renderTickets, renderOutput) bind Enter+Space → `openFile` with `e.preventDefault()`. The `preventDefault()` on Enter (alongside Space) is consciously documented in UX-0001 §158-176 — `<span role="button">` carries no native form/submit semantics so blanket preventDefault is safe; this is the spec-codified choice. `.feat-card-header` gets `id="feat-header-${esc(feat.feat)}"`; `.feat-card-body` gets `role="region" aria-labelledby="feat-header-${esc(feat.feat)}"` — landmark binding tied to the same template variable so IDs cannot drift. Full test suite 679/679 PASS + 1 skipped (VIEWER_PRESENT gate), lint clean, type-check clean. Merge SHA backfilled by DevSecOps post-merge: `16f3fa0067537aeed4c21622df03e2c7296fe93b` (was branch HEAD `f4e6c26a5b4e8885784f8cbab57d81bfb144959b` at gate time). Viewer PR #10 carries its own verdict block in its own gate flow (UX Designer gates UI; this verdict covers the non-UI surface across both PRs).
 
 ### Wave-125 PASS verdict — PR #10 — SHA f6775734d32cfa314ac72e71522968b144c4772f
 - **Gate role:** architect (non-UI portion)
@@ -120,10 +91,10 @@ Boundary satisfied. No peer's HANDOFF doc touched.
 
 ## PREV — 2026-06-04 — Wave 125 Lane 1 NFR ratification (ARCH-0001)
 
-### Wave-125 PASS verdict — PR #0 — SHA 9f9d53ee3c8f3e155a567197a489378318729c18
+### Wave-125 PASS verdict — PR #407 — SHA 16f3fa0067537aeed4c21622df03e2c7296fe93b
 - **Gate role:** architect
 - **Timestamp:** 2026-06-04T21:15:00Z
-- **Notes:** Light NFR ratification for FEAT-0004 viewer a11y polish (no novel architecture). Three Architect-lane artifacts landed: (1) `architecture/features/FEAT-0004-viewer-a11y-polish/ARCH-0001-viewer-a11y-polish.md` — first feature-scoped ARCH ticket under the Wave 122 convention. Ratifies WCAG 2.1 Level AA as the standing viewer a11y target (success criteria 1.4.11 / 2.1.1 / 2.4.7 / 2.4.11 / 4.1.2 bound to this wave's four issues #5/#7/#8/#9), ratifies UX-0001's `:focus-visible` + solid focus-ring as the canonical viewer focus-indication pattern, records the zero NFR delta verdict (perf / security / observability unchanged — two CSS edits + two JS edits, no new bundles / network / event sinks), captures the keyboard-reachability precedent for clickable-in-JS elements as a Wave-125-local rule (ADR-019 promotion deferred until a third recurrence), and pre-commits to gating UI Dev's Lane 2 viewer PR under the standard non-UI review rubric (Wave 109 co-authorship not required — small CSS + JS surface). (2) `architecture/features/INDEX.md` — ARCH-0001 row added to the registry table + allocation log; "Last updated" line bumped to Wave 125. (3) this HANDOFF doc — NOW block prepended per ADR-018 canonical format, prior Wave 122 NOW demoted to PREV. Self-attested PASS — all edits within Architect's own lane (architecture/ + own HANDOFF), no peer-edit footprint on BA's US-101 / FEAT-0004 / requirements INDEX or UX's UX-0001. Placeholder block per ADR-018 Wave 111b amendment: `PR #0` + last-known SHA `9f9d53ee3c8f3e155a567197a489378318729c18` (HEAD of `feature/125-viewer-a11y-polish` at staging time). DevSecOps post-merge backfill replaces with real PR # + merge SHA via `chore(handoff): backfill Wave-125 verdict PR # and merge SHA`.
+- **Notes:** Light NFR ratification for FEAT-0004 viewer a11y polish (no novel architecture). Three Architect-lane artifacts landed: (1) `architecture/features/FEAT-0004-viewer-a11y-polish/ARCH-0001-viewer-a11y-polish.md` — first feature-scoped ARCH ticket under the Wave 122 convention. Ratifies WCAG 2.1 Level AA as the standing viewer a11y target (success criteria 1.4.11 / 2.1.1 / 2.4.7 / 2.4.11 / 4.1.2 bound to this wave's four issues #5/#7/#8/#9), ratifies UX-0001's `:focus-visible` + solid focus-ring as the canonical viewer focus-indication pattern, records the zero NFR delta verdict (perf / security / observability unchanged — two CSS edits + two JS edits, no new bundles / network / event sinks), captures the keyboard-reachability precedent for clickable-in-JS elements as a Wave-125-local rule (ADR-019 promotion deferred until a third recurrence), and pre-commits to gating UI Dev's Lane 2 viewer PR under the standard non-UI review rubric (Wave 109 co-authorship not required — small CSS + JS surface). (2) `architecture/features/INDEX.md` — ARCH-0001 row added to the registry table + allocation log; "Last updated" line bumped to Wave 125. (3) this HANDOFF doc — NOW block prepended per ADR-018 canonical format, prior Wave 122 NOW demoted to PREV. Self-attested PASS — all edits within Architect's own lane (architecture/ + own HANDOFF), no peer-edit footprint on BA's US-101 / FEAT-0004 / requirements INDEX or UX's UX-0001. Merge SHA backfilled by DevSecOps post-merge: `16f3fa0067537aeed4c21622df03e2c7296fe93b` (was `PR #0` + SHA `9f9d53ee3c8f3e155a567197a489378318729c18` placeholder at staging time).
 
 ### Wave 125 deliverables (3 files, single-author within Architect's lane)
 
