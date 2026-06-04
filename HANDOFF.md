@@ -1,6 +1,30 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 116 — delete records not applicable to current code)
+## ⏭️ NOW — 2026-06-04 (Wave 119 — viewer current-project switcher: US-095)
+
+**claude-code direct on `feature/wave-119-viewer-workspace-switcher` (off origin/main `c795ab5`).**
+
+**First wave dispatched through the new Wave 117 + Wave 118 skills end-to-end.** User asked viewer to show active-project tickets; `requirements-first` skill routed to BA → BA wrote US-095 + emitted parallel HANDOFFs to QA + UI Dev (Wave 117 auto-routing clause) → QA + UI Dev fanned out → QA hit Wave 118 comprehensive-coverage (positive + negative + edge + iterate-3-fixtures).
+
+**Viewer PR `keyan-commits/apex-team-viewer` #3 merged at `0bb1e2d`:**
+- Workspace resolution: env > CWD (if has `requirements/user-stories/`) > fallback
+- `loadWorkspaceRegistry()` depth-1 scan of `~/Development/Study/*` + `APEX_TEAM_WORKSPACES` env
+- `GET /api/workspaces` + `POST /api/workspace/switch`
+- All root-dependent functions read live `activeRoot`
+- Graceful fallback (workspaces w/o `requirements/` return `{ok:true, tickets:[], warning}` not 500)
+- Header `<select>` dropdown + localStorage persistence + title/h1 update on switch
+
+**This apex-team PR:** US-095 (10 ACs) + 3 fixture workspaces + `tests/qa/wave-119/viewer-workspace-switcher.test.ts` (25 tests) + INDEX + HANDOFFs.
+
+**Verification:** `pnpm test:run` → **448/448 PASS** (prior 423 + Wave 119: 25). Lint + type-check clean.
+
+**Skill dogfooding:** first real exercise of `requirements-first` + `comprehensive-testing`. Both worked as designed.
+
+**Other-Mac activation:** `bash scripts/install-agents-user-scope.sh` → restart Claude Code → use `APEX_TEAM_WORKSPACES=/path/to/lfm:/path/to/apex-team` env to register multiple workspaces.
+
+---
+
+## ⏭️ PREV — 2026-06-04 (Wave 116 — delete records not applicable to current code)
 
 **claude-code direct on `feature/wave-116-delete-not-applicable` (off origin/main `e73e254`).**
 

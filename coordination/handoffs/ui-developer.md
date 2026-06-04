@@ -1,6 +1,61 @@
 # ui-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 112 Phase 2 (#196 partial — lessons-in-bodies)
+## ⏭️ NOW — 2026-06-04 — Wave 119: viewer workspace switcher (US-095 AC1-AC8)
+
+### Wave-119 PASS verdict — viewer PR #3 — SHA 467e9a7a889053f3571ad05e33b29f82ba0c1960
+- **Gate role:** ui-developer (self-attested implementation; pending Architect + QA gate)
+- **Timestamp:** 2026-06-04T00:00:00Z
+- **Notes:** All AC1-AC8 implemented and manually verified. apex-team `pnpm test:run` 448/448 PASS (AC10). Viewer PR #3 open at `keyan-commits/apex-team-viewer`. No `architecture/` edits; no peer HANDOFF docs edited. All changes committed to sibling viewer repo, not apex-team.
+
+**Deliverables (all in `keyan-commits/apex-team-viewer` PR #3, SHA `467e9a7a889053f3571ad05e33b29f82ba0c1960`):**
+
+1. `server.mjs`:
+   - AC1: `activeRoot` let-bound mutable variable; IIFE resolves env > cwd > fallback; startup log includes source (`via env` / `via cwd` / `via default`)
+   - AC2: `loadWorkspaceRegistry()` — deduplicated registry from current root + `APEX_TEAM_WORKSPACES` env (colon-separated, validated) + depth-1 auto-scan of `dirname(dirname(SELF))`; computed once, cached for process lifetime
+   - AC3: `GET /api/workspaces` returns `{ ok, current, workspaces: [{path, name, isCurrent}] }`
+   - AC4: `POST /api/workspace/switch` — validates path in registry + exists + is directory; mutates `activeRoot`; invalidates `labelCache`; returns `{ ok, current }`; 400 on unknown path
+   - AC7: `/api/tickets` returns `{ ok: true, tickets: [], warning: "..." }` on missing `requirements/user-stories/`; `/api/now` returns `{ ok: true, handoff: "(No HANDOFF.md found in this workspace.)" }` on missing `HANDOFF.md`
+   - AC8: all server functions (`safeJoin`, `getTickets`, `getNow`, `listRole`, `runGh`, `getCi`, `getPrs`) reference live `activeRoot`; `runGh` uses `activeRoot` as `cwd`; health endpoint reflects live root
+
+2. `public/index.html`:
+   - AC4: `<select id="workspace-select" class="select" aria-label="Switch workspace" hidden>` added between `<h1>` and `<nav id="tabs">`
+   - AC5: `<h1>` given `id="workspace-heading"` for JS targeting
+
+3. `public/app.js`:
+   - AC4: `loadWorkspaces()` fetches `/api/workspaces`, populates select; hides if ≤1 workspace
+   - AC5: `updateWorkspaceLabel(name)` updates `<h1>` innerHTML and `document.title`
+   - AC6: localStorage persistence under `apex-team-viewer.workspace` key; silent pre-switch on page load if stored path differs from server current
+   - AC4 error feedback: red border on `<select>` for 2s on switch failure
+
+**Round-trip verification:**
+- `GET /api/workspaces` → registry with isCurrent flags
+- `POST /api/workspace/switch` (registered path) → 200 + `{ ok: true, current: {...} }` + health root updated
+- `POST /api/workspace/switch` (unregistered path) → 400 `path not in workspace registry`
+- Switch to no-requirements workspace → `/api/tickets` returns `warning`, not 500
+- Switch to workspace without HANDOFF.md → `/api/now` returns fallback string, not error
+- CWD resolution: start from apex-team directory → `(via cwd)` logged
+- Default resolution: start from `/tmp` → `(via default)` logged
+- apex-team `pnpm test:run` → 448/448 PASS
+
+**Peer-edit boundary:** only own HANDOFF doc + viewer repo files. No `architecture/` edits.
+
+**Gate routing:**
+- Viewer PR #3 touches rendered UI (index.html, app.js) → UX Designer gates UI portion
+- Server-side logic (server.mjs) → Architect gates
+- QA authors `tests/qa/wave-119/viewer-workspace-switcher.test.ts` after this PR merges (or skips on runtime gate pattern per QA's fixture-first approach)
+
+## In flight
+- Viewer PR #3 open at `keyan-commits/apex-team-viewer` — awaiting Architect + UX Designer + QA gates.
+
+## Next
+- After QA PASS: HANDOFF to DevSecOps to merge viewer PR #3.
+
+## Notes
+- apex-team has no active rendered UI surface. All Wave 119 viewer code lives in `keyan-commits/apex-team-viewer`.
+- QA is working in parallel (fixture scaffold + tests in apex-team). They can use the viewer PR branch's server.mjs directly, or the runtime-gate skip pattern if the PR hasn't merged yet.
+- `registryCache` is process-lifetime — re-discovery on switch is out of scope per US-095 out-of-scope section.
+
+## ⏭️ PREV — 2026-06-04 — Wave 112 Phase 2 (#196 partial — lessons-in-bodies)
 
 ### Wave-112 PASS verdict — PR #0 — SHA 4a455f0c07db6e571b2f64e7a4def898f22b0095
 - **Gate role:** ui-developer
@@ -28,13 +83,13 @@
 **Deliverables (1 file):**
 
 1. `.claude/agents/ui-developer.md` — two new skill sections + lessons section:
-   - `### Motion sensitivity — prefers-reduced-motion` (closes #361): CSS media-query wrap pattern, Tailwind `motion-safe:`/`motion-reduce:` variants, JS `window.matchMedia` check. Co-located with the `### Performance budget` section under `## UI/UX domain expertise`.
-   - `### View Transitions API` (closes #362): `document.startViewTransition()` pattern for same-document route/state transitions, shared-element morph via `view-transition-name`, graceful degradation guard, combined reduced-motion + VT gate. Baseline support noted (Chrome 111+, Safari 18+, Firefox 130+). Includes "do not use for" list.
-   - `## Lessons from prior incidents` (new section): 5 incidents sourced from real LESSONS.md entries and real PRs — requirements-triad bypass (Wave 55), architecture co-authorship gate (Wave 109 / #335), user-directive supremacy (Wave 321), stale subagent-body refs (Wave 108 / ADR-017), production-bundler parse gap (Wave 64 / PR #138).
+   - `### Motion sensitivity — prefers-reduced-motion` (closes #361)
+   - `### View Transitions API` (closes #362)
+   - `## Lessons from prior incidents` (new section): 5 incidents sourced from real LESSONS.md entries
 
 **Issue dispositions:**
-- #361 — closed (new skill section added)
-- #362 — closed (new skill section added)
+- #361 — closed
+- #362 — closed
 
 **Verification:**
 - `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` → 153/153 PASS
@@ -42,16 +97,11 @@
 - `pnpm lint` → clean
 - `pnpm type-check` → clean
 
-**Token discipline:** lessons section describes legacy pattern classes (dev-server commands, fragment-folding scripts, port-bound smoke checks) without quoting the denylist tokens verbatim. Verified by cleanliness test.
+## In flight (archive)
+- Wave 111b: Architect PASS was received. Wave 119 is now the active lane.
 
-**Gate status:** HANDOFF to Architect for code review (subagent body edit, doc-only — no `architecture/` touched). UX gate not triggered (no rendered UI surface changed).
-
-## In flight
-- Awaiting Architect PASS on Wave 111b PR.
-
-## Next
+## Next (archive)
 - Wave 111c (CI canonical-format check) — DevSecOps lane, not UI Dev.
 
-## Notes
-- apex-team has no active rendered UI surface (monolith decommissioned Wave 106). Both skill sections are aspirational for when viewer-repo work resumes or any future UI project onboards these subagents. The discipline is encoded now while the pattern is fresh.
-- Both issues (#361, #362) originated as `skill-proposal` issues — correct disposition is to close them by landing the skill in the body.
+## Notes (archive)
+- apex-team has no active rendered UI surface (monolith decommissioned Wave 106). Both skill sections are aspirational for when viewer-repo work resumes or any future UI project onboards these subagents.
