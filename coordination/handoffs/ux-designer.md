@@ -2,10 +2,11 @@
 
 ## NOW — 2026-06-04 — Wave 130 (Runner badge UX gate — PR #13)
 
-### Wave-130 PASS verdict — PR #13 — SHA b205ec18159017ec154709d8025d6bb2b4798215
+### Wave-130 PASS verdict — PR #13 — SHA b205ec18159017ec154709d8025d6bb2b4798215 (merge SHA: 6d7f0fdb0c9af73a27303407175ec4a8b956a03b)
 - **Gate role:** ux-designer
 - **Timestamp:** 2026-06-04T00:00:00Z
 - **Repo reviewed:** `keyan-commits/apex-team-viewer` PR #13 commit `b205ec18159017ec154709d8025d6bb2b4798215`
+- **Merge SHA backfill (DevSecOps 2026-06-04):** viewer PR #13 → `6d7f0fdb0c9af73a27303407175ec4a8b956a03b`; apex-team PR #417 (UX gate verdict) → `107955007d5b299b72f181bc51949e8816d7e153`.
 - **Spec file:** No prior design spec existed for the runner badge chip. Feature is self-contained and spec-completable from the PR diff — spec written inline in this verdict.
 
 **Implied spec (runner badge):**

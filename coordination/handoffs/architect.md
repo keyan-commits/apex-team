@@ -12,7 +12,7 @@
 - **CONCERN 2 (Gradle wrapper `shell: true` at `server.mjs:887`)** remains out-of-scope per the original verdict — filed and tracked as `keyan-commits/apex-team-viewer#14` (`bug` label). Does NOT block this PASS. Must be patched before any user is encouraged to ▶ Run Gradle test files in production; Gradle runner currently has no in-tree integration test exercising the vulnerable path.
 - **Per-rubric matrix:** unchanged from CONCERNS gate (all 9 axes PASS — see sub-block below). The only delta is CONCERN 1 closure; CONCERN 2 still tracked externally.
 - **Architecture/ co-authorship gate (Wave 109 #335):** `git diff origin/main..origin/feature/wave-130-architect-gate -- architecture/` empty. This re-gate amends onto the existing Wave 130 architect-gate PR #418 (single-file edit to this HANDOFF doc). Architect's own lane only. Peer-edit boundary (Wave 112) satisfied — no peer HANDOFF doc touched.
-- **PR #** placeholder per ADR-018 Wave 111b amendment: this re-gate ships against `feature/wave-130-architect-gate` (PR #418) via a normal commit (no force-push). DevSecOps post-merge backfill replaces with real merge SHA.
+- **Merge SHA (post-merge backfill — Wave 130):** apex-team PR #418 → `8e36637f4529d6f8d3207734f08a9f18215ac5c1`; viewer PR #13 → `6d7f0fdb0c9af73a27303407175ec4a8b956a03b`. Backfilled by DevSecOps 2026-06-04.
 
 ### Routing — DevSecOps may merge
 
@@ -147,10 +147,10 @@ This PR touches only my own HANDOFF doc. No peer HANDOFF doc touched. UI Dev's o
 
 ## PREV — 2026-06-04 — Wave 128b standing-rules codification (workspace-conventions QA artifact discipline)
 
-### Wave-128 PASS verdict — PR #414 — SHA 6579f8b7a68718675f67887d0839b9dce268e210
+### Wave-128 PASS verdict — PR #414 — SHA 44b311033c419939ef5fb94652c3f8535bb1aa4a
 - **Gate role:** architect (self-attested — standing-rules codification, single-author within Architect's lane)
 - **Timestamp:** 2026-06-04T23:25:00Z
-- **Notes:** Small follow-up wave codifying the Wave 128 QA artifact-discipline rule (S1–S9) into `architecture/workspace-conventions.md` so it lives as a durable standing standard alongside Wave 117/118/122 instead of only inside `.claude/agents/qa.md` + the Wave 128 HANDOFF block. NOT a code-review gate — Wave 128 PR #413 is already merged at `6579f8b`. This wave's PR is a single-file architecture/ edit (plus this HANDOFF refresh) within Architect's own lane. Self-attested PASS — Architecture/ co-authorship gate (Wave 109 #335): only `architecture/workspace-conventions.md` + own HANDOFF touched, no peer edits anywhere. Peer-edit boundary (Wave 112): own-lane edit only, no peer HANDOFF doc touched. Placeholder block per ADR-018 Wave 111b amendment: `PR #0` + base SHA `6579f8b7a68718675f67887d0839b9dce268e210` (current main HEAD pre-staging). DevSecOps post-merge backfill replaces with real PR # + merge SHA via `chore(handoff): backfill Wave-128b verdict PR # and merge SHA`.
+- **Notes:** Small follow-up wave codifying the Wave 128 QA artifact-discipline rule (S1–S9) into `architecture/workspace-conventions.md` so it lives as a durable standing standard alongside Wave 117/118/122 instead of only inside `.claude/agents/qa.md` + the Wave 128 HANDOFF block. NOT a code-review gate — Wave 128 PR #413 is already merged at `6579f8b`. This wave's PR is a single-file architecture/ edit (plus this HANDOFF refresh) within Architect's own lane. Self-attested PASS — Architecture/ co-authorship gate (Wave 109 #335): only `architecture/workspace-conventions.md` + own HANDOFF touched, no peer edits anywhere. Peer-edit boundary (Wave 112): own-lane edit only, no peer HANDOFF doc touched. Merge SHA backfilled by DevSecOps 2026-06-04: PR #414, merge SHA `44b311033c419939ef5fb94652c3f8535bb1aa4a`.
 
 ### What landed
 
