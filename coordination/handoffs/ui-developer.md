@@ -2,10 +2,10 @@
 
 ## ⏭️ NOW — 2026-06-04 — Wave 127: viewer FE Dev → UI Dev rename
 
-### Wave-127 PASS verdict — viewer PR #12 — apex-team SHA feef0820621674b101c4f56f289e2e4a75a72c40
+### Wave-127 PASS verdict — PR #412 — SHA 9c05edf7656a6fe8bfcd88d53d63e06fb42d48b1
 - **Gate role:** ui-developer (self-attestation — viewer-only rename, no runtime logic change)
 - **Timestamp:** 2026-06-04T00:00:00Z
-- **Notes:** Renamed "FE Dev" tab to "UI Dev" in `keyan-commits/apex-team-viewer` PR #12 (branch `feature/wave-127-ui-dev-rename`). Consistent with apex-team role id `ui-developer`. Also extended `ROLE_PATHS['ui-developer']` paths to include `frontend/features` + `frontend` dirs so Wave 126 FE artifacts surface in the tab.
+- **Notes:** Renamed "FE Dev" tab to "UI Dev" in sibling viewer repo PR `keyan-commits/apex-team-viewer#12` (branch `feature/wave-127-ui-dev-rename`). Consistent with apex-team role id `ui-developer`. Also extended `ROLE_PATHS['ui-developer']` paths to include `frontend/features` + `frontend` dirs so Wave 126 FE artifacts surface in the tab. apex-team-side artifact = this HANDOFF refresh on PR #412.
 
 **Deliverables (all in `keyan-commits/apex-team-viewer` PR #12):**
 1. `public/index.html` — `data-role="fe-developer"` → `"ui-developer"`, button text `FE Dev` → `UI Dev`
