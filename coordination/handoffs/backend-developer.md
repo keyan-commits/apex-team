@@ -1,6 +1,44 @@
 # backend-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 112 Phase 2 (Lessons-in-bodies self-edit, #196 partial)
+## ⏭️ NOW — 2026-06-04 — Wave 126 AC16 Plan C clause (US-102)
+
+## Done
+
+- **Wave 126 — AC16 Plan C clause added to `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` in `.claude/agents/backend-developer.md`.**
+  - Inserted a new `**Plan C workspaces (no `src/`)**` paragraph after rule 5, within the existing Wave 122 section.
+  - Clause text: "When the workspace has no `src/` directory (e.g. apex-team under Plan C), use `backend/features/FEAT-NNNN-<slug>/BE-NNNN-<slug>.md` — a summary doc linking to the sibling-repo PR and commit. Author this artifact on every wave where you edit backend code in a sibling repo."
+  - Mirrors the FE Dev clause (UI Developer does same for `frontend/features/`) per AC16 symmetry.
+
+- **Verification gates all passed (Wave 126):**
+  - `grep -c "### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)" .claude/agents/backend-developer.md` = 1 ✓
+  - `grep -c "BE-XXXX" .claude/agents/backend-developer.md` = 1 ✓
+  - `grep -c "Plan C" .claude/agents/backend-developer.md` = 2 ✓
+  - `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` — 153/153 PASS ✓
+  - `pnpm vitest run tests/qa/features/FEAT-0001-feat-grouping-convention/` — 38/38 PASS ✓
+
+### Wave-126 PASS verdict — PR TBD — SHA (SHA-pending)
+- **Gate role:** backend-developer
+- **Timestamp:** 2026-06-04T21:42:00Z
+- **Notes:** Self-edit within own body and own HANDOFF only. No `architecture/` touched. No peer HANDOFF docs edited. Token discipline verified (cleanliness test 153/153). Anchor heading byte-for-byte preserved. Plan C clause additive within Wave 122 section — 5-rule bullet structure untouched.
+
+## In flight
+
+- Awaiting Architect code review on the diff before this can merge.
+
+## Next
+
+- HANDOFF to Architect for code review (docs-only subagent body edit; no `architecture/` touched; Wave 122 anchor heading preserved byte-for-byte).
+- After Architect PASS + QA PASS: HANDOFF to DevSecOps for merge to `feature/126-feat-backfill-command`.
+
+## Notes
+
+- AC16 amendment is mirrored in `ui-developer.md` (FE Dev's lane); both amendments are symmetric per US-102 AC16.
+- Boundary respected: only `.claude/agents/backend-developer.md` + `coordination/handoffs/backend-developer.md` touched.
+- Branch: `feature/126-feat-backfill-command`.
+
+---
+
+## ⏭️ PREV — 2026-06-04 — Wave 112 Phase 2 (Lessons-in-bodies self-edit, #196 partial)
 
 ## Done
 
@@ -34,47 +72,3 @@
 - N+1 lesson sourced from real issue #363 (Wave 111b discovery) and the new N+1 skill section in this body — no LESSONS.md entry exists yet for this specific incident, sourced from PR history per dispatch guidance ("Source from LESSONS.md where possible").
 - Token discipline: no denylisted tokens in new N+1 lesson text. `IN (?)` and `EXPLAIN QUERY PLAN` are generic SQL terms, not denylist matches.
 - File touched: `.claude/agents/backend-developer.md` only.
-
----
-
-## ⏭️ PREV — 2026-06-04 — Wave 111b Phase 2 (Cluster 3 self-edits: issues #363 + #364)
-
-## Done
-
-- **#363 — N+1 query discipline and eager-load boundaries skill** added to `.claude/agents/backend-developer.md`.
-  - Replaced the brief "N+1 instinct" bullet list with a full `### N+1 query discipline and eager-load boundaries` section.
-  - Covers: detection pattern (pseudocode loop-over-DB example), JOIN vs. batched-IN-list vs. DataLoader decision table, eager-load boundary documentation discipline (code comment pattern), index hygiene (`EXPLAIN QUERY PLAN`), and the N > 2 threshold rule for DataLoader complexity.
-
-- **#364 — Graceful shutdown and health-probe contract skill** added to `.claude/agents/backend-developer.md`.
-  - New `### Graceful shutdown and health-probe contract` section inserted before the N+1 section.
-  - Covers: SIGTERM/SIGINT shutdown sequence (drain, close DB, flush OTel, exit), Node.js-specific ordering rules, liveness (`/health`) vs. readiness (`/ready`) distinction + table, startup semantics (503 on `/ready` until initialized), shutdown semantics (drop `/ready` immediately on SIGTERM, keep `/health` alive while draining).
-  - Includes a note that apex-team has no current backend surface (Plan C, Wave 106) — patterns are aspirational for future work.
-
-- **`## Lessons from prior incidents` section** added at the end of the body (before HANDOFF state updates), sourced from real LESSONS.md entries and PRs:
-  1. Wave 109 / #335 — architecture/ co-authorship gate
-  2. Wave 64 / PR #138 — compiler-independent verification matrix (SWC parse errors)
-  3. Wave 55 — implementer refusal is the hard backstop for un-specced work
-  4. Wave 109 / PR #311 — stale working tree produces false review verdicts
-  5. Wave 110 / PR #231 — merge-gate must verify gate-role PASS is recorded
-
-- **Verification gates all passed:**
-  - `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` — 153/153 PASS
-  - `pnpm test:run` — 186/186 PASS (all 3 test files)
-  - `pnpm lint` — clean
-  - `pnpm type-check` — clean
-
-## In flight
-
-- Awaiting Architect code review on the diff before this can merge.
-
-## Next
-
-- HANDOFF to Architect for code review (this is a docs-only subagent body edit; no `architecture/` touched; no co-authorship gate fires).
-- After Architect PASS + QA PASS: HANDOFF to DevSecOps for merge.
-
-## Notes
-
-- Token discipline observed throughout: no denylist tokens (`/health` written as `/health` not the full path fragment that matches the denylist regex, no dev-server commands, no port literals, no fragment-folding references). Architect's Wave 111b lesson-format guidance followed (3-field bullet: Date/Wave/Rule, Why, Apply).
-- The `/health` and `/ready` endpoints in the new skill section are described as generic endpoint paths. The denylist regex matches the specific legacy monolith health path — these new references do not match it.
-- Issue #363 closed with substantive expansion (not rationale-close); issue #364 closed with substantive addition including the Plan C no-surface note.
-- File touched: `.claude/agents/backend-developer.md` only. No `architecture/` edits.

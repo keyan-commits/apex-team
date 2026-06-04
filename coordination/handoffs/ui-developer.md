@@ -1,6 +1,34 @@
 # ui-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 125: viewer a11y polish (US-101 AC1-AC5)
+## ⏭️ NOW — 2026-06-04 — Wave 126: US-102 AC16 — Plan C clause in Wave 122 standard
+
+### Wave-126 PASS verdict — PR #0 — SHA 60a2c750eeef9faa10a5c19ac07c060774efb6df
+- **Gate role:** ui-developer (self-attestation — single-file body amendment, no runtime code)
+- **Timestamp:** 2026-06-04T21:41:00Z
+- **Notes:** AC16 of US-102 implemented. Inserted Plan C clause as a new paragraph within the existing `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` section of `.claude/agents/ui-developer.md`. No other sections touched. Anchor heading unchanged (byte-identical). Boundary: only own body file + own HANDOFF doc.
+
+**Deliverables:**
+1. `.claude/agents/ui-developer.md` — Plan C clause added after bullet 5 within the Wave 122 standard section:
+   - Text: "**Plan C workspaces (no `src/`):** When the workspace has no `src/` directory (e.g. apex-team under Plan C), use `frontend/features/FEAT-NNNN-<slug>/FE-NNNN-<slug>.md` ... Author this artifact on every wave where you edit code in a sibling repo."
+
+**Verification (all PASS):**
+1. `grep -c "### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)" .claude/agents/ui-developer.md` → 1
+2. `grep -c "FE-XXXX" .claude/agents/ui-developer.md` → 1
+3. `grep -c "Plan C" .claude/agents/ui-developer.md` → 1
+4. `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` → 153/153 PASS
+5. `pnpm vitest run tests/qa/features/FEAT-0001-feat-grouping-convention/` → 38/38 PASS
+
+## In flight
+- Wave 126 commit on `feature/126-feat-backfill-command` — awaiting DevSecOps merge after gate.
+
+## Next
+- AC16 backend-developer.md counterpart is BE Dev's lane (parallel, separate dispatch).
+- After merge: update HANDOFF SHA with real PR# per ADR-018.
+
+## Notes
+- This is a doc-only change to an agent body file — no rendered UI, no runtime code. UX gate not required per deployment-gate discipline. Architect may wish to review anchor stability; Wave 122 TEST-0001 passes.
+
+## ⏭️ PREV — 2026-06-04 — Wave 125: viewer a11y polish (US-101 AC1-AC5)
 
 ### Wave-125 PASS verdict — PR #407 — SHA 1f644ae43bee3bce40718ed33c26597e2bae54db
 - **Gate role:** ui-developer
