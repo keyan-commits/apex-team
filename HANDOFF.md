@@ -6,6 +6,14 @@ Next wave TBD. Backlog open.
 
 ---
 
+## PREV — 2026-06-04 (Wave 125 — viewer a11y polish, FEAT-0004/US-101)
+
+**Status:** merged via PR #407 (apex-team) + PR #10 (viewer) on 2026-06-04. Merge SHAs: apex-team `16f3fa0067537aeed4c21622df03e2c7296fe93b`, viewer `fdca0aa4d6f1f19c0879fcebba7fb1525a61f33c`. Test baseline confirmed: 679 passed + 1 skipped.
+
+**Wave 125 — Viewer a11y polish (US-101, PRs #407 + viewer #10):** Closed 4 viewer a11y issues from Wave 123 UX gate (#5/#7/#8/#9). CSS: `:focus-visible` on `.search`; solid focus rings on `.feat-card-header`, `.badge-btn`, `.select`, `.file-open` (all `#6a8cd6`, no alpha). JS: `.file-open` spans gain `tabindex="0" role="button"` + Enter/Space keydown handlers; `.feat-card-body` gains `role="region"` + `aria-labelledby` landmark pairing. QA TEST-0004 (24 tests, static-parse). All gates PASS (UX, Architect, QA).
+
+---
+
 ## PREV — 2026-06-04 (Wave 123 + Wave 124 — viewer FEAT-grouped rendering + DevSecOps reusable pipelines/CLI)
 
 **Status:** merged via PR #405 + PR #6 on 2026-06-04. Merge SHAs: apex-team `21aefaa7673f0ee57321dbdfef6ec8efc801fa2a`, viewer `7df5cda1c9c55e05e8b72480f4c0ac551ffe95e8`. Test baseline confirmed: 655 passed + 1 skipped.

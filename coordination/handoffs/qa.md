@@ -1,9 +1,9 @@
 ## NOW — 2026-06-04 — Wave 125 (US-101 AC6 viewer a11y polish regression test)
 
-### Wave-125 PASS verdict — PR #407 — SHA f8daa1272b70081557aba0c327c82144abe4bffe
+### Wave-125 PASS verdict — PR #407 — SHA 16f3fa0067537aeed4c21622df03e2c7296fe93b
 - **Gate role:** qa
 - **Timestamp:** 2026-06-04T21:06:00Z
-- **Notes:** Wave 125 viewer a11y polish regression tests (US-101 AC6). 24 new tests; static-parse against `public/style.css` + `public/app.js`; VIEWER_PRESENT runtime gate (skip-when-absent in CI). Full suite 678 + 24 = 678 passing (pre-existing 1 fail from ux-designer TRIAD PASS non-canonical heading in triad merge — not introduced by this wave; see KNOWN ISSUE below). Lint + type-check clean. PR #407 per branch dispatch; SHA is branch HEAD (SHA-pending) per ADR-018 Wave 111b amendment; DevSecOps backfills merge SHA post-merge.
+- **Notes:** Wave 125 viewer a11y polish regression tests (US-101 AC6). 24 new tests; static-parse against `public/style.css` + `public/app.js`; VIEWER_PRESENT runtime gate (skip-when-absent in CI). Full suite 678 + 24 = 678 passing (pre-existing 1 fail from ux-designer TRIAD PASS non-canonical heading in triad merge — not introduced by this wave; see KNOWN ISSUE below). Lint + type-check clean. PR #407; merge SHA `16f3fa0067537aeed4c21622df03e2c7296fe93b` (backfilled by DevSecOps post-merge per ADR-018 Wave 111b amendment).
 
 **KNOWN ISSUE (pre-existing, not introduced by this wave):** `tests/qa/wave-111/pass-verdict-format.test.ts` fails 1/21 because `coordination/handoffs/ux-designer.md` line 5 uses `### Wave-125 TRIAD PASS verdict` — 'TRIAD PASS' is non-canonical per ADR-018 regex `(PASS|REVISE|FAIL)`. Introduced in triad merge commit `a354bbf` before QA's turn. Fix: remove 'TRIAD ' prefix from that heading. Cannot edit peer file per peer-edit boundary; issue filed for tracking. QA's 24 new tests 24/24 green; Wave 125 content tests all pass; only the pre-existing 1 fails.
 

@@ -1,8 +1,21 @@
 # ux-designer — HANDOFF
 
-## NOW — 2026-06-04 — Wave 125 (Viewer a11y polish — critique gate)
+## NOW — 2026-06-04 — Wave 126 (FEAT backfill command — no UI impact)
 
-### Wave-125 PASS verdict — PR #407 — SHA 1f644ae43bee3bce40718ed33c26597e2bae54db
+### Wave-126 PASS verdict — PR #0 — SHA 16f3fa0067537aeed4c21622df03e2c7296fe93b
+- **Gate role:** ux-designer
+- **Timestamp:** 2026-06-04T00:00:00Z
+- **Notes:** Wave 126 deliverables (feat-backfill CLI script, markdown proposal/dispatch-plan reports, legacy frontmatter mutations, viewer consuming new frontmatter via existing Wave 123 FEAT card component) touch zero UI surfaces. No file in scope matches `src/app/**/page.tsx`, `src/app/**/layout.tsx`, `src/components/**/*.tsx`, or `src/app/globals.css`. The viewer (`keyan-commits/apex-team-viewer`) ships no code changes — new `parent_feat:` frontmatter flows through existing `server.mjs` parse path (FRONTMATTER_KEYS line 271) and existing `renderOutput()` FEAT card rendering (app.js line 139+). Same component, more data — no new interaction surface, no a11y delta. US-102 referenced. Wave 123 a11y carry-over: UX-0001 (FEAT-0004) verdict remains PASS at SHA 1f644ae43bee3bce40718ed33c26597e2bae54db — no regression introduced.
+
+**Verdict: No UI impact — skip UX gate.**
+
+Proactive PR scan: `gh pr list --state open` on both `keyan-commits/apex-team` and `keyan-commits/apex-team-viewer` returns `[]`. No open PRs, no bypass gaps.
+
+---
+
+## PREV — 2026-06-04 — Wave 125 (Viewer a11y polish — critique gate)
+
+### Wave-125 PASS verdict — PR #407 — SHA 16f3fa0067537aeed4c21622df03e2c7296fe93b
 - **Gate role:** ux-designer
 - **Timestamp:** 2026-06-04T00:00:00Z
 - **Notes:** Wave 125 viewer a11y polish UX critique pass. Implementation gated on sibling viewer PR #10 (commit `f677573`) — separate PR #10 verdict block below. apex-team PR #407 carries UX-0001 spec + this gate verdict. All 6 spec criteria PASS. No block/warn. Nit filed as `keyan-commits/apex-team-viewer#11` (double keydown listener — not a block).
@@ -41,7 +54,7 @@
 
 ## PREV — 2026-06-04 — Wave 125 (Viewer a11y polish — spec authored)
 
-### Wave-125 spec-verdict — PR #0 — SHA 9f9d53ee3c8f3e155a567197a489378318729c18
+### Wave-125 spec-verdict — PR #407 — SHA 16f3fa0067537aeed4c21622df03e2c7296fe93b
 - **Gate role:** ux-designer
 - **Timestamp:** 2026-06-04T21:10:00Z
 - **Notes:** Spec authored. `design/features/FEAT-0004-viewer-a11y-polish/UX-0001-viewer-a11y-polish.md` written. All four issues (#5/#7/#8/#9) specced with copy-verbatim CSS/JS snippets, contrast ratios computed, keyboard interaction spec, landmark spec, and 12-item a11y verification checklist. Status set to `in-implementation`.

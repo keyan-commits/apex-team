@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-06-04 — Wave 125 (Viewer a11y cleanup — TRIAD DISPATCHED)
 
-### Wave-125 SCOPED verdict — PR #0 — SHA 9f9d53ee3c8f3e155a567197a489378318729c18
+### Wave-125 SCOPED verdict — PR #407 — SHA 16f3fa0067537aeed4c21622df03e2c7296fe93b
 - **Gate role:** product-owner
 - **Timestamp:** 2026-06-04T20:55:00Z
 - **Notes:** User authorized bundling 4 open viewer a11y issues filed as non-blocking warns during Wave 123 UX gate. Shape: ONE FEAT (FEAT-0004 `viewer-a11y-polish`) + ONE US (US-101) with 4 a11y ACs + 2 regression ACs. All 4 issues are small, related, single-file edits in the sibling viewer repo — bundling beats 4 micro-waves. Cross-repo PR pattern mirrors Wave 123: one apex-team PR (BA US + FEAT-0004 + UX spec + QA test) + one viewer PR (`public/style.css` + `public/app.js` edits). Placeholder block per ADR-018 Wave 111b amendment: `PR #0` + last-known SHA `9f9d53ee3c8f3e155a567197a489378318729c18` (HEAD of `feature/c1-plan-c-subagent-extraction` at dispatch time). DevSecOps post-merge backfill replaces with real PR # + merge SHA.
