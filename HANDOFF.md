@@ -1,6 +1,20 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 126 — Retroactive FEAT-XXXX backfill command + Plan C FE/BE canonical-path correction)
+## ⏭️ NOW — 2026-06-04 (Wave 128 — QA artifact-discipline skill from LFM order-sheet retro)
+
+**Branch `feature/128-qa-artifact-discipline` (off main).** Wave 126 (FEAT backfill) + Wave 127 (viewer FE Dev → UI Dev rename) merged. Wave 128 adds **nine mandatory QA disciplines (S1–S9)** for visual / operator-facing artifacts, drawn from the LFM order-sheet generator engagement (2026-06-02) where 9 distinct user-visible bugs reached production despite repeated programmatic PASS verdicts.
+
+**Skill file:** `.claude/skills/qa-artifact-discipline/SKILL.md` — full retrospective (incident table + root themes + per-discipline catches), user-scope symlinked into `~/.claude/skills/` via existing install path so the discipline travels with the QA subagent across any workspace.
+
+**QA body amendment:** `.claude/agents/qa.md` gains a new `### Artifact discipline for visual / operator deliverables (Wave 128 — MANDATORY)` section summarizing S1–S9, with **S1 (render-and-look) + S2 (real-artifact end-to-end) as hard gates**. Mirrors the Wave 117/118/122 anchor pattern.
+
+**Scope (this turn):** documentation-only — no CI gates yet. Tooling for automated render-and-look (LibreOffice headless, image diff, contrast computation) lands in a follow-up wave once the runner shape is decided.
+
+**Process applicability:** S1, S2, S7 also apply to orchestrators (PO + DevSecOps), not only QA — explicitly noted in the section.
+
+**In flight / next:** PR open, awaiting CI green + Architect gate + DevSecOps merge.
+
+## PREV — 2026-06-04 (Wave 126 — Retroactive FEAT-XXXX backfill command + Plan C FE/BE canonical-path correction)
 
 **Branch `feature/126-feat-backfill-command` (off main `5c7a23d`).** Wave 125 (viewer a11y) merged; Wave 126 is a meta-wave that builds `pnpm run feat:backfill` — a CLI that orchestrates each role subagent to investigate its own owned directory, propose FEAT-XXXX clusters for the 54+ ungrouped legacy assets per role, emit a proposal report, then on `--apply` write `parent_feat:` frontmatter so the viewer renders legacy docs under FEAT cards.
 

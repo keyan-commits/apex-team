@@ -91,6 +91,37 @@ Cross-references:
 - This file §"AC-to-test traceability" — each AC gets ≥1 test of each applicable class.
 - `architecture/workspace-conventions.md` §"Comprehensive testing (Wave 118)" — durable doc cross-link.
 
+### Artifact discipline for visual / operator deliverables (Wave 128 — MANDATORY)
+
+**For any deliverable with a rendered form (xlsx, PDF, generated page, image) or that an operator downloads/consumes via the production path, QA MUST satisfy all nine disciplines below before emitting a PASS verdict.** Programmatic cell/ARGB/byte diffs are necessary but never sufficient. Six of nine real bugs in the LFM order-sheet engagement died trivially under S1 + S2 alone — the cheapest highest-leverage gates.
+
+The full retrospective (incident table + root themes + per-discipline catches) lives at `~/.claude/skills/qa-artifact-discipline/SKILL.md`. Summary of the nine mandatory disciplines:
+
+1. **S1 — Render-and-look.** Render the artifact to an image (LibreOffice headless `--convert-to pdf` → image; or xlsx→HTML→Playwright screenshot; or the app's own preview) AND inspect it. Diff against the reference visually before a PASS. Catches transparency/alpha, contrast, black blocks, alignment, double headers, spacing.
+2. **S2 — Real operator artifact, end-to-end.** Verify the actual file the operator downloads via the production endpoint/UI, not a unit test of an internal service. A unit test that mocks the artifact path is NOT verification.
+3. **S3 — Realistic + scaled + adversarial test data.** Never validate on one happy-path sample. Required matrix: multiple inputs (all sample POs, not one), multiple dates/periods, empty/all-zero/duplicate/oversized, and scrambled-order. Reproduce what the operator actually does.
+4. **S4 — Positional + semantic correctness, not presence/equality.** Assert order (column/row/tab), population (every expected cell has a value, not just exists), and computed correctness (evaluate formulas via the real engine). "Header text present" / "ARGB equal" are banned as a sufficient PASS criterion.
+5. **S5 — Contrast / readability gate (WCAG).** For any text-on-fill output, compute contrast ratio and fail below WCAG AA (4.5:1 normal, 3:1 large). White-on-yellow (1.07:1) → automatic FAIL.
+6. **S6 — Side-by-side reference diff.** Render both candidate and ground-truth reference; diff visually + positionally the way the operator compares. Automate what a user does in 30 seconds with two screenshots.
+7. **S7 — Validated ≠ deployed: verify the running system.** A PASS is on the artifact as the user will receive it. Confirm validated build == deployed build (commit/version check, or generate from the live endpoint), OR explicitly flag the deploy gap in the verdict ("PASS on branch; NOT yet on beta"). No silent assumption that merged = live.
+8. **S8 — Question business intent, don't just match the sample.** When output matches the reference but looks odd (empty columns, loud colors, redundant rows), raise "is this the intended business behavior?" to BA / operator. The reference file is NOT the spec; documented business rules are.
+9. **S9 — No silent green.** Every assertion states the user-facing property it guarantees ("SWS appears in col A on every row," "one tab per delivery date," "qty legible at AA contrast"). A green suite asserting the wrong thing is worse than no suite.
+
+**Definition of done for visual/operator artifacts:** rendered + looked-at + AA-contrast + real-path + reference-diffed + deploy-confirmed. PASS is not allowed without all six.
+
+**Hard gates:** S1 (render-and-look) + S2 (real artifact). Skipping either invalidates the PASS verdict; Architect's review gate will FAIL the PR.
+
+**Scope.** This clause applies whenever the deliverable is visually consumed OR delivered via a production path the operator touches. For pure code / API / CLI / doc-only deliverables, S1 + S5 + S6 are N/A; S2–S4 + S7–S9 still apply. State which disciplines applied in the verdict Notes.
+
+**Trigger incident** — LFM order-sheet generator (2026-06-02): QA issued repeated PASS verdicts while 9 distinct user-visible bugs reached production (phantom tabs, empty columns, wrong column order, invisible/black/unreadable fills, double headers, multi-PO→1-tab, un-deployed validated fix). Each was cheap to catch and expensive to miss. The Wave 128 standard is the enforcement so this pattern cannot recur.
+
+**Process notes (orchestration, not only QA):** S1, S2, S7 apply to whoever ships, not only the QA role. Orchestrators (PO + DevSecOps) MUST NOT deploy or re-deploy without confirming render-and-look + real-path verification, and MUST NOT leave a validated fix un-deployed silently.
+
+Cross-references:
+- `~/.claude/skills/qa-artifact-discipline/SKILL.md` — full retrospective, incident table, root themes.
+- This file §"Comprehensive test coverage (Wave 118)" — pairs with S3 (test data realism).
+- This file §"Edge-case enumeration" — pairs with S3 / S4.
+
 ### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)
 
 Every QA test file that scopes to a single BA-defined feature MUST follow the FEAT-XXXX grouping convention. The convention applies in apex-team itself AND in any downstream workspace driven by the user-scoped subagents (LFM, bidshop, etc.). The five inline rules:
