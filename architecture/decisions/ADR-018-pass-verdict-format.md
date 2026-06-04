@@ -193,6 +193,115 @@ The format applies ONLY when the gate role intends "this verdict is the merge ga
 - **Wave 111+ candidate (out of scope this wave):** a small helper script `scripts/emit-verdict.sh` that takes `--wave --pr --sha --role --notes` and appends a canonical block to the role's HANDOFF doc. Reduces hand-typing errors. Not required — Wave 111b's body templates are sufficient.
 - **Wave 111+ candidate:** REVISE verdict — should we add a `- **Re-review target SHA:** <SHA>` field so DevSecOps can detect "the implementer pushed a fix; gate role should re-verify"? Deferred — DevSecOps's "stale PASS" check (PASS heading exists but SHA mismatches current HEAD) already covers this case without an extra field on REVISE.
 
+## 2026-06-04 amendment — commit-time placeholder pattern (Wave 111b)
+
+### Problem surfaced by self-application
+
+Wave 111a's QA gate exercised this ADR by recording its own verdict in `coordination/handoffs/qa.md`. Two of the four required fields (`PR #N` and the full 40-char HEAD SHA) **are not known at commit-time** for the commit that records the verdict:
+
+- **PR #** doesn't exist until `gh pr create` runs, which is AFTER the verdict-recording commit lands.
+- **HEAD SHA** of the commit recording the verdict can't be inside that commit's own content (Git circular reference).
+
+QA's pragmatic workaround: use `PR #0` as a placeholder and the **last-known SHA** (the parent commit's SHA, which IS known at commit-time) for the SHA field. The canonical anchor regex (`^### Wave-(\d{1,4}) (PASS|REVISE|FAIL) verdict — PR #(\d{1,6}) — SHA ([0-9a-f]{40})$`) accepts `#0` (matches `\d{1,6}`) and accepts the parent SHA (matches `[0-9a-f]{40}`), so the format passes its own grep test in the placeholder state — but DevSecOps's step-3 "PASS-against-current-HEAD" semantic check would (correctly) flag the verdict as stale unless backfilled.
+
+### Decision: Option (a) — Two-phase placeholder + post-merge backfill
+
+Adopt a two-phase pattern. The verdict block lives in `coordination/handoffs/<role>.md` from the moment the gate role issues PASS; the real PR # and merge SHA replace the placeholders post-merge via a follow-up commit on main.
+
+**Phase 1 — Commit-time (gate role emits verdict):**
+- Gate role records the canonical block in `coordination/handoffs/<role>.md`.
+- `PR #` field: literal `PR #0` (placeholder). `0` is the sentinel — never a real PR number.
+- `SHA` field: the **last-known SHA** at the time the verdict is recorded — typically `git rev-parse HEAD` of the gate role's worktree before staging the verdict commit. This is the SHA the gate role's verification was rendered against; using the parent SHA is the closest accurate value available at commit-time.
+- All other fields (`Gate role`, `Timestamp`, `Blocks` if REVISE/FAIL, `Notes`) are filled with real values. They are knowable at commit-time.
+
+**Phase 2 — Post-merge backfill (DevSecOps merge step):**
+- After the merge to main lands, DevSecOps amends the gate-role HANDOFF doc verdict block via a follow-up commit on main:
+  - Replace `PR #0` with the real PR number (e.g. `PR #386`).
+  - Replace the placeholder SHA with the **merge SHA** (the squash-merge commit's SHA on main, returned by `gh pr view <PR#> --json mergeCommit -q .mergeCommit.oid` or visible in `git log -1` on main immediately post-merge).
+- The backfill commit message follows the convention `chore(handoff): backfill Wave-NNN verdict PR # and merge SHA`.
+- DevSecOps step 3 enforces this backfill — see "DevSecOps step list (amended)" below.
+
+**Backfill mechanism choice: DevSecOps merge step.**
+
+Three candidates were considered:
+
+| Mechanism | Decision | Why |
+|---|---|---|
+| Manual `git commit --amend` by the verdict author | Rejected | Only works pre-push (verdict author no longer owns the branch after HANDOFF to DevSecOps). |
+| DevSecOps merge step (post-merge backfill commit) | **Accepted** | DevSecOps already merges + pushes; backfill is one additional commit on main. Single accountable role; no scheduled-job complexity; the file-on-disk audit trail stays intact. |
+| Scheduled CI workflow scanning for `PR #0` placeholders | Rejected | Adds a stateful CI step. The grace window between merge and CI run leaks stale placeholders into the period where Wave 111c CI is auditing PRs. Couples backfill latency to CI cadence. |
+
+DevSecOps is the natural backfill owner because the merge SHA is **only knowable post-merge by the merge author**. The amended `devsecops.md` step 3 (already landed Wave 110) is extended in Wave 111b's Cluster 7 cross-reference to require this backfill as part of the merge workflow.
+
+### Why not Option (b) — PR-description verdicts
+
+Considered and rejected:
+
+- **File-on-disk discipline violation.** apex-team's CLAUDE.md hard-rule: "files on disk are the only state." PR descriptions are a GitHub-hosted mutable artifact outside the workspace's durable state. Moving verdicts there punctures the invariant for one workflow's convenience.
+- **No version-control on PR-body edits.** A PR description can be silently edited post-merge (no commit, no audit trail). The current HANDOFF-doc location is `git log`-visible — every verdict edit is a commit.
+- **Viewer / `:3200` dependency.** apex-team-viewer reads files from disk + `gh` for CI status. Reading PR-description content adds another `gh` API path; the disk-read path is simpler and cheaper.
+- **DevSecOps step 3 already cites HANDOFF docs.** Wave 110 ratified `Open coordination/handoffs/qa.md and (if the PR touches UI) coordination/handoffs/ux-designer.md`. Option (b) would require rewriting that step. The two-phase pattern requires only an additive amendment.
+- **In-flight migration cost.** Wave 111a's QA verdict already lives in `coordination/handoffs/qa.md`. Option (a) is a no-op for migrating that verdict (it just needs backfill). Option (b) would require moving the verdict body to PR #386's description AND keeping it consistent if anyone re-edits.
+
+The two-phase pattern preserves the invariant ("files on disk are the only state") at the cost of one extra commit per merged PR. That cost is bounded, predictable, and assigned to a single role (DevSecOps).
+
+### Canonical format is unchanged
+
+**The canonical regex, field list, and field shapes specified in the original ADR-018 body REMAIN authoritative.** This amendment formalizes a usage pattern within the existing format, not a change to the format itself.
+
+- `PR #0` is a reserved sentinel value — never a real PR number. The regex `PR #(\d{1,6})` accepts it.
+- The Phase-1 SHA is a real 40-char lowercase hex SHA (parent commit). The regex `SHA ([0-9a-f]{40})` accepts it.
+- The Phase-2 backfill replaces both tokens in-place; the surrounding heading shape and field block are unchanged.
+
+No update is needed to Wave 111a's QA conformance test (`tests/qa/wave-111/pass-verdict-format.test.ts`) — the regex it asserts against already permits the placeholder values. AC5b's per-file check passes both before backfill (placeholder values match the regex) and after backfill (real values also match).
+
+### DevSecOps step list amendment (Wave 111b — Cluster 7 cross-reference)
+
+`.claude/agents/devsecops.md` step 3 will be amended in Cluster 7 to cite this ADR and to add the backfill sub-step:
+
+> After merging the PR and pushing to main, **backfill the gate-role HANDOFF doc verdict block**: replace the `PR #0` placeholder with the real PR number and the placeholder SHA with the merge SHA. Use a single follow-up commit on main with message `chore(handoff): backfill Wave-NNN verdict PR # and merge SHA`. See ADR-018 §"2026-06-04 amendment — commit-time placeholder pattern" for the canonical pattern.
+
+### State semantics for DevSecOps step 3 (amended)
+
+The state-detection table in the original ADR body is extended with one new row to handle the placeholder state:
+
+| State | Detection (against `<HEAD_SHA>` from `gh pr view`) |
+|---|---|
+| **No verdict yet** — gate role hasn't run | No heading line matches `### Wave-\d+ (PASS|REVISE|FAIL) verdict — PR #(\d{1,6}) — SHA <HEAD_SHA>` in the relevant gate role's HANDOFF doc. |
+| **PASS with placeholder — pre-merge expected state** | A PASS heading exists with `PR #0` and a SHA that is the PR HEAD's parent SHA (or an earlier ancestor of HEAD on the PR branch). DevSecOps step 3 treats this as a valid PASS for merge purposes if the placeholder's SHA is reachable from the PR HEAD (`git merge-base --is-ancestor <placeholder-SHA> <HEAD_SHA>` exits 0). Backfill is queued for post-merge. |
+| **PASS against earlier SHA — stale (non-placeholder)** | A PASS heading exists for `PR #<real-N>` but the SHA token is NOT the current HEAD SHA and is NOT a reachable ancestor of HEAD on the PR branch. HANDOFF back to gate role: "re-verify against current HEAD." |
+| **REVISE or FAIL issued — implementer owes a fix** | A REVISE or FAIL heading is the most recent verdict for the PR (latest by timestamp). HANDOFF back to implementer, not gate role. |
+| **PASS against current HEAD — merge eligible (post-backfill)** | A PASS heading exists for `PR #<real-N>` AND its SHA token matches the merge SHA. This is the post-backfill terminal state. |
+
+The "reachable ancestor" check (`git merge-base --is-ancestor`) is the key safety check: it lets DevSecOps verify that the gate role's verdict was rendered against a commit that is part of the PR's lineage, not an unrelated SHA. If a force-push rewrote the PR branch after the verdict was recorded, the placeholder SHA may no longer be reachable from the new HEAD — in that case the verdict is stale and the gate role must re-verify.
+
+### Migration for the in-flight Wave 111a verdict
+
+`coordination/handoffs/qa.md` line 3 currently records:
+```
+### Wave-111 PASS verdict — PR #0 — SHA cae4a773e9bb0096d78062165f4c5a77959cedb6
+```
+
+This is the canonical Phase-1 form. When PR #386 (Wave 111a) was merged, the merge SHA replaced `cae4a77…` and `#0` was replaced with `386` via a backfill commit. (If the backfill has not yet happened on `main` at the time of reading this amendment, this is the open backfill action item.)
+
+For future waves, the gate role emits the Phase-1 placeholder form; DevSecOps performs Phase-2 backfill as part of the merge workflow. No verdict is ever blocked on the chicken-and-egg gap surfaced in Wave 111a.
+
+### Consequences of the amendment
+
+**Positive:**
+- The chicken-and-egg gap surfaced by Wave 111a is resolved without changing the canonical regex or field shape.
+- File-on-disk invariant is preserved; verdicts continue to live in `coordination/handoffs/<role>.md`.
+- Backfill ownership is unambiguous (DevSecOps) and bounded (one commit per merged PR).
+- The "reachable ancestor" check gives DevSecOps step 3 a precise rule for treating placeholder verdicts as merge-eligible.
+
+**Negative:**
+- One additional commit per merged PR on main (the backfill commit). Acceptable: DevSecOps already commits the merge.
+- If DevSecOps forgets the backfill, the verdict ages with `PR #0` and a stale SHA — visually misleading until the backfill lands. Mitigation: Wave 111c CI can include a "no `PR #0` verdicts on merged PRs older than 1h" check; out of scope for 111b.
+
+**Follow-ups:**
+- Wave 111c CI: extend the format check to assert no `PR #0` placeholder verdicts exist for PRs that have been merged for more than 1 hour. (Catches missed backfills without blocking pre-merge legitimate placeholders.)
+- Wave 111+ candidate: a `scripts/emit-verdict.sh --backfill <PR#> <merge-SHA>` helper for DevSecOps's backfill step, complementing the Phase-1 `scripts/emit-verdict.sh` already parked as a future candidate.
+
 ## Cross-references
 
 - `.claude/agents/devsecops.md` line 58 (step 3 in "Deployment workflow (single turn)") — the consumer of this format. Wave 111b will add a cross-reference to ADR-018 inline.

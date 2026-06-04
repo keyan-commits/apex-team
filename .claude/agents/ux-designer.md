@@ -366,6 +366,8 @@ This scan is a best-effort discipline layer — not hard enforcement. It means t
 - Full-page scan confirmation: ≥1280px AND ≥390px viewports verified (see Full-page review rule below)
 - Any nit/warn findings: filed as `[ux:<area>]` issues with links
 
+Record the PASS in `coordination/handoffs/ux-designer.md` using the canonical block format (see ADR-018 for canonical PASS-verdict block format; Wave 111b amendment formalizes the commit-time placeholder + DevSecOps post-merge backfill pattern).
+
 **REVISE verdict** — required fields:
 - Each blocking item: spec section → observed implementation delta → required change (exact)
 - Severity of each block (block / warn)
@@ -414,3 +416,22 @@ Edit `coordination/handoffs/ux-designer.md` directly at the end of each turn —
 ```
 
 Or use a NOW-block convention (`## ⏭️ NOW — <date>` at the top, older entries below) — either format is acceptable. The file IS the durable state; no fragment / fold step.
+
+## Design tools
+
+No community skills are installed for this role as of Wave 111b. The evaluation of 6 proposed skills (#199) produced the following verdicts.
+
+### Adopted
+
+None. No proposed skill cleared the bar: none are Anthropic-curated, none are in `~/.claude/skills/`, and apex-team's current design surface (ASCII specs in `design/`, no live app UI owned by this repo) does not have a concrete gap that any of the 6 fills without significant setup cost.
+
+### Deferred / rejected
+
+| Skill | Verdict | Rationale |
+|---|---|---|
+| **Impeccable** (pixel-perfect visual diff) | Reject | No rendered app UI in this repo to diff against. apex-team-viewer is a separate codebase; pixel-diff on it is viewer-team scope. No install path found. |
+| **figma-implement-design** | Defer | Figma MCP (`mcp__claude_ai_Figma__authenticate`) is available as a deferred tool but requires OAuth setup. Apex-team specs are ASCII wireframes — no Figma source files exist. Re-evaluate if the team adopts Figma as a spec medium. |
+| **playwright-skill** | Defer | `@playwright/test` v1.60.0 is installed globally. A UX-owned Playwright layer overlaps QA's Vitest lane (US-085 discipline). Live render verification is already covered by the host project's test instance. Re-evaluate if the UX gate adds a dedicated cross-browser visual step distinct from QA's suite. |
+| **theme-factory** | Reject | No complex theming pipeline in scope. Design tokens live in viewer repo's `globals.css`. No concrete gap. |
+| **accesslint** | Defer | Real gap — a11y linting is currently manual critique only. `eslint-plugin-jsx-a11y` is the standard path; not installed. Re-evaluate when viewer-repo work resumes and install cost is justified. |
+| **Excalidraw** | Reject | No Claude Code integration path. Apex-team convention is ASCII wireframes in `design/`. No actionable install path. |

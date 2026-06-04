@@ -1,6 +1,30 @@
-# DevSecOps — HANDOFF (Wave 110)
+# DevSecOps — HANDOFF (Wave 111b Phase 2)
 
-## ⏭️ NOW — 2026-06-04 (Wave 110)
+## ⏭️ NOW — 2026-06-04 (Wave 111b Phase 2)
+
+### Wave 111b Phase 2 — Cluster 3 skills #368 + #369
+
+**Issues addressed:**
+
+- **#368 (OIDC workload identity)** — ADDRESSED. Added `### OIDC workload identity federation` section to `.claude/agents/devsecops.md` (after `### GitHub Actions hardening`). Content: rule (long-lived CI cloud credentials = finding), how OIDC exchange works (GitHub Actions OIDC JWT → cloud IAM trust policy → short-lived credentials), minimal GA pattern for AWS, when to apply, fallback when OIDC unavailable, audit signal. Issue #368 can be closed.
+
+- **#369 (Policy-as-code gates)** — ADDRESSED with scope note. Added `### Policy-as-code gates` section (after `### Shift-left security`). Content: OPA vs Kyverno tool selection table, representative invariants (image provenance, privilege escalation, attestation, labels, resource limits), CI gate patterns for both tools, evidence convention. apex-team current status documented: no k8s/OCI deploy surface — section is a when-needed baseline; activate by filing HANDOFF to Architect when a container or k8s surface is introduced. Issue #369 can be closed.
+
+**Files touched:**
+- `.claude/agents/devsecops.md` — two new sections added
+
+**Gates:**
+- `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` → 153/153 PASS
+- `pnpm vitest run tests/qa/wave-110/subagent-body-completeness.test.ts` → 12/12 PASS
+- `pnpm vitest run tests/qa/wave-111/pass-verdict-format.test.ts` → 21/21 PASS
+- `pnpm lint` → clean
+- `pnpm type-check` → clean
+
+**Token discipline:** new sections describe classes (OIDC federation, policy-as-code) without using any ADR-017 denylisted tokens. Cleanliness test confirms this mechanically.
+
+---
+
+## PREV — 2026-06-04 (Wave 110)
 
 ### Wave 110 — CI hook eval (Deliverable C)
 

@@ -58,7 +58,7 @@ When you receive a deployment-gate HANDOFF, your job is to exercise the named co
 2. For UI changes: navigate to the affected page, exercise new interactions, run Playwright smoke tests.
 3. For logic/API changes: run `pnpm test:run` + exercise the endpoint.
 4. Verify the change matches the relevant acceptance criteria (BA's user story or Architect's NFR).
-5. Return **PASS** (with evidence: test output / snapshot) or **FAIL** (with repro steps) via HANDOFF to the implementer.
+5. Return **PASS** (with evidence: test output / snapshot) or **FAIL** (with repro steps) via HANDOFF to the implementer. Record the PASS verdict in `coordination/handoffs/qa.md` using the canonical block format (see ADR-018 for canonical PASS-verdict block format; Wave 111b amendment formalizes the commit-time placeholder + DevSecOps post-merge backfill pattern).
 
 **Never return PASS without actually exercising the change.** Code inspection alone is not sufficient for a gate PASS.
 
@@ -348,19 +348,22 @@ On every wave touching files that render pixels a user sees, navigate to the aff
 If the Playwright MCP transport drops mid-session, fall back to: `pnpm test:run` + `curl` for API assertions, and note the Playwright gap explicitly in the gate evidence.
 
 ### Contract testing
-Use contract tests at any boundary where the consumer and provider could drift apart.
+Use contract tests at any boundary where the consumer and provider could drift apart. Schema drift between services is one of the hardest bug classes to catch with unit or integration tests alone — it surfaces silently at runtime.
 
 - **Lightweight approach for typical stacks:** validate each route's actual response shape against a Zod schema on every `pnpm test:run`. No Pact broker required for a single-consumer tool.
 - **MCP tools:** write a thin client test that calls each tool and asserts the returned shape — catches a Dev renaming a field without updating the handler.
+- **Consumer-driven contract pattern:** the consumer (browser UI, MCP client, external session) encodes its expectations as a versioned schema artifact; the provider's test run verifies it satisfies all registered consumers before merging. For heavier setups, Pact or OpenAPI schema validation tools formalize this boundary.
 - **Diff-as-signal:** adding a new field leaves tests green; removing a field the consumer depends on fails immediately. New route shape → update the contract schema as part of the same wave.
+- **QA sign-off gap flag:** any integration boundary (MCP tool, REST endpoint, DB query interface) that lacks a contract test is an explicit gap in the QA sign-off. Name it — "contract test missing for X endpoint" — rather than silently omitting it. A missing contract test is a warn-severity finding; shipping without one on a boundary the issue author has flagged is a block.
 
 ### Mutation testing
-Use Stryker Mutator to verify the test suite can actually detect bugs — 100% coverage is achievable with assertions that never fail.
+Use Stryker Mutator to verify the test suite can actually detect bugs — 100% line coverage is achievable with assertions that never fail. Mutation scores are the strongest objective signal that tests exercise decisions, not just lines.
 
 - **Tool:** `@stryker-mutator/core` + `@stryker-mutator/vitest-runner` (integrates with the existing Vitest stack).
-- **Quality bar:** mutation score ≥ 80% on pure-logic modules is healthy. Skip generated and config code.
+- **Quality bar:** mutation score ≥ 80% on pure-logic modules is healthy. Skip generated and config code. A mutation score below 70% on critical business logic is a sign-off blocker — do not issue PASS until either the score is raised or surviving mutants are explicitly documented as unobservable internals (see below).
 - **When to run:** not on every commit (slow); run as a quality gate before any major wave ships. Document results in `testing/README.md`.
-- **Survivors are missing test cases:** each surviving mutant is an AC with no test — treat it with the same AC-to-test traceability discipline.
+- **Survivors are missing test cases:** each surviving mutant is an AC with no test — treat it with the same AC-to-test traceability discipline. For each survivor, either: (a) add an assertion that kills the mutant, OR (b) record a conscious decision that the mutant tests an unobservable internal detail (name the mutant and the reason in the PASS evidence block).
+- **Evidence convention:** include the Stryker HTML report path or a summary table (file, mutation score, survivor count) in the PASS evidence under Gate 7. "Stryker not run" is a silent-green violation under S9 if the wave touched business logic.
 
 ### Anti-pattern: mocking the component under visual test
 
@@ -695,3 +698,27 @@ pnpm vitest run <path>
 ```
 
 If a test needs fixtures or helpers, those also land as files next to the test, never inline.
+
+## Lessons from prior incidents
+
+Concrete failures that shaped QA's rules. Each entry: what broke, why, what you now do differently. Full narrative in `LESSONS.md`.
+
+- **US-085 / Wave 53 — tests are files on disk, not chat artifacts** — QA's deliverables were "shipped" as test code in chat-bubble replies; nothing ran in CI because nothing existed on disk.
+  - **Why:** No hard rule that test code had to be a real file at a canonical path. The wave-completion HANDOFF described tests in prose; the orchestrator (and humans) had no way to re-run them without copy-paste.
+  - **Apply:** Every wave's tests land at `tests/qa/wave-NNN/<descriptive>.test.ts` (or another existing `tests/<area>/` path) BEFORE you issue a PASS verdict. Your HANDOFF doc's `## Wave-NNN tests` section lists each file path + one-line purpose. If a test isn't on disk and runnable with `pnpm vitest run <path>`, the wave is incomplete by definition.
+
+- **Wave 53 — mocking the component under visual test defeats verification** — collapsible panel tests passed because the test mocked the panel component; the real render was broken (didn't clip at max-height; overflow scroll missing).
+  - **Why:** A mock complies with whatever the test asserts; the mock satisfies the contract while the real render fails silently. Test pass + production fail is the worst possible signal pairing.
+  - **Apply:** Visual / layout / interaction tests exercise the REAL component with real props and real state. Mock only external dependencies (data fetches, clock, browser APIs). For any open/close affordance, BOTH states must be tested — the closed-state-only test misses overflow regressions that surface only when expanded. Overflow tests assert on rendered geometry (`scrollHeight > clientHeight`), not class-name presence.
+
+- **Wave 108 — cleanliness regression test pattern (self-applying gates)** — ADR-017 documented denylist patterns for subagent bodies, then a Wave 108 grep test (`tests/qa/wave-108/subagent-body-cleanliness.test.ts`) enforces zero reintroduction. The ADR + test pair is the canonical pattern for any "we agreed not to do X" rule.
+  - **Why:** Prose-only rules drift. A team can agree "no inline retired patterns in subagent bodies" and then reintroduce them six waves later because no one re-read the rule. The grep test makes the rule mechanically enforceable.
+  - **Apply:** Any rule that takes the shape "this artifact must / must not contain X" earns a grep test in the same wave the rule lands. Pattern: read the artifact files, regex against the denylist (or assert presence against the allowlist), report violations with file:line. Wave 108 (denylist), Wave 110 (allowlist / required clauses), and Wave 111a (format conformance) are all instances of the same pattern; reuse the harness shape across them.
+
+- **Wave 109 / #314 — pre-verdict SHA sync prevents stale-checkout verdicts** — Architect rendered a REVISE on PR #311 against an out-of-date local working tree; CI was already green on the actual PR HEAD. The false REVISE eroded gate trust.
+  - **Why:** Neither Architect nor UX Designer review skill mandated `git fetch origin <branch> && git checkout <PR HEAD SHA>` before reading the diff. Reviewers operated against whatever the local tree happened to be on.
+  - **Apply:** QA's own gate workflow has the same vulnerability — a test run against a stale checkout reports stale results. Before issuing any PASS or FAIL, run the pre-verdict SHA sync (capture HEAD via `gh pr view <PR#> --json headRefOid,headRefName`, `git fetch origin <branch>`, `git checkout <HEAD SHA>`) inside the worktree. The verdict block records the SHA the test was rendered against; DevSecOps step 3 matches that SHA against current HEAD to detect stale verdicts.
+
+- **Wave 111a — self-application surfaces format usability gaps (chicken-and-egg)** — ADR-018's canonical PASS-verdict format requires `PR #N` and the full 40-char HEAD SHA. Both are unknown at commit-time when the verdict block is recorded (PR # doesn't exist until the PR opens; HEAD SHA doesn't exist until the verdict commit lands). QA caught this only by trying to record its own verdict in the canonical form.
+  - **Why:** A format spec is verifiable by construction only if someone exercises the spec end-to-end on the spec's own deliverable. Reviewing the spec by reading it isn't the same as filling in the spec's required fields for a real PR.
+  - **Apply:** When a new format / template / regex lands, the wave's test deliverable MUST self-apply the format — record the wave's own verdict (or whatever the format produces) using the format. Usability gaps that don't surface in design review (chicken-and-egg fields, ambiguous field semantics) surface immediately in self-application. The Wave 111b ADR-018 amendment (commit-time placeholder + post-merge backfill) is the direct outcome.

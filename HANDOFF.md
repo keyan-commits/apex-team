@@ -1,6 +1,48 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 111a — ADR-018 PASS-verdict format foundation)
+## ⏭️ NOW — 2026-06-04 (Wave 111b — 5-cluster fan-out: lessons + UX skills + 11-issue skill proposals + ADR-018 amendment + cross-refs + completeness test)
+
+**claude-code direct on `feature/wave-111b-fanout` (off origin/main `a16c924`).**
+
+**Wave 111b — second sub-wave of Wave 111.** Three-phase Option A: Architect single-author (Phase 1, Clusters 1+6+7) → 6-subagent Cluster 3 self-edits + UX Cluster 2 (Phase 2) → QA Wave 111b completeness test (Phase 3, US-089 AC5). Single PR.
+
+**Deliverables:**
+
+1. ✅ **Cluster 1 lessons-in-bodies (Architect, Phase 1).** `## Lessons from prior incidents` sections added to `architect.md`, `qa.md`, `devsecops.md` (5 incidents each, Date/Wave/Rule/Why/Apply format).
+
+2. ✅ **Cluster 6 ADR-018 commit-time amendment (Architect, Phase 1).** `## 2026-06-04 amendment` section added. Option (a): commit-time `PR #0` placeholder + last-known SHA; DevSecOps post-merge backfill via `chore(handoff): backfill Wave-NNN verdict PR # and merge SHA`. Canonical regex unchanged (additive).
+
+3. ✅ **Cluster 7 ADR-018 cross-refs (Architect, Phase 1).** 4 gate-role bodies cite ADR-018 inline (devsecops.md step 3 + backfill sub-step, architect.md review rubric, ux-designer.md critique workflow, qa.md gate workflow).
+
+4. ✅ **Cluster 2 UX design-skill ecosystem (UX, Phase 2; closes #199).** All 6 community skills evaluated (Impeccable, figma-implement-design, playwright-skill, theme-factory, accesslint, Excalidraw). All rejected/deferred — none adopted (no current UI surface). `## Design tools` section in `ux-designer.md`.
+
+5. ✅ **Cluster 3 11-issue skill proposals (6 subagents, Phase 2).** All 11 issues closed: #292/#293 (BA — BDD ACs co-author + traceability index w/ new `requirements/traceability.md`), #294/#295/#359 (Architect — fitness functions + AI/agent review lens + STRIDE gate), #361/#362 (UI Dev — `prefers-reduced-motion` + View Transitions API), #363/#364 (BE Dev — N+1 + graceful shutdown), #365/#366 (QA — Contract testing + Mutation testing expansions), #368/#369 (DevSecOps — OIDC workload identity + Policy-as-code OPA/Kyverno).
+
+6. ✅ **US-089 traceability + INDEX (BA, Phase 1).** 5 ACs (one per cluster).
+
+7. ✅ **Wave 111b completeness test (QA, Phase 3, US-089 AC5).** `tests/qa/wave-111/wave-111b-completeness.test.ts` — **34/34 PASS** in 112ms. Full suite: **220/220 PASS** (108: 153 + 110: 12 + 111a: 21 + 111b: 34). QA recorded PASS verdict per ADR-018 canonical format with `PR #0` placeholder.
+
+**Architect post-mortem (Phase 1):** initial draft of architect.md lessons quoted retired patterns verbatim → ADR-017 cleanliness test failed 4 assertions. Fixed by describing pattern classes in narrative. Documented as token-discipline rule for Phase 2 fan-out; Phase 2 implementers ran cleanliness test before HANDOFF and avoided the cycle.
+
+**Issues closed this wave:** #199, #292, #293, #294, #295, #359, #361, #362, #363, #364, #365, #366, #368, #369 (14 total).
+
+**Verification (all green):** Wave 108 cleanliness 153/153, Wave 110 completeness 12/12, Wave 111a conformance 21/21, Wave 111b completeness 34/34, full suite 220/220, lint clean, type-check clean.
+
+**Plan C dogfooding (Wave 111b):** Largest fan-out yet under the runtime — 6 subagents self-editing their own bodies in parallel, then QA writing a mechanical completeness test asserting all 14 issues' deliverables landed. The HANDOFF-doc-as-canonical-text pattern + Phase 1 token-discipline post-mortem propagating to Phase 2 implementers via Architect's HANDOFF NOW = orchestration discipline working end-to-end.
+
+**Backfill convention (per ADR-018 Wave 111b amendment):** QA's Wave 111b PASS verdict in `coordination/handoffs/qa.md` uses `PR #0` + parent-commit SHA. DevSecOps backfills with real PR # + merge SHA in a follow-up commit on main per the canonical message convention.
+
+**Wave 111c candidates (parked — Cluster 4 CI/process):**
+- DevSecOps wires ADR-018 canonical regex into CI (per Architect's Wave 111b guidance + ADR-018 amendment)
+- #240 (residual `gh pr checks` step in DevSecOps merge protocol)
+- #246 (UX gate CI check)
+- #301 (`gh pr merge --delete-branch` anomalous closure playbook + LESSONS)
+- #324 (deps bump verification — likely close as stale)
+- Detect `PR #0` placeholders on PRs merged >1h ago (Architect's flag from Wave 111b amendment)
+
+---
+
+## ⏭️ PREV — 2026-06-04 (Wave 111a — ADR-018 PASS-verdict format foundation)
 
 **claude-code direct on `feature/wave-111a-pass-verdict-format` (off origin/main `cae4a77`).**
 

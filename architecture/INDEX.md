@@ -1,6 +1,6 @@
 # Architecture Index
 
-Last updated: 2026-06-04 (Wave 111a — ADR-018 lands the canonical PASS-verdict format for gate-role HANDOFF docs; consumed by DevSecOps step 3, enforced by Wave 111c CI)
+Last updated: 2026-06-04 (Wave 111b — ADR-018 amended with commit-time placeholder + post-merge backfill pattern; gate-role bodies cite ADR-018 inline; lessons sections landed in architect.md / qa.md / devsecops.md)
 
 ## Decision Records
 
@@ -21,7 +21,7 @@ Last updated: 2026-06-04 (Wave 111a — ADR-018 lands the canonical PASS-verdict
 | [ADR-015](decisions/ADR-015-no-redis-mq.md) | No Redis / MQ — in-process SQLite + single-process suffices (+ tripwire) | Accepted |
 | [ADR-016](decisions/ADR-016-mcp-client-rebind-strategy.md) | MCP client rebind strategy | Accepted |
 | [ADR-017](decisions/ADR-017-subagent-body-rewrite-rules.md) | Subagent prompt body rewrite rules (Plan C runtime) — retires legacy monolith imperatives from `.claude/agents/*.md` bodies | Accepted |
-| [ADR-018](decisions/ADR-018-pass-verdict-format.md) | Canonical PASS-verdict format for gate-role HANDOFF docs — heading-anchored block with `Wave-NNN PASS verdict — PR #N — SHA <40-char>` + 4 field lines; consumed by DevSecOps step 3, enforced by Wave 111c CI | Accepted |
+| [ADR-018](decisions/ADR-018-pass-verdict-format.md) | Canonical PASS-verdict format for gate-role HANDOFF docs — heading-anchored block with `Wave-NNN PASS verdict — PR #N — SHA <40-char>` + 4 field lines; consumed by DevSecOps step 3, enforced by Wave 111c CI. Wave 111b amendment formalizes commit-time placeholder (`PR #0` + last-known SHA) + DevSecOps post-merge backfill pattern. | Accepted (amended Wave 111b) |
 
 ## Flat docs
 
