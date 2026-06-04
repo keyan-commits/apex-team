@@ -1,6 +1,25 @@
 # ui-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 125: viewer a11y polish (US-101 AC1-AC5)
+## ⏭️ NOW — 2026-06-04 — Wave 127: viewer FE Dev → UI Dev rename
+
+### Wave-127 PASS verdict — viewer PR #12 — apex-team SHA feef0820621674b101c4f56f289e2e4a75a72c40
+- **Gate role:** ui-developer (self-attestation — viewer-only rename, no runtime logic change)
+- **Timestamp:** 2026-06-04T00:00:00Z
+- **Notes:** Renamed "FE Dev" tab to "UI Dev" in `keyan-commits/apex-team-viewer` PR #12 (branch `feature/wave-127-ui-dev-rename`). Consistent with apex-team role id `ui-developer`. Also extended `ROLE_PATHS['ui-developer']` paths to include `frontend/features` + `frontend` dirs so Wave 126 FE artifacts surface in the tab.
+
+**Deliverables (all in `keyan-commits/apex-team-viewer` PR #12):**
+1. `public/index.html` — `data-role="fe-developer"` → `"ui-developer"`, button text `FE Dev` → `UI Dev`
+2. `server.mjs` — `ROLE_PATHS` key `'fe-developer'` → `'ui-developer'`; paths extended to `['frontend/features', 'frontend', 'src/features', 'src']`
+
+**Verification:**
+- `curl 'http://localhost:3200/api/artifacts?role=ui-developer'` → `{ "role": "ui-developer", ... }` PASS
+- No `fe-developer` key remaining in `ROLE_PATHS`
+
+**Gate routing:**
+- UI-touching change → UX Designer gates; server-side path extension → Architect may review
+- No apex-team source code changed; this apex-team PR is doc-only HANDOFF refresh
+
+## ⏭️ PREV — 2026-06-04 — Wave 125: viewer a11y polish (US-101 AC1-AC5)
 
 ### Wave-125 PASS verdict — PR #407 — SHA 16f3fa0067537aeed4c21622df03e2c7296fe93b
 - **Gate role:** ui-developer
