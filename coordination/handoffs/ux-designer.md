@@ -2,7 +2,7 @@
 
 ## NOW — 2026-06-04 — Wave 125 (Viewer a11y polish — spec authored)
 
-### Wave-125 TRIAD PASS verdict — PR #0 — SHA 9f9d53ee3c8f3e155a567197a489378318729c18
+### Wave-125 PASS verdict — PR #0 — SHA 9f9d53ee3c8f3e155a567197a489378318729c18
 - **Gate role:** ux-designer
 - **Timestamp:** 2026-06-04T21:10:00Z
 - **Notes:** Spec authored as requested. `design/features/FEAT-0004-viewer-a11y-polish/UX-0001-viewer-a11y-polish.md` written. `design/features/INDEX.md` created with UX-0001 row. All four issues (#5/#7/#8/#9) have element-level specs with copy-verbatim CSS/JS snippets, contrast ratios computed (5.59:1 and 5.85:1 against dark backgrounds, both passing SC 1.4.11 3:1 minimum), keyboard interaction spec, landmark spec, and a12-item a11y verification checklist. Status set to `in-implementation`. `PR #0` placeholder per ADR-018 Wave 111b amendment; DevSecOps backfills real PR # + merge SHA post-merge.
