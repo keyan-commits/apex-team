@@ -1,6 +1,54 @@
 # ui-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 127: viewer FE Dev → UI Dev rename
+## ⏭️ NOW — 2026-06-04 — Wave 130: viewer polyglot ▶ RUN
+
+### Wave-130 IN FLIGHT — viewer PR #13 — apex-team SHA b6a8515449146695ebbcbcb83f9bf70e2cfe552a
+
+- **Gate role:** ui-developer (implementation complete; awaiting Architect + QA gates on viewer PR #13)
+- **Timestamp:** 2026-06-04T00:00:00Z
+- **Viewer PR:** `keyan-commits/apex-team-viewer#13` (branch `feature/wave-130-polyglot-run`, commit `b205ec1`)
+
+**Deliverables (all in `keyan-commits/apex-team-viewer` PR #13):**
+
+1. `lib/runner-resolver.mjs` — extracted runner resolver with injected I/O for testability. Exports `createResolver(io)` factory + `resolveRunner` default (uses real `node:fs`). Core functions: `findAncestorContaining`, `detectPackageManager`, `resolveJsRunner`, `resolvePlaywrightRunner`, `resolveJavaRunner`.
+
+2. `server.mjs`:
+   - Imports `resolveRunner` + `detectPackageManager` from `lib/runner-resolver.mjs`.
+   - `VITEST_TIMEOUT_MS` (60s default, `APEX_VIEWER_VITEST_TIMEOUT_MS` env) + `MAVEN_TIMEOUT_MS` (300s default, `APEX_VIEWER_MAVEN_TIMEOUT_MS` env).
+   - `walkQaPolyglot(root)` — walks full workspace (or `.apex-viewer.json`-scoped project roots), discovers `*.test.ts|tsx|js|jsx|mjs`, `*.spec.*`, `*Test.java`, `*Tests.java`. Skips `node_modules/.git/dist/build/target/.next/.gradle/_archive`. Pre-resolves `{ runner, cwd }` for each discovered file.
+   - `loadProjectRoots(root)` + `autoDetectProjectRoots(root, depth=3)` — `.apex-viewer.json` optional config or auto-detect by scanning for build files.
+   - `listRoleGrouped` — QA role now uses `walkQaPolyglot`; runner/cwd metadata propagated to ticket objects.
+   - `runTest` — now async. Resolves runner before spawn. `start` SSE event emits JSON `{ command, cwd, runner }`. Timeout varies by runner.
+   - `/api/run-test` route updated to `await runTest(...)`.
+
+3. `public/app.js`:
+   - `TEST_RE` broadened to include Java test files.
+   - `renderTicketRow` — runner badge `[vitest]`/`[jest]`/etc. added before ▶ Run button (when `f.runner` present and not `'unknown'`).
+   - Ungrouped rows in `renderOutput` — same runner badge logic.
+   - `start` SSE listener — handles JSON format (shows resolved command + cwd) with fallback to legacy plain-text.
+
+4. `public/style.css` — `.runner-badge` + `.runner-badge.runner-<name>` per-runner accent colors (vitest/jest/playwright/maven/gradle).
+
+5. `__tests__/runner-resolver.test.ts` — 19 unit tests. All pass (`npm test` → 19/19).
+
+6. `package.json` — added vitest devDependency + `test`/`test:watch` scripts.
+
+**Verification:**
+- `npm test` in viewer repo → 19/19 PASS
+- apex-team `pnpm test:run` → 722/723 PASS (1 pre-existing skip — baseline unchanged)
+- Server syntax check → module loads correctly (port-in-use expected on re-import)
+
+**Gate routing:**
+- Viewer PR #13 touches rendered UI (app.js, style.css) → UX Designer gates UI
+- Server-side logic (server.mjs, lib/runner-resolver.mjs) → Architect gates
+- QA can verify against viewer PR branch directly
+
+**Project-agnostic notes:**
+- Zero hardcoded paths. LFM `new/b2b-portal/` "just works" via auto-detect.
+- `.apex-viewer.json` at workspace root optionally pins discovery to named sub-roots.
+- `walkQaPolyglot` skip-list covers all common build output dirs.
+
+## ⏭️ PREV — 2026-06-04 — Wave 127: viewer FE Dev → UI Dev rename
 
 ### Wave-127 PASS verdict — PR #412 — SHA 9c05edf7656a6fe8bfcd88d53d63e06fb42d48b1
 - **Gate role:** ui-developer (self-attestation — viewer-only rename, no runtime logic change)
