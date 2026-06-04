@@ -1,6 +1,47 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 115 — US-NNN ticket triage, pending count 39 → 0)
+## ⏭️ NOW — 2026-06-04 (Wave 116 — delete records not applicable to current code)
+
+**claude-code direct on `feature/wave-116-delete-not-applicable` (off origin/main `e73e254`).**
+
+User directive: "Delete records that are not applicable to the current code." Wave 115 status-flagged 39 tickets but kept the files for audit; user wanted them gone entirely.
+
+**Deleted: 41 user-story files** with status `superseded` (33) or `closed` (8):
+- All Plan-C-superseded monolith-targeted USes (US-001 through US-066 batch)
+- Self-heal + crash-safety USes that became moot under Plan C runtime (US-079–US-085)
+- INDEX.md broken links to US-060 + US-062 (files didn't exist on disk either)
+
+**Retained: 19 user-story files** with status `done`:
+- US-002, US-003, US-004, US-005, US-006, US-007 (pre-Plan-C wave deliverables)
+- US-049, US-050, US-051, US-052, US-053 (mid-cutover infrastructure)
+- US-078 (user-directive supremacy — still load-bearing)
+- US-086 → US-092 (Plan C session deliverables)
+
+**INDEX.md:** 42 table rows removed for deleted files + 2 broken-link rows.
+
+**Viewer effect:** `:3200/#tickets` now shows **19 total / 0 pending** (was 60/0). All remaining tickets are `done`.
+
+**Heads-up — possibly more to delete:** some `done` files reference retired surfaces (US-003 dashboard Issues panel, US-004 MCP transport, US-005 dashboard polish, US-052 idle-indicator on dashboard). Status is `done` not `superseded`, so they survived this sweep. User can flag for a second pass if those should also go.
+
+**Verification (all green):**
+- `pnpm test:run` → 324/324 PASS (regression tests unaffected by US file deletions)
+- `pnpm lint`, `pnpm type-check` clean
+- All 6 wave regression test suites still green
+
+**Session totals (Waves 107–116):**
+- **19 PRs merged**
+- **6 ADRs / standards**
+- **7 user stories shipped done** (US-086 → US-092)
+- **41 user stories deleted** (Wave 116, not applicable to current code)
+- **6 wave regression test suites** — 324/324 PASS
+- **8 subagent bodies** clean
+- **4 CI workflows under fitness function**
+- **60+ GitHub issues closed**
+- **0 pending tickets, 19 done tickets retained**
+
+---
+
+## ⏭️ PREV — 2026-06-04 (Wave 115 — US-NNN ticket triage, pending count 39 → 0)
 
 **claude-code direct on `feature/wave-115-ticket-triage` (off origin/main `5b56c82`).**
 
