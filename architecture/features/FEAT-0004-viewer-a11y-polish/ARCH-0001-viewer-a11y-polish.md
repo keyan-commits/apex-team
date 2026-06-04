@@ -16,7 +16,7 @@ status: accepted
 - `requirements/features/FEAT-0004-viewer-a11y-polish.md` (BA, in-flight this wave)
 - `requirements/user-stories/US-101-*.md` (BA, in-flight this wave)
 - `design/features/FEAT-0004-viewer-a11y-polish/UX-0001-viewer-a11y-polish.md` (UX, in-flight this wave)
-- `tests/qa/features/FEAT-0004-viewer-a11y-polish/TEST-0002-viewer-a11y-polish.test.ts` (QA, Lane 2)
+- `tests/qa/features/FEAT-0004-viewer-a11y-polish/TEST-0004-viewer-a11y-polish.test.ts` (QA, Lane 2)
 - Viewer-side edits land in `keyan-commits/apex-team-viewer` (`public/style.css`, `public/app.js`).
 
 ---
@@ -46,7 +46,7 @@ the viewer surface and FEAT-grouped.
 | 4.1.2 | Name, role, value | #9 — `.feat-card-body` missing `role="region"` + `aria-labelledby` |
 
 **Measurement (per success criterion):** static-parse assertions in QA's
-TEST-0002 (parsing the viewer's `public/style.css` and `public/app.js`)
+TEST-0004 (parsing the viewer's `public/style.css` and `public/app.js`)
 verify each fix is structurally present. No runtime browser harness is added
 for this wave — the surface is small, the assertions are mechanical, and
 adding Playwright/axe to the viewer is its own ARCH ticket (deferrable, see
