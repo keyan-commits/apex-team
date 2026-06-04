@@ -1,7 +1,7 @@
 ---
 id: US-023
 slug: lane-a-pipeline-parallelism
-status: accepted
+status: superseded
 wave: 68
 closes: "#146"
 owner: UI Dev or BE Dev (pick idler at impl time)
@@ -14,6 +14,10 @@ impl-targets:
   - tests/lib/roles.test.ts
 sequencing: rides Wave 68-impl PR; Wave 68-impl rebases on Wave 65's landed business-analyst.ts + architect.ts and appends the Lane A section beneath existing content
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/lib/roles.ts` ORCHESTRATOR_PROTOCOL, `src/lib/skills/business-analyst.ts`, `src/lib/skills/architect.ts`, `src/lib/skills/ux-designer.ts` — all monolith skill/roles files retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). Lane A / Lane B parallelism discipline was absorbed into `.claude/agents/*.md` bodies during Wave 108 body rewrites (PR #379, `586ed8d`).
 
 # US-023 — Lane A Pipeline Parallelism
 

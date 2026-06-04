@@ -1,12 +1,16 @@
 # US-064 — MCP Client Rebind After Server Restart
 
-**Status:** accepted
+**Status:** superseded
 **Owner role:** backend-developer (primary) + ui-developer (dashboard banner, if AC4 branch)
 **Created:** 2026-06-03
 **Story ID:** US-064
 **Source issue:** #257
 
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/mcp/handler.ts`, `/api/health`, `.restart-trigger`, `talk_to_product_owner` MCP tool, and the apex-team MCP server — all retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). Under the subagent runtime there is no MCP server process to restart; tools are invoked directly by the outer Claude Code session.
 
 ## Narrative
 

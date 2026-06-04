@@ -3,7 +3,7 @@ name: US-086-workspace-conventions
 description: Authoritative workspace directory contract for the Plan C subagent runtime — resolves OQ-085-001 and OQ-085-002; traceability wrapper for architecture/workspace-conventions.md
 metadata:
   type: user-story
-  status: accepted
+  status: done
   owner: Architect (doc) + BA (traceability)
   wave: "107"
   last-modified: 2026-06-04
@@ -43,9 +43,7 @@ None at acceptance. OQ-085-001 and OQ-085-002 are resolved by this story's ACs.
 
 ## Links
 
-_(Filled in during implementation)_
-
-- impl: `(SHA-pending)`
-- test: `(not applicable — doc-only deliverable; Architect reviews)`
-- qa-pass-by: `(not applicable)`
-- deployed-by: `(not applicable — doc-only; no deployment gate)`
+- impl: `a80273d` (Wave 107, PR #377, `architecture/workspace-conventions.md` committed)
+- test: not applicable — doc-only deliverable
+- qa-pass-by: not applicable
+- deployed-by: PR #377 merged main `832e2fe`

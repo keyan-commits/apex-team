@@ -1,9 +1,14 @@
 # US-010 — Manual Daily Scout trigger
 
-**Status:** proposed
+**Status:** superseded
 **Owner role:** ui-developer, backend-developer
 **Created:** 2026-05-31
+**Superseded:** 2026-06-04
 **Story ID:** US-010
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `/dashboard`, `/api/scout/trigger`, `scripts/skill-scout.mjs`, and `talk_to_product_owner` MCP call — all monolith surfaces retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). Daily scout functionality in the subagent runtime runs within a Claude Code session, not via a dashboard button. Re-file as a viewer-repo or CLI feature if needed.
 
 ---
 

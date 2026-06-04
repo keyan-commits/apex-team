@@ -1,13 +1,17 @@
 ---
 id: US-047
 title: Towncrier-style HANDOFF fragment pattern — eliminate doc-collision class (Wave 93)
-status: accepted
+status: superseded
 wave: 93
 closes: "#212"
 owner: BE Dev (fold script + pre-commit hook) + DevSecOps (pre-commit hook) + all roles (skill edits)
 created: 2026-06-02
 accepted: 2026-06-02
 ---
+
+## Resolution — superseded by Wave 112
+
+The `_handoff-pending/` fragment pattern was introduced and then retired within the same wave chain. AC1 of US-091 (Wave 112, PR #392, `8ba1bbb`) deleted the `_handoff-pending/` directory and rewrote the pre-commit hook to check `coordination/handoffs/*.md` directly. `scripts/fold-handoff.ts` and `pnpm fold-handoff` no longer exist. The direct-HANDOFF-edit model replaced the fragment pattern. Additionally, ACs targeting `src/lib/skills/*.ts` body edits are moot — those monolith files retired at Plan C cutover (PRs #373 + #374).
 
 ## Story
 

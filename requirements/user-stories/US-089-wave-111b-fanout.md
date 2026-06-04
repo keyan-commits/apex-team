@@ -1,7 +1,8 @@
 # US-089 — Wave 111b Fan-out: Lessons-in-Bodies, UX Skills, Skill Proposals, ADR-018 Amendment, ADR-018 Cross-refs
 
-**Status:** accepted
+**Status:** done
 **Wave:** 111b
+**Shipped:** Wave 111b PR #387 (`133e182` / merge `ba0905f`)
 **Owner:** Architect (Phase 1, NFR gate) + 6 subagents (Phase 2 fan-out)
 **Issues addressed:** #196 (partial), #199, #292, #293, #294, #295, #359, #361, #362, #363, #364, #365, #366, #368, #369; ADR-018 amendment (no issue — surfaced by Wave 111a self-application); AC6 of US-088 (deferred-landing from Wave 111a)
 

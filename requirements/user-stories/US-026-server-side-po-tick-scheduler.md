@@ -1,8 +1,12 @@
 # US-026 — Server-Side PO Tick Scheduler
 
-**Status:** accepted  
+**Status:** superseded  
 **Wave:** 71 (PRIORITY)  
 **Closes:** #153  
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/lib/tick-scheduler.ts`, `src/lib/thread-lock.ts`, SQLite `tick_log` table, `src/mcp/tools.ts`, and `server.ts` — all monolith files retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). The tick scheduler was the monolith's autonomous-loop enforcement mechanism. Under the subagent runtime, scheduling is handled by the outer Claude Code session via the Agent tool; there is no persistent server or SQLite DB.
 
 ## Story
 

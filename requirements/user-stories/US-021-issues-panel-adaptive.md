@@ -2,12 +2,16 @@
 id: US-021
 title: Issues Panel + Recent Open — Adaptive to Active Workspace
 slug: issues-panel-adaptive
-status: accepted
+status: superseded
 owner: BE Dev (team-status route) + UI Dev (dashboard page); Wave 66
 closes: "#144"
 created: 2026-06-01
 last_modified: 2026-06-01
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `/api/team-status`, `page.tsx`, dashboard Issues panel, and the Next.js app — all monolith surfaces retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). The apex-team-viewer repo (`keyan-commits/apex-team-viewer`) hosts the replacement dashboard; re-file issues-panel adaptability against the viewer repo.
 
 ## Story
 

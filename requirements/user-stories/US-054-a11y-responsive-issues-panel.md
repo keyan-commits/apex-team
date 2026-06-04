@@ -1,7 +1,7 @@
 ---
 id: US-054
 title: a11y + responsive Issues panel — reduced-motion, focus ring, grid layout (Wave 97)
-status: in-dev
+status: superseded
 wave: 97
 closes: "PR #231"
 owner: UI Dev
@@ -9,6 +9,10 @@ created: 2026-06-02
 accepted: 2026-06-02
 impl: "419e875"
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/app/dashboard/page.tsx` and `src/components/ActiveWaveCard.tsx` — monolith components retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). The a11y + responsive work targeted the dashboard UI. Re-file against the apex-team-viewer repo if needed there.
 
 ## Story
 

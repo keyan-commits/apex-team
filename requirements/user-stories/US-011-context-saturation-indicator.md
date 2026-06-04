@@ -1,9 +1,14 @@
 # US-011 — Context-saturation indicator on agent panes
 
-**Status:** proposed
+**Status:** superseded
 **Owner role:** ui-developer, backend-developer
 **Created:** 2026-05-31
+**Superseded:** 2026-06-04
 **Story ID:** US-011
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target agent panes on the Next.js dashboard (`/`, `/dashboard`) and the `/api/team-status` endpoint — all monolith surfaces retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). Context saturation visibility in the subagent runtime is provided by the apex-team-viewer. Re-file against the viewer repo if an indicator is needed there.
 
 ---
 

@@ -1,11 +1,15 @@
 ---
 id: US-048
 title: QA 9-skill upgrade (Wave 94)
-status: accepted
+status: superseded
 wave: 94
 owner: QA (implementation) — guided by Architect design doc
 filed: 2026-06-02
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/lib/skills/qa.ts` — a monolith skill file retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). The S1–S9 skill upgrade discipline was absorbed into `.claude/agents/qa.md` during Wave 108 body rewrites (PR #379, `586ed8d`).
 
 ## Story
 

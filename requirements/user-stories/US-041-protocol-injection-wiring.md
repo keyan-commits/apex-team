@@ -2,11 +2,15 @@
 id: US-041
 title: Wire dead protocols.ts constants into role prompts
 slug: protocol-injection-wiring
-status: accepted
+status: superseded
 owner: backend-developer
 raised: 2026-06-02
 closes: "#140"
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/lib/roles.ts` and dead imports from `src/lib/protocols.ts` — monolith files retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). The dead-import problem is moot; subagent prompts carry the full protocol text inline in `.claude/agents/*.md`.
 
 # US-041 — Wire Dead `protocols.ts` Constants into Role Prompts
 

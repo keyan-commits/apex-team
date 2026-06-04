@@ -1,6 +1,50 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 114 — close-sweep, backlog at zero)
+## ⏭️ NOW — 2026-06-04 (Wave 115 — US-NNN ticket triage, pending count 39 → 0)
+
+**claude-code direct on `feature/wave-115-ticket-triage` (off origin/main `5b56c82`).**
+
+**Wave 115 — final tier of the close-sweep.** Wave 114 zeroed open GitHub issues; Wave 115 zeroes the user-story tier. The new apex-team-viewer Tickets tab surfaced 39 US-NNN files that still had pending statuses (`accepted`, `proposed`, `in-dev`, `draft`, `in-flight`) even though most of their target surfaces have been retired under Plan C cutover.
+
+**BA triaged all 39 pending tickets:**
+
+- **32 marked `superseded`** — monolith-coupled (Plan C cutover, PRs #373 + #374, `ebc83c5`). Includes US-001, US-008–US-028, US-035, US-038–US-041 (4 files), US-046–US-048, US-054, US-055, US-063, US-064. Resolution paragraph + PR/commit refs added to each file.
+- **7 promoted `accepted`/`in-flight` → `done`** with shipped-by PR + SHA refs:
+  - US-086 (Wave 107 PR #377 workspace-conventions)
+  - US-087 (Wave 108 PR #379 subagent body rewrites)
+  - US-088 (Wave 111a PR #386 ADR-018 PASS-verdict)
+  - US-089 (Wave 111b PR #387 5-cluster fan-out)
+  - US-090 (Wave 111c PR #388 CI/process discipline)
+  - US-091 (Wave 112 PR #393 peer-edit protocol + 5-body Lessons)
+  - US-092 (Wave 113 PR #395 backfill enforcement)
+
+**INDEX.md updates:**
+- US-064 row added (was missing entirely from the table — gap filled this wave).
+- All 32 superseded rows updated in active table.
+- 7 newly-closed rows moved to "Closed user stories" section.
+- US-086 through US-092 rows updated from `accepted`/`in-flight` to `done` with PR+SHA refs.
+
+**Viewer effect:** apex-team-viewer Tickets tab now shows **0/0 PENDING** in the default filter. Toggle to "All" still shows all 60 historical tickets — audit trail preserved, just no live work items left.
+
+**Status distribution post-Wave-115:** done 19, superseded 33, closed 8. Total 60. **Zero pending.**
+
+**Session totals (Waves 107–115):**
+- **18 PRs merged**
+- **6 ADRs / standards**
+- **7 user stories** (US-086 → US-092) — **all 7 marked done in this wave**
+- **6 wave regression test suites** — 324/324 PASS
+- **8 subagent bodies** clean + carrying Lessons + skills + boundaries
+- **4 CI workflows under fitness function**
+- **60+ GitHub issues closed**
+- **39 US-NNN tickets triaged** in Wave 115 (32 superseded + 7 done)
+- **Backlog at zero on both tiers** (GH issues + US-NNN tickets)
+- **apex-team-viewer** now has Tickets + per-tab search + type classification
+
+**Plan C dogfooding (Wave 115):** the new viewer Tickets tab IMMEDIATELY surfaced the gap that motivated this wave (39 stale pending tickets). The viewer found work the manual scan had missed.
+
+---
+
+## ⏭️ PREV — 2026-06-04 (Wave 114 — close-sweep, backlog at zero)
 
 **claude-code direct on `feature/wave-114-closeout` (off origin/main `9e490bb`).**
 

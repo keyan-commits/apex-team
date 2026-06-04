@@ -2,12 +2,16 @@
 id: US-020
 title: BA Competency Upgrade — Workspace-Discovery and Durable Domain Knowledge
 slug: ba-competency-upgrade
-status: accepted
+status: superseded
 owner: UI Dev or BE Dev (pick idler at impl time; Wave 65)
 closes: "#143"
 created: 2026-06-01
 last_modified: 2026-06-01
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/lib/skills/business-analyst.ts` and `src/lib/skills/architect.ts` — monolith skill files retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). The BA competency upgrade discipline (workspace-discovery-first, promote-to-MD, cross-peer authority, onboarding scan) was absorbed into `.claude/agents/business-analyst.md` during Wave 108 body rewrites (PR #379, `586ed8d`).
 
 ## Story
 

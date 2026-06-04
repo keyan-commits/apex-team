@@ -1,13 +1,17 @@
 ---
 id: US-046
 title: DevSecOps conflict-resolution playbook for union-merge files (Wave 92)
-status: in-dev
+status: superseded
 wave: 92
 closes: "#230"
 owner: DevSecOps
 created: 2026-06-02
 accepted: 2026-06-02
 ---
+
+## Resolution — superseded by Plan C cutover + Wave 112
+
+AC1 targeted `src/lib/skills/devsecops.ts` — a monolith file retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). The union-merge playbook was absorbed into `.claude/agents/devsecops.md` during Wave 108 body rewrites (PR #379). Additionally, the `_handoff-pending/` fragment pattern that US-047 introduced (which this story supported) was itself retired in Wave 112 (PR #392, `8ba1bbb`). The `coordination/handoffs/<role>.md` direct-edit model makes the conflict class moot.
 
 ## Story
 

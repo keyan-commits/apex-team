@@ -1,12 +1,16 @@
 # US-027 — Externalize PO state into structured DB tables (wave queue, PR status, peer idle)
 
-**Status:** draft
+**Status:** superseded
 **Owner role:** backend-developer (schema + MCP tools + migration); ui-developer (dashboard panel); architect (schema review required before `accepted`)
 **Created:** 2026-06-01
 **Story ID:** US-027
 **Target wave:** 72
 
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target SQLite tables (`pipeline_state`, `wave_queue`, `pr_status`, `peer_idle`), `src/lib/db.ts`, and the MCP server — all monolith constructs retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). Under the subagent runtime, PO state is maintained in `coordination/handoffs/product-owner.md` (a file on disk); there is no SQLite DB or MCP server to wire new tables into. This story never reached `accepted` (status was `draft`).
 
 ## Narrative
 

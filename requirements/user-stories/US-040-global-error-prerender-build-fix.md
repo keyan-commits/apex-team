@@ -2,11 +2,15 @@
 id: US-040
 title: Fix /_global-error prerender hard build failure
 slug: global-error-prerender-build-fix
-status: accepted
+status: superseded
 owner: backend-developer
 raised: 2026-06-02
 closes: "#151"
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/app/global-error.tsx` and the Next.js `pnpm build` pipeline — monolith files retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). There is no Next.js app to build under the subagent runtime.
 
 # US-040 — Fix `/_global-error` Prerender Hard Build Failure
 

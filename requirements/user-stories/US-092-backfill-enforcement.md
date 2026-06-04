@@ -1,7 +1,8 @@
 # US-092 — Backfill enforcement for ADR-018 PR #0 placeholders
 
-- **Status:** in-flight
+- **Status:** done
 - **Wave:** 113
+- **Shipped:** Wave 113 PRs #394 (`23d4f76`) + #395 (`075d102`) / main `9e490bb`
 - **Owners:** DevSecOps (AC1–AC3), QA (AC4)
 - **Traceability:** ADR-018 §"2026-06-04 amendment" (Wave 111b), US-088 (PASS-verdict format), US-090 AC5 (TTL check introduced Wave 111c)
 - **Closes:** n/a (new capability; no prior GitHub issue — gap exposed by Wave 112 incident)

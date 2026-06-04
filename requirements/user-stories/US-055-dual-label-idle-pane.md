@@ -1,11 +1,15 @@
 ---
 id: US-055
 title: Dual-label idle pane — "Last NOTES / Last turn"
-status: accepted
+status: superseded
 owner: UI Developer
 wave: post-US-054
 depends-on: US-052, US-054
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/components/AgentPane.tsx`, `src/app/dashboard/page.tsx`, and `src/lib/db.ts` `IDLE_THRESHOLD_MS` — monolith files retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). Under the subagent runtime there is no AgentPane component or persistent DB.
 
 ## Story
 

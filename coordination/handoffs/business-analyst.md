@@ -1,6 +1,71 @@
 # business-analyst — HANDOFF
 
-## NOW — 2026-06-04 — Wave 114: close-sweep complete (backlog zeroed)
+## NOW — 2026-06-04 — Wave 115: US triage close-sweep (39 pending stories classified)
+
+**Deliverables this turn:** 39 user-story files status-updated; `requirements/INDEX.md` rows updated to match; Wave 115 triage table below. No code edits. No architecture/ edits. No peer HANDOFF edits.
+
+**Triage table — all 39 pending US-NNN files as of Wave 115:**
+
+| US | Old Status | New Status | Reason |
+|---|---|---|---|
+| US-001 | in-dev | superseded | Monolith-coupled: ACs 2-4 target pnpm dev:test:ui/be, worktrees, SQLite; discipline absorbed Wave 108 PR #379 |
+| US-008 | proposed | superseded | Monolith-coupled: targets AgentPane.tsx, MessageBubble.tsx, dashboard; re-file against viewer repo |
+| US-009 | proposed | superseded | Monolith-coupled: targets /agents/[role], src/lib/skills/*.ts; re-file against viewer repo |
+| US-010 | proposed | superseded | Monolith-coupled: targets /dashboard, /api/scout/trigger, skill-scout.mjs |
+| US-011 | proposed | superseded | Monolith-coupled: targets dashboard agent panes, /api/team-status; re-file against viewer repo |
+| US-016 | accepted | superseded | Monolith-coupled: targets src/lib/skills/*.ts, roles.ts, mcp/tools.ts; discipline absorbed Wave 108 PR #379 |
+| US-017 | accepted | superseded | Monolith-coupled: targets src/lib/roles.ts ORCHESTRATOR_PROTOCOL; no equivalent reactive scan in subagent runtime |
+| US-018 | accepted | superseded | Monolith-coupled: targets scripts/skill-scout.mjs, api/scout/trigger/route.ts |
+| US-019 | accepted | superseded | Monolith-coupled: targets protocols.ts, skills/qa.ts, pnpm dev:test, :3100; QA discipline absorbed Wave 108 |
+| US-020 | accepted | superseded | Monolith-coupled: targets src/lib/skills/business-analyst.ts; discipline absorbed Wave 108 PR #379 |
+| US-021 | accepted | superseded | Monolith-coupled: targets /api/team-status, dashboard page.tsx; re-file against viewer repo |
+| US-022 | accepted | superseded | Monolith-coupled: targets roles.ts, providers.ts; discipline absorbed Wave 108 |
+| US-023 | accepted | superseded | Monolith-coupled: targets roles.ts, skills/*.ts; discipline absorbed Wave 108 PR #379 |
+| US-024 | accepted | superseded | Monolith-coupled: targets roles.ts ORCHESTRATOR_PROTOCOL; BR-003 absorbed Wave 108 |
+| US-025 | accepted | superseded | Monolith-coupled: targets src/lib/skills/*.ts; BR-004 absorbed Wave 108 PR #379 |
+| US-026 | accepted | superseded | Monolith-coupled: targets tick-scheduler.ts, SQLite tick_log, MCP server; no persistent server in subagent runtime |
+| US-027 | draft | superseded | Monolith-coupled draft: targets SQLite tables, src/lib/db.ts; SQLite retired at Plan C cutover; never reached accepted |
+| US-028 | accepted | superseded | Monolith-coupled: targets providers.ts, agents.ts, roles.ts; model selection now in .claude/agents/*.md frontmatter |
+| US-035 | accepted | superseded | Monolith-coupled: targets stall-detector.ts, tick-scheduler.ts, SQLite stall_event table; no persistent server |
+| US-038 | accepted | superseded | Monolith-coupled: targets src/lib/db.ts; SQLite retired at Plan C cutover |
+| US-039 | accepted | superseded | Monolith-coupled: targets src/lib/tick-scheduler.ts; tick scheduler retired at Plan C cutover |
+| US-040 (global-error) | accepted | superseded | Monolith-coupled: targets src/app/global-error.tsx, Next.js pnpm build; no Next.js app in subagent runtime |
+| US-040 (pnpm-build) | accepted | superseded | Monolith-coupled: targets src/app/global-error.tsx, next.config.ts; no Next.js app in subagent runtime |
+| US-041 (protocol-constants) | accepted | superseded | Monolith-coupled: targets src/lib/roles.ts, src/lib/protocols.ts; subagent prompts carry text inline |
+| US-041 (protocol-injection) | accepted | superseded | Monolith-coupled: targets src/lib/roles.ts dead imports; file retired at Plan C cutover |
+| US-046 | in-dev | superseded | Monolith-coupled: targets src/lib/skills/devsecops.ts; also superseded by Wave 112 fragment-pattern retirement |
+| US-047 | accepted | superseded | Introduced then retired: _handoff-pending/ deleted Wave 112 PR #392 8ba1bbb; fold-handoff.ts deleted |
+| US-048 | accepted | superseded | Monolith-coupled: targets src/lib/skills/qa.ts; S1-S9 discipline absorbed Wave 108 PR #379 |
+| US-054 | in-dev | superseded | Monolith-coupled: targets dashboard/page.tsx, ActiveWaveCard.tsx; dashboard retired at Plan C cutover |
+| US-055 | accepted | superseded | Monolith-coupled: targets AgentPane.tsx, dashboard/page.tsx, db.ts IDLE_THRESHOLD_MS |
+| US-063 | accepted | superseded | Monolith-coupled: targets StallSettingsDrawer.tsx CSS; component retired at Plan C cutover |
+| US-064 | accepted | superseded | Monolith-coupled: targets src/mcp/handler.ts, .restart-trigger, talk_to_product_owner MCP; MCP server retired |
+| US-086 | accepted | done | Shipped Wave 107 PR #377 (`a80273d`) |
+| US-087 | accepted | done | Shipped Wave 108 PR #379 (`586ed8d`/merge `79edd1e`) |
+| US-088 | accepted | done | Shipped Wave 111a PR #386 (`e37b29b`/merge `a16c924`) |
+| US-089 | accepted | done | Shipped Wave 111b PR #387 (`133e182`/merge `ba0905f`) |
+| US-090 | accepted | done | Shipped Wave 111c PR #388 (`10c002b`/merge `39298fb`) |
+| US-091 | accepted | done | Shipped Wave 112 PR #393 (`68202c3`/merge `75266d3`) |
+| US-092 | in-flight | done | Shipped Wave 113 PRs #394+#395 (`23d4f76`+`075d102`/main `9e490bb`) |
+
+**Summary:** 32 stories marked superseded (monolith-coupled: Plan C cutover PR #374 / `ebc83c5`). 7 stories promoted to done (confirmed shipped Waves 107–113). INDEX.md rows updated to match. US-064 row was missing from INDEX.md — added.
+
+**PASS verdict (ADR-018 canonical format):**
+
+### Wave-115 PASS verdict — PR #0 — SHA (pending)
+- **Gate role:** business-analyst
+- **Timestamp:** 2026-06-04T15:00:00Z
+- **Notes:** Docs-only close-sweep. 39 US files updated (32 superseded, 7 done). INDEX.md rows updated. No code edits, no architecture/ edits, no peer HANDOFF edits. Peer-edit boundary respected. PR #0 + SHA (pending) per ADR-018 Wave 111b amendment; DevSecOps to backfill with real PR # + merge SHA post-merge.
+
+**Architecture gate:** no `architecture/` edits. Gate doesn't fire.
+
+**Peer-edit boundary:** no peer HANDOFF edits. Only own HANDOFF edited.
+
+**Last-processed user message:** Wave 115 BA dispatch (2026-06-04, main `5b56c82`).
+
+---
+
+## PREV — 2026-06-04 — Wave 114: close-sweep complete (backlog zeroed)
 
 **Deliverables this turn:** `coordination/handoffs/business-analyst.md` Wave 114 NOW section (this file). No code edits. No new US-NNN. No architecture/ edits.
 
