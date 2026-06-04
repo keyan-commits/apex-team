@@ -1,9 +1,10 @@
 ## NOW — 2026-06-04 — Wave 126 (US-102 AC12 feat-backfill regression test TEST-0005)
 
-### In-flight — TEST-0005 authored, pending PR + DevSecOps merge
+### COMMITTED — TEST-0005 on branch feature/126-feat-backfill-command
 
 - **Branch:** `feature/126-feat-backfill-command`
-- **Timestamp:** 2026-06-04T21:56:00Z
+- **Commit SHA:** f098f9cdd261cd584adc915efeaa47c44f8839fb (DevSecOps committed QA + DevSecOps lanes together)
+- **Timestamp:** 2026-06-04T22:04:00Z
 
 #### Wave-126 deliverables
 
