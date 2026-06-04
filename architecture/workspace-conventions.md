@@ -206,6 +206,69 @@ Wave + US-NNN refs columns are dropped from the table; full context lives in the
 - §"Requirements-first enforcement (Wave 117)" above — the upstream gate that ensures a US-NNN exists before implementation; FEAT-XXXX grouping is the post-US organizing layer.
 - §"Comprehensive testing (Wave 118)" above — applies per test TYPE within a FEAT grouping (AC6).
 - `.claude/agents/<role-id>.md` §"FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)" — autonomous role standard, present in all 8 bodies.
+- §"QA artifact discipline for visual / operator deliverables (Wave 128)" below — applies per-deliverable inside any FEAT grouping where the output has a rendered form or travels a production path.
+
+## QA artifact discipline for visual / operator deliverables (Wave 128)
+
+### The rule
+
+When QA verifies any deliverable with a rendered form (xlsx, PDF, generated page, image) or that an operator consumes via the production path, QA MUST satisfy the nine disciplines S1–S9 below before emitting any PASS verdict. S1 (render-and-look) + S2 (real-artifact end-to-end) are hard gates. Programmatic cell / ARGB / byte diffs are necessary but never sufficient — a green diff against a reference file is not a substitute for inspecting the rendered output the user actually sees.
+
+### Why it exists
+
+LFM order-sheet generator engagement (2026-06-02): QA issued repeated PASS verdicts on programmatic assertions while **nine distinct user-visible bugs reached production** — phantom MON/WED tabs on single-PO uploads, empty SWS columns, wrong column order, invisible / black / unreadable fills (white-on-yellow at 1.07:1), double header rows, multi-PO uploads collapsing to one tab, and a validated fix sitting un-deployed while the user tested stale code for hours. Each was cheap to catch and expensive to miss. The through-line: **QA verified the wrong thing, at the wrong layer, with the wrong data, and never looked at the actual artifact.** The Wave 128 standard is the durable enforcement so this pattern cannot recur. Full incident table + root themes live in the skill file cross-referenced below.
+
+### The nine disciplines (summary)
+
+Full per-discipline bodies (how-to recipes, catches per real bug class) live in `~/.claude/skills/qa-artifact-discipline/SKILL.md`. Inline summary:
+
+- **S1 — Render-and-look.** Render the artifact to an image (LibreOffice headless → PDF → image; xlsx→HTML→Playwright screenshot; the app's own preview) AND inspect it. Visual diff against the reference before PASS.
+- **S2 — Real operator artifact, end-to-end.** Verify the actual file the operator downloads via the production endpoint / UI, not a unit test of an internal service. A unit test that mocks the artifact path is NOT verification.
+- **S3 — Realistic + scaled + adversarial test data.** Never validate on one happy-path sample. Required matrix: multiple inputs (all sample files, not one), multiple dates / periods, empty / all-zero / duplicate / oversized, scrambled-order.
+- **S4 — Positional + semantic correctness, not presence / equality.** Assert order (column / row / tab), population (every expected cell has its value, not just exists), and computed correctness (evaluate formulas via the real engine). "Header text present" / "ARGB equal" are banned as sufficient PASS criteria.
+- **S5 — Contrast / readability gate (WCAG).** For any text-on-fill output, compute contrast ratio and fail below WCAG AA (4.5:1 normal, 3:1 large). White-on-yellow (1.07:1) → automatic FAIL.
+- **S6 — Side-by-side reference diff.** Render both candidate and ground-truth reference; diff visually + positionally the way the operator compares. Automate the 30-second screenshot comparison.
+- **S7 — Validated ≠ deployed: verify the running system.** A PASS is on the artifact as the user will receive it. Confirm validated build == deployed build (commit / version check, or generate from the live endpoint), OR explicitly flag the deploy gap in the verdict.
+- **S8 — Question business intent, don't just match the sample.** When output matches the reference but looks odd (empty columns, loud colors, redundant rows), raise "is this the intended business behavior?" to BA / operator. The reference file is NOT the spec; documented business rules are.
+- **S9 — No silent green.** Every assertion states the user-facing property it guarantees ("SWS appears in col A on every row," "one tab per delivery date," "qty legible at AA contrast"). A green suite asserting the wrong thing is worse than no suite.
+
+### Hard gates
+
+**S1 (render-and-look) and S2 (real-artifact end-to-end) are hard gates.** Skipping either invalidates QA's PASS verdict. Architect's code review gate will FAIL any PR whose QA verdict block does not explicitly attest to S1 + S2 (in the verdict Notes) for a visual / operator deliverable. Six of the nine LFM bugs died trivially under S1 + S2 alone — they are the cheapest highest-leverage enforcement.
+
+### Scope
+
+The rule applies whenever the deliverable is **visually consumed** (rendered xlsx, PDF, generated page, image) OR **delivered via a production path** the operator touches (download endpoint, UI export, generated artifact served from a live server).
+
+For deliverables that are NOT visually consumed AND NOT delivered via a production path (pure code change, internal API, CLI tool with text-only output, doc-only change), the applicability narrows: **S1 + S5 + S6 are N/A**; **S2–S4 + S7–S9 still apply** (the production-path, realistic-data, semantic-correctness, deploy-confirmation, business-intent-questioning, and named-claim disciplines do not depend on a rendered form).
+
+QA states which disciplines applied in the verdict Notes ("S1–S9 attested" / "S1 + S5 + S6 N/A — non-visual deliverable; S2–S4 + S7–S9 attested"). The Architect review gate verifies the attestation is consistent with the deliverable's shape.
+
+### Orchestrator applicability
+
+S1, S2, and S7 apply to **whoever ships**, not only the QA role. Product Owner (orchestrating dispatches) and DevSecOps (executing the merge + deploy) carry the same disciplines:
+
+- **MUST NOT deploy or re-deploy** without confirming render-and-look (S1) + real-path verification (S2) of the artifact under deployment.
+- **MUST NOT leave a validated fix un-deployed silently** (S7). If a validated build is not the running build, the orchestrator surfaces the deploy gap explicitly — never assumes "merged = live."
+
+The LFM incident's bug #9 (validated fix sat un-deployed for hours while the user tested stale code) was an orchestrator failure, not a QA failure. The orchestrator-side applicability of S1 / S2 / S7 closes that gap.
+
+### Cross-references
+
+- `~/.claude/skills/qa-artifact-discipline/SKILL.md` — full retrospective: incident table (9 bugs), root themes (the skill gaps), per-discipline catches, process notes for the orchestrator.
+- `.claude/agents/qa.md` §"Artifact discipline for visual / operator deliverables (Wave 128 — MANDATORY)" — QA's autonomous body clause; the role-local enforcement that fires on every QA invocation.
+- §"Comprehensive testing (Wave 118)" above — S3 (realistic + scaled + adversarial test data) pairs with the iterate-all-known-samples rule; together they cover the "single-sample test missed the outlier" failure mode at both the input-coverage layer (Wave 118) and the artifact-inspection layer (Wave 128).
+- §"FEAT-XXXX feature grouping (Wave 122)" above — Wave 128 disciplines apply per-deliverable inside any FEAT grouping that produces a visual or operator-facing artifact (AC6's test-type rationale in `TEST-PLAN.md` records which disciplines applied).
+
+### Future
+
+Automated CI gates for the Wave 128 disciplines are a **Wave 129+ candidate**. The current state is human-attested in the verdict Notes (QA states "S1–S9 attested" or names the N/A disciplines for non-visual deliverables; Architect's review gate cross-checks against the deliverable's shape). Candidate automation:
+
+- **S1 / S6:** LibreOffice headless render + image diff (`compare` / SSIM) in CI for xlsx / PDF deliverables.
+- **S5:** computed contrast-ratio gate for text-on-fill outputs (already deployed in the viewer's a11y test pattern — extend to artifact pipelines).
+- **S7:** deploy-verification step in DevSecOps's post-merge workflow that confirms running build SHA == merged SHA, surfaced in the verdict block.
+
+When the LFM-style cross-workspace artifact pipeline matures enough that the same render+diff toolchain can be reused, file a follow-up Architect-lane ADR proposing the CI gates. Until then, S1 + S2 are human-attested; Architect's review gate enforces the attestation.
 
 ## OQ-085-001 — Test artifact retention policy (RESOLVED)
 

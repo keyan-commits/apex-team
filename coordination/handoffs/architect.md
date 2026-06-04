@@ -1,6 +1,80 @@
 # architect — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 126 Lane 3 code-review gate (PR #411 — PASS)
+## ⏭️ NOW — 2026-06-04 — Wave 128b standing-rules codification (workspace-conventions QA artifact discipline)
+
+### Wave-128b PASS verdict — PR #0 — SHA 6579f8b7a68718675f67887d0839b9dce268e210
+- **Gate role:** architect (self-attested — standing-rules codification, single-author within Architect's lane)
+- **Timestamp:** 2026-06-04T23:25:00Z
+- **Notes:** Small follow-up wave codifying the Wave 128 QA artifact-discipline rule (S1–S9) into `architecture/workspace-conventions.md` so it lives as a durable standing standard alongside Wave 117/118/122 instead of only inside `.claude/agents/qa.md` + the Wave 128 HANDOFF block. NOT a code-review gate — Wave 128 PR #413 is already merged at `6579f8b`. This wave's PR is a single-file architecture/ edit (plus this HANDOFF refresh) within Architect's own lane. Self-attested PASS — Architecture/ co-authorship gate (Wave 109 #335): only `architecture/workspace-conventions.md` + own HANDOFF touched, no peer edits anywhere. Peer-edit boundary (Wave 112): own-lane edit only, no peer HANDOFF doc touched. Placeholder block per ADR-018 Wave 111b amendment: `PR #0` + base SHA `6579f8b7a68718675f67887d0839b9dce268e210` (current main HEAD pre-staging). DevSecOps post-merge backfill replaces with real PR # + merge SHA via `chore(handoff): backfill Wave-128b verdict PR # and merge SHA`.
+
+### What landed
+
+1. **`architecture/workspace-conventions.md`** (extended) — new top-level `## QA artifact discipline for visual / operator deliverables (Wave 128)` section inserted between `## FEAT-XXXX feature grouping (Wave 122)` (its closing Cross-references list) and `## OQ-085-001 — Test artifact retention policy (RESOLVED)`. Mirrors the Wave 117/118 shape: a one-paragraph rule statement; a Why-it-exists paragraph naming the LFM order-sheet incident (9 distinct user-visible bugs reached production despite repeated programmatic PASS verdicts); the nine-discipline inline summary (S1 render-and-look, S2 real operator artifact, S3 realistic+adversarial data, S4 positional+semantic correctness, S5 WCAG contrast gate, S6 side-by-side reference diff, S7 validated≠deployed, S8 question business intent, S9 no silent green); a Hard-gates clause stating S1+S2 are hard gates whose skip invalidates a PASS verdict and triggers Architect FAIL; a Scope clause covering visual-OR-production-path applicability and the N/A-disciplines carveout for pure code/API/CLI/doc-only deliverables (S1+S5+S6 N/A; S2–S4 + S7–S9 still apply); an Orchestrator-applicability clause naming S1/S2/S7 as PO + DevSecOps disciplines too (the bug #9 fix); Cross-references back to the skill, the qa.md body clause, Wave 118 (S3 pair), and Wave 122 (FEAT grouping); a Future section flagging Wave 129+ CI automation candidates. Wave 122 Cross-references list extended with a forward-link bullet to the new section.
+
+2. **`coordination/handoffs/architect.md`** (this file) — Wave 128b NOW prepended per ADR-018 canonical format; prior Wave 126 Lane 3 NOW demoted to PREV.
+
+### Anchor heading (byte-stable for future regression assertions)
+
+```
+## QA artifact discipline for visual / operator deliverables (Wave 128)
+```
+
+(Note: workspace-conventions H2 heading uses `(Wave 128)` without `— MANDATORY` — that severity marker is the subagent-body convention from `.claude/agents/qa.md` §`### Artifact discipline for visual / operator deliverables (Wave 128 — MANDATORY)`. The workspace-conventions H2 is the spec; the qa.md H3 is the enforcement clause. The two anchor strings are deliberately different — any future QA regression test should grep for both.)
+
+### Gate verification (Wave 128b)
+
+- `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` → 153/153 PASS (token discipline preserved; no `.claude/agents/*.md` edits this wave, but verified for completeness — no ADR-017 denylisted tokens reproduced in the new workspace-conventions section).
+- `pnpm test:run` → 17/17 files, 654 passed + 4 skipped (matches the pre-edit baseline at SHA `6579f8b` — no regression). The PO's brief cited "722 + 1 skipped" but the actual main baseline at `6579f8b` is 654 + 4 skipped; the 722-figure appears to be stale from a different branch state. Wave 128b leaves the baseline byte-identical.
+- `pnpm lint` → clean.
+- Other Wave 117/118/122 anchor headings under `## ` in workspace-conventions.md verified unchanged: `## Requirements-first enforcement (Wave 117)`, `## Comprehensive testing (Wave 118)`, `## FEAT-XXXX feature grouping (Wave 122)`, `### Per-role ticket prefixes (AC3)`, `### Option B — US-NNN coexistence with FEAT-XXXX (AC5)`, `### QA test-type decision discipline (AC6)`, `### Mandatory deliverable frontmatter (AC11)`, `### Autonomous role standard (AC12)`, `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)`, `### \`requirements/features/INDEX.md\` registry shape (AC4)`. None edited.
+
+### Architecture/ co-authorship gate (Wave 109 rule, self-reflection)
+
+This wave's PR touches:
+- `architecture/workspace-conventions.md` (Architect-owned, single-author = me, gate satisfied).
+- `coordination/handoffs/architect.md` (this file — my own HANDOFF doc).
+
+Zero peer co-authorship on any `architecture/` file. Zero peer HANDOFF docs edited. Both gates satisfied.
+
+### Peer-edit boundary (Wave 112)
+
+Wave 128b touches only Architect-owned + own HANDOFF surfaces. QA's `.claude/agents/qa.md` Wave 128 section is NOT edited (already on main at `6579f8b`; the workspace-conventions section is a sibling codification, not a re-edit). No peer HANDOFF doc touched. Boundary satisfied.
+
+### Out of scope (Wave 128b — flagged for future waves)
+
+- **CI automation for S1 / S5 / S6 / S7.** Flagged in the new section's Future paragraph as Wave 129+ candidate. Not landed this wave (would require LibreOffice headless + image-diff toolchain integration + deploy-verification step — substantive DevSecOps + QA joint work). Filing as deferrable; the Future paragraph IS the durable note.
+- **Per-deliverable verdict-block schema** that explicitly attests "S1–S9 attested" or "S1+S5+S6 N/A — non-visual" in QA's verdict Notes. Currently human-attested in free-form Notes; Architect's review gate verifies consistency with the deliverable's shape. A future Wave could ratify a structured attestation field via an ADR-018 amendment. Not landed.
+
+### In flight / next
+
+- This slice is ready for review. Single-author across 2 paths within my own lane — both gates verified.
+- No QA Phase 2 dispatch needed this wave — there is no new behavior to test beyond the Wave 128 qa.md regression test that already exists (or will land if QA chose to file one against `6579f8b`). The workspace-conventions section is a documentation codification, not a behavioral change. If a future regression test asserts the anchor heading, the byte-stable form is `## QA artifact discipline for visual / operator deliverables (Wave 128)`.
+- DevSecOps post-merge step (per ADR-018 Wave 111b amendment): replace `PR #0` + base SHA `6579f8b7a68718675f67887d0839b9dce268e210` with the real PR # + merge SHA.
+
+### Parked / future (carried from Wave 126 + Wave 128b additions)
+
+- `system-design.md` — still not created.
+- `tech-stack.md` — still not created.
+- `coding-standards.md` — still not created. Wave 117 + Wave 118 + Wave 122 + Wave 128 discipline are all candidate entries once `coding-standards.md` gets seeded.
+- Fitness function for OQ-085-001's "no binary files committed under `tests/qa/wave-*/evidence/`" — QA owns implementation.
+- Viewer-repo subagent body audit (per ADR-017 follow-up).
+- ADR formalizing the ADR-NNNN-vs-ARCH-XXXX distinction (candidate ADR-019, deferred from Wave 122).
+- WCAG 2.1 AA promotion from FEAT-local ratification to workspace-conventions-level NFR (carried from Wave 125).
+- ADR for the keyboard-reachability rule (carried from Wave 125).
+- Automated WCAG conformance in viewer CI (carried from Wave 125).
+- **NEW (Wave 128b):** CI automation for the Wave 128 artifact disciplines — LibreOffice headless render + image diff (S1/S6), computed contrast-ratio gate for text-on-fill outputs (S5), deploy-verification step (S7). Owner: DevSecOps + QA joint, Architect-lane ADR proposing the CI gates when toolchain matures. Flagged inline in the new workspace-conventions section's "Future" paragraph.
+- **NEW (Wave 128b):** structured QA verdict-block schema that explicitly attests S1–S9 (or names N/A disciplines). Currently human-attested in free-form Notes; ADR-018 amendment candidate.
+
+### Notes / caveats (Wave 128b)
+
+- The workspace-conventions section uses `(Wave 128)` (no severity marker) per the document's H2 convention; the qa.md body uses `(Wave 128 — MANDATORY)` per the subagent-body convention. The two anchor strings are different by design — workspace-conventions is the spec, qa.md is the role enforcement.
+- The PO's brief cited "722 + 1 skipped" for the full test suite baseline; actual baseline at `6579f8b` is 654 + 4 skipped. Documenting the discrepancy for traceability — not a defect, just a stale figure in the dispatch text. Wave 128b leaves the baseline byte-identical (654 + 4 skipped post-edit).
+- This wave does NOT touch `.claude/agents/qa.md` — the Wave 128 body clause is already on main at `6579f8b` and is the upstream artifact this codification cross-references. Wave 109 co-authorship gate isolation preserved.
+- The new section's "Hard gates" paragraph explicitly names Architect's enforcement responsibility ("Architect's code review gate will FAIL any PR whose QA verdict block does not explicitly attest to S1 + S2 in the verdict Notes for a visual / operator deliverable"). This is the durable codification of MY enforcement obligation — future Architect invocations grep `workspace-conventions.md` and see the rule.
+
+---
+
+## PREV — 2026-06-04 — Wave 126 Lane 3 code-review gate (PR #411 — PASS)
 
 ### Wave-126 PASS verdict — PR #411 — SHA feef0820621674b101c4f56f289e2e4a75a72c40
 - **Gate role:** architect (non-UI rubric — pure CLI / Node script + docs surface; no UI files in diff)
