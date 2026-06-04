@@ -1,4 +1,62 @@
-## NOW — 2026-06-04 — Wave 118 (US-094 AC1 comprehensive-coverage completeness test)
+## NOW — 2026-06-04 — Wave 119 (US-095 AC9 viewer workspace-switcher fixtures + tests)
+
+### Wave-119 PASS verdict — PR #0 — SHA c795ab5174eea6ff29bfffa5ffc8af58b675955f
+
+- **Gate role:** qa
+- **Timestamp:** 2026-06-04T17:50:00Z
+- **Notes:** Wave 119 viewer workspace-switcher fixtures + tests (US-095 AC9). 25/25 new tests; full suite 448/448 (108: 153 + 110: 12 + 111a: 21 + 111b: 34 + 111c: 29 + 112: 59 + 113: 16 + 117: 69 + 118: 30 + 119: 25). Lint + type-check clean. PR #0 is commit-time placeholder per ADR-018 Wave 111b amendment; SHA is branch HEAD `c795ab5174eea6ff29bfffa5ffc8af58b675955f`. DevSecOps backfills real PR # and merge SHA post-merge.
+
+**Follow-up commit:** the sibling-path metadata test was asserting `existsSync(VIEWER_ROOT)` unconditionally, which fails in CI (sibling viewer repo isn't checked out). Patched to skip gracefully when sibling absent; live-server tests already self-skip via `VIEWER_READY` gate. No behavior change; 25/25 still PASS locally + green expected in CI.
+
+### Deliverable
+
+- `requirements/samples/wave-119-viewer-workspaces/workspace-happy/requirements/user-stories/US-001-sample.md` — valid US fixture (H1 + Status: accepted)
+- `requirements/samples/wave-119-viewer-workspaces/workspace-no-requirements/.gitkeep` — empty workspace (no requirements/)
+- `requirements/samples/wave-119-viewer-workspaces/workspace-malformed-us/requirements/user-stories/US-broken.md` — malformed US (no H1, no Status line)
+- `tests/qa/wave-119/viewer-workspace-switcher.test.ts` — 25 tests covering US-095 AC2, AC3, AC4, AC7, AC9 with positive + negative + edge + iterate-all-3-fixtures coverage
+
+### Gate results
+
+- `pnpm vitest run tests/qa/wave-119/viewer-workspace-switcher.test.ts` → 25/25 PASS
+- `pnpm test:run` → 448/448 PASS (108: 153 + 110: 12 + 111a: 21 + 111b: 34 + 111c: 29 + 112: 59 + 113: 16 + 117: 69 + 118: 30 + 119: 25)
+- `pnpm lint` → clean
+- `pnpm type-check` → clean
+
+### AC checklist (US-095 AC9 + viewer endpoints under test)
+
+- AC9 fixture scaffold:
+  - `workspace-happy/requirements/user-stories/US-001-sample.md` created with H1 + Status: accepted. PASS
+  - `workspace-no-requirements/.gitkeep` created; `requirements/` dir absent. PASS
+  - `workspace-malformed-us/requirements/user-stories/US-broken.md` created with no H1 + no Status. PASS
+- AC3 (`GET /api/workspaces` — viewer already landed): workspace-happy appears in registry with correct fields. PASS (test P1)
+- AC4 (`POST /api/workspace/switch` happy path): switch to registered path returns ok:true. PASS (test P3)
+- AC4 (security — unregistered path): returns 400. PASS (test N2)
+- AC4 (security — path-escape with `..`): returns 400. PASS (test N3)
+- AC7 (workspace-no-requirements graceful fallback): returns `ok:true, tickets:[], warning:"..."` not 500. PASS (test N1)
+- AC7 (workspace-malformed-us graceful parse): returns ticket with `status:"unknown"` + fallback title, no crash. PASS (test E1, E2)
+- Wave 118 iterate-all: parametrized over all 3 fixtures — each returns `ok:true` with correct shape. PASS (tests I-workspace-happy, I-workspace-no-requirements, I-workspace-malformed-us)
+- AC8 (`/api/health` root field): health endpoint includes `root` field. PASS (test P4)
+- AC10 (regression — all prior tests green): 423/423 prior tests still passing in 448/448 total. PASS
+
+### S10 gate
+
+S10 not triggered — wave touches no user-supplied collection logic (test + fixture authoring only; no source code changes to collection-processing logic).
+
+### Legs A/B/C
+
+N/A — test + fixture only wave. No runtime source code changed. `pnpm build` gate skipped per rubric (no Next.js app). Full-suite vitest run is the applicable verification leg.
+
+### Runtime gate note
+
+`VIEWER_READY` evaluated to `true` — `../apex-team-viewer/server.mjs` already contains `/api/workspaces` (UI Dev has landed the US-095 viewer changes). All 25 tests ran live against spawned server instances. The `it.skip` fallback block is present in the test source as a safety net for environments where the viewer PR is not yet checked out.
+
+### Wave-119 tests (US-085 evidence)
+
+- `tests/qa/wave-119/viewer-workspace-switcher.test.ts` — 25 tests; covers US-095 AC9 fixture scaffold + live API tests (positive: workspace-happy happy path; negative: no-requirements graceful fallback + 400 on unregistered path + 400 on path-escape; edge: malformed-us status:unknown + no-crash; iterate-all: parametrized over all 3 fixture roots checking /api/tickets shape).
+
+---
+
+## PREV — 2026-06-04 — Wave 118 (US-094 AC1 comprehensive-coverage completeness test)
 
 ### Wave-118 PASS verdict — PR #0 — SHA 7c994a1c8b835266049e20c835dab926ad875f1e
 

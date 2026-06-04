@@ -1,6 +1,50 @@
 # business-analyst — HANDOFF
 
-## NOW — 2026-06-04 — Wave 118: US-094 authored (QA comprehensive coverage)
+## NOW — 2026-06-04 — Wave 119: US-095 authored (viewer workspace switcher)
+
+**Deliverables this turn:**
+
+- `requirements/user-stories/US-095-viewer-workspace-switcher.md` — authored, status: **accepted**
+- `requirements/INDEX.md` — US-095 row added; Wave 119 timestamp header prepended
+
+**US-095 summary:** 10 ACs covering the viewer workspace-switcher scope:
+- AC1: env-var > CWD > hardcoded-fallback resolution at server startup
+- AC2: depth-1 auto-discovery of `~/Development/Study/*` + `APEX_TEAM_WORKSPACES` env list
+- AC3: `GET /api/workspaces` endpoint returning registry + `isCurrent` flags
+- AC4: in-header `<select id="workspace-select">` with `POST /api/workspace/switch` server mutation
+- AC5: `<h1>` + `<title>` update to reflect active workspace name (no page reload)
+- AC6: `localStorage` persistence of last selected workspace path (`apex-team-viewer.workspace` key)
+- AC7: graceful fallback when workspace has no `requirements/user-stories/` (warning, not 500)
+- AC8: all server-side reads + `gh` CWD updated on switch; label cache invalidated on switch
+- AC9: QA fixture scaffold — 3 sample workspaces under `requirements/samples/wave-119-viewer-workspaces/` (happy path, no-requirements, malformed US)
+- AC10: regression — all prior `pnpm test:run` tests green after wave ships
+
+**Scope calls:**
+- Manual config file (`~/.claude/apex-team-viewer-workspaces.json`) deferred — env var covers explicit-list case.
+- Runtime workspace re-scan deferred.
+- In-memory switch does NOT persist across server restarts (env-var > CWD > default rule applies on each restart).
+
+**Dispatch routing (Wave 119 auto-routing clause):**
+- HANDOFF to QA: author `tests/qa/wave-119/viewer-workspace-switcher.test.ts` (positive + negative + edge; iterate all 3 fixture workspaces from AC9).
+- HANDOFF to UI Developer: implement AC1–AC8 in `../apex-team-viewer/server.mjs` + `public/index.html` + `public/app.js`.
+- Implementation is in the `apex-team-viewer` repo (sibling at `../apex-team-viewer/`), not in apex-team itself.
+
+**PASS verdict (ADR-018 canonical format):**
+
+### Wave-119 PASS verdict — PR #0 — SHA c795ab5174eea6ff29bfffa5ffc8af58b675955f
+- **Gate role:** business-analyst
+- **Timestamp:** 2026-06-04T00:00:00Z
+- **Notes:** Requirements phase only — US-095 authored + INDEX.md updated. No code or architecture edits. Architecture gate does not fire (no `architecture/` edits). Peer-edit boundary respected: only own HANDOFF + own US-095 file + INDEX.md (BA-owned) edited. PR #0 placeholder per ADR-018 Wave 111b amendment; DevSecOps to backfill with real PR # + merge SHA post-merge.
+
+**Architecture gate:** no `architecture/` edits. Gate doesn't fire.
+
+**Peer-edit boundary:** no peer HANDOFF edits. Only own HANDOFF + own US authoring + INDEX.md edited.
+
+**Last-processed user message:** Wave 119 BA dispatch (2026-06-04, main `c795ab5`).
+
+---
+
+## PREV — 2026-06-04 — Wave 118: US-094 authored (QA comprehensive coverage)
 
 **Deliverables this turn:**
 
