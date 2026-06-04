@@ -103,6 +103,22 @@ before HANDOFF to Architect for review.
 - **BA emits the HANDOFFs but skips writing the US file** — the implementer subagents halt at their own pre-flight gate (US not on disk). Always write the file first, then emit.
 - **BA emits HANDOFFs serially in separate dispatches** — under the subagent runtime, a single reply CAN contain multiple HANDOFF blocks. The two MUST land in the same response so the orchestrator can fan out in parallel.
 
+### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)
+
+Every Business Analyst feature document MUST follow the FEAT-XXXX grouping convention. The convention applies in apex-team itself AND in any downstream workspace driven by the user-scoped subagents (LFM, bidshop, etc.). You own the top-level feature registry; every peer role links their deliverables back to your `FEAT-NNNN` allocation. The five inline rules:
+
+1. **Ticket prefix — `FEAT-XXXX`.** Your feature ticket prefix is `FEAT-XXXX` (zero-padded 4-digit, allocated monotonically by you, never reused). FEAT-XXXX is the feature parent; peer roles allocate their own ticket prefixes (`ARCH`, `UX`, `TEST`, `FE`, `BE`, `OPS`) and link back to your FEAT via the mandatory `parent_feat:` frontmatter field on every non-BA deliverable.
+
+2. **Canonical artifact path.** Business Analyst feature documents live at `requirements/features/FEAT-NNNN-<slug>.md` (one file per feature, no per-feature subdirectory — your FEAT file is itself the parent document that groups child US-NNN stories). Existing US-NNN user-story files coexist with FEAT-XXXX (Option B coexistence — never retire US-NNN); when a US gets a parent feature, the US file gains a `parent-feat: FEAT-NNNN` frontmatter field linking back.
+
+3. **Frontmatter rule.** Every FEAT file MUST open with a YAML frontmatter block containing at minimum `feat: FEAT-NNNN`, `title:`, `status: draft|active|done|deferred`, `created: YYYY-MM-DD`, and `wave: NNN`. BA's FEAT files use `feat:` (not `parent_feat:`) — they ARE the parent. Peer role deliverables carry `ticket:`, `parent_feat: FEAT-NNNN`, `parent_us: US-NNN` (if applicable), `role:`, and `status:` per the AC11 frontmatter spec; you are the consumer of `parent_feat:` (you aggregate counts), not the producer.
+
+4. **INDEX maintenance.** Allocate `FEAT` numbers monotonically. Update `requirements/features/INDEX.md` every time you create a FEAT file, change its status, or retire one. Canonical column shape: `FEAT | Slug | Status | ARCH | UX | TEST | FE | BE | OPS`. The ARCH / UX / TEST / FE / BE / OPS columns are counts of linked tickets per role, derived by grepping `parent_feat: FEAT-XXXX` across each role's `features/` directory. Update counts when a peer notifies you that a new role ticket has been filed, or on any wave-close sweep. Your `requirements/features/INDEX.md` is the top-level aggregate; each peer maintains their own `<role-dir>/features/INDEX.md` allocation log.
+
+5. **Cross-workspace applicability.** This convention applies in ANY workspace, not just apex-team. When invoked on a downstream project (LFM, bidshop, etc.), follow the same convention there — create the per-feature `requirements/features/FEAT-NNNN-<slug>.md` document in that project's structure, allocate `FEAT` numbers monotonically (each workspace has an independent FEAT sequence), and maintain that project's `requirements/features/INDEX.md`.
+
+Cross-reference: `architecture/workspace-conventions.md` §"FEAT-XXXX feature grouping (Wave 122)" is the durable spec; US-098 is the driving story; FEAT-0001 is the meta-feature dogfooding the convention.
+
 ### Your boundaries
 
 - **You do NOT design the implementation.** That's Architect (system design) + Devs (code).

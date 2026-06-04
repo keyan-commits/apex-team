@@ -1,4 +1,76 @@
-## NOW — 2026-06-04 — Wave 120 (US-096 AC5 pre-commit verdict-format gate regression test)
+## NOW — 2026-06-04 — Wave 122 (US-098 AC13 FEAT-XXXX grouping convention regression test)
+
+### Wave-122 PASS verdict — PR #0 — SHA 0b4f7bdbf1c19ad101bd0d4b8387cc593558f127
+- **Gate role:** qa
+- **Timestamp:** 2026-06-04T19:58:56Z
+- **Notes:** Wave 122 FEAT-XXXX grouping convention regression test (US-098 AC13). 38 new tests; full suite 571/571 + 1 skipped (533 prior + 38 new). Lint + type-check clean. PR #0 is commit-time placeholder per ADR-018 Wave 111b amendment; SHA is branch HEAD `0b4f7bdbf1c19ad101bd0d4b8387cc593558f127`. DevSecOps backfills real PR # and merge SHA post-merge. **Dogfooding note:** this is the FIRST test file landing under the Wave 122 convention itself — path is `tests/qa/features/FEAT-0001-feat-grouping-convention/TEST-0001-anchor-and-prefixes.test.ts`, frontmatter header-comment at file top with ticket/parent_feat/parent_us/role/status fields. QA features INDEX.md also created as required by AC11 allocation-log rule.
+
+### Deliverable
+
+- `tests/qa/features/FEAT-0001-feat-grouping-convention/TEST-0001-anchor-and-prefixes.test.ts` — 38 tests covering US-098 AC13 (5 conditions + Wave 118 negative + edge), with frontmatter header-comment block
+- `tests/qa/features/INDEX.md` — QA allocation log; TEST-0001 row for FEAT-0001 / US-098
+
+### Gate results
+
+- `pnpm vitest run tests/qa/features/FEAT-0001-feat-grouping-convention/` → 38/38 PASS
+- `pnpm test:run` → 571/571 PASS + 1 skipped (533 prior + 38 new)
+- `pnpm lint` → clean
+- `pnpm type-check` → clean
+
+### AC checklist (US-098 AC13)
+
+- AC13 condition 1 (anchor heading in all 8 bodies — 8 tests + 8 existence tests):
+  - All 8 .claude/agents/*.md files contain `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` exactly once. PASS
+- AC13 condition 2 (role-specific prefix in each body's section — 8 tests):
+  - architect.md → ARCH-XXXX present in section. PASS
+  - business-analyst.md → FEAT-XXXX present in section (BA IS the FEAT parent). PASS
+  - qa.md → TEST-XXXX present in section. PASS
+  - ui-developer.md → FE-XXXX present in section. PASS
+  - backend-developer.md → BE-XXXX present in section. PASS
+  - ux-designer.md → UX-XXXX present in section. PASS
+  - devsecops.md → OPS-XXXX present in section. PASS
+  - product-owner.md → "N/A for Product Owner" present in section. PASS
+- AC13 condition 3 (FEAT-0001 file + frontmatter — 2 tests):
+  - `requirements/features/FEAT-0001-feat-grouping-convention.md` exists. PASS
+  - Frontmatter contains `feat: FEAT-0001`. PASS
+- AC13 condition 4 (INDEX.md canonical headers — 3 tests):
+  - `requirements/features/INDEX.md` exists. PASS
+  - Contains `| FEAT | Slug | Status | ARCH | UX | TEST | FE | BE | OPS |`. PASS
+  - Contains FEAT-0001 row. PASS
+- Wave 118 negative (anchor absent from workspace-conventions.md as functional ### heading):
+  - Anchor appears ONLY inside a code fence in workspace-conventions.md — correctly excluded. PASS
+  - `## FEAT-XXXX feature grouping (Wave 122)` top-level section present. PASS
+- Wave 118 edge (em-dash char-code U+2014 in qa.md + architect.md):
+  - qa.md: dash at "Wave 122 [DASH] MANDATORY" is U+2014. PASS
+  - architect.md: dash at "Wave 122 [DASH] MANDATORY" is U+2014. PASS
+- US-085 self-reference + US-098 metadata:
+  - TEST-0001 test file exists at canonical Wave 122 path. PASS
+  - `tests/qa/features/INDEX.md` exists. PASS
+  - `requirements/user-stories/US-098-feat-grouping-convention.md` exists. PASS
+  - US-098 contains `## Acceptance criteria` section. PASS
+  - US-098 contains `AC13`. PASS
+- AC13 condition 5 (all prior tests pass):
+  - All 533 prior-wave tests still green in 571/571 total. PASS
+
+### S10 gate
+
+S10 not triggered — wave touches no user-supplied collection logic (grep-based regression test on static files).
+
+### Legs A/B/C
+
+N/A — test-only wave. No runtime source code changed. `pnpm build` gate skipped per rubric (no Next.js app). Full-suite vitest run is the applicable verification leg.
+
+### Wave-122 tests (US-085 evidence)
+
+- `tests/qa/features/FEAT-0001-feat-grouping-convention/TEST-0001-anchor-and-prefixes.test.ts` — 38 tests; covers US-098 AC13 (anchor heading exactly once in all 8 bodies; role-specific prefix in each body's section; FEAT-0001 file + frontmatter; INDEX.md canonical column headers; prior-suite regression; Wave 118 negative: anchor absent outside code fences in workspace-conventions.md; Wave 118 edge: em-dash U+2014 char-code verified in qa.md + architect.md). First file under Wave 122 FEAT-grouped test path convention — dogfooding proof.
+
+### Architecture/co-authorship gate
+
+No `architecture/` files edited. Only own test files + own HANDOFF doc edited. Peer-edit boundary satisfied.
+
+---
+
+## PREV — 2026-06-04 — Wave 120 (US-096 AC5 pre-commit verdict-format gate regression test)
 
 ### Wave-120 PASS verdict — PR #0 — SHA 017145022ee78d2849356f9ef3d56ddb42adf577
 - **Gate role:** qa

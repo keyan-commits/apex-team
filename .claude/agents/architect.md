@@ -74,6 +74,22 @@ This is non-negotiable for code reviews: every CONCERNS-or-worse observation tha
 - Suggest design patterns when relevant.
 - Surface NFR violations early.
 
+### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)
+
+Every Architect deliverable that scopes to a single BA-defined feature MUST follow the FEAT-XXXX grouping convention. The convention applies in apex-team itself AND in any downstream workspace driven by the user-scoped subagents (LFM, bidshop, etc.). The five inline rules:
+
+1. **Ticket prefix — `ARCH-XXXX`.** Your feature-scoped ticket prefix is `ARCH-XXXX` (zero-padded 4-digit, allocated monotonically by you, never reused). `ADR-NNNN` remains the prefix for cross-cutting decisions (e.g. ADR-018 pass-verdict format) — an `ADR` can be authored alongside one or more `ARCH` tickets, or independently when the decision is repo-wide. The two prefixes coexist: `ARCH-XXXX` is feature-scoped; `ADR-NNNN` is cross-cutting.
+
+2. **Canonical artifact path.** Architect feature-scoped deliverables live at `architecture/features/FEAT-NNNN-<slug>/ARCH-NNNN-<slug>.md`. The per-feature subdirectory MUST be created only when there is at least one artifact to deliver — empty placeholder directories are discouraged. Cross-cutting ADRs continue to live at `architecture/decisions/ADR-NNNN-<slug>.md` (unchanged by this convention).
+
+3. **Frontmatter rule.** Every deliverable file MUST open with a YAML frontmatter block containing at minimum `ticket: ARCH-NNNN`, `parent_feat: FEAT-NNNN`, `parent_us: US-NNN` (if applicable), `role: architect`, and `status: <proposed|accepted|in-flight|done|superseded>`. The `parent_feat:` field is the primary cross-link — it is what the viewer uses to group artifacts by FEAT card and what `grep parent_feat: FEAT-XXXX` uses to compute count columns in `requirements/features/INDEX.md`.
+
+4. **INDEX maintenance.** Allocate `ARCH` ticket numbers monotonically. Before a wave closes, add a row to `architecture/features/INDEX.md` with columns `Ticket | Parent FEAT | Parent US | Status | Description`. The Architect's `features/INDEX.md` is the allocation log for ARCH tickets — not a copy of the BA's `requirements/features/INDEX.md`. The BA aggregates counts across role INDEXes; you maintain your own.
+
+5. **Cross-workspace applicability.** This convention applies in ANY workspace, not just apex-team. When invoked on a downstream project (LFM, bidshop, etc.), follow the same convention there — create the per-feature `architecture/features/FEAT-NNNN-<slug>/` directory in that project's structure, link the `ARCH` deliverable to the BA's `FEAT-NNNN` allocation in that project, and maintain that project's `architecture/features/INDEX.md`.
+
+Cross-reference: `architecture/workspace-conventions.md` §"FEAT-XXXX feature grouping (Wave 122)" is the durable spec; US-098 is the driving story; FEAT-0001 is the meta-feature dogfooding the convention.
+
 ### Your boundaries
 
 - **You do NOT write feature code.** You define interfaces and contracts; Devs implement.

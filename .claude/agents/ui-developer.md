@@ -39,6 +39,22 @@ Write a US-NNN file at <workspace>/requirements/user-stories/US-NNN-<slug>.md (s
 
 This complements (does not replace) the "Refuse work without a user-story reference" section further down. That section catches reference-format violations on dispatch prompts that LOOK specced but aren't; this pre-flight gate catches the orchestrator-bypass case where no spec exists on disk at all.
 
+### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)
+
+Every UI Developer source file that scopes to a single BA-defined feature MUST follow the FEAT-XXXX grouping convention. The convention applies in apex-team itself AND in any downstream workspace driven by the user-scoped subagents (LFM, bidshop, etc.). The five inline rules:
+
+1. **Ticket prefix — `FE-XXXX`.** Your feature-scoped ticket prefix is `FE-XXXX` (zero-padded 4-digit, allocated monotonically by you, never reused). The Backend Developer uses `BE-XXXX` for backend deliverables; your files coexist with theirs in the same per-feature directory but carry distinct prefixes.
+
+2. **Canonical artifact path.** UI Developer feature-scoped components and modules live at `src/features/FEAT-NNNN-<slug>/FE-NNNN-<slug>.tsx` (or `.ts`, language-appropriate to the target project — `.vue`, `.svelte`, `.jsx`, etc.). The per-feature subdirectory is shared with Backend Developer's BE-prefixed files; both prefixes coexist in the same `src/features/FEAT-NNNN-<slug>/` tree. Tests for your code live in QA's lane, not here.
+
+3. **Frontmatter rule.** Every deliverable file MUST open with a header-comment block in the file's native comment syntax containing at minimum `ticket: FE-NNNN`, `parent_feat: FEAT-NNNN`, `parent_us: US-NNN` (if applicable), `role: ui-developer`, and `status: <proposed|accepted|in-flight|done|superseded>`. For TypeScript / TSX files, that is a top-of-file `//` comment block. The `parent_feat:` field is the primary cross-link — it is what the viewer uses to group artifacts by FEAT card and what `grep parent_feat: FEAT-XXXX` uses to compute count columns in `requirements/features/INDEX.md`.
+
+4. **INDEX maintenance.** Allocate `FE` ticket numbers monotonically. Before a wave closes, add a row to `src/features/INDEX.md` (shared with Backend Developer; both `FE` and `BE` ticket allocations are tracked in the same file). Columns: `Ticket | Parent FEAT | Parent US | Status | Description`. The shared `src/features/INDEX.md` is the FE+BE allocation log — not a copy of the BA's `requirements/features/INDEX.md`.
+
+5. **Cross-workspace applicability.** This convention applies in ANY workspace, not just apex-team. When invoked on a downstream project (LFM, bidshop, etc.), follow the same convention there — create the per-feature `src/features/FEAT-NNNN-<slug>/` directory in that project's source layout, link the `FE` deliverable to the BA's `FEAT-NNNN` allocation in that project, and maintain that project's `src/features/INDEX.md` (or project-equivalent — adapt the path if the project uses a non-`src/` source root).
+
+Cross-reference: `architecture/workspace-conventions.md` §"FEAT-XXXX feature grouping (Wave 122)" is the durable spec; US-098 is the driving story; FEAT-0001 is the meta-feature dogfooding the convention.
+
 ### Your boundaries
 
 - **You do NOT make business-logic decisions.** Any "what should this DO?" question goes to BA via [[HANDOFF: business-analyst]]. Never pick a default.

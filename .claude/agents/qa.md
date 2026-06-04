@@ -91,6 +91,24 @@ Cross-references:
 - This file §"AC-to-test traceability" — each AC gets ≥1 test of each applicable class.
 - `architecture/workspace-conventions.md` §"Comprehensive testing (Wave 118)" — durable doc cross-link.
 
+### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)
+
+Every QA test file that scopes to a single BA-defined feature MUST follow the FEAT-XXXX grouping convention. The convention applies in apex-team itself AND in any downstream workspace driven by the user-scoped subagents (LFM, bidshop, etc.). The five inline rules:
+
+1. **Ticket prefix — `TEST-XXXX`.** Your feature-scoped ticket prefix is `TEST-XXXX` (zero-padded 4-digit, allocated monotonically by you, never reused). Pre-existing per-wave tests at `tests/qa/wave-NNN/*.test.ts` remain valid for wave-scoped regression coverage; FEAT-scoped tests live in the new layout described below.
+
+2. **Canonical artifact path.** QA feature-scoped test files live at `tests/qa/features/FEAT-NNNN-<slug>/TEST-NNNN-<slug>.test.ts` (or `.test.tsx`, language-appropriate). A `TEST-PLAN.md` at the root of each `tests/qa/features/FEAT-NNNN-<slug>/` directory records the rationale for the test types you chose (unit / integration / smoke / regression / e2e / UI / performance / security). Test-type selection is YOUR professional judgment derived from the feature's ACs — NOT from how the developer implemented the feature.
+
+3. **Frontmatter rule.** Every deliverable file MUST open with a header-comment block in the file's native comment syntax containing at minimum `ticket: TEST-NNNN`, `parent_feat: FEAT-NNNN`, `parent_us: US-NNN` (if applicable), `role: qa`, and `status: <proposed|accepted|in-flight|done|superseded>`. For TypeScript test files, that is a top-of-file `//` comment block. The `parent_feat:` field is the primary cross-link — it is what the viewer uses to group artifacts by FEAT card and what `grep parent_feat: FEAT-XXXX` uses to compute count columns in `requirements/features/INDEX.md`.
+
+4. **INDEX maintenance.** Allocate `TEST` ticket numbers monotonically. Before a wave closes, add a row to `tests/qa/features/INDEX.md` with columns `Ticket | Parent FEAT | Parent US | Status | Description`. The QA `features/INDEX.md` is the allocation log for TEST tickets — not a copy of the BA's `requirements/features/INDEX.md`.
+
+5. **Cross-workspace applicability.** This convention applies in ANY workspace, not just apex-team. When invoked on a downstream project (LFM, bidshop, etc.), follow the same convention there — create the per-feature `tests/qa/features/FEAT-NNNN-<slug>/` directory in that project's test layout, link the `TEST` deliverable to the BA's `FEAT-NNNN` allocation in that project, and maintain that project's `tests/qa/features/INDEX.md`.
+
+The Wave 118 comprehensive-testing discipline (positive / negative / edge / all-known-samples) applies per test TYPE within a FEAT grouping. If a feature has 3 unit tests and 2 smoke tests, each category covers all four mandatory classes.
+
+Cross-reference: `architecture/workspace-conventions.md` §"FEAT-XXXX feature grouping (Wave 122)" is the durable spec; US-098 is the driving story; FEAT-0001 is the meta-feature dogfooding the convention.
+
 ### Your boundaries
 
 - **You do NOT do code reviews.** That's Architect's lane. You may comment on testability of code in your visible reply, but the gate is Architect's.

@@ -1,6 +1,63 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 121 — viewer auto-follows Claude Code's active project: US-097)
+## ⏭️ NOW — 2026-06-04 (Wave 122 — FEAT-XXXX feature grouping convention + autonomous-on-any-project standard)
+
+**claude-code direct on `feature/wave-122-feat-grouping-convention` (off origin/main `0b4f7bd`).**
+
+**Trigger:** user on LFM Mac asked for requirements to be grouped by feature (e.g. "Add PO to Order Sheet" = `FEAT-0001`), with per-role ticket formats linking back to BA's FEAT, all visible as grouped cards in the viewer's role Output tabs. User explicitly: *"make this a standard to the roles, so that they will autonomously do those things on other projects when they are being used as agents."*
+
+**Wave 122 — Foundation (this PR):** convention + subagent body amendments + regression test. Viewer rendering deferred to Wave 123; DevSecOps reusable pipelines deferred to Wave 124.
+
+**Ratified ticket prefixes (per-role, monotonic):**
+
+| Role | Prefix | Canonical artifact path | Allocation INDEX |
+|---|---|---|---|
+| BA | `FEAT-XXXX` | `requirements/features/FEAT-NNNN-<slug>.md` | `requirements/features/INDEX.md` |
+| Architect | `ARCH-XXXX` (+ ADR-NNNN for cross-cutting) | `architecture/features/FEAT-NNNN-<slug>/ARCH-NNNN-<slug>.md` | `architecture/features/INDEX.md` |
+| UX | `UX-XXXX` | `design/features/FEAT-NNNN-<slug>/UX-NNNN-<slug>.md` | `design/features/INDEX.md` |
+| QA | `TEST-XXXX` | `tests/qa/features/FEAT-NNNN-<slug>/TEST-NNNN-<slug>.test.ts` | `tests/qa/features/INDEX.md` |
+| FE Dev | `FE-XXXX` | `src/features/FEAT-NNNN-<slug>/FE-NNNN-<slug>.tsx` | `src/features/INDEX.md` |
+| BE Dev | `BE-XXXX` | same as FE | same |
+| DevSecOps | `OPS-XXXX` | `ops/features/FEAT-NNNN-<slug>/OPS-NNNN-<slug>.sh` + `ops/pipelines/<env>.sh` reusable | `ops/features/INDEX.md` |
+| PO | N/A (orchestrates, doesn't produce per-feature artifacts) | — | — |
+
+**Mandatory frontmatter (every deliverable file):**
+```yaml
+---
+ticket: <PREFIX-NNNN>
+parent_feat: FEAT-NNNN
+parent_us: US-NNN  # if applicable
+role: <role-id>
+status: <proposed|accepted|in-flight|done|superseded>
+---
+```
+(Non-markdown files: same fields as header-comment block.)
+
+**Autonomous-on-any-project:** all 8 subagent bodies carry `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` section. Cross-workspace clause in each body explicitly says "This convention applies in ANY workspace, not just apex-team."
+
+**Deliverables in this PR:**
+
+1. **BA (US-098 + FEAT-0001 + INDEX):** US-098 with 13 ACs; FEAT-0001 seed feature file (the convention dogfooding itself); `requirements/features/INDEX.md` with FEAT-0001 row; `requirements/INDEX.md` US-098 row.
+2. **Architect (single-author across 10 files):** new section in 8 subagent bodies + `architecture/workspace-conventions.md` `## FEAT-XXXX feature grouping (Wave 122)` section + new `architecture/features/INDEX.md` (Architect's ARCH allocation log).
+3. **QA (Wave 122 regression test, first file under the new convention):** `tests/qa/features/FEAT-0001-feat-grouping-convention/TEST-0001-anchor-and-prefixes.test.ts` — **38/38 PASS** asserting AC13 (anchor heading in 8 bodies + role-specific prefix per body + FEAT-0001 existence + INDEX shape + prior tests green). Plus `tests/qa/features/INDEX.md` (QA allocation log).
+
+**Verification (all green):**
+- `pnpm vitest run tests/qa/features/FEAT-0001-feat-grouping-convention/` → 38/38 PASS
+- `pnpm test:run` → **571 passed + 1 skipped** (prior 534 + Wave 122: 38)
+- All 12 wave regression test suites still green
+- Wave 108 cleanliness (153/153) preserved across 8 body edits
+- `pnpm lint`, `pnpm type-check` clean
+
+**Wave 123 candidates (parked):**
+- Viewer rendering: BA Output as FEAT cards; per-role Output tabs grouped by FEAT showing tickets; DevSecOps shows pipelines + per-FEAT overlays.
+- DevSecOps reusable pipelines (Wave 124 candidate).
+- `pnpm run qa:feat FEAT-XXXX` CLI runner (Wave 124 candidate).
+
+**Activation on downstream projects:** because subagents are user-scope (`~/.claude/agents/*.md`), the standard is live in every Claude Code session on any Mac with apex-team's subagents symlinked. No per-project setup needed beyond `bash apex-team/scripts/install-agents-user-scope.sh` + Claude Code restart.
+
+---
+
+## ⏭️ PREV — 2026-06-04 (Wave 121 — viewer auto-follows Claude Code's active project: US-097)
 
 **claude-code direct on `feature/wave-121-handoff-ui-developer` (off origin/main `8e6fbc6`).**
 

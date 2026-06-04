@@ -1,6 +1,131 @@
 # architect — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 118 (comprehensive QA test coverage — skill + qa.md body rule)
+## ⏭️ NOW — 2026-06-04 — Wave 122 (FEAT-XXXX feature grouping standard — 8 subagent bodies + workspace-conventions + architecture/features INDEX)
+
+### Wave-122 PASS verdict — PR #0 — SHA 0b4f7bdbf1c19ad101bd0d4b8387cc593558f127
+- **Gate role:** architect
+- **Timestamp:** 2026-06-04T19:52:00Z
+- **Notes:** Single-author multi-file edit landing the FEAT-XXXX feature grouping standard across (1) `architecture/workspace-conventions.md` with a new top-level `## FEAT-XXXX feature grouping (Wave 122)` section documenting AC3 ticket-prefix table, AC5 Option B coexistence rule, AC6 QA test-type decision discipline, AC11 mandatory frontmatter spec, AC12 autonomous-standard rule, ADR-NNNN-vs-ARCH-XXXX distinction, and AC4 registry column shape; (2) the exact heading `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` byte-for-byte in all 8 subagent body files (`.claude/agents/{architect,business-analyst,ui-developer,backend-developer,ux-designer,qa,devsecops,product-owner}.md`), each carrying the 5-rule structure (prefix / path / frontmatter / INDEX / cross-workspace) with role-specific content per AC12; (3) `architecture/features/INDEX.md` scaffold as the Architect's ARCH ticket allocation log (empty initial state). Self-attested PASS — all edits within Architect's own lane (architecture/ + .claude/agents/ + this HANDOFF), no peer-edit-violation footprint. Placeholder block per ADR-018 Wave 111b amendment: `PR #0` + last-known SHA `0b4f7bdbf1c19ad101bd0d4b8387cc593558f127` (current HEAD of feature/c1-plan-c-subagent-extraction pre-staging). DevSecOps post-merge backfill replaces with real PR # + merge SHA via `chore(handoff): backfill Wave-122 verdict PR # and merge SHA`.
+
+### Canonical anchor phrase (Wave 122 — grep-stable across all 8 bodies)
+
+QA's Wave 122 regression test grep-asserts this exact heading verbatim in all 8 subagent body files. Byte-for-byte:
+
+> `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)`
+
+`grep -c "### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)" .claude/agents/*.md` returns 1 for each of the 8 files (verified this turn).
+
+### 5-rule structure used in each body (for QA grep-reuse)
+
+Each body's section follows the same five-rule shape. The rules vary role-specifically per AC12:
+
+1. **Ticket prefix** — role-specific prefix declared explicitly in the body. Mapping (verified by `grep -c "<PREFIX>-XXXX" .claude/agents/<role>.md` returning ≥1 in the section body):
+   - `architect.md` → `ARCH-XXXX` (with explicit note that `ADR-NNNN` stays for cross-cutting decisions)
+   - `business-analyst.md` → `FEAT-XXXX`
+   - `qa.md` → `TEST-XXXX`
+   - `ui-developer.md` → `FE-XXXX`
+   - `backend-developer.md` → `BE-XXXX`
+   - `ux-designer.md` → `UX-XXXX`
+   - `devsecops.md` → `OPS-XXXX`
+   - `product-owner.md` → declared as `N/A for Product Owner` (PO orchestrates; doesn't produce per-feature deliverables). The N/A is explicit so QA's grep-coverage assertion passes against the PO body too.
+
+2. **Canonical artifact path** — role-specific concrete path pattern stated in the body:
+   - BA: `requirements/features/FEAT-NNNN-<slug>.md`
+   - Architect: `architecture/features/FEAT-NNNN-<slug>/ARCH-NNNN-<slug>.md`
+   - UX: `design/features/FEAT-NNNN-<slug>/UX-NNNN-<slug>.md`
+   - QA: `tests/qa/features/FEAT-NNNN-<slug>/TEST-NNNN-<slug>.test.ts`
+   - FE Dev: `src/features/FEAT-NNNN-<slug>/FE-NNNN-<slug>.tsx`
+   - BE Dev: `src/features/FEAT-NNNN-<slug>/BE-NNNN-<slug>.ts`
+   - DevSecOps: `ops/features/FEAT-NNNN-<slug>/OPS-NNNN-<slug>.sh` + `ops/pipelines/<env>.sh` templates
+   - PO: declared N/A
+
+3. **Frontmatter rule** — inline restatement in each body (not a cross-reference): every deliverable file MUST include `ticket:`, `parent_feat:`, `parent_us:` (if applicable), `role:`, and `status:` either as YAML frontmatter (markdown files) or header-comment block in the file's native syntax (non-markdown files). BA's FEAT files use `feat:` rather than `parent_feat:` (they ARE the parent). PO's body states this rule applies to its dispatch text referencing the FEAT.
+
+4. **INDEX maintenance rule** — inline restatement in each body: allocate ticket numbers monotonically per role; add a row to `<role-dir>/features/INDEX.md` before the wave closes. Each role's INDEX is the allocation log for its own ticket numbers — not a copy of the BA's `requirements/features/INDEX.md` (which aggregates counts). FE Dev + BE Dev share `src/features/INDEX.md`. PO's body states INDEX maintenance is verify-not-author (peer-edit boundary).
+
+5. **Cross-workspace applicability** — load-bearing autonomous-standard statement in every body, verbatim concept:
+   > "This convention applies in ANY workspace, not just apex-team. When invoked on a downstream project (LFM, bidshop, etc.), follow the same convention there — create the per-feature directories in that project's structure, link deliverables to the BA's FEAT-XXXX allocation in that project, and maintain that project's per-role INDEX."
+
+### Files landed Wave 122 (11 paths, single-author within Architect's lane)
+
+1. **`architecture/workspace-conventions.md`** (extended) — new top-level `## FEAT-XXXX feature grouping (Wave 122)` section between `## Comprehensive testing (Wave 118)` and `## OQ-085-001`. Documents AC3 ticket-prefix table, AC5 Option B coexistence, AC6 QA test-type discipline, AC11 mandatory frontmatter spec, AC12 autonomous-standard rule, AC4 registry column shape, and the ADR-NNNN-vs-ARCH-XXXX distinction. Wave 117 + Wave 118 sections' Cross-references lists each extended with a forward-link to Wave 122.
+
+2. **`architecture/features/INDEX.md`** (new) — Architect's ARCH ticket allocation log. Initial state: empty registry table (`Ticket | Parent FEAT | Parent US | Status | Description`) + empty allocation-log table. Cross-references the BA's `requirements/features/INDEX.md`, `architecture/INDEX.md`, `architecture/decisions/`, and the workspace-conventions section.
+
+3. **`.claude/agents/architect.md`** (extended) — `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` section inserted between `### Your responsibilities` and `### Your boundaries`. Prefix: `ARCH-XXXX`. Explicit note that `ADR-NNNN` stays for cross-cutting decisions.
+
+4. **`.claude/agents/business-analyst.md`** (extended) — same section between BA's Wave 117 auto-routing clause's anti-patterns block and `### Your boundaries`. Prefix: `FEAT-XXXX`. BA owns the top-level registry; Option B US-NNN coexistence stated inline.
+
+5. **`.claude/agents/qa.md`** (extended) — same section between Wave 118 comprehensive-testing cross-references and `### Your boundaries`. Prefix: `TEST-XXXX`. Notes that Wave 118 four-class discipline applies per test TYPE within a FEAT grouping.
+
+6. **`.claude/agents/ui-developer.md`** (extended) — same section between Wave 117 pre-flight gate's complementary-clause note and `### Your boundaries`. Prefix: `FE-XXXX`. Shared `src/features/INDEX.md` with Backend Developer noted explicitly.
+
+7. **`.claude/agents/backend-developer.md`** (extended) — same section, same position as ui-developer.md. Prefix: `BE-XXXX`. Shared INDEX noted explicitly. Multiple-language frontmatter syntax (`//` for TS/Java/Go/Rust, `#` for Python) covered inline.
+
+8. **`.claude/agents/ux-designer.md`** (extended) — same section between the durable-artifacts description and `### Your boundaries`. Prefix: `UX-XXXX`. Notes pre-existing flat `design/<feature-slug>.md` specs remain valid; non-UI features may have zero UX tickets (count column shows 0).
+
+9. **`.claude/agents/devsecops.md`** (extended) — same section between the `.github/workflows/` carveout and `### Your responsibilities`. Prefix: `OPS-XXXX`. Pre-existing CI workflows + pre-commit hooks remain valid for cross-cutting infrastructure; FEAT-scoped pipeline deliverables live in the new layout. Pipeline-template reuse via `source` / `.` invocation noted.
+
+10. **`.claude/agents/product-owner.md`** (extended) — same section between the peer-coordination paragraph and `### Your boundaries`. Prefix: declared `N/A for Product Owner` explicitly. Rules adapted: PO's role is orchestration; dispatch text MUST reference the parent FEAT identifier so peers know which feature to file under; INDEX maintenance is verify-not-author (peer-edit boundary).
+
+11. **`coordination/handoffs/architect.md`** (this file) — Wave 122 NOW prepended per ADR-018 canonical format; prior Wave 118 NOW demoted to PREV.
+
+### Gate verification (Wave 122)
+
+- `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` → 153/153 PASS (token discipline preserved across all 8 body edits; no ADR-017 denylisted tokens reproduced verbatim in the new sections).
+- `pnpm vitest run tests/qa/wave-110/...` → all wave-110/111/111b/111c/112/113/117/118/120/121 regression tests PASS. Combined run: 508 passed + 1 skipped (pre-existing).
+- `pnpm test:run` full suite → 533 passed + 1 skipped (no regressions; matches Wave 121 baseline +1 skipped).
+- `pnpm lint` → clean.
+- `pnpm type-check` → clean.
+- Anchor phrase grep across all 8 bodies → `grep -c "### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)" .claude/agents/*.md` returns 1 per file.
+- Role-specific prefix grep → each body contains its declared prefix in the section body (architect=ARCH-XXXX, business-analyst=FEAT-XXXX, qa=TEST-XXXX, ui-developer=FE-XXXX, backend-developer=BE-XXXX, ux-designer=UX-XXXX, devsecops=OPS-XXXX, product-owner=N/A).
+
+### Architecture/ co-authorship gate (Wave 109 rule, self-reflection)
+
+This wave's PR touches:
+- `architecture/workspace-conventions.md` (Architect-owned, single-author = me, gate satisfied).
+- `architecture/features/INDEX.md` (new file, Architect's own lane, gate satisfied).
+- `.claude/agents/*.md` (Architect's lane for cross-cutting agentic protocol edits; gate satisfied).
+- `coordination/handoffs/architect.md` (this file — my own HANDOFF doc).
+
+No peer is co-authoring any file under `architecture/`. No peer HANDOFF docs are edited. Both gates (architecture/ co-authorship + peer-HANDOFF edit) satisfied.
+
+### Peer-edit boundary (Wave 112)
+
+This wave's PR touches only Architect-owned + own HANDOFF surfaces. BA's US-098 / FEAT-0001 / requirements/features/INDEX.md are NOT edited (explicitly out-of-scope per dispatch brief, Wave 112 #391 peer-edit boundary applies). Boundary satisfied.
+
+### In flight / next
+
+- This slice is ready for code review. Single-author across all 11 paths within my own lane — both gates verified.
+- **QA Phase 2:** the canonical anchor phrase + 5-rule structure recorded above ARE QA's spec source for the Wave 122 regression test per AC13. Suggested location: `tests/qa/wave-122/feat-grouping-convention.test.ts`. Pattern matches Wave 117/118 completeness shape. Five assertions per AC13: (1) all 8 bodies contain the exact anchor heading; (2) each body contains its role-specific prefix; (3) `requirements/features/FEAT-0001-feat-grouping-convention.md` exists with `feat: FEAT-0001` frontmatter; (4) `requirements/features/INDEX.md` exists with canonical column headers `FEAT | Slug | Status | ARCH | UX | TEST | FE | BE | OPS`; (5) all prior `pnpm test:run` tests pass.
+- DevSecOps post-merge step (per ADR-018 Wave 111b amendment): replace `PR #0` placeholder + last-known SHA `0b4f7bdbf1c19ad101bd0d4b8387cc593558f127` with the real PR # + merge SHA via `chore(handoff): backfill Wave-122 verdict PR # and merge SHA`.
+
+### Parked / future (carried forward, plus Wave 122 additions)
+
+- `system-design.md` — still not created.
+- `tech-stack.md` — still not created.
+- `coding-standards.md` — still not created. Wave 117 (three-layer requirements-first) + Wave 118 (two-layer comprehensive-testing) + Wave 122 (FEAT-XXXX feature grouping with autonomous-standard subagent body sections) discipline are candidate entries once `coding-standards.md` gets seeded.
+- Fitness function for OQ-085-001's "no binary files committed under `tests/qa/wave-*/evidence/`" — QA owns implementation.
+- Viewer-repo subagent body audit (per ADR-017 follow-up). Wave 122 ADD: viewer's FEAT-grouped card rendering (US-098 AC9) is deferred to US-099+; the viewer will read `parent_feat:` frontmatter from each role's per-feature directory to render grouped cards.
+- **NEW (Wave 122):** UI Dev + BE Dev viewer rendering implementation per US-098 AC9 (deferred to US-099+).
+- **NEW (Wave 122):** DevSecOps pipeline scaffolding for `ops/pipelines/<env>.sh` reusable templates + `pnpm run qa:feat` script (US-098 AC7 + AC8, deferred to a separate DevSecOps wave).
+- **NEW (Wave 122):** consider an ADR formalizing the ADR-NNNN-vs-ARCH-XXXX distinction (currently documented inline in `workspace-conventions.md` + `architect.md`; an ADR would give it durable home alongside ADR-014/017/018). Candidate ADR-019.
+
+### Notes / caveats (Wave 122)
+
+- Section heading is exactly `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` byte-for-byte in all 8 bodies. The em-dash is U+2014 (the same character used in ADR-018's canonical regex). QA's regression test should grep with the em-dash literal, not an ASCII hyphen.
+- Each body's section content is role-specific per AC12 — not a copy-paste template. The 5-rule structure is the same skeleton; the content of each rule differs per role (prefix, path, frontmatter syntax, INDEX file). QA's regression test asserts BOTH the heading byte-for-byte AND the role-specific prefix presence in the body — catching the "someone pasted the architect template into qa.md" failure mode.
+- Token discipline: no ADR-017 denylisted tokens reproduced verbatim in any of the new sections. Verified by `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` → 153/153 PASS post-edit.
+- Product Owner's body explicitly declares `N/A for Product Owner` rather than omitting the section. Rationale: QA's grep-coverage assertion checks all 8 bodies; omitting the section in PO's body would fail the grep. The N/A declaration is the canonical answer to "what's PO's per-feature ticket prefix?" and lives in the body for grep-stability.
+- The `architecture/features/INDEX.md` scaffold ships empty in this wave (no ARCH tickets allocated yet). First allocation will be `ARCH-0001` — likely the structured `README.md` template for `architecture/features/FEAT-NNNN-<slug>/` per OQ-098-001's working assumption, in a follow-up Architect-lane wave.
+
+### [[HANDOFF: qa]]
+
+QA Wave 122: dispatch you for the AC13 regression test now that the Architect deliverables have landed. The canonical anchor phrase + 5-rule structure + role-specific prefix mapping are recorded in this NOW block under "Canonical anchor phrase (Wave 122 — grep-stable across all 8 bodies)" — those are your spec source for `tests/qa/wave-122/feat-grouping-convention.test.ts`. Five assertions per AC13: (1) all 8 bodies contain `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` byte-for-byte; (2) each body contains its role-specific ticket prefix in the section body (architect=ARCH-XXXX, business-analyst=FEAT-XXXX, qa=TEST-XXXX, ui-developer=FE-XXXX, backend-developer=BE-XXXX, ux-designer=UX-XXXX, devsecops=OPS-XXXX, product-owner=N/A); (3) `requirements/features/FEAT-0001-feat-grouping-convention.md` exists with `feat: FEAT-0001` frontmatter; (4) `requirements/features/INDEX.md` contains the canonical column headers `FEAT | Slug | Status | ARCH | UX | TEST | FE | BE | OPS`; (5) all prior `pnpm test:run` tests pass (regression). Note the em-dash in the anchor heading is U+2014 — grep with the literal character.
+
+---
+
+## PREV — 2026-06-04 — Wave 118 (comprehensive QA test coverage — skill + qa.md body rule)
 
 ### Wave-118 PASS verdict — PR #0 — SHA 7c994a1c8b835266049e20c835dab926ad875f1e
 - **Gate role:** architect
