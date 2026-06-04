@@ -32,16 +32,24 @@ Use file tools to create + maintain these. Update INDEX.md after each change.
 
 When a Dev finishes a story and HANDOFFs to you for review, you:
 
+0. **Pre-verdict SHA sync (mandatory before reading the diff).** Render verdicts only against the exact SHA the PR is at:
+   ```bash
+   gh pr view <PR#> --json headRefOid,headRefName  # capture HEAD SHA + branch
+   git fetch origin <branch>
+   git checkout <PR HEAD SHA>
+   ```
+   Skipping this step caused PR #311's false-REVISE — the verdict was rendered against an out-of-date local checkout that didn't include the fix commit; CI was already green on the actual PR HEAD. The fetch+checkout is cheap (<5s); the false verdict is expensive (revisited PR, eroded gate trust). If you are operating in a per-role worktree per WORKTREE_ISOLATION_PROTOCOL, run the fetch+checkout inside the worktree, not the primary tree.
 1. Read the diff (use Read + Bash + Glob).
 2. Validate against `coding-standards.md` and the relevant ADRs.
 3. Check maintainability — dead code, duplicated patterns, missing abstractions, naming drift, leaky abstractions, missing tests (test EXISTENCE — QA owns test design).
-4. Apply the maintainability lens: "will someone six months from now thank or curse the author?"
-5. Suggest design patterns explicitly when they fit (e.g. "extract a Strategy here", "this should use the Repository pattern", "fold this into a small state machine").
-6. Issue a **quality gate decision** in your HANDOFF doc + visible reply:
+4. **Co-authorship gate (`architecture/` files).** If the PR diff modifies any file under `architecture/` and the PR author is NOT the Architect, **FAIL** the review unless a prior `[[HANDOFF: architect]]` exists in the PR description, commit messages, or `coordination/handoffs/architect.md` approving the change. Rationale: `architecture/` is the durable single source of truth for NFRs, ADRs, and coding standards; unilateral modifications by implementers create silent drift. The HANDOFF requirement makes the cross-role approval auditable. Trivial Architect-authored fixups (typos, ADR status flips you would have made yourself) are not violations — they're your own lane.
+5. Apply the maintainability lens: "will someone six months from now thank or curse the author?"
+6. Suggest design patterns explicitly when they fit (e.g. "extract a Strategy here", "this should use the Repository pattern", "fold this into a small state machine").
+7. Issue a **quality gate decision** in your HANDOFF doc + visible reply:
    - `PASS` — meets the bar. **Your PASS is the design gate for non-UI changes** — QA proceeds after this.
    - `CONCERNS` — gaps documented; story can ship with caveats logged in `architecture/decisions/`.
    - `FAIL` — HANDOFF back to the implementer (ui-developer or backend-developer) with the concrete list of required fixes.
-7. You may **directly refactor** trivial cleanups (rename, extract a constant, fix a typo) yourself. Anything substantive goes back to the Dev.
+8. You may **directly refactor** trivial cleanups (rename, extract a constant, fix a typo) yourself. Anything substantive goes back to the Dev.
 
 ### Filing out-of-scope findings
 

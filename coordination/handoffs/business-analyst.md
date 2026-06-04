@@ -1,6 +1,54 @@
 # business-analyst — HANDOFF
 
-## NOW — 2026-06-04 — Wave 108 triad (subagent body rewrite)
+## NOW — 2026-06-04 — Wave 109 close-sweep complete
+
+**Wave 109 deliverables:**
+
+### A. 6 issues closed
+- **#322** closed: "ADR-016 listed at architecture/INDEX.md:22-23 since Wave 108 (PR #379, merge 79edd1e). Closing as absorbed." — https://github.com/keyan-commits/apex-team/issues/322
+- **#217** closed: "S1-S9 skill rubric live in .claude/agents/qa.md body post-Wave-108 rewrites (PR #379, merge 79edd1e). Closing as absorbed." — https://github.com/keyan-commits/apex-team/issues/217
+- **#211** closed: "Documented in .claude/agents/devsecops.md lines 372-389 post-Wave-108 (PR #379, merge 79edd1e). Closing as absorbed." — https://github.com/keyan-commits/apex-team/issues/211
+- **#289** closed: "Dashboard surface retired in monolith decommission (PR #374, merge ebc83c5). Design doc is moot." — https://github.com/keyan-commits/apex-team/issues/289
+- **#126** closed: "Route /agents/qa retired with monolith (PR #374, merge ebc83c5). Viewer-repo discovery is the new surface (separate codebase; file a fresh issue against apex-team-viewer if needed)." — https://github.com/keyan-commits/apex-team/issues/126
+- **#194** closed: "src/ removed in monolith decommission (PR #374, merge ebc83c5). Lint rule has no TypeScript surface to catch on. Re-file against apex-team-viewer if applicable there." — https://github.com/keyan-commits/apex-team/issues/194
+
+### B. 2 new issues filed
+- **#380**: `bug(docs): ops/README.md describes retired monolith infrastructure` — https://github.com/keyan-commits/apex-team/issues/380
+- **#381**: `bug(docs): LESSONS.md lines 17-19 reference retired _handoff-pending/ pattern` — https://github.com/keyan-commits/apex-team/issues/381
+
+### C. INDEX.md check
+No `Closes #N` rows in requirements/INDEX.md US entries for any of the 6 closed issues. No status updates required.
+
+**Last-processed user message:** Wave 109 close-sweep prompt (2026-06-04, main 79edd1e).
+
+---
+
+## PREV — 2026-06-04 — Wave 109 prep (retained backlog triage + priority menu)
+
+**Wave 109 deliverable:** read-only diagnostic. Retained 31 issues re-triaged against live repo state (post-Wave 108 body rewrites). Menu produced below.
+
+**Key findings from live scan:**
+- Wave 108 body rewrites absorbed #211 (merge=union local rebase discipline is in devsecops.md lines 372-389). Issue can be closed.
+- #332/#333 reference `tests/lib/user-directive-supremacy.test.ts` which was deleted with the monolith. The gap is real but the tests need to be re-imagined for the subagent runtime (grep-based, not SDK-based). Keeping open — different form needed.
+- #126 (/agents/qa surface tests) is fully monolith-dashboard-dependent; web UI retired. Propose closure.
+- #289 (US-062 design doc) targets a retired dashboard component. Propose closure.
+- LESSONS.md entry on merge=union (lines 17-19) references `_handoff-pending` + `pnpm fold-handoff` (both retired). New docs-integrity gap; should be filed.
+- ops/README.md is stale monolith content (:3100/:3110, pnpm dev:test, .restart-trigger). Docs-integrity concern.
+- CI (ci.yml) already runs `pnpm lint --max-warnings 0` — #240's core CI ask is satisfied. Remaining gap: explicit "CI green confirmed" in devsecops.md merge evidence + `gh pr merge --auto` adoption.
+- #196 (durable cross-user learning) — "Lessons learned" per-role section not yet encoded in agent bodies. Gap is real.
+- #335 (architecture/ co-authorship) — AC2 not in architect.md code-review rubric. Gap is real.
+
+**Last-processed user message:** Wave 109 prep prompt (this turn).
+
+---
+
+## Wave 109 menu — retained backlog (BA-prioritized)
+
+See bottom section for full menu text (returned as subagent reply).
+
+---
+
+## Previous wave context — Wave 108 triad (archived)
 
 **Wave 108 triad deliverable complete (BA lane):**
 - US-087 filed at `requirements/user-stories/US-087-subagent-body-rewrite.md` (status: accepted)
