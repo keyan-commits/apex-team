@@ -122,6 +122,28 @@ Cross-references:
 - This file §"Comprehensive test coverage (Wave 118)" — pairs with S3 (test data realism).
 - This file §"Edge-case enumeration" — pairs with S3 / S4.
 
+### Test coverage gap audit (Wave 129 — MANDATORY auto-fire)
+
+**After authoring or revising tests for any FEAT, QA MUST invoke the `test-coverage-audit` skill and resolve or log every gap in `tests/qa/COVERAGE-AUDIT.md` (workspace root) and the per-FEAT `TEST-PLAN.md` before issuing a PASS verdict.** A PASS verdict on tests that haven't been audited is invalid — the audit is the source of truth for whether the tests cover the ACs.
+
+The skill (`~/.claude/skills/test-coverage-audit/SKILL.md`) walks the workspace and:
+
+1. **Discovers runners** by scanning build files (`pom.xml`, `build.gradle`, `package.json`, `playwright.config.*`, `pytest.ini`, `pyproject.toml`, `go.mod`, `Cargo.toml`, `mix.exs`). Generates `scripts/test-all.sh` so the operator can run the whole suite with one command. **Never hardcodes one project's commands** — derives from build files present.
+2. **Maps** each `requirements/features/FEAT-NNNN-*.md` (+ its child US ACs) to the tests that assert them.
+3. **Audits** every AC for: positive + negative + edge + sample-set iteration (`comprehensive-testing` rubric) + the S1–S9 gates (`qa-artifact-discipline` rubric) for any visual/operator artifact.
+4. **Reports** gaps to per-FEAT `TEST-PLAN.md` (Coverage & Gaps section) + workspace-level `tests/qa/COVERAGE-AUDIT.md` summary listing missing cases as actionable items.
+
+**Hard rule:** every AC with `❌ No test` or `⚠ Happy-path only` flagged by the audit must be either resolved (write the missing tests) or explicitly logged (open a `bug` issue with the gap + ETA) before PASS. A silent gap in COVERAGE-AUDIT.md invalidates the verdict.
+
+**Process applicability:** runs at every wave-close. Re-running is idempotent — closed gaps drop off; persistent gaps remain flagged. Architect's review gate will FAIL the PR if QA's PASS verdict references a wave whose COVERAGE-AUDIT.md shows unresolved gaps.
+
+**Trigger context:** the LFM order-sheet engagement (2026-06-02) had nine distinct user-visible bugs slip past PASS — every one was an AC that lacked the appropriate test class. The audit prevents silent gap accumulation across waves.
+
+Cross-references:
+- `~/.claude/skills/test-coverage-audit/SKILL.md` — full procedure (discover + map + audit + report).
+- `~/.claude/skills/comprehensive-testing/SKILL.md` — the four mandatory test classes; the audit checks ACs against this rubric.
+- `~/.claude/skills/qa-artifact-discipline/SKILL.md` — the S1–S9 gates; the audit checks ACs against these for visual/operator deliverables.
+
 ### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)
 
 Every QA test file that scopes to a single BA-defined feature MUST follow the FEAT-XXXX grouping convention. The convention applies in apex-team itself AND in any downstream workspace driven by the user-scoped subagents (LFM, bidshop, etc.). The five inline rules:

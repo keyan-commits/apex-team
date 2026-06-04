@@ -1,6 +1,20 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 128 — QA artifact-discipline skill from LFM order-sheet retro)
+## ⏭️ NOW — 2026-06-04 (Wave 129 — test-coverage-audit skill + auto-fire hook on QA)
+
+**Branch `feature/129-test-coverage-audit-skill` (off main `44b3110`).** Wave 128 (QA artifact-discipline S1-S9) merged + Architect codified the standing rule in `architecture/workspace-conventions.md`. Wave 129 adds a complementary **systematic coverage-audit capability**: a project-agnostic skill that discovers test runners across any workspace, maps every FEAT → its tests, audits ACs against the comprehensive-testing + S1–S9 rubrics, and reports gaps to per-FEAT `TEST-PLAN.md` + workspace-level `tests/qa/COVERAGE-AUDIT.md`.
+
+**Skill file:** `.claude/skills/test-coverage-audit/SKILL.md` — full procedure (discover + map + audit + report), runner-detection table (mvn/gradle/pnpm/jest/vitest/playwright/pytest/go/cargo/mix), report formats, anti-patterns prevented.
+
+**Auto-fire hook:** `.claude/agents/qa.md` gains a new `### Test coverage gap audit (Wave 129 — MANDATORY auto-fire)` section *before* the Wave 122 FEAT grouping anchor. Hard rule: QA MUST invoke the skill after authoring or revising tests for any FEAT and resolve or log every gap before issuing PASS. A silent gap in COVERAGE-AUDIT.md invalidates the verdict; Architect's review gate FAILs the PR.
+
+**Scope:** documentation/orchestration only this wave. The skill describes the procedure; QA invokes it as part of normal test-authoring work. No automated CI runner for the audit itself yet — the audit produces the report; consumers (QA, BA, Architect) read it.
+
+**Companion wave (separate PR, viewer repo):** Wave 130 — viewer ▶RUN polyglot enhancement (vitest/jest/playwright/maven/gradle resolution + nested discovery + `.apex-viewer.json` app-roots). Dispatched in parallel via UI Dev subagent (background). Both reinforce each other: this skill handles whole-suite runs (`scripts/test-all.sh`); Wave 130 handles per-test ▶RUN.
+
+**In flight / next:** PR open, awaiting CI green + DevSecOps merge. Wave 130 (viewer polyglot) in progress in sibling repo, will land via its own PR.
+
+## PREV — 2026-06-04 (Wave 128 — QA artifact-discipline skill from LFM order-sheet retro)
 
 **Branch `feature/128-qa-artifact-discipline` (off main).** Wave 126 (FEAT backfill) + Wave 127 (viewer FE Dev → UI Dev rename) merged. Wave 128 adds **nine mandatory QA disciplines (S1–S9)** for visual / operator-facing artifacts, drawn from the LFM order-sheet generator engagement (2026-06-02) where 9 distinct user-visible bugs reached production despite repeated programmatic PASS verdicts.
 
