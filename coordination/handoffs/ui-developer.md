@@ -1,6 +1,65 @@
 # ui-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 119: viewer workspace switcher (US-095 AC1-AC8)
+## ⏭️ NOW — 2026-06-04 — Wave 121: viewer auto-follow Claude Code (US-097 AC1-AC6)
+
+### Wave-121 PASS verdict — PR #0 — SHA 8e6fbc61393588bf420d6f9f9081951c4c14b4f4
+- **Gate role:** ui-developer (self-attestation — implementation complete, awaiting Architect + UX + QA gate)
+- **Timestamp:** 2026-06-04T18:32:00Z
+- **Notes:** AC1-AC6 implemented and manually verified. apex-team `pnpm test:run` 533/534 PASS (1 skipped intentionally). Viewer changes in **sibling-repo PR `keyan-commits/apex-team-viewer#4`** (branch `feature/wave-121-auto-follow`, viewer commit `6d580c9`). No `architecture/` edits; no peer HANDOFF docs edited.
+
+**Deliverables (all in `keyan-commits/apex-team-viewer` PR #4):**
+
+1. `server.mjs`:
+   - AC1: `isValidWorkspace(p)` — accepts any `requirements/*` subdir (strict superset of old filter)
+   - AC2: `scanClaudeCodeProjects` logic inside `loadWorkspaceRegistry()` — enumerates `~/.claude/projects/`, decodes with naive `-`→`/`, existence-checks and skips on miss (e.g. `apex-team` → `apex/team` fails silently; discovered via `add(activeRoot)` step 1 instead)
+   - AC3: `getWorkspaceJsonlMtime(p)` — encodes path with `/`→`-`, scans `~/.claude/projects/<encoded>/*.jsonl` for max mtime; `mostRecent: boolean` annotated on all entries
+   - AC4: `initServer()` async init block — registry built first, then resolution: `env → mostRecent → cwd (broadened) → fallback`; logs resolution source
+   - AC5: `APEX_TEAM_AUTO_FOLLOW=1` enables 30s `setInterval` poll; `autoFollowPaused` + `lastManualSwitchAt` tracking; `POST /api/auto-follow/toggle` endpoint; `/api/health` returns `{ autoFollow, autoFollowPaused }`; `loadWorkspaceRegistry({ fresh: true })` bypasses cache on each poll tick
+   - `registryCache` now supports `{ fresh: true }` arg to force rebuild
+
+2. `public/index.html`:
+   - AC6: `<span id="auto-follow-badge">` + `<button id="auto-follow-toggle">` added after `<select id="workspace-select">`; both `hidden` by default; button has `aria-label` + `aria-pressed` for a11y
+
+3. `public/app.js`:
+   - AC6: `updateAutoFollowUI(health)` wires badge text + toggle state from `/api/health` response
+   - `loadHealth()` calls `updateAutoFollowUI()` on each tick
+   - Toggle click handler POSTs to `/api/auto-follow/toggle`, updates badge state optimistically
+
+4. `public/style.css`:
+   - `.badge` — subdued secondary style (color: #6a6e78, background: #131318, border: #2a2a32)
+   - `.badge-btn` — icon-only button with `:focus-visible` ring and `aria-pressed` style
+   - `:focus-visible` added to `.select` (Wave 112 a11y lesson applied)
+
+**Round-trip verification:**
+- `GET /api/workspaces` → `mostRecent: true` on apex-team entry
+- `GET /api/health` → `{ autoFollow: true, autoFollowPaused: false }` with `APEX_TEAM_AUTO_FOLLOW=1`
+- `POST /api/auto-follow/toggle` → toggles `autoFollowPaused` correctly
+- `APEX_TEAM_ROOT=...` → `via env` logged, no auto-follow poll started
+- Without `APEX_TEAM_AUTO_FOLLOW` → `via default`, health shows `autoFollow: false`, badge hidden
+- `POST /api/auto-follow/toggle` without `APEX_TEAM_AUTO_FOLLOW` → 400 `auto-follow not enabled`
+- apex-team `pnpm test:run` → 533/534 PASS
+
+**Known limitation:** naive `-`→`/` decode in AC2 fails for project dirs with dashes in their name (e.g. `apex-team` → `apex/team`). `existsSync()` silently skips. Projects like `apex-team` still discovered via `add(activeRoot)` on startup. Documented in PR description.
+
+**Peer-edit boundary:** only own HANDOFF doc + viewer repo files. No `architecture/` edits.
+
+**Gate routing:**
+- Viewer PR #4 touches rendered UI (index.html, app.js, style.css) → UX Designer gates UI
+- Server-side logic (server.mjs) → Architect gates
+- QA authors `tests/qa/wave-121/viewer-auto-follow.test.ts` (10 test cases per AC7)
+- QA needs endpoint shapes: `GET /api/workspaces` → `{ok, current, workspaces: [{path, name, isCurrent, mostRecent}]}`, `GET /api/health` → `{ok, root, port, autoFollow, autoFollowPaused}`, `POST /api/auto-follow/toggle` → `{ok, autoFollow, autoFollowPaused}`
+
+## In flight
+- Viewer PR #4 open at `keyan-commits/apex-team-viewer` — awaiting Architect + UX Designer + QA gates.
+
+## Next
+- After QA PASS: HANDOFF to DevSecOps to merge viewer PR #4.
+
+## Notes
+- apex-team has no active rendered UI surface. All Wave 121 viewer code lives in `keyan-commits/apex-team-viewer`.
+- QA is working in parallel. They should use mock-fs strategy per AC7; no real `~/.claude/projects/` reads in tests.
+
+## ⏭️ PREV — 2026-06-04 — Wave 119: viewer workspace switcher (US-095 AC1-AC8)
 
 ### Wave-119 PASS verdict — PR #0 — SHA 467e9a7a889053f3571ad05e33b29f82ba0c1960
 - **Gate role:** ui-developer
