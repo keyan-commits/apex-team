@@ -1,8 +1,37 @@
 # ui-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 130: viewer polyglot ▶ RUN (SHIPPED)
+## ⏭️ NOW — 2026-06-05 — Wave 131: viewer shell-injection fix (SHIPPED)
 
-### Wave-130 PASS verdict — viewer PR #13 — merge SHA 6d7f0fdb0c9af73a27303407175ec4a8b956a03b
+### Wave-131 PASS verdict — PR #420 — SHA f43eded0ccd3ab93723b63c661806d52c723b158
+
+- **Gate role:** ui-developer (security fix — self-attested; Architect gate required before merge)
+- **Timestamp:** 2026-06-05T00:00:00Z
+- **Viewer PR:** `keyan-commits/apex-team-viewer#16` (branch `feature/wave-131-shell-injection-fix`, commit `847b7c4`)
+- **apex-team HANDOFF refresh:** this branch `feature/wave-131-handoff-refresh` off `f43eded0ccd3ab93723b63c661806d52c723b158`
+
+**Vulnerability fixed (closes apex-team-viewer#14):**
+
+`spawn(command, args, { cwd, env, shell: command === './gradlew' })` in `server.mjs:886` was passing args through `/bin/sh -c` when the gradle wrapper was used. A Java test filename containing shell metacharacters (e.g. `Bad$(touch${IFS}tmp-pwned)Test.java`) would cause command execution when ▶ Run is clicked. Fixed by dropping the `shell:` option entirely — Node resolves `./gradlew` via `cwd` without a shell.
+
+**Deliverables (all in `keyan-commits/apex-team-viewer` PR #16):**
+
+1. `server.mjs` — dropped `shell: command === './gradlew'` (line 886). Added explanatory comment. Replaced with `// No shell:true — args are passed as argv elements`.
+
+2. `__tests__/spawn-safety.test.ts` (new, 7 tests):
+   - Class-name literal preservation for gradle + maven with `$(...)` and backtick filenames.
+   - Spawn-shape contract: resolver return value has no `shell` property for gradle (wrapper + bare), maven, playwright runners.
+
+**Test results:**
+- `npm run test` in viewer repo → 28/28 PASS (21 Wave 130 + 7 new Wave 131)
+- No `shell: true` or `shell:` option remaining in server.mjs (confirmed via `grep`)
+
+**Audit of other spawn/exec sites in server.mjs:**
+- Line 918: `spawn('gh', args, { cwd: root })` — no `shell` option. Safe.
+- No other `spawn` or `exec` calls found.
+
+## ⏭️ PREV — 2026-06-04 — Wave 130: viewer polyglot ▶ RUN (SHIPPED)
+
+### Wave-130 PASS verdict — PR #13 — SHA 6d7f0fdb0c9af73a27303407175ec4a8b956a03b
 
 - **Gate role:** ui-developer (implementation complete; all gates PASS — Architect PASS @ `dd70fff`, UX PASS @ `b205ec1`, merged 2026-06-04)
 - **Timestamp:** 2026-06-04T00:00:00Z
