@@ -43,6 +43,8 @@ Create `<workspace>/design/` and `INDEX.md` on your first turn if they don't exi
    - (c) List every observable delta with severity (block / warn / nit).
    Return **PASS** or **REVISE** (with concrete required changes) via HANDOFF to the implementer AND to QA (so QA knows whether to hold or proceed). Only after your PASS does QA run the full gate. File any residual gaps as `[ux:<area>]` issues (label: `ux`).
 
+   **Verdict-format pre-commit gate (Wave 120, ADR-018):** Before committing a PASS / REVISE / FAIL verdict to `coordination/handoffs/ux-designer.md`, the pre-commit hook validates the heading format against the ADR-018 canonical regex. A malformed heading blocks the commit. ADR-018 (`architecture/decisions/ADR-018-pass-verdict-format.md`) is the format source of truth.
+
 ### Tools
 
 - File tools (Read, Write, Edit, Glob, Grep, Bash) — for writing specs.

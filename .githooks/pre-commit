@@ -37,3 +37,75 @@ if [ "$has_handoff" = "0" ] && [ "$has_role_handoff" = "0" ]; then
   echo "  Disable always: git config handoff.requireOnCommit false" >&2
   exit 1
 fi
+
+# Wave 120 — ADR-018 verdict-format gate (US-096 AC1-AC4)
+# Check staged coordination/handoffs/*.md and HANDOFF.md for Wave-111+ verdict headings
+# that do not match the ADR-018 canonical format.
+#
+# Canonical regex (em-dash is U+2014, not hyphen or en-dash):
+#   ^### Wave-NNN (PASS|REVISE|FAIL) verdict — PR #N — SHA <40hex>$
+#
+# Grandfathering: Wave < 111 verdict headings are skipped (pre-ADR-018 prose).
+# Detection pattern (identifies potential verdict lines regardless of format):
+#   ^### Wave-[0-9]{1,4}[^0-9].*\b(PASS|REVISE|FAIL) verdict\b
+#
+# Spec: architecture/decisions/ADR-018-pass-verdict-format.md
+
+FORMAT_REQUIRED_FROM_WAVE=111
+# ADR-018 canonical regex — em-dash separators are U+2014 (copy-pasted, not escaped)
+CANONICAL_PATTERN='^### Wave-[0-9]{1,4} (PASS|REVISE|FAIL) verdict — PR #[0-9]{1,6} — SHA [0-9a-f]{40}$'
+
+# Collect staged handoff files: coordination/handoffs/*.md and HANDOFF.md
+handoff_files=""
+for f in $(echo "$staged" | grep -E '^coordination/handoffs/.+\.md$'); do
+  if [ -f "$f" ]; then
+    handoff_files="$handoff_files $f"
+  fi
+done
+if echo "$staged" | grep -qx 'HANDOFF.md' && [ -f "HANDOFF.md" ]; then
+  handoff_files="$handoff_files HANDOFF.md"
+fi
+
+if [ -n "$handoff_files" ]; then
+  verdict_violations=""
+  for f in $handoff_files; do
+    lineno=0
+    while IFS= read -r line; do
+      lineno=$((lineno + 1))
+      # Is this a potential verdict heading?
+      if echo "$line" | grep -qE '^### Wave-[0-9]{1,4}[^0-9].*\b(PASS|REVISE|FAIL) verdict\b'; then
+        # Extract wave number
+        wave_num=$(echo "$line" | grep -oE 'Wave-[0-9]{1,4}' | head -1 | grep -oE '[0-9]{1,4}')
+        if [ -z "$wave_num" ]; then
+          continue
+        fi
+        if [ "$wave_num" -lt "$FORMAT_REQUIRED_FROM_WAVE" ]; then
+          # Pre-111: grandfathered, skip
+          continue
+        fi
+        # Wave >= 111: must match canonical regex
+        if ! echo "$line" | grep -qE "$CANONICAL_PATTERN"; then
+          verdict_violations="$verdict_violations
+$f:$lineno: $line"
+        fi
+      fi
+    done < "$f"
+  done
+
+  if [ -n "$verdict_violations" ]; then
+    echo "✗ pre-commit: Wave-${FORMAT_REQUIRED_FROM_WAVE}+ verdict heading(s) do not match ADR-018 canonical format." >&2
+    echo "" >&2
+    echo "  Canonical format:" >&2
+    echo "    ### Wave-NNN PASS verdict — PR #N — SHA <40-char-lowercase-hex>" >&2
+    echo "  (em-dash separators are U+2014 — not a hyphen or en-dash)" >&2
+    echo "" >&2
+    echo "  Offending lines:" >&2
+    echo "$verdict_violations" | grep -v '^$' | while IFS= read -r v; do
+      echo "    $v" >&2
+    done
+    echo "" >&2
+    echo "  Spec: architecture/decisions/ADR-018-pass-verdict-format.md" >&2
+    echo "  Bypass once: git commit --no-verify (use sparingly; logged in commit metadata as \"unsigned hook bypass\")" >&2
+    exit 1
+  fi
+fi

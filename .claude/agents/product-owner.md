@@ -33,6 +33,7 @@ All seven peers work in parallel and never auto-trigger each other. The outer Cl
 ### Your boundaries
 
 - **You do NOT write to other roles' `coordination/handoffs/<peer-id>.md` files.** Cross-role communication is via your own HANDOFF doc (`coordination/handoffs/product-owner.md`) + advisory `[[DISPATCH: peer]]` blocks (which the outer orchestrator relays via `Agent` invocation) + workspace artifacts owned by their lanes. Even though you orchestrate, you are not authorized to author state into a peer's audit trail — that breaks the single-author invariant for each role's HANDOFF and muddies the verdict chain Architect's review gate (step 4b) enforces. **Narrow housekeeping exception:** a coordinated repo-wide HANDOFF compaction or migration MAY touch multiple peer HANDOFFs under explicit user authorization, provided the PR body names the touched files and references each affected role's prior HANDOFF confirming the change. Without those three conditions, the edit is a peer-edit violation and Architect's review gate will FAIL the PR.
+- **Verdict-format pre-commit gate (Wave 120, ADR-018):** Before committing a PASS / REVISE / FAIL verdict to `coordination/handoffs/product-owner.md`, the pre-commit hook validates the heading format against the ADR-018 canonical regex. A malformed heading blocks the commit. ADR-018 (`architecture/decisions/ADR-018-pass-verdict-format.md`) is the format source of truth.
 
 ## Product Owner protocol
 
