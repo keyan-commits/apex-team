@@ -1,6 +1,32 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 111b — 5-cluster fan-out: lessons + UX skills + 11-issue skill proposals + ADR-018 amendment + cross-refs + completeness test)
+## ⏭️ NOW — 2026-06-04 (Wave 111c — CI/process discipline + ADR-018 backfills + shell-injection fix)
+
+**claude-code direct on `feature/wave-111c-ci-process-discipline` (PR #388, off origin/main `ba0905f`).**
+
+**Wave 111c — final sub-wave of Wave 111.** DevSecOps PRIMARY OWNER, Architect ratification, QA regression test. Closes #240, #246, #301, #324 + closes US-090 deliverables + first real test of ADR-018 post-merge backfill convention.
+
+**Deliverables (PR #388):**
+
+1. ✅ **#240** `gh pr checks --watch` step added to `.claude/agents/devsecops.md` merge protocol.
+2. ✅ **#246** New `.github/workflows/ux-gate-check.yml` — fires on PRs touching `src/**`/`design/**`/`tests/qa/wave-*/ui-*`; greps `coordination/handoffs/ux-designer.md` for ADR-018 canonical UX PASS verdict against HEAD SHA; `[skip-ux-gate]` emergency override.
+3. ✅ **#301** `gh pr merge --delete-branch` anomalous-closure playbook section in `.claude/agents/devsecops.md` + matching `LESSONS.md` entry.
+4. ✅ **#324** Deps verify: `pnpm outdated` returned clean; #324 closed.
+5. ✅ **ADR-018 CI wiring + backfill:** New `.github/workflows/pass-verdict-format-check.yml` — canonical regex enforcement + `PR #0` placeholder TTL check (>1h grace). Wave 111a + Wave 111b PASS verdicts backfilled in `coordination/handoffs/qa.md` (Wave 111a: PR #386 + SHA `a16c924739eddf928f63a257abdd77fbfa6fb1f8`; Wave 111b: PR #387 + SHA `ba0905fc75ca9788cef538e0eab078040336384a`). **First real exercise of ADR-018 Wave 111b post-merge backfill convention.**
+
+**Spec gap surfaced (Architect ratified Option A):** Wave 111b verdict heading used `Wave 111b` (space + alpha suffix), violating ADR-018 canonical regex `Wave-(\d{1,4})`. DevSecOps normalized to `Wave-111` + PR# disambiguation. Architect ratified: ADR-018 unchanged; sub-waves (a/b/c) are operational artifacts, PR# is the load-bearing disambiguator.
+
+**Architect-filed follow-up issues:** #389 (retire `_handoff-pending/` directory + fragment-fold convention under Plan C), #390 (extract Python heredoc in `pass-verdict-format-check.yml` to standalone script), #391 (protocol clarification — peers should not directly edit each other's `coordination/handoffs/<peer>.md`).
+
+**Shell-injection self-application catch (this commit):** DevSecOps's NEW `pass-verdict-format-check.yml` + `ux-gate-check.yml` embodied the SAME shell-injection anti-pattern that PR #378 fixed in `pr-hygiene.yml` (PR body interpolated directly into bash). PR #388's body contains backticks + `$` from the spec content — the new workflows crashed pre-grep. Fixed via env-var passthrough + `printf '%s'`. Net Plan C lesson: ADR-017 cleanliness + wave-NNN completeness/conformance tests catch their respective classes, but neither catches the YAML→bash injection class in newly-added workflow files. Wave 112 candidate: `.github/workflows/` lint rule.
+
+**Wave 111c QA test (US-090 AC5):** `tests/qa/wave-111c/wave-111c-completeness.test.ts` — **29/29 PASS** in <200ms. Full suite **249/249 PASS** (108: 153 + 110: 12 + 111a: 21 + 111b: 34 + 111c: 29).
+
+**Verification (all green):** lint clean, type-check clean, full suite 249/249.
+
+---
+
+## ⏭️ PREV — 2026-06-04 (Wave 111b — 5-cluster fan-out: lessons + UX skills + 11-issue skill proposals + ADR-018 amendment + cross-refs + completeness test)
 
 **claude-code direct on `feature/wave-111b-fanout` (off origin/main `a16c924`).**
 

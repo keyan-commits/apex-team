@@ -40,13 +40,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
         run: |
           set -euo pipefail
 
           # --- Emergency override ---
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          PR_BODY="${{ github.event.pull_request.body }}"
-          if echo "${PR_TITLE}${PR_BODY}" | grep -qF '[skip-verdict-check]'; then
+          # PR_TITLE/PR_BODY passed via env: to prevent shell injection on
+          # special characters (backticks, $, code-fences). Original
+          # injection bug fixed in #378; same anti-pattern caught again here.
+          if printf '%s%s' "$PR_TITLE" "$PR_BODY" | grep -qF '[skip-verdict-check]'; then
             echo "SKIP: [skip-verdict-check] override present in PR title/body."
             exit 0
           fi

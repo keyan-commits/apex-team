@@ -1,4 +1,45 @@
-## NOW — 2026-06-04 — Wave 111b Phase 3 (US-089 AC5 completeness test)
+## NOW — 2026-06-04 — Wave 111c (US-090 CI/process discipline completeness test)
+
+### Wave-111 PASS verdict — PR #0 — SHA ce6b2b1a0781ee15fcf8987cbc6a16e55671ec5b
+
+- **Gate role:** qa
+- **Timestamp:** 2026-06-04T11:51:49Z
+- **Notes:** Wave 111c completeness test (US-090 AC1-AC5) green. 29/29 new tests; full suite 249/249. Lint + type-check clean. PR #0 is commit-time placeholder per ADR-018 Wave 111b amendment; SHA is branch HEAD ce6b2b1a at commit time. DevSecOps backfills real PR # and merge SHA post-merge.
+
+### Deliverable
+
+- `tests/qa/wave-111c/wave-111c-completeness.test.ts` — 29 tests covering AC1-AC5 of US-090.
+
+### Gate results
+
+- `pnpm vitest run tests/qa/wave-111c/wave-111c-completeness.test.ts` → 29/29 PASS
+- `pnpm test:run` → 249/249 PASS (108: 153 + 110: 12 + 111a: 21 + 111b: 34 + 111c: 29)
+- `pnpm lint` → clean
+- `pnpm type-check` → clean
+
+### AC checklist (US-090)
+
+- AC1 (#240 — `gh pr checks` step in devsecops.md): devsecops.md exists, contains `gh pr checks --watch`, contains hard-blocker language. PASS (4 tests green)
+- AC2 (#246 — ux-gate-check.yml): workflow exists, contains `src/**` and `design/**` path globs, references `coordination/handoffs/ux-designer.md`, contains ADR-018 canonical verdict regex. PASS (5 tests green)
+- AC3 (#301 — anomalous-closure playbook): devsecops.md contains `anomalous-closure` section + detection + recovery steps; LESSONS.md contains matching entry. PASS (5 tests green)
+- AC4 (#324 — deps verification): pnpm-lock.yaml exists, non-empty, contains lockfileVersion header. PASS (3 tests green)
+- AC5 (ADR-018 CI wiring + backfills): pass-verdict-format-check.yml exists with regex enforcement + PR #0 TTL check; qa.md Wave 111a (PR #386 / SHA a16c924...) and Wave 111b (PR #387 / SHA ba0905f...) backfilled, both match ADR-018 canonical regex, no alpha-suffix, no PR #0 placeholder remains. PASS (12 tests green)
+
+### S10 gate
+
+S10 not triggered — wave touches no user-supplied collection logic (grep-based regression test on static files).
+
+### Legs A/B/C
+
+N/A — doc/test-only wave. No runtime code, no UI changes. `pnpm build` gate skipped per rubric. Full-suite vitest run is the applicable verification leg.
+
+### Wave-111c tests (US-085 evidence)
+
+- `tests/qa/wave-111c/wave-111c-completeness.test.ts` — 29 tests; mechanically asserts US-090 AC1-AC5 (gh-pr-checks gate, UX-gate CI, anomalous-closure playbook, lockfile, ADR-018 CI wiring + backfills).
+
+---
+
+## PREV — 2026-06-04 — Wave 111b Phase 3 (US-089 AC5 completeness test)
 
 ### Wave-111 PASS verdict — PR #387 — SHA ba0905fc75ca9788cef538e0eab078040336384a
 
