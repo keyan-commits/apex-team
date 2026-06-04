@@ -1,7 +1,8 @@
 # US-090 — Wave 111c CI/Process Discipline
 
-**Status:** accepted
+**Status:** done
 **Wave:** 111c
+**Shipped:** Wave 111c PR #388 (`10c002b` / merge `39298fb`)
 **Primary owner:** DevSecOps
 **Issues addressed:** #240, #246, #301, #324
 

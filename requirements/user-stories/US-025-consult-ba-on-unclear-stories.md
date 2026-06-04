@@ -1,8 +1,12 @@
 # US-025 — Consult-BA on Unclear Stories
 
-**Status:** accepted  
+**Status:** superseded  
 **Wave:** 70  
 **Closes:** #149  
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/lib/skills/*.ts` (qa, backend-developer, ui-developer, ux-designer, architect, devsecops) and `src/lib/roles.ts` ORCHESTRATOR_PROTOCOL — all monolith files retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). The consult-BA discipline (BR-004) was absorbed into `.claude/agents/*.md` bodies during Wave 108 body rewrites (PR #379, `586ed8d`).
 
 ## Story
 

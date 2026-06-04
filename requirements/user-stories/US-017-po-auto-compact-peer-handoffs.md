@@ -3,11 +3,15 @@ name: US-017-po-auto-compact-peer-handoffs
 description: PO automatically compacts peer HANDOFF docs exceeding 6000 chars (target ≤4000) before dispatching new work — prevents prompt bloat from degrading turn quality
 metadata:
   type: user-story
-  status: accepted
+  status: superseded
   owner: UI Dev (or BE Dev — pick idler at Wave 56 dispatch)
   closes: "#131"
   wave: Wave 56
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/lib/roles.ts` ORCHESTRATOR_PROTOCOL — a monolith file retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). Under the subagent runtime, HANDOFF docs are files at `coordination/handoffs/<role>.md`; compaction discipline is encoded directly in `.claude/agents/product-owner.md`. No equivalent of the 6000-char reactive trigger exists in the subagent runtime (subagent turns are single-turn; there is no pre-dispatch HANDOFF scan to implement).
 
 ## Story
 

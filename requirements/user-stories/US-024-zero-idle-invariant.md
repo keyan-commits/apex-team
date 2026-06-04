@@ -1,8 +1,12 @@
 # US-024 — Zero-Idle Invariant
 
-**Status:** accepted  
+**Status:** superseded  
 **Wave:** 69  
 **Closes:** #148  
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/lib/roles.ts` ORCHESTRATOR_PROTOCOL and `requirements/domains/orchestrator-protocol.md` (domain doc). The roles.ts file is a monolith file retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). Zero-idle invariant discipline (BR-003) was absorbed into `.claude/agents/product-owner.md` during Wave 108 body rewrites (PR #379, `586ed8d`).
 
 ## Story
 

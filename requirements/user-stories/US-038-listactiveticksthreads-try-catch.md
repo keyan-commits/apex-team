@@ -2,11 +2,15 @@
 id: US-038
 title: listActiveTickThreads missing try/catch
 slug: listactiveticksthreads-try-catch
-status: accepted
+status: superseded
 owner: backend-developer
 raised: 2026-06-02
 closes: "#185"
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/lib/db.ts` `listActiveTickThreads()` — a monolith file and function retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). There is no SQLite DB or boot-path tick re-arm sweep under the subagent runtime.
 
 # US-038 — listActiveTickThreads Missing try/catch — Boot-Path Crash Prevention
 

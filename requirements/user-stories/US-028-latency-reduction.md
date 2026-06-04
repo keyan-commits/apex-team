@@ -1,12 +1,16 @@
 # US-028 — Reduce per-turn latency: prompt caching + context-window trim + model-fit policy
 
-**Status:** `accepted`
+**Status:** superseded
 **Owner:** BE Dev (primary) + BA (spec)
 **Target wave:** 73
 **Closes:** TBD (GH issue to be filed by PO after wave 73 dispatch)
 **Depends on:** Wave 71 (US-026 merged — tick scheduler provides the autonomous ticking context for which latency matters most)
 
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/lib/providers.ts` `augmentSystemPrompt()`, `src/lib/agents.ts`, and `src/lib/roles.ts` — all monolith files retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). Prompt caching, context trim, and model-fit policy are no longer applicable in the same form under the subagent runtime (the Claude Code SDK handles caching natively; there is no `augmentSystemPrompt` wrapper). Model selection is encoded in `.claude/agents/<role>.md` frontmatter.
 
 ## Story
 

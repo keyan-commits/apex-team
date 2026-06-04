@@ -1,9 +1,14 @@
 # US-001 — Mandatory Multi-Phase Workflow Foundation
 
-**Status:** in-dev
+**Status:** superseded
 **Owner role:** multiple (Architect, BA, DevSecOps — cross-cutting foundation)
 **Created:** 2026-05-31
+**Superseded:** 2026-06-04
 **Story ID:** US-001
+
+## Resolution — superseded by Plan C cutover
+
+ACs 2–4 reference `pnpm dev:test:ui`, `pnpm dev:test:be`, ports `:3110`/`:3120`, git worktrees for physical role isolation, and a separate SQLite DB per instance — all monolith-era constructs retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). Under the subagent runtime there is no dev server to spin up; isolation is provided by separate Claude Code subagent invocations, not worktrees + ports. The phased workflow discipline itself was absorbed into `.claude/agents/*.md` bodies during Wave 108 (PR #379).
 
 ---
 

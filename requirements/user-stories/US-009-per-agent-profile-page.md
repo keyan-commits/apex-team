@@ -1,9 +1,14 @@
 # US-009 — Per-agent profile page
 
-**Status:** proposed
+**Status:** superseded
 **Owner role:** ui-developer, backend-developer
 **Created:** 2026-05-31
+**Superseded:** 2026-06-04
 **Story ID:** US-009
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target the Next.js route `/agents/[role]`, `src/lib/skills/*.ts` provenance metadata, `src/lib/roles.ts`, and dashboard components — all retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). Agent profile information now lives in `.claude/agents/<role>.md` files. Re-file against the viewer repo if a profile page is needed there.
 
 ---
 

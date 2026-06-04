@@ -2,12 +2,16 @@
 id: US-041
 title: Wire protocol constants into role prompts
 slug: protocol-constants-wiring
-status: accepted
+status: superseded
 owner: backend-developer
 raised: 2026-06-02
 closes: "#140"
 wave: 88
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/lib/roles.ts` and `src/lib/protocols.ts` — monolith files retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). Protocol constant wiring is not applicable; subagent prompts in `.claude/agents/*.md` carry the protocol text directly.
 
 # US-041 — Wire Protocol Constants into Role Prompts
 

@@ -1,6 +1,6 @@
 # US-035 — Server-side stall detector
 
-**Status:** accepted  
+**Status:** superseded  
 **Owner role:** backend-developer  
 **Linked issue:** #177  
 **Target wave:** Wave 81 (impl gated on #176 merge + server restart)  
@@ -8,6 +8,10 @@
 **Last updated:** 2026-06-02 (ADR-007 fold — all 6 OQs resolved)
 
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/lib/stall-detector.ts`, `src/lib/tick-scheduler.ts`, SQLite `stall_event` table, and `/api/team-status` — all monolith constructs retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). The server-side stall detector depended on the tick scheduler (US-026) and `agent_state` SQLite table, both retired. Under the subagent runtime there is no persistent server to run a stall detector.
 
 ## Story
 

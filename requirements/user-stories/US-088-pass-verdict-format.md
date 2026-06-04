@@ -1,7 +1,8 @@
 # US-088 — PASS-verdict format for coordination/handoffs/<role>.md
 
-**Status:** accepted
+**Status:** done
 **Wave:** 111a
+**Shipped:** Wave 111a PR #386 (`e37b29b` / merge `a16c924`)
 **Owner:** Architect (ADR-018 authorship) + QA (conformance test) + all gating roles (cross-reference updates)
 **Closes:** Wave 111a — Cluster 5 (PASS-verdict format standardization)
 

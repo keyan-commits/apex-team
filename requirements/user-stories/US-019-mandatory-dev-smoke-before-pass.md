@@ -2,12 +2,16 @@
 id: US-019
 title: Mandatory dev-server smoke before QA PASS
 slug: mandatory-dev-smoke-before-pass
-status: accepted
+status: superseded
 owner: BE Dev (Wave 64-impl); DevSecOps coordinates on ci.yml
 closes: "#141"
 created: 2026-06-01
 last_modified: 2026-06-01
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/lib/protocols.ts` VERIFICATION_PHASE_PROTOCOL, `src/lib/skills/qa.ts`, `pnpm dev:test`, and `:3100/api/health` — all monolith surfaces retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). The two-leg smoke gate (pnpm build + server health) was replaced by a subagent-runtime QA discipline encoded in `.claude/agents/qa.md` (Wave 108, PR #379).
 
 ## Story
 

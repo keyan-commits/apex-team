@@ -1,11 +1,15 @@
 # US-063 — StallSettingsDrawer Motion Cleanup
 
-**Status:** accepted
+**Status:** superseded
 **Owner role:** ui-developer
 **Created:** 2026-06-03
 **Story ID:** US-063
 
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `StallSettingsDrawer.tsx` CSS — a monolith component retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). Re-file against the viewer repo if the drawer is built there.
 
 ## Narrative
 

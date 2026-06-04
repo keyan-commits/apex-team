@@ -3,11 +3,15 @@ name: US-018-scout-oauth-no-api-key
 description: Scout 'Run now' rewrites skill-scout.mjs onto Claude Agent SDK + apex-engine web_search MCP — removes ANTHROPIC_API_KEY dependency for users on Claude subscription
 metadata:
   type: user-story
-  status: accepted
+  status: superseded
   owner: BE Dev
   closes: "#115"
   wave: Wave 57
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `scripts/skill-scout.mjs`, `src/app/api/scout/trigger/route.ts`, and `src/lib/providers.ts` — all monolith files retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). Scout functionality in the subagent runtime runs inside a Claude Code session via subagent invocations; it does not use REST API calls or a dashboard button.
 
 ## Story
 

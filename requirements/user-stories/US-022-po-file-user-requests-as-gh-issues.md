@@ -2,13 +2,17 @@
 id: US-022
 title: PO MANDATORY — Files Feature/Bug/Issue on Active Workspace Repo on Behalf of claude-code
 slug: po-file-user-requests-as-gh-issues
-status: accepted
+status: superseded
 owner: BE Dev (Wave 67; after Wave 65 + Wave 66 merge)
 closes: "#145"
 created: 2026-06-01
 last_modified: 2026-06-01
 wave: 67
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/lib/roles.ts` ORCHESTRATOR_PROTOCOL and `src/lib/providers.ts` `augmentSystemPrompt()` — monolith files retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). The mandatory issue-filing discipline (BR-001) was absorbed into `.claude/agents/product-owner.md` during Wave 108 body rewrites (PR #379, `586ed8d`). The `WORKSPACE_REPO` injection mechanism no longer applies; the outer Claude Code session drives the PO subagent directly with workspace context.
 
 ## Story
 

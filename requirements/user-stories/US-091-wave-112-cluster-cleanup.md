@@ -1,7 +1,8 @@
 # US-091 — Wave 112 cluster cleanup
 
-**Status:** accepted
+**Status:** done
 **Wave:** 112
+**Shipped:** Wave 112 PR #393 (`68202c3` / merge `75266d3`)
 **Issues:** #389 #390 #391 #196 (partial) #332 #333
 
 ---

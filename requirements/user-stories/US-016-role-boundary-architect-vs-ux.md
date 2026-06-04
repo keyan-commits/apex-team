@@ -1,9 +1,14 @@
 # US-016 — Mandatory requirements phase + Architect-vs-UX-Designer review routing
 
-**Status:** accepted
+**Status:** superseded
 **Owner role:** ui-developer (edits `product-owner.ts`, `architect.ts`, `ux-designer.ts`, `qa.ts`, `backend-developer.ts`, `ui-developer.ts`, `protocols.ts`, `mcp/tools.ts`, `LESSONS.md`)
 **Created:** 2026-06-01
 **Last updated:** 2026-06-01 (Wave 55 — supersedes narrow role-boundary version; expanded to full mandatory-triad mandate)
+**Superseded:** 2026-06-04
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/lib/skills/*.ts`, `src/lib/roles.ts` (ORCHESTRATOR_PROTOCOL), `src/mcp/tools.ts` (`talk_to_product_owner`/`talk_to_role` descriptions), and `protocols.ts` constants — all monolith files retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). The mandatory requirements-phase triad discipline and role-boundary routing are now encoded in `.claude/agents/*.md` body files (Wave 108, PR #379, `586ed8d`). The `REQUIREMENTS_PHASE_PROTOCOL` constant text survives in the subagent role prompts verbatim.
 
 ---
 

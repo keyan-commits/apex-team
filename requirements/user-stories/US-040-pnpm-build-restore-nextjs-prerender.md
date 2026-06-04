@@ -2,12 +2,16 @@
 id: US-040
 title: Restore pnpm build — Next.js 16.2.6 prerender crash fix
 slug: pnpm-build-restore-nextjs-prerender
-status: accepted
+status: superseded
 owner: backend-developer
 raised: 2026-06-02
 closes: "#151"
 wave: 88
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/app/global-error.tsx`, `next.config.ts`, and the Next.js `pnpm build` pipeline — monolith files retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). There is no Next.js app or `pnpm build` under the subagent runtime.
 
 # US-040 — Restore pnpm build: Next.js 16.2.6 prerender crash fix
 

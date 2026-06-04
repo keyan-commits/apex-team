@@ -1,9 +1,14 @@
 # US-008 — Team page density redesign: collapsed-by-default, click-to-expand
 
-**Status:** proposed
+**Status:** superseded
 **Owner role:** ui-developer
 **Created:** 2026-05-31
+**Superseded:** 2026-06-04
 **Story ID:** US-008
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `AgentPane.tsx`, `MessageBubble.tsx`, and the Next.js dashboard route (`/`) — components retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). The dashboard UI was replaced by the read-only apex-team-viewer repo at `keyan-commits/apex-team-viewer`. Re-file against the viewer repo if the density redesign is needed there.
 
 ---
 

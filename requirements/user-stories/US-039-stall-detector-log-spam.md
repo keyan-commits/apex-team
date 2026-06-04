@@ -2,11 +2,15 @@
 id: US-039
 title: Stall detector console.warn fires every 20s during prolonged stall
 slug: stall-detector-log-spam
-status: accepted
+status: superseded
 owner: backend-developer
 raised: 2026-06-02
 closes: "#181"
 ---
+
+## Resolution — superseded by Plan C cutover
+
+All ACs target `src/lib/tick-scheduler.ts` — a monolith file retired at Plan C cutover (main `ebc83c5`, PRs #373 + #374). ADR-007 and the stall detector were monolith constructs; neither exists under the subagent runtime.
 
 # US-039 — Stall Detector Log-Spam Fix (ADR-007 Violation)
 

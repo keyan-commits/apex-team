@@ -1,7 +1,8 @@
 # US-087 — Subagent prompt bodies reference only the Plan C runtime
 
-**Status:** accepted
+**Status:** done
 **Wave:** 108
+**Shipped:** Wave 108 PR #379 (`586ed8d` / merge `79edd1e`)
 **Owner:** Architect (ADR authorship) + DevSecOps/all roles (body edits) + QA (regression test)
 **Closes:** Wave 108 work item (subagent body legacy-ref elimination)
 
