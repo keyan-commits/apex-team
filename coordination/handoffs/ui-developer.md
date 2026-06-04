@@ -1,6 +1,63 @@
 # ui-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 121: viewer auto-follow Claude Code (US-097 AC1-AC6)
+## ⏭️ NOW — 2026-06-04 — Wave 123: viewer FEAT-grouped rendering (US-099 AC1-AC7 AC9)
+
+### Wave-123 PASS verdict — PR #6 — SHA a4ce3c752aa3cd75d25030ca47ec964038aee8a3
+- **Gate role:** ui-developer (self-attestation — implementation complete, awaiting Architect + UX + QA gate)
+- **Timestamp:** 2026-06-04T20:16:00Z
+- **Notes:** AC1-AC7 + AC9 implemented and manually verified (see round-trip verification below). apex-team `pnpm test:run` 603/605 PASS (6 pre-existing file-level failures, 1 pre-existing test failure — no new failures introduced). Viewer changes in **sibling-repo PR `keyan-commits/apex-team-viewer#6`** (branch `feature/wave-123-feat-grouped-rendering`, viewer commit `28b76aa226ae00bca3c16aac236ff7275ab50560`). No `architecture/` edits; no peer HANDOFF docs edited.
+
+**Deliverables (all in `keyan-commits/apex-team-viewer` PR #6):**
+
+1. `server.mjs`:
+   - AC2: `parseFrontmatter(content)` — simple regex extractor for `---`…`---` blocks. Extracts `ticket`, `parent_feat`, `feat`, `parent_us`, `role`, `status`. Fail-soft: returns `null` on failure, file goes to `ungrouped`.
+   - AC1+AC2: `listRoleGrouped(role)` replaces `listRole(role)` in the `/api/artifacts` route. Returns `{ role, features[], ungrouped[], pipelines? }`. Groups files by `parent_feat:` (all roles) or `feat:` (BA-owned FEAT files). FEAT title resolved from `requirements/features/FEAT-NNNN-*.md` (frontmatter `title:` or first H1).
+   - AC5: `features[]` sorted FEAT ID descending; `tickets[]` sorted by numeric ticket ID descending (mtime fallback).
+   - AC6: `ROLE_PATHS` extended with `fe-developer: ['src/features', 'src']` and `be-developer: ['src/features', 'src']`. Tolerant — returns empty arrays if dirs absent.
+   - AC9: DevSecOps `listRoleGrouped` returns extra `pipelines: []` field from `ops/pipelines/`. Empty if dir absent.
+
+2. `public/index.html`:
+   - AC6: `<button data-role="fe-developer">FE Dev</button>` + `<button data-role="be-developer">BE Dev</button>` added to `#role-tabs` nav after DevSecOps.
+
+3. `public/app.js`:
+   - AC3: `renderOutput()` rewritten. Renders FEAT collapsible cards (collapsed default, chevron toggle, `aria-expanded`). Each card: FEAT ID + title + ticket count header; expandable body with ticket rows.
+   - AC3: Legacy/Unsorted section below FEAT cards for `ungrouped` files.
+   - AC9: Reusable Pipeline Templates section above FEAT cards for DevSecOps (hidden if `pipelines` is empty).
+   - AC7: Search filters across FEAT title + slug + ticket ID + path. Cards with no matching tickets + no FEAT header match are hidden.
+   - AC4: Ticket row clicks call existing `openFile(path)` — no new drawer logic.
+
+4. `public/style.css`:
+   - `.feat-card`, `.feat-card-header`, `.feat-card-body`, `.feat-ticket-row`, `.feat-cards`, `.feat-section`, `.feat-section-heading`, `.feat-empty`, `.pipelines-section` styles added.
+   - AC5: Status pills in ticket rows reuse existing `.ticket-status` CSS classes — zero new color rules.
+   - `prefers-reduced-motion: reduce` guard on `.feat-card-header { transition: none }`.
+   - `:focus-visible` ring on `.feat-card-header` (Wave 112 a11y lesson applied).
+
+**Round-trip verification:**
+- `GET /api/artifacts?role=ba` → `{ features: [{feat: 'FEAT-0003', ...}, {feat: 'FEAT-0002', ...}, {feat: 'FEAT-0001', ...}], ungrouped: [...50 files...] }` (FEAT-0003 first, descending)
+- `GET /api/artifacts?role=devsecops` → `{ features: [], ungrouped: [...], pipelines: [{path: 'ops/pipelines/dev.sh', ...}, ...4 files...] }`
+- `GET /api/artifacts?role=fe-developer` → `{ features: [], ungrouped: [] }` (graceful empty)
+- `GET /api/artifacts?role=unknown` → `{ role: 'unknown', features: [], ungrouped: [] }` (graceful)
+- apex-team `pnpm test:run` → 603/605 PASS (6 pre-existing file failures + 1 pre-existing test failure — unchanged from main baseline)
+
+**Peer-edit boundary:** only own HANDOFF doc + viewer repo files. No `architecture/` edits.
+
+**Gate routing:**
+- Viewer PR #6 touches rendered UI (index.html, app.js, style.css) → UX Designer gates UI
+- Server-side logic (server.mjs) → Architect gates
+- QA authors `tests/qa/features/FEAT-0002-viewer-feat-grouped-rendering/TEST-NNNN-*.test.ts` (AC8)
+
+## In flight
+- Viewer PR #6 open at `keyan-commits/apex-team-viewer` — awaiting Architect + UX Designer + QA gates.
+
+## Next
+- After QA PASS: HANDOFF to DevSecOps to merge viewer PR #6.
+
+## Notes
+- apex-team has no active rendered UI surface. All Wave 123 viewer code lives in `keyan-commits/apex-team-viewer`.
+- AC8 (regression tests) is QA's deliverable — running in parallel.
+- `featTitleCache` is invalidated on workspace switch (uses `featTitleRoot` guard).
+
+## ⏭️ PREV — 2026-06-04 — Wave 121: viewer auto-follow Claude Code (US-097 AC1-AC6)
 
 ### Wave-121 PASS verdict — PR #0 — SHA 8e6fbc61393588bf420d6f9f9081951c4c14b4f4
 - **Gate role:** ui-developer (self-attestation — implementation complete, awaiting Architect + UX + QA gate)

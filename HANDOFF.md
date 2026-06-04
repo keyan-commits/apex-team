@@ -1,6 +1,24 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 122 — FEAT-XXXX feature grouping convention + autonomous-on-any-project standard)
+## ⏭️ NOW — 2026-06-04 (Wave 123 + Wave 124 — viewer FEAT-grouped rendering + DevSecOps reusable pipelines/CLI)
+
+**claude-code orchestrator on `feature/124-devsecops-pipelines` (off main `a4ce3c7`).** Two waves co-landing in PR #405 (apex-team) + PR #6 (sibling viewer repo).
+
+**Wave 123 — Viewer FEAT-grouped rendering (US-099, sibling PR #6 `28b76aa`):** server.mjs extends `/api/artifacts` to return `{ role, features: [{feat, slug, title, tickets[]}], ungrouped[], pipelines? }`; frontmatter parser (fail-soft); FE Dev + BE Dev role tabs added; DevSecOps `pipelines[]` section. Public app.js + index.html + style.css gain collapsible FEAT cards + ungrouped fallback + search-filter. apex-team-side artifacts in PR #405: HANDOFF for ui-developer + QA TEST-0003 (51 tests, runtime-gated on `VIEWER_READY`) + 3-fixture workspace tree under `requirements/samples/feat-0002-fixtures/` + vitest.config.ts + eslint.config.mjs exclusions for samples.
+
+**Wave 124 — DevSecOps reusable pipelines + CLI (US-100, PR #405):** `ops/pipelines/{dev,staging,prod}.sh` + `_template.sh` skeleton; per-feature overlay convention `ops/features/FEAT-XXXX-<slug>/OPS-NNNN-<slug>.sh` sourced automatically; `scripts/ops-run.mjs` + `scripts/qa-feat.mjs` CLI runners; `package.json` `ops:run` + `qa:feat` scripts; `ops/README.md` invocation docs; `.claude/agents/devsecops.md` body amendment with `### ops/pipelines standard (Wave 124 — MANDATORY)`. QA TEST-0002 (33 tests) verifies template shape + executability + CLI runner validity + README phrases.
+
+**Verification (all green):**
+- `pnpm test:run` → **655 passed + 1 skipped** (prior 571 + Wave 123 51 + Wave 124 33)
+- `pnpm lint`, `pnpm type-check` clean
+- `sh -n ops/pipelines/{dev,staging,prod}.sh` syntax clean; `node --check` clean on both `scripts/*.mjs`
+- Viewer manual sanity: `/api/artifacts?role=ba` returns `features[]` + `ungrouped[]`; DevSecOps tab shows `pipelines[]`
+
+**In flight / next:**
+- PR #405 (apex-team) + PR #6 (viewer) — Architect + UX gate pending → DevSecOps merges
+- HANDOFF refresh shipped in same PRs per HANDOFF-in-PR rule
+
+## PREV — 2026-06-04 (Wave 122 — FEAT-XXXX feature grouping convention + autonomous-on-any-project standard)
 
 **claude-code direct on `feature/wave-122-feat-grouping-convention` (off origin/main `0b4f7bd`).**
 

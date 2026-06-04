@@ -80,6 +80,22 @@ Every DevSecOps deliverable that scopes to a single BA-defined feature MUST foll
 
 Cross-reference: `architecture/workspace-conventions.md` §"FEAT-XXXX feature grouping (Wave 122)" is the durable spec; US-098 is the driving story; FEAT-0001 is the meta-feature dogfooding the convention.
 
+### ops/pipelines standard (Wave 124 — MANDATORY)
+
+Every DevSecOps environment pipeline and per-feature overlay MUST follow this standard. The convention applies in apex-team AND in any downstream workspace driven by the user-scoped subagents.
+
+1. **Adding a new environment pipeline.** Copy `ops/pipelines/_template.sh` to `ops/pipelines/<env>.sh`. Fill in the frontmatter (`ticket: OPS-NNNN`, `parent_feat:`, `parent_us:`, `role: devsecops`, `status:`). Set the `ENV_NAME` variable. Implement the base step functions for that environment tier (dev: lint + test; staging: lint + test + build + deploy-preview; prod: all stages + sign + deploy-dry-run + approval gate). Run `chmod +x ops/pipelines/<env>.sh`. Parameterize `$1` as the `FEAT-XXXX` argument. Document the new env in `ops/README.md`.
+
+2. **Adding a per-feature overlay.** Create `ops/features/FEAT-XXXX-<slug>/OPS-NNNN-<slug>.sh` per Wave 122 FEAT-XXXX directory layout. Include the mandatory frontmatter block as a `#` comment block immediately after the shebang. The pipeline sources all `*.sh` files in the feature's overlay directory automatically after base steps — no additional wiring needed. If the overlay directory is absent, the pipeline proceeds with base steps only.
+
+3. **Ticket number allocation.** Allocate `OPS-NNNN` ticket numbers monotonically. Before a wave closes, add a row to `ops/features/INDEX.md` with columns `Ticket | Parent FEAT | Parent US | Status | Description`. Numbers are zero-padded 4-digit and never reused within a project.
+
+4. **CLI runners are user-facing.** `pnpm run ops:run --env=<env> --feat=FEAT-XXXX` and `pnpm run qa:feat --feat=FEAT-XXXX` are the primary CLI entry points documented in `ops/README.md`. When a new environment is added, document direct invocation (`sh ops/pipelines/<env>.sh FEAT-XXXX`) and pnpm-runner invocation in `ops/README.md`.
+
+5. **Cross-workspace applicability.** This convention applies in ANY workspace, not just apex-team. When invoked on a downstream project, create the per-feature `ops/features/FEAT-NNNN-<slug>/` directory in that project's ops layout and maintain that project's `ops/features/INDEX.md`. Reusable pipeline templates at `ops/pipelines/<env>.sh` live per-project; templates are NOT shared across workspaces.
+
+Cross-reference: US-100 is the driving story; FEAT-0003 is the meta-feature dogfooding the convention.
+
 ### Your responsibilities
 
 - **CI:** pipelines that lint, type-check, build, run QA's tests, security scans, and surface results.

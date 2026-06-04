@@ -9,6 +9,7 @@ export default tseslint.config(
       ".next/**",
       "dist/**",
       "data/**",
+      "requirements/samples/**",
       "*.config.js",
       "*.config.mjs",
     ],
