@@ -1,6 +1,42 @@
 # ui-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 123: viewer FEAT-grouped rendering (US-099 AC1-AC7 AC9)
+## ⏭️ NOW — 2026-06-04 — Wave 125: viewer a11y polish (US-101 AC1-AC5)
+
+### Wave-125 PASS verdict — viewer PR #10 — apex-team branch a354bbfac6f441231a39b2a87945c4e6fa42a7b5
+- **Gate role:** ui-developer (self-attestation — implementation complete, awaiting UX + QA gate)
+- **Timestamp:** 2026-06-04T00:00:00Z
+- **Notes:** All five ACs implemented. Viewer changes in **sibling-repo PR `keyan-commits/apex-team-viewer#10`** (branch `feature/wave-125-a11y-polish`, viewer commit `f677573`). No `architecture/` edits; no peer HANDOFF docs edited.
+
+**Deliverables (all in `keyan-commits/apex-team-viewer` PR #10):**
+
+1. `public/style.css`:
+   - AC1: `.search:focus-visible { outline: 2px solid #6a8cd6; outline-offset: 1px; }` added after `.search:focus` (WCAG 2.4.11).
+   - AC2: `.feat-card-header:focus-visible` — changed `outline: 2px solid #6a8cd640` (25% alpha, 1.43:1) → `outline: 2px solid #6a8cd6` (solid, 5.59:1). `outline-offset: -2px` → `outline-offset: 1px`. `.badge-btn:focus-visible` — same alpha→solid fix, offset `2px` → `1px` (WCAG 1.4.11).
+   - AC3 support: `.file-open:focus-visible { outline: 2px solid #6a8cd6; outline-offset: 1px; border-radius: 2px; }` added.
+   - AC5 sweep: `.select:focus-visible` also had `#6a8cd640` alpha defect — corrected to solid `#6a8cd6` (same sweep pass).
+
+2. `public/app.js`:
+   - AC3: All four `.file-open` render paths updated — `renderTickets` (tickets tab, line ~121), `renderTicketRow` (FEAT card rows, line ~176), pipelines section (line ~195), ungrouped flat rows (line ~266) — each span gets `tabindex="0" role="button"`.
+   - AC3: Keydown handler wired at both `#output-list .file-open` and `#tickets-list .file-open` event sites. Enter/Space → `openFile(path)`; Space also `e.preventDefault()` to block page scroll.
+   - AC4: `.feat-card-header` button gets `id="feat-header-${feat.feat}"`. `.feat-card-body` gets `role="region"` + `aria-labelledby="feat-header-${feat.feat}"` (WCAG 4.1.2).
+
+**Gate routing:**
+- Viewer PR #10 touches rendered UI → UX Designer gates
+- No server-side changes — Architect gate not required for this PR
+- QA authors `tests/qa/features/FEAT-0004-viewer-a11y-polish/TEST-0004-viewer-a11y-polish.test.ts` (AC6/US-101)
+
+## In flight
+- Viewer PR #10 open at `keyan-commits/apex-team-viewer` — awaiting UX Designer + QA gates.
+
+## Next
+- After QA PASS: HANDOFF to DevSecOps to merge viewer PR #10.
+
+## Notes
+- apex-team has no active rendered UI surface. All Wave 125 viewer code lives in `keyan-commits/apex-team-viewer`.
+- AC5 sweep found `.select:focus-visible` also had the alpha defect (not in original 4 issues). Fixed in same pass — brings all focus rings to canonical `#6a8cd6` solid token.
+- Keydown handler placement: in `renderOutput()` (output tab) the handler covers both `#output-list` and `#tickets-list` elements so a single wire-up site handles both tabs. In `renderTickets()` the tickets-list handler is co-located with the click handler for clarity.
+
+## ⏭️ PREV — 2026-06-04 — Wave 123: viewer FEAT-grouped rendering (US-099 AC1-AC7 AC9)
 
 ### Wave-123 PASS verdict — PR #6 — SHA a4ce3c752aa3cd75d25030ca47ec964038aee8a3
 - **Gate role:** ui-developer (self-attestation — implementation complete, awaiting Architect + UX + QA gate)
