@@ -1,8 +1,130 @@
 # architect — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 111a Cluster 5 foundation (ADR-018 canonical PASS-verdict format)
+## ⏭️ NOW — 2026-06-04 — Wave 111b Phase 1 (Clusters 1 + 6 + 7 single-author)
 
-**Deliverable:** `architecture/decisions/ADR-018-pass-verdict-format.md`. Specifies the heading-anchored markdown block + 4 field lines that gate-role HANDOFF docs (`coordination/handoffs/qa.md`, `ux-designer.md`, `architect.md`) MUST emit on PASS / REVISE / FAIL verdicts dated >= Wave 111. Consumed by `.claude/agents/devsecops.md` line 58 (step 3, Wave 110); mechanically enforced by Wave 111c CI.
+**Deliverables (5 files, all single-author within Architect's own lane — no co-authorship gate fires):**
+
+1. `architecture/decisions/ADR-018-pass-verdict-format.md` — Cluster 6 amendment landed: `## 2026-06-04 amendment — commit-time placeholder pattern (Wave 111b)`.
+2. `architecture/INDEX.md` — ADR-018 row status updated to `Accepted (amended Wave 111b)`; "Last updated" footer refreshed.
+3. `.claude/agents/architect.md` — Cluster 1 lessons section (5 incidents) + Cluster 7 ADR-018 citation in review rubric step 7.
+4. `.claude/agents/qa.md` — Cluster 1 lessons section (5 incidents) + Cluster 7 ADR-018 citation in Deployment-gate verification step 5.
+5. `.claude/agents/devsecops.md` — Cluster 1 lessons section (5 incidents) + Cluster 7 ADR-018 citation in Deployment workflow step 3 (including post-merge backfill sub-step).
+6. `.claude/agents/ux-designer.md` — Cluster 7 ADR-018 citation only (no Cluster 1 per dispatch — UX not in top-3 drift list).
+
+### Cluster 6 (a) vs (b) decision — Option (a) Two-phase pattern
+
+Adopted: commit-time placeholder (`PR #0` + last-known SHA from parent commit) + DevSecOps post-merge backfill commit on main.
+
+**Why (a) over (b):**
+- **File-on-disk discipline.** CLAUDE.md hard rule: "files on disk are the only state." Moving verdicts to PR descriptions punctures this invariant. PR descriptions are mutable, not version-controlled, and require viewer-side `gh` API fetches.
+- **DevSecOps step 3 already cites HANDOFF docs.** Wave 110 ratified `Open coordination/handoffs/qa.md and (if UI) coordination/handoffs/ux-designer.md`. Option (b) would require rewriting that step plus the four subagent bodies. Option (a) only adds an amendment.
+- **Self-application proof.** Wave 111a's QA verdict already recorded in canonical-block form using `PR #0` + last-known SHA. The canonical regex (`PR #(\d{1,6})` + `SHA ([0-9a-f]{40})`) already accepts these values. Option (a) formalizes a usage pattern within the existing format, not a format change.
+- **In-flight migration cost.** Option (a) is a no-op for Wave 111a's existing verdict (it just needs backfill). Option (b) would require relocating the verdict body.
+
+**Backfill mechanism: DevSecOps merge step.**
+
+Three candidates considered (table in ADR-018 amendment); DevSecOps step is the natural owner because the merge SHA is only knowable post-merge by the merge author. Manual amend rejected (verdict author no longer owns the branch). Scheduled CI rejected (leaks stale placeholders during the grace window).
+
+Backfill commit message convention: `chore(handoff): backfill Wave-NNN verdict PR # and merge SHA`.
+
+**State semantics for DevSecOps step 3 (amended):** the original 4-row table grew to 5 rows. New row "PASS with placeholder — pre-merge expected state" uses `git merge-base --is-ancestor <verdict-SHA> <HEAD_SHA>` to verify the placeholder's SHA is reachable from the PR HEAD — treats reachable placeholder as merge-eligible.
+
+**Test impact: zero.** ADR-018's canonical regex is unchanged. The amendment is purely additive documentation. `tests/qa/wave-111/pass-verdict-format.test.ts` continues to pass 21/21 with no edits required. Verified.
+
+### Cluster 1 lesson selections per body
+
+**architect.md (5 incidents):**
+1. Wave 109 / #335 — architecture/ co-authorship gate
+2. Wave 108 / ADR-017 — legacy-ref sweep methodology
+3. Wave 110 / #381 — docs-integrity findings on LESSONS.md
+4. Wave 111a — self-application bug-catch (39-char SHA placeholder)
+5. PR #138 / Wave 64 — `tsc` and `vitest` do not catch SWC parse errors (durable principle: compiler-independence in the verification matrix)
+
+**qa.md (5 incidents):**
+1. US-085 / Wave 53 — tests are files on disk, not chat artifacts
+2. Wave 53 — mocking the component under visual test defeats verification
+3. Wave 108 — cleanliness regression test pattern (self-applying gates)
+4. Wave 109 / #314 — pre-verdict SHA sync prevents stale-checkout verdicts
+5. Wave 111a — self-application surfaces format usability gaps (chicken-and-egg)
+
+**devsecops.md (5 incidents):**
+1. Wave 110 / PR #231 / #383 — merge protocol bypass on implementer's claim
+2. Wave 109 / PR #311 — false-REVISE from stale checkout (upstream-aligned)
+3. Wave 14 — direct-to-main "bootstrap exceptions"
+4. Wave 93 → 108 — server-side "Update branch" bypasses union merge driver
+5. Wave 110 step-list rationale — verifiable gates beat asserted gates
+
+### Cluster 1 lesson-format discipline (post-mortem on first attempt)
+
+Initial draft of architect.md lessons quoted retired patterns by name in backticks. ADR-017 cleanliness test (Wave 108) failed 4 assertions — the literal tokens for legacy patterns are denylisted across all subagent bodies, not just outside of lesson narrative. Corrected by rephrasing to describe the patterns (e.g. "dev-server commands, fragment-folding scripts, port literals") without naming the literal tokens. This is itself a lesson worth noting for Cluster 3 implementers: when documenting legacy incidents inside a subagent body, do not reproduce denylisted tokens verbatim — describe the class.
+
+### Cluster 7 cross-references (inline citations, one-line each)
+
+Suggested cite text (used consistently across 4 files): `see ADR-018 for canonical PASS-verdict block format; Wave 111b amendment formalizes the commit-time placeholder + DevSecOps post-merge backfill pattern.`
+
+Locations:
+- `.claude/agents/devsecops.md` step 3 (Deployment workflow) — citation + backfill sub-step text.
+- `.claude/agents/architect.md` review rubric step 7 (PASS verdict definition) — citation inline.
+- `.claude/agents/ux-designer.md` Gate verdict format / PASS verdict section — citation inline.
+- `.claude/agents/qa.md` Deployment-gate verification step 5 — citation inline.
+
+### Cluster 3 guidance for Phase 2 implementers (review-time only — recording here for Phase 2 fan-out)
+
+Six implementers will land new skill sections in their own subagent bodies. Consistent structure recommendations:
+
+- **Header level:** use `## Lessons from prior incidents` (level 2) at the END of the body, after all role-specific sections but BEFORE any auto-generated footer. This matches the position used in architect.md / qa.md / devsecops.md this wave.
+- **Bullet shape:** per-incident format mandated in the Wave 111b dispatch:
+  ```
+  - **Date / Wave / Rule** — one-line incident summary
+    - **Why:** root cause
+    - **Apply:** concrete behavior the subagent should now exhibit
+  ```
+  Keep all three sub-fields (`**Date / Wave / Rule**`, `**Why:**`, `**Apply:**`) — the format consistency is what makes the section skimmable across roles.
+- **Lesson count:** 3-5 per body. More than 5 dilutes attention; fewer than 3 suggests the role doesn't have enough drift history to warrant the section.
+- **Token discipline (load-bearing):** do NOT reproduce ADR-017 denylisted tokens verbatim inside the lesson body. The Wave 108 cleanliness test (`tests/qa/wave-108/subagent-body-cleanliness.test.ts`) runs on every subagent body and fails on dev-server-command tokens, fragment-folding scripts, port literals, MCP-transport tokens, dangling `src/lib/` pointers. Describe the class instead. I caught this only by running the test; the test catches it for you mechanically.
+- **Source discipline:** every lesson MUST be sourced from a real LESSONS.md entry, a real PR number, or a real wave incident. Do NOT invent lessons. If a role doesn't have 3 real incidents, the section is shorter — that's acceptable.
+- **Verification:** every Cluster 3 contributor runs `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` BEFORE handing off. The test takes <200ms; failing it on commit is a self-inflicted REVISE.
+
+### Verification (this turn)
+
+- `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` → 153/153 PASS (post-fix; initial draft had 4 failures from quoted denylist tokens — fixed and re-verified).
+- `pnpm vitest run tests/qa/wave-110/subagent-body-completeness.test.ts` → 12/12 PASS.
+- `pnpm vitest run tests/qa/wave-111/pass-verdict-format.test.ts` → 21/21 PASS (ADR-018 amendment is purely additive; no test update needed — regex unchanged, fields unchanged, examples still match).
+- `pnpm test:run` → 186/186 PASS full suite.
+- `pnpm lint` → clean.
+- `pnpm type-check` → clean.
+
+### Architecture/ co-authorship gate
+
+I AM the Architect. All `architecture/` edits this turn (ADR-018 amendment, INDEX.md refresh) are within my own lane. No HANDOFF required.
+
+### In flight / next
+
+- This slice is ready for code review. Single-author across all 6 files (5 modified + 1 INDEX) within my own lane — no co-authorship gate fires.
+- Phase 2 (Cluster 3) fan-out — 6-subagent parallel work on lessons sections for: business-analyst.md, ui-developer.md, backend-developer.md, ux-designer.md (Cluster 1 portion if PO redispatches), product-owner.md, and any remaining drift bodies. PO orchestrates the fan-out; I review each PR diff in Phase 2 via Wave 109 co-authorship gate (none of those PRs should touch `architecture/`).
+- Wave 111c (gated on 111b): DevSecOps wires the canonical regex into CI. Workflow: fetch PR HEAD SHA, grep gate-role HANDOFF docs, fail PR if `Wave-N PASS — PR #<N> — SHA <HEAD_SHA>` missing for a runtime-code PR. Add follow-up: detect `PR #0` placeholders on PRs merged >1h ago (catches missed backfills).
+- Wave 111+ candidate (parked): `scripts/emit-verdict.sh --backfill <PR#> <merge-SHA>` helper for DevSecOps's backfill step.
+
+### Parked / future (carried forward)
+
+- `system-design.md` — still not created.
+- `tech-stack.md` — still not created (Vitest + ESLint + TS + pnpm is the entire stack).
+- `coding-standards.md` — still not created. Wave 111b lessons-section pattern is a candidate first-draft entry: "every subagent body carries a `## Lessons from prior incidents` section sourced from LESSONS.md" + the token-discipline rule.
+- Fitness function for OQ-085-001's "no binary files committed under `tests/qa/wave-*/evidence/`" — QA owns implementation.
+- Viewer-repo subagent body audit (per ADR-017 follow-up).
+- Wave 111c CI: extend the canonical-format check to flag `PR #0` placeholders on PRs merged >1h ago (catches missed backfills without blocking pre-merge legitimate placeholders).
+
+### Notes / caveats
+
+- The ADR-018 amendment is purely additive — the canonical regex, field shape, and Phase-1 example block remain authoritative. The amendment formalizes a usage pattern (placeholder + backfill) inside the existing format.
+- The Cluster 1 lesson narrative discipline (describe-class-not-token) is itself a candidate addition to coding-standards.md if/when that file is drafted. Recording in Wave 111b NOW for visibility.
+- Wave 111b Phase 1 is single-author within my lane. Phase 2 (Cluster 3) is the parallel 6-subagent fan-out. The two phases are sequential by design: lessons-format consistency benefits from one role landing the pattern first (this wave's architect.md / qa.md / devsecops.md) before 6 roles attempt it in parallel.
+
+---
+
+## PREV — 2026-06-04 — Wave 111a Cluster 5 foundation (ADR-018 canonical PASS-verdict format)
+
+**Deliverable:** `architecture/decisions/ADR-018-pass-verdict-format.md`. Specifies the heading-anchored markdown block + 4 field lines that gate-role HANDOFF docs (`coordination/handoffs/qa.md`, `ux-designer.md`, `architect.md`) MUST emit on PASS / REVISE / FAIL verdicts dated >= Wave 111. Consumed by `.claude/agents/devsecops.md` step 3 (Wave 110); mechanically enforced by Wave 111c CI.
 
 ### Canonical PASS verdict snippet (verbatim — for QA + BA grep-reuse)
 
@@ -33,156 +155,55 @@ REVISE and FAIL share the same shape (only the verdict token differs in the head
 ^### Wave-(\d{1,4}) (PASS|REVISE|FAIL) verdict — PR #(\d{1,6}) — SHA ([0-9a-f]{40})$
 ```
 
-Capture groups (in order): wave number, verdict type, PR number, full 40-char HEAD SHA. The em-dash MUST be embedded as the literal U+2014 character — escape sequences (`—`) vary across grep dialects. macOS BSD `grep` users should invoke `rg` (ripgrep) which handles Unicode without flag fiddling.
-
-After heading match, field-extraction regexes (lines 2-5 below the heading):
-
-```regex
-^- \*\*Gate role:\*\* (qa|ux-designer|architect)$
-^- \*\*Timestamp:\*\* (\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z)$
-^- \*\*Blocks:\*\* (\d+)$            # REVISE/FAIL only
-^- \*\*Notes:\*\* (.*)$              # may be empty after colon
-```
+Capture groups (in order): wave number, verdict type, PR number, full 40-char HEAD SHA. The em-dash MUST be embedded as the literal U+2014 character.
 
 ### Backward-compat decision: Option (c) — grandfather pre-Wave-111 entries; format binds Wave 111+ only
 
 Existing PASS-shaped prose (`coordination/handoffs/qa.md` Waves 108/110; `ux-designer.md` Waves 107-110 advisory replies; `architect.md` historical prose) is **grandfathered**. No retroactive rewrite. Cluster 4 CI's regex scopes its check to verdicts where `wave >= 111` — pre-111 prose is invisible to the check by construction.
 
-Reasoning: (a) annotate-inline adds reading noise and CI allowlist complexity for zero audit gain (pre-111 verdicts are for already-merged PRs); (b) sweep churns commit history and risks breaking external references citing the old prose by line; (c) forward-binding has zero migration cost — gate roles begin emitting the new format on Wave 111+ verdicts. Note: ux-designer's "Verdict: No UI impact — skip UX gate." replies are triad-phase advisory replies, NOT gate-role PASS verdicts under this ADR — they're explicitly out of scope.
-
-### Cross-reference bundling decision: DEFERRED to Wave 111b
-
-Bundled in 111a: ADR-018 + `architecture/INDEX.md` entry only. Atomic PR; spec-only.
-
-Deferred to 111b: cross-references in `.claude/agents/devsecops.md` step 3, `.claude/agents/architect.md` review rubric step 7, `.claude/agents/ux-designer.md` Gate verdict format section (lines 360-377), `.claude/agents/qa.md` Deployment-gate verification section. Each role pastes the canonical block as a fill-in template into its own body.
-
-Reasoning: (1) 111a's user prompt explicitly framed this as "Cluster 5 foundation. PASS-verdict format spec" — single deliverable focus. (2) Four subagent body edits enlarge this PR meaningfully and each is small + parallelizable in 111b. (3) DevSecOps step 3's instruction is already self-contained ("Confirm a Wave-N PASS verdict is recorded against the PR's HEAD SHA") — the format spec doesn't change WHAT DevSecOps verifies; until Wave 111c CI lands, DevSecOps reads by eye anyway. No pointer is dangling because step 3 doesn't reference the format spec — it just exists. (4) ADR-017 grep-test (`tests/qa/wave-108/subagent-body-cleanliness.test.ts`) gets nothing to evaluate this wave since no subagent files were touched; verified clean (153/153).
-
-### Files landed this turn
+### Files landed Wave 111a
 
 1. `architecture/decisions/ADR-018-pass-verdict-format.md` (new) — full spec with rationale, regex, state semantics for DevSecOps step 3, backward-compat policy, follow-ups for 111b + 111c.
 2. `architecture/INDEX.md` — added ADR-018 row to Decision Records table; updated "Last updated" line to Wave 111a.
 
-### Verification (this turn)
+### Verification (Wave 111a)
 
-- `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` → 153/153 PASS (no subagent files touched; sanity-check the ADR-018 templates contain no ADR-017-denylisted patterns).
-- No subagent-body edits this wave → no ADR-017 co-authorship concerns; no architect.md self-review needed beyond ADR-018 itself, which is Architect-authored in Architect's own lane.
-
-### In flight / next
-
-- This slice is ready for code review. As Architect-authored `architecture/` edits (new ADR + INDEX row), this is single-author within my own lane — no co-authorship gate fires.
-- Wave 111b (parallel candidate, deferred): four subagent body edits to embed the canonical block as a template in each gate role's body. Recommend parallel dispatch to qa + ux-designer + (self for architect.md + devsecops.md) — each edit is small and confined to one file's review/critique workflow section.
-- Wave 111c (gated on 111b): DevSecOps wires the regex into CI. Workflow: fetch PR HEAD SHA, grep gate-role HANDOFF docs, fail PR if `Wave-N PASS — PR #<N> — SHA <HEAD_SHA>` missing for a runtime-code PR.
-
-### Parked / future (carried forward)
-
-- `system-design.md` — still not created.
-- `tech-stack.md` — still not created (Vitest + ESLint + TS + pnpm is the entire stack).
-- `coding-standards.md` — still not created.
-- Fitness function for OQ-085-001's "no binary files committed under `tests/qa/wave-*/evidence/`" — QA owns implementation.
-- Viewer-repo subagent body audit (per ADR-017 follow-up).
-- Wave 111+ candidate (post-Cluster-5): a small `scripts/emit-verdict.sh` helper that takes `--wave --pr --sha --role --notes` and appends a canonical block to the role's HANDOFF doc, eliminating hand-typing errors.
-- Wave 111+ candidate (post-Cluster-5): REVISE verdict `- **Re-review target SHA:** <SHA>` field — deferred since stale-PASS detection (`PASS heading exists but SHA mismatches current HEAD`) already covers the case without an extra field.
-
-### Notes / caveats
-
-- The canonical block in ADR-018 deliberately uses an example PR number (`#999`) and a placeholder 40-char SHA (`abc1234567890abcdef1234567890abcdef12345`). When gate roles paste the block into their HANDOFF, they replace both with real values. The placeholder hex passes the regex (it's lowercase hex, 40 chars) but cannot collide with a real Git SHA in practice — `999` is way below current PR numbering (~380s) so even if a real PR #999 existed someday, its HEAD SHA would not be the placeholder.
-- The format intentionally records seconds-precision timestamps, not milliseconds — ordering is human-skim-deterministic at second granularity, and machine clock skew between subagent invocations on the same host is sub-second in practice.
-- CONCERNS verdicts (Architect's "ship with caveats" outcome from `.claude/agents/architect.md` line 50) are deliberately EXCLUDED from this format. CONCERNS is advisory and logged in `architecture/decisions/`, not consumed by DevSecOps step 3. If a future wave wants CONCERNS to be a structured fourth verdict type (for trend analysis), it's an additive change to the regex.
+- `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` → 153/153 PASS.
 
 ---
 
 ## PREV — 2026-06-04 — Wave 110 Lanes A + D-#381 (DevSecOps merge protocol + LESSONS stale-ref sweep)
 
-**Closes / addresses:**
-- #383 — DevSecOps merge protocol: require gate-role PASS recorded in HANDOFF doc before merge (newly filed this turn; ACs 1–3 all satisfied by this PR).
-- #381 — LESSONS.md stale `_handoff-pending/` + `pnpm fold-handoff` references rewritten to reflect Plan C state.
-
-**Verification (all green this turn):**
-- `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` → 153/153 PASS (ADR-017 allowlist/denylist still clean after `devsecops.md` step-list edit).
-- `pnpm lint` → clean.
-- `pnpm type-check` → clean.
+**Closed:** #383 (DevSecOps merge protocol step 3 landed in `.claude/agents/devsecops.md`), #381 (LESSONS stale-ref sweep).
 
 ### Canonical Wave 110-A clause text (grep-reuse for QA's Wave 110-B completeness test)
 
-**File:** `.claude/agents/devsecops.md`
-**Line anchor:** line 58 (within "Deployment workflow (single turn)", as step 3; original steps 3–8 renumbered to 4–9).
+> **Verify gate-role PASS is recorded in HANDOFF (mandatory pre-merge).** Open `coordination/handoffs/qa.md` and (if the PR touches UI) `coordination/handoffs/ux-designer.md`. Confirm a Wave-N PASS verdict is recorded against the PR's HEAD SHA. **If the gate role's HANDOFF doc does not record the PASS, HANDOFF back to the gate role asking them to record it before merging — do NOT merge on the implementer's claim of PASS alone.** Rationale: PR #231 was merged before the UX Designer recorded the post-revision PASS verdict because the merge step trusted the implementer's HANDOFF claim. Parallel rule to step 0 in Architect/UX review-gate workflows (pre-verdict SHA sync, #314).
 
-Verbatim clause text (the load-bearing sentence is the bolded HANDOFF-back instruction; QA can grep on any stable substring such as `Verify gate-role PASS is recorded in HANDOFF` or `do NOT merge on the implementer's claim of PASS alone`):
+### Files landed Wave 110
 
-> **Verify gate-role PASS is recorded in HANDOFF (mandatory pre-merge).** Open `coordination/handoffs/qa.md` and (if the PR touches UI) `coordination/handoffs/ux-designer.md`. Confirm a Wave-N PASS verdict is recorded against the PR's HEAD SHA. **If the gate role's HANDOFF doc does not record the PASS, HANDOFF back to the gate role asking them to record it before merging — do NOT merge on the implementer's claim of PASS alone.** Rationale: PR #231 was merged before the UX Designer recorded the post-revision PASS verdict because the merge step trusted the implementer's HANDOFF claim. The verdict-in-the-gate-role's-own-HANDOFF requirement makes the gate verifiable rather than asserted. Parallel rule to step 0 in Architect/UX review-gate workflows (pre-verdict SHA sync, #314).
-
-Suggested grep targets for QA's completeness assertion:
-1. `Verify gate-role PASS is recorded in HANDOFF` — exact step-title substring (most stable).
-2. `do NOT merge on the implementer's claim of PASS alone` — load-bearing imperative.
-3. `coordination/handoffs/qa.md` + `coordination/handoffs/ux-designer.md` co-presence — proves both gate paths are referenced.
-
-### Files landed this turn
-
-1. `.claude/agents/devsecops.md` — inserted new step 3 "Verify gate-role PASS is recorded in HANDOFF (mandatory pre-merge)" in "Deployment workflow (single turn)" (line 58); old steps 3–8 renumbered to 4–9.
-2. `LESSONS.md` — added new Wave 110 entry at the top of 2026-06-04 section: "DevSecOps merge protocol must verify gate-role PASS is recorded in HANDOFF doc, not trust implementer's claim (closes #383)." Placed above Wave 109 entries per newest-first convention.
-3. `LESSONS.md` — rewrote Wave 93 fragment-pattern entry per #381: title now "Wave 93 → Wave 108 — per-role HANDOFF state files (`coordination/handoffs/<role-id>.md`) prevent doc-collision merge conflicts (ADR-014 superseded by ADR-017)"; "We now do" line cites Plan C runtime + ADR-017; references PR #374 (`ebc83c5`) as the retirement commit; preserves the WHY (concurrent doc-collision conflicts on shared HANDOFF.md, server-side "Update branch" not applying the merge driver).
-4. `LESSONS.md` — annotated three other stale-ops entries with "Superseded by Wave 106 (Plan C)" inline notes (preserves append-only narrative, redirects readers to current state):
-   - "Mandatory pnpm build + boot smoke before QA PASS (Wave 64)" — `:3100` + `/api/health` boot Leg B no longer applies under Plan C; build-gate equivalent is now `pnpm test:run` + `pnpm type-check` + `pnpm lint`. User mandate (test-before-deploy) still binds — only the mechanism changed.
-   - "`tsx watch` mid-edit kills the editing agent" — `.restart-trigger` + `scripts/dev-supervisor.mjs` retired; subagents are single-turn, no long-lived process to restart.
-   - "MCP transport drops on long agent turns" — no MCP server, no SSE handler under Plan C.
-   - "We now do" lines on these three rewritten to "We did (pre-cutover):" to make the historical scope explicit.
-
-### Out-of-scope audit notes
-
-- `LESSONS.md` line 1 footer "Append-only — never edit past entries" was inherited. I treated #381's explicit "rewrite stale references" mandate as a deliberate carveout — for the Wave 93 entry I performed a wholesale rewrite (the WHY is preserved verbatim; only the "we now do" is changed). For the three other stale-ops entries (Wave 64 boot-smoke, `tsx watch`, MCP transport), I used annotation + scope-narrowing language ("We did (pre-cutover):") rather than rewriting bodies. This keeps the historical narrative intact while redirecting readers to current state. If a future wave wants the bodies themselves trimmed, the annotation makes it cheap.
-- No other stale-ops references found in `LESSONS.md` after the sweep. `:3100`-`:3130`, `.restart-trigger`, `_handoff-pending/`, `pnpm fold-handoff`, `pnpm dev:test*` no longer appear as live "we now do" claims — only as annotated historical incidents.
-
-### Issue filed this turn
-
-- #383 — `keyan-commits/apex-team` — title: "DevSecOps merge protocol: require gate-role PASS recorded in HANDOFF doc before merge." Labels: `self-improvement`, `bug`, `documentation`. User-story body per `feedback_user_story_format`. All three ACs satisfied by this same PR (AC1 — devsecops.md step landed; AC2 — explicit HANDOFF-back instruction landed; AC3 — Wave 110 LESSONS entry ties the rule to PR #231). Issue can be closed by DevSecOps's merge of this PR.
-
-### In flight / next
-
-- This slice is ready for code review. As Architect-authored docs-only edits to subagent body + LESSONS, no co-authorship gate fires (`architecture/` was not touched). Standard self-review + QA regression apply.
-- QA's Wave 110-B completeness test (per prompt) will assert presence of: (a) Wave 109 co-authorship clauses across the 7 affected files (already landed Wave 109), (b) Wave 109 pre-verdict SHA-sync clauses in `architect.md` + `ux-designer.md` (already landed Wave 109), AND (c) the new Wave 110-A merge-protocol clause in `devsecops.md` at line 58 (landed this turn). The canonical clause text is recorded above for grep-reuse.
-
-### Parked / future (carried from Wave 109)
-
-- `system-design.md` — still not created; would document the eight-subagent + workspace-directory contract. Stub when useful.
-- `tech-stack.md` — still not created; Vitest + ESLint + TS + pnpm is the entire stack.
-- `coding-standards.md` — still not created; relevant standards under the subagent runtime live in `.claude/agents/*.md` and per-test conventions in `tests/qa/`.
-- Fitness function for OQ-085-001's "no binary files committed under `tests/qa/wave-*/evidence/`" — QA owns implementation.
-- Viewer-repo subagent body audit (per ADR-017 follow-up).
-
-### Notes / caveats
-
-- DevSecOps's "Deployment workflow (single turn)" step list grew from 8 steps to 9 (new step 3); steps 4–9 are the renumbered originals. Numeric ordering preserved.
-- The new step 3 deliberately references `coordination/handoffs/qa.md` and `coordination/handoffs/ux-designer.md` by full path (not legacy `data/agent_state` etc.) so the ADR-017 regression test stays green — workspace-convention paths are in the allowlist.
-- The Wave 110 LESSONS entry cites issue #383 as `closes #383`; merging this PR will trigger the auto-close. AC1–AC3 of #383 are all satisfied by this same PR's diff.
+1. `.claude/agents/devsecops.md` — new step 3 in "Deployment workflow (single turn)".
+2. `LESSONS.md` — Wave 110 entry at top of 2026-06-04 section; Wave 93 fragment-pattern entry rewritten; 3 other stale-ops entries annotated with "Superseded by Wave 106 (Plan C)".
 
 ---
 
 ## PREV — 2026-06-04 — Wave 109 Slice 1 (review-gate hardening, docs-only)
 
-**Closed / addressed (Wave 109):**
-- #335 — `architecture/` co-authorship rule (8 files edited: `architect.md` + 6 implementer bodies + `LESSONS.md`)
-- #314 — Pre-verdict SHA sync for review gates (Architect + UX Designer review-gate sections + `LESSONS.md`)
+**Closed (Wave 109):** #335 (`architecture/` co-authorship rule), #314 (Pre-verdict SHA sync for review gates).
 
-**Canonical Wave 109 clause texts (kept for grep-reuse by future audits):**
+### Canonical Wave 109 clause texts (grep-reuse)
 
-Architect's review-rubric gate (step 4 in "Code review responsibility"):
+Architect's review-rubric gate (step 4):
 
-> **Co-authorship gate (`architecture/` files).** If the PR diff modifies any file under `architecture/` and the PR author is NOT the Architect, **FAIL** the review unless a prior `[[HANDOFF: architect]]` exists in the PR description, commit messages, or `coordination/handoffs/architect.md` approving the change. Rationale: `architecture/` is the durable single source of truth for NFRs, ADRs, and coding standards; unilateral modifications by implementers create silent drift. The HANDOFF requirement makes the cross-role approval auditable. Trivial Architect-authored fixups (typos, ADR status flips you would have made yourself) are not violations — they're your own lane.
+> **Co-authorship gate (`architecture/` files).** If the PR diff modifies any file under `architecture/` and the PR author is NOT the Architect, **FAIL** the review unless a prior `[[HANDOFF: architect]]` exists in the PR description, commit messages, or `coordination/handoffs/architect.md` approving the change.
 
 Implementer-body matching clause (verbatim across `business-analyst.md`, `ui-developer.md`, `backend-developer.md`, `qa.md`, `devsecops.md`, `ux-designer.md`):
 
-> **You do NOT write to `architecture/` without a prior HANDOFF to Architect approving the change.** `architecture/` is the durable single source of truth for NFRs, ADRs, and coding standards. If you spot an architecture-level concern (e.g. <role-specific example>), file a HANDOFF entry in `coordination/handoffs/architect.md` and let Architect own the edit. Editing `architecture/` unilaterally will fail Architect's review gate.
+> **You do NOT write to `architecture/` without a prior HANDOFF to Architect approving the change.**
 
 Pre-verdict SHA sync (Architect step 0 / UX Designer top-of-Critique-workflow):
 
-> **Pre-verdict SHA sync (mandatory before reading the diff / rendering any visual verdict).** Render verdicts only against the exact SHA the PR is at:
-> ```bash
-> gh pr view <PR#> --json headRefOid,headRefName
-> git fetch origin <branch>
-> git checkout <PR HEAD SHA>
-> ```
-> PR #311's false-REVISE motivated this rule. If operating in a per-role worktree (WORKTREE_ISOLATION_PROTOCOL), run fetch+checkout inside the worktree.
+> **Pre-verdict SHA sync (mandatory before reading the diff / rendering any visual verdict).** Render verdicts only against the exact SHA the PR is at.
 
 **Files landed Wave 109:** `.claude/agents/{architect,ux-designer,business-analyst,ui-developer,backend-developer,qa,devsecops}.md` + `LESSONS.md` (2 entries at top of 2026-06-04 section).
 
@@ -190,4 +211,4 @@ Pre-verdict SHA sync (Architect step 0 / UX Designer top-of-Critique-workflow):
 
 ## PREV — 2026-06-04 — Wave 108 (subagent body rewrite rule pack + 8 file edits)
 
-ADR-017 landed (`architecture/decisions/ADR-017-subagent-body-rewrite-rules.md`); 8 subagent body rewrites executed; 4 QA grep tests all green; per-file legacy ref count went from 95 → 0 modulo 8 allowlisted "You do NOT have mcp__apex-team__*" sentences. ADR-014 status flipped to Superseded by ADR-017. `architecture/workspace-conventions.md` + `architecture/INDEX.md` updated. Detailed history archived in prior HANDOFF revisions.
+ADR-017 landed; 8 subagent body rewrites; 4 QA grep tests all green; per-file legacy ref count 95 → 0 (modulo 8 allowlisted "You do NOT have `mcp__apex-team__*` tools" sentences). ADR-014 status flipped to Superseded by ADR-017. `architecture/workspace-conventions.md` + `architecture/INDEX.md` updated.

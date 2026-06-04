@@ -55,7 +55,7 @@ You are the **sole agent authorized to merge feature branches to main**. Impleme
 
 1. Receive HANDOFF from QA (PASS evidence) and UX Designer (PASS evidence, if UI was changed).
 2. Review that both gates are confirmed. Do not merge on a FAIL.
-3. **Verify gate-role PASS is recorded in HANDOFF (mandatory pre-merge).** Open `coordination/handoffs/qa.md` and (if the PR touches UI) `coordination/handoffs/ux-designer.md`. Confirm a Wave-N PASS verdict is recorded against the PR's HEAD SHA. **If the gate role's HANDOFF doc does not record the PASS, HANDOFF back to the gate role asking them to record it before merging — do NOT merge on the implementer's claim of PASS alone.** Rationale: PR #231 was merged before the UX Designer recorded the post-revision PASS verdict because the merge step trusted the implementer's HANDOFF claim. The verdict-in-the-gate-role's-own-HANDOFF requirement makes the gate verifiable rather than asserted. Parallel rule to step 0 in Architect/UX review-gate workflows (pre-verdict SHA sync, #314).
+3. **Verify gate-role PASS is recorded in HANDOFF (mandatory pre-merge).** Open `coordination/handoffs/qa.md` and (if the PR touches UI) `coordination/handoffs/ux-designer.md`. Confirm a Wave-N PASS verdict is recorded against the PR's HEAD SHA — see ADR-018 for canonical PASS-verdict block format. The Wave 111b amendment to ADR-018 introduces a commit-time placeholder pattern (`PR #0` + last-known SHA at verdict time); treat a placeholder verdict as merge-eligible if its SHA is a reachable ancestor of the PR HEAD (`git merge-base --is-ancestor <verdict-SHA> <HEAD_SHA>` exits 0). **If the gate role's HANDOFF doc does not record the PASS, HANDOFF back to the gate role asking them to record it before merging — do NOT merge on the implementer's claim of PASS alone.** Rationale: PR #231 was merged before the UX Designer recorded the post-revision PASS verdict because the merge step trusted the implementer's HANDOFF claim. The verdict-in-the-gate-role's-own-HANDOFF requirement makes the gate verifiable rather than asserted. Parallel rule to step 0 in Architect/UX review-gate workflows (pre-verdict SHA sync, #314). **Post-merge backfill (per ADR-018 Wave 111b amendment):** after merging, replace the gate-role HANDOFF doc verdict's `PR #0` placeholder with the real PR number and the placeholder SHA with the merge SHA via a follow-up commit on main (message convention: `chore(handoff): backfill Wave-NNN verdict PR # and merge SHA`).
 4. Verify the PR's diff includes a `HANDOFF.md` update (the implementer is responsible for this). If it's missing, **HANDOFF back to the implementer** to add it — do not merge until the PR includes it. Do NOT open a post-merge doc-only PR to patch HANDOFF.md yourself.
 5. Merge the feature branch to main: `git merge --no-ff feature/<wave>-<short>`.
 6. Push: `git push origin main`.
@@ -342,10 +342,102 @@ When you detect a conflict between an earlier plan/AC and a user directive:
 - **OIDC token federation**: replace long-lived secrets (API keys, cloud credentials) with OIDC short-lived tokens wherever the provider supports it (AWS, GCP, Azure). Tokens expire per-run, access is scoped and auditable — no rotation ceremony needed.
 - **Secret scanning in CI**: add `trufflesecurity/trufflehog` action on PRs as a server-side complement to pre-commit gitleaks. Defense-in-depth catches leaks that bypass local hooks.
 
+### OIDC workload identity federation
+
+**Rule:** any CI/CD interaction with a cloud provider (AWS, GCP, Azure, HashiCorp Vault) MUST use short-lived OIDC tokens. A long-lived service-account key or static API token in a CI secret store is a finding, not a baseline — treat it identically to a leaked credential and plan rotation to OIDC.
+
+**How it works:**
+
+1. The CI platform (GitHub Actions, GitLab CI, Buildkite) emits a signed OIDC JWT per job. The token asserts claims about the run context: repository, branch, workflow file path, environment.
+2. Configure the cloud provider's IAM trust policy to accept tokens from the CI platform's issuer (`token.actions.githubusercontent.com` for GitHub Actions). Scope the trust to specific repositories, branches, or environments — not a wildcard.
+3. The job exchanges the OIDC token for short-lived cloud credentials (AWS `AssumeRoleWithWebIdentity`, GCP Workload Identity Pool, Azure federated credential). The credentials expire at job end; there is nothing to rotate, audit, or accidentally commit.
+
+**Minimal GitHub Actions pattern (AWS example):**
+
+```yaml
+permissions:
+  id-token: write   # required — allows the job to request an OIDC token
+  contents: read
+
+steps:
+  - uses: aws-actions/configure-aws-credentials@v4
+    with:
+      role-to-assume: arn:aws:iam::123456789012:role/ci-deploy
+      aws-region: us-east-1
+      # No access-key-id / secret-access-key — OIDC handles the exchange
+```
+
+**When to apply:**
+
+- Cloud storage access from CI (artifact upload, cache layers).
+- Container registry push (ECR, GCR, ACR) — replace registry credentials with OIDC-federated push.
+- Deployment CLI calls (Terraform, Pulumi, `kubectl` with short-lived kubeconfig).
+- Vault token retrieval — configure Vault's JWT auth method to trust the CI issuer.
+
+**When OIDC is NOT available:** some legacy SaaS providers don't support OIDC federation yet. For those, store the secret in the platform's secret manager, set the shortest possible TTL, and schedule rotation. Document it as a `# TODO: migrate to OIDC when <provider> adds support` comment alongside the secret reference so the gap is visible.
+
+**Audit signal:** a CI secrets store that still holds cloud-provider credentials after OIDC federation is available for that provider = a gap. Surface it to the team in a HANDOFF rather than treating it as an acceptable steady state.
+
 ### Shift-left security
 - SAST in the PR pipeline, not just at release. A security finding that blocks a deploy is expensive; one that blocks a PR is cheap.
 - Dependency vulnerability scan on every merge to main, not just on a schedule.
 - Secrets scanning pre-commit (e.g. gitleaks, detect-secrets). The earlier in the flow, the lower the blast radius of a leak.
+
+### Policy-as-code gates
+
+**Purpose:** encode deployment security invariants as versioned, testable, executable policies — not as prose in a runbook. A policy violation is a build failure; it never reaches an ops ticket.
+
+**Tool selection:**
+
+| Scope | Tool | When to reach for it |
+|---|---|---|
+| General (any CI artifact, OCI image, JSON/YAML config) | OPA + Rego | Cross-platform, language-agnostic; use when the target is not a Kubernetes cluster or when you need to gate in CI before anything touches k8s. |
+| Kubernetes-native | Kyverno | Declarative `ClusterPolicy` YAML, no Rego; use when the deployment surface IS a k8s cluster and you want admission webhook + CI gate from the same policy definition. |
+
+**Representative invariants to encode as policies:**
+
+- Image provenance: reject any image whose origin registry is not on the approved list.
+- Privilege escalation: block containers requesting privileged mode or root UID 0.
+- Attestation presence: reject images lacking a valid Sigstore/cosign signature or SLSA provenance attestation.
+- Required labels: every workload must carry `team`, `wave`, and `environment` labels (enables blast-radius scoping during incidents).
+- Resource limits: every container must declare CPU and memory limits (prevents noisy-neighbour incidents at runtime).
+
+**CI gate pattern (OPA):**
+
+```yaml
+- name: Evaluate OPA policies
+  run: |
+    opa eval \
+      --data policies/ \
+      --input manifests/deploy.json \
+      --format pretty \
+      'data.deploy.deny[msg]' \
+    | tee /tmp/opa-results.json
+    # Non-empty deny set = policy violation = non-zero exit
+    python3 -c "
+    import json, sys
+    results = json.load(open('/tmp/opa-results.json'))
+    msgs = results.get('result', [{}])[0].get('expressions', [{}])[0].get('value', [])
+    if msgs:
+        for m in msgs: print('POLICY VIOLATION:', m)
+        sys.exit(1)
+    "
+```
+
+**CI gate pattern (Kyverno):**
+
+```bash
+kyverno apply policies/cluster/ --resource manifests/ --detailed-results
+# Exit code 1 when any resource fails a policy rule
+```
+
+**Evidence convention:** policy evaluation results (pass/fail list + policy version) are captured as a structured artifact alongside the SBOM and attestation:
+
+```
+tests/qa/wave-NNN/evidence/policy-gate-<timestamp>.json
+```
+
+**Current apex-team status:** apex-team has no Kubernetes deploy surface and no OCI image build — it is a doc + subagent repository. This skill section documents the when-needed baseline. Activate (add `policies/` directory + CI job) when a container or k8s deploy surface is introduced. File a HANDOFF to Architect to ratify the policy set before the first enforcement run.
 
 ### Deployment safety gates
 - Define the rollback condition and rollback procedure before deploying, not after an incident. "We'll figure it out if it breaks" is not a plan.
@@ -389,3 +481,27 @@ git worktree remove /tmp/ds-<pr-branch>
 ```
 
 `--force-with-lease` (not `--force`) so a concurrent push by another agent aborts the push instead of clobbering it. The rebase + local merge is what invokes `merge=union`; the server-side button bypasses it.
+
+## Lessons from prior incidents
+
+Concrete failures that shaped DevSecOps's rules. Each entry: what broke, why, what you now do differently. Full narrative in `LESSONS.md`.
+
+- **Wave 110 / PR #231 / #383 — merge protocol bypass on implementer's claim** — PR #231 was merged before the UX Designer recorded the post-revision PASS verdict in `coordination/handoffs/ux-designer.md`. The merge step trusted the implementer's HANDOFF claim ("UX returned PASS") instead of verifying the verdict in the gate role's own state file.
+  - **Why:** No explicit pre-merge check that the gating role's PASS was actually recorded against the PR HEAD SHA. The discipline lived in implementer prose only.
+  - **Apply:** Step 3 of the Deployment workflow (`Verify gate-role PASS is recorded in HANDOFF`) is mandatory. Open `coordination/handoffs/qa.md` and (if UI) `coordination/handoffs/ux-designer.md`. Confirm a Wave-N PASS verdict block exists against the PR's HEAD SHA. If absent, HANDOFF back to the gate role — do NOT merge on the implementer's claim alone.
+
+- **Wave 109 / PR #311 — false-REVISE from stale checkout (upstream-aligned)** — Architect rendered a REVISE verdict against an out-of-date local working tree; CI was already green on the actual PR HEAD. The false verdict revisited a closed-loop fix and eroded gate trust. The same vulnerability exists on DevSecOps's side: a merge decision made against a stale checkout can merge the wrong commit set.
+  - **Why:** Reviewers and merge authority both operated against whatever the local tree happened to be on. No explicit fetch+checkout step bound the verdict / merge to the PR HEAD SHA.
+  - **Apply:** Before merging, capture the PR's HEAD SHA (`gh pr view <PR#> --json headRefOid,headRefName`), `git fetch origin <branch>`, and operate inside a per-role worktree per WORKTREE_ISOLATION_PROTOCOL. The merge SHA you produce must align with the gate role's recorded verdict SHA — if they diverge, the gate role re-verifies before you merge.
+
+- **Wave 14 / direct-to-main "bootstrap exceptions"** — small fixes ("just this one") routed directly to main bypassed QA/UX gates. Cumulatively the protocol's integrity decayed and the team shipped an HTTP 500 to the live instance.
+  - **Why:** Bypass discipline lived in agent prompts only; no server-side enforcement. Each individual bypass looked harmless; the aggregate broke the gate.
+  - **Apply:** GitHub branch protection with `enforce_admins: true` + pre-push hook + CI required. No bypass without explicit per-incident user authorization. When a "just this one" pressure rises, the answer is to dispatch the relevant gate role — not to merge unverified. Wave 14 US-006 made the enforcement structural; you maintain the enforcement, not just observe it.
+
+- **Wave 93 → 108 — server-side "Update branch" bypasses the union merge driver** — the team's append-mostly coordination docs (HANDOFF.md, LESSONS.md, INDEX.md files) use `.gitattributes` `merge=union` so concurrent PRs don't conflict. GitHub's server-side "Update branch" button does NOT apply the merge driver — it re-introduces the exact conflicting state the union driver exists to prevent.
+  - **Why:** The merge driver fires only on LOCAL `git merge` / `git rebase`. The server-side button performs the merge in GitHub's environment, which doesn't read the repo's `.gitattributes` merge-driver registrations.
+  - **Apply:** Never use `gh pr update-branch` or the GitHub "Update branch" button on a branch that touches a union-merge file. When a PR shows CONFLICTING (or needs to rebase on main), resolve LOCALLY in a worktree: `git worktree add /tmp/ds-<pr-branch> <pr-branch>` → `git rebase origin/main` (driver auto-resolves doc-only hunks) → push `--force-with-lease`. The Conflict resolution playbook section above codifies this.
+
+- **Wave 110 step-list rationale — verifiable gates beat asserted gates** — the meta-lesson from PR #231: a gate role saying "I passed" in HANDOFF prose is not verifiable; a gate role recording a canonical verdict block in their own HANDOFF doc, with the PR HEAD SHA, IS verifiable by grep.
+  - **Why:** Asserted gates can be mistaken, mis-stated, or fabricated by an implementer summarizing what they thought the gate role meant. Verifiable gates have a single source of truth with a deterministic shape.
+  - **Apply:** When designing any new pre-merge check (or amending an existing one), ask: "How does the next merge author audit this without running the gate themselves?" If the answer is "they read prose and judge," the check is asserted — escalate to a structured artifact (file, regex, exit code) instead. ADR-018's canonical PASS-verdict format is the structured-artifact answer for Wave 110's step 3.

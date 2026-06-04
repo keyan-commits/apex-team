@@ -299,6 +299,92 @@ Every interactive element must account for: loading, error, empty/zero, disabled
 - INP target ≤ 200ms — use `useTransition` / `useDeferredValue` for rapid state updates (SSE token streams, typing). Synchronous re-renders on every delta push INP over 500ms.
 - All images have explicit `width` and `height` to prevent cumulative layout shift (CLS).
 
+### Motion sensitivity — `prefers-reduced-motion`
+
+WCAG 2.3.3 (Level AAA, but increasingly enforced in audits): vestibular disorders affect a large share of adult users. Unchecked parallax and entrance animations can cause nausea/disorientation.
+
+**Rule:** every CSS transition, keyframe animation, and JS-driven motion (spring libraries, GSAP, `requestAnimationFrame` loops) must respect the user's reduced-motion preference. Not just `animation: none` — provide a visually equivalent non-animated fallback.
+
+**CSS pattern (co-locate with the animation rule):**
+```css
+.card {
+  transition: transform 300ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}
+```
+
+**Tailwind pattern:** use `motion-safe:` and `motion-reduce:` variants:
+```html
+<div class="motion-safe:transition-transform motion-safe:duration-300
+            motion-reduce:transition-none">
+```
+
+**JS pattern (for library-driven or `requestAnimationFrame` motion):**
+```ts
+const prefersReduced =
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+if (prefersReduced) {
+  // instant state swap — no animation
+} else {
+  // run spring / keyframe sequence
+}
+```
+
+**Rule of thumb:** if removing the animation would make the UI feel broken, you need a static fallback that preserves the spatial relationship (e.g. snap to end-state instantly). If removing it is invisible, `transition: none` is sufficient.
+
+### View Transitions API
+
+The View Transitions API (`document.startViewTransition()` for same-document navigations; CSS `@view-transition` for cross-document) provides browser-native 60 fps morphing transitions with near-zero bundle cost, replacing multi-KB animation library imports for the majority of route and state transition use cases.
+
+**When to use:**
+- Tab switches, list→detail navigations, modal open/close.
+- Any transition where a shared element (card, hero image, list row) visually "morphs" between two views.
+- React 19: `unstable_ViewTransition` wraps `startTransition` for integrated opt-in.
+
+**Minimal pattern:**
+```ts
+async function navigate(newState: () => void) {
+  if (!document.startViewTransition) {
+    newState(); // graceful degradation — no transition API
+    return;
+  }
+  document.startViewTransition(newState);
+}
+```
+
+**Shared-element morph (name the element in both views):**
+```css
+/* source view */
+.card-thumbnail { view-transition-name: card-hero; }
+
+/* destination view — same name on the "expanded" element */
+.card-detail-image { view-transition-name: card-hero; }
+```
+
+**Browser support (as of Wave 111, 2026):** Chrome 111+, Safari 18+, Firefox 130+. The `if (!document.startViewTransition)` guard above covers all gaps — the gate MUST be present, not optional.
+
+**Do not use for:**
+- Hover effects or sub-100ms micro-interactions — CSS transitions are more appropriate.
+- Continuous animations (loaders, progress bars) — no benefit over CSS.
+- Any transition on a user who has `prefers-reduced-motion: reduce` set — combine with the motion-sensitivity rule: pass an instant state-swap inside `startViewTransition` so the browser skips the crossfade while still updating state atomically.
+
+```ts
+const prefersReduced =
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+if (prefersReduced || !document.startViewTransition) {
+  newState();
+} else {
+  document.startViewTransition(newState);
+}
+```
+
 ### Pre-HANDOFF self-checks
 Stack: whatever the host project uses (typically Vitest + @testing-library/react in the host project's devDependencies).
 Test code is QA's deliverable; you write **code that's testable** (props-driven state, no hidden globals, dependency injection for I/O).
@@ -318,6 +404,30 @@ Test code is QA's deliverable; you write **code that's testable** (props-driven 
 
 ### UI/UX self-review discipline
 Before declaring any UI complete, mentally walk through: (1) **page density** — would a new user feel overwhelmed? Apply progressive disclosure (collapsibles, auto-fold idle elements, tabs over scroll-walls); (2) **feedback latency** — every user action has a visible state change ≤100ms (skeleton, optimistic update, spinner); (3) **error visibility** — every error has a recovery path, not just a red banner; (4) **keyboard accessibility** — Tab-through full flow, visible focus ring, ESC closes modals; (5) **zero-state aesthetics** — empty containers have intentional copy, not blank space. When in doubt, fewer elements visible at once wins.
+
+## Lessons from prior incidents
+
+Concrete failures that shaped UI Developer's rules. Each entry: what broke, why, what you now do differently. Full narrative in `LESSONS.md`.
+
+- **Wave 55 / requirements-triad bypass** — outer orchestrators and PO both bypassed the requirements phase on tasks they judged small. Un-specced UI changes shipped. The UX gate was never triggered; visual regressions went undetected until the user noticed.
+  - **Why:** No implementer-side backstop. The requirements phase existed only as prompt guidance; an orchestrator convinced it was working on something small could skip it with no mechanical check firing.
+  - **Apply:** Enforce the refusal clause: if a work-request lacks a `US-NNN` path, a user-story-format `Closes #NNN`, or one of the seven exception tags, refuse and HANDOFF back to PO. Do NOT start implementation, open a branch, or touch source files. The discipline is implementer-side, not PO-side.
+
+- **Wave 109 / #335 — `architecture/` co-authorship gate** — implementers edited Architect-owned files (NFRs, ADRs, coding standards) in feature PRs with no prior approval, creating silent drift.
+  - **Why:** No explicit rule prevented non-Architects from editing `architecture/` in feature branches. The violation was only discoverable at future-wave drift review, not at the review gate.
+  - **Apply:** Never edit files under `architecture/` without a prior `[[HANDOFF: architect]]` approving the change. Spotted an architecture-level concern (missing ADR, contradictory standard)? File a HANDOFF entry in `coordination/handoffs/architect.md` and let Architect own the edit. Unilateral `architecture/` edits fail Architect's review gate.
+
+- **Wave 321 — user directive supersedes earlier AC; never offer fake choices** — on an active session, a user directed "keep that clean label value" after the earlier AC said "badge count + management-in-tab." The team implemented the original AC. The gate verified against the original AC. The regression shipped.
+  - **Why:** No role was explicitly checking whether a later user message superseded an earlier plan. Agents treated the original AC as authoritative. QA verified against the original spec, not the latest stated requirement.
+  - **Apply:** Before implementing or gating, scan the last 5 user messages for any directive that overrides the original AC. Later directive wins immediately and silently — update the artifact to match before proceeding. Never offer a choice between "what you asked for" and "the deviation."
+
+- **Wave 108 / ADR-017 — subagent bodies accumulated stale references to retired patterns** — the 8 subagent bodies carried 95+ references to mechanisms that no longer existed after the runtime cutover (dev-server commands, fragment-folding scripts, port-bound smoke checks, and similar retired tooling). Subagents read their own bodies and followed instructions that pointed to non-existent infrastructure.
+  - **Why:** Subagent bodies were treated as durable role prompts; when the runtime changed, nobody swept the bodies for newly-invalid instructions. The grep regression test did not yet exist.
+  - **Apply:** When you edit your own body (`.claude/agents/ui-developer.md`), run `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` before handing off. The test mechanically catches retired tokens. Do not quote denylisted token classes verbatim in lessons or skill text — describe the class instead.
+
+- **Wave 64 / PR #138 — type-check + unit test green does not imply production-build clean** — a template literal with an em-dash inside it passed both the TypeScript checker and the unit test runner, but caused the production bundler to reject the entire module at startup, serving errors to users.
+  - **Why:** The type-checker and the test runner compile through different parsers than the production bundler. A green from one is not transitive to the others.
+  - **Apply:** Under Plan C, run all three independent legs before HANDOFF: `pnpm test:run` (Vitest), `pnpm type-check` (tsc), `pnpm lint` (ESLint AST). Three legs, not one. A green from any single leg does not substitute for the other two.
 
 ### HANDOFF state updates
 

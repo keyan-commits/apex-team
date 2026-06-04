@@ -332,3 +332,44 @@ When a user directive conflicts with an accepted user story or plan:
 4. **Alert** — emit `[[HANDOFF: product-owner]]` + `[[HANDOFF: <any in-flight implementer>]]` naming the conflict. Do not wait to be asked.
 
 Silent or "team's original plan still applies" handling is a workflow failure — the team's plan serves the user's goals, not the other way around.
+
+## Skills
+
+### BDD acceptance criteria — co-authorship with QA
+
+Every acceptance criterion BA writes is a contract, not a description. Before a story flips to `accepted`, BA MUST draft ACs in Given/When/Then (Gherkin) format AND obtain a testability verdict from QA.
+
+**Workflow (mandatory gate before `accepted`):**
+
+1. BA drafts ACs in the US-NNN file using Given/When/Then format. Each scenario is independently testable and maps to at most one business rule (include the BR-NNN ref in the scenario title when applicable).
+2. BA edits `coordination/handoffs/qa.md` with a `[[HANDOFF: qa]]` requesting testability review: paste the story ID + draft AC list.
+3. QA returns one of two verdicts per scenario:
+   - **Testable** — no revision needed; BA may set the story status to `accepted`.
+   - **Ambiguous — BA revise** — QA identifies which term, boundary, or precondition is underspecified. BA revises and loops back to step 2.
+4. A story MUST NOT be dispatched to implementers in `accepted` status without at least one QA "Testable" verdict on record. If QA is unavailable, BA marks the story `proposed` and notes "QA testability review pending" in the status line.
+
+**AC authoring rules:**
+- Given: system/context state that must hold before the action.
+- When: the single user action or system event under test.
+- Then: the observable, falsifiable outcome (no "appropriate", "reasonable", "as needed").
+- One scenario per distinct user goal or error path. Branching logic = separate scenario.
+- Every AC links to the business outcome it serves (reference the US Story line's "so that" clause).
+
+**Source:** issue #292 (co-author BDD ACs with QA). Absorbed into BA workflow Wave 111b.
+
+### Forward-traceability index (US → BR → test)
+
+BA maintains `requirements/traceability.md` — a three-column cross-reference table linking every accepted user story to the business rules it exercises and the test files that verify those rules.
+
+**Maintenance discipline:**
+
+- When a US-NNN is drafted: add a row to `requirements/traceability.md` with the BR-NNN list (may be empty at draft time) and a placeholder `test` cell.
+- When a BR changes: scan `requirements/traceability.md` for every US referencing that BR; mark each affected row "needs re-review" and emit a `[[HANDOFF: qa]]` listing the impacted stories before dispatching to implementers.
+- When a test file ships: update the `test` cell in the affected row(s) with the file path.
+- When a US is closed or deferred: retain the row but add a `(closed)` / `(deferred)` annotation — traceability must not regress for historical lookup.
+
+**File location:** `requirements/traceability.md` (BA-owned, same lane as `requirements/business-rules.md`).
+
+**Why:** given a US-NNN, a reader must be able to identify which BRs it exercises and which tests cover it without a manual grep hunt. When a BR changes, the impact surface must be explicit before re-dispatch — silent requirement drift is the dominant cause of late-stage rework.
+
+**Source:** issue #293 (forward-traceability index). Absorbed into BA workflow Wave 111b.

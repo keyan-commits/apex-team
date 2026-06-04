@@ -1,6 +1,44 @@
 # product-owner — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 111a (ADR-018 PASS-verdict format foundation — COMPLETE)
+## ⏭️ NOW — 2026-06-04 — Wave 111b (5-cluster fan-out — COMPLETE, ready to merge)
+
+**Wave goal:** Fan-out close of Wave 111 Clusters 1+2+3+6+7 across 7 subagent bodies + ADR-018 amendment + traceability index + completeness test. Single PR.
+
+**Shape:** 3-phase Option A. Architect first (Phase 1, Clusters 1+6+7 single-author) → 6-subagent fan-out (Phase 2, Cluster 3 self-edits + UX Cluster 2) → QA Wave 111b completeness test (Phase 3, US-089 AC5).
+
+**Returned (all 3 phases):**
+
+**Phase 1 (Architect single-author):**
+- ✅ `## Lessons from prior incidents` sections added to `devsecops.md`, `qa.md`, `architect.md` (5 incidents each, Date/Wave/Rule/Why/Apply format).
+- ✅ ADR-018 amended with `## 2026-06-04 amendment — commit-time placeholder pattern (Wave 111b)`. Option (a) chosen: `PR #0` placeholder + last-known SHA at commit-time; DevSecOps post-merge backfill commit. Canonical regex unchanged (additive amendment).
+- ✅ Cluster 7 ADR-018 cross-refs in 4 gate bodies (`devsecops.md` step 3 + backfill sub-step, `architect.md` review rubric, `ux-designer.md` critique workflow, `qa.md` gate workflow).
+- **Architect post-mortem:** initial draft of architect.md lessons quoted retired patterns verbatim → ADR-017 cleanliness test failed 4 assertions. Fixed by describing pattern classes in narrative. Documented as token-discipline rule for Phase 2 fan-out.
+
+**Phase 2 (6-subagent Cluster 3 self-edits + UX Cluster 2):**
+- ✅ **BA** — #292 (BDD ACs co-author with QA) + #293 (US→BR→test traceability) addressed via new sections in `business-analyst.md` + new `requirements/traceability.md` (55-row US→BR→test table). Both issues closed.
+- ✅ **Architect** — #294 (fitness functions in CI; closed-with-rationale via expanded section noting Wave 108/110/111a tests as live fitness functions), #295 (AI/agent review lens; 6 axes added: context-coupling, tool surface, non-determinism observability, prompt-injection boundaries, coordination races, self-edit risk), #359 (STRIDE gate; expanded one-liner to structured gate w/ 5 trigger conditions + 6-row table + verdict taxonomy). All 3 closed.
+- ✅ **UI Dev** — #361 (`prefers-reduced-motion`) + #362 (View Transitions API) addressed via new sections in `ui-developer.md`. Both closed.
+- ✅ **BE Dev** — #363 (N+1 query discipline + eager-load boundaries) + #364 (Graceful shutdown + health-probe contract) addressed via new/expanded sections in `backend-developer.md`. Both closed.
+- ✅ **QA** — #365 (Contract testing — consumer-driven Pact/OpenAPI pattern + sign-off gap flag rule) + #366 (Mutation testing — 70% blocker threshold + survivor doc requirement + Gate 7 evidence convention) addressed via expanded sections in `qa.md`. Both closed.
+- ✅ **DevSecOps** — #368 (OIDC workload identity) + #369 (Policy-as-code gates OPA/Kyverno) addressed via new sections in `devsecops.md`. Both closed.
+- ✅ **UX (Cluster 2)** — #199 evaluated 6 community design skills (Impeccable, figma-implement-design, playwright-skill, theme-factory, accesslint, Excalidraw). All 6 rejected or deferred (no current UI surface). `## Design tools` section added to `ux-designer.md`. Closed.
+
+**Phase 3 (QA Wave 111b completeness test):**
+- ✅ `tests/qa/wave-111/wave-111b-completeness.test.ts` — **34/34 PASS** in 112ms. Asserts AC1–AC5 of US-089 mechanically (Lessons sections in 3 bodies, UX Design tools, 12 Cluster 3 skill content assertions across 6 bodies, ADR-018 amendment, ADR-018 cross-refs in 4 gate bodies).
+- Full suite: **220/220 PASS** (108: 153 + 110: 12 + 111a: 21 + 111b: 34).
+- QA recorded PASS verdict per ADR-018 canonical format with `PR #0` placeholder + parent-commit SHA (Wave 111b amendment in use).
+
+**Issues closed this wave:** #199, #292, #293, #294, #295, #359, #361, #362, #363, #364, #365, #366, #368, #369 (14 total).
+
+**Files in Wave 111b PR (20 files):**
+- New: `architecture/decisions/ADR-018-pass-verdict-format.md` amendment (Phase 1), `requirements/traceability.md` (BA #293), `requirements/user-stories/US-089-wave-111b-fanout.md` (BA Phase 1), `tests/qa/wave-111/wave-111b-completeness.test.ts` (QA Phase 3), `coordination/handoffs/{backend-developer,ui-developer}.md` (new).
+- Modified: 7 `.claude/agents/*.md`, `architecture/INDEX.md`, `requirements/INDEX.md`, 5 existing `coordination/handoffs/*.md`.
+
+**Wave 111c parked:** CI/process discipline (#240, #246, #301, #324) — DevSecOps wires ADR-018 regex into CI, plus the residual CI items.
+
+---
+
+## ⏭️ PREV — 2026-06-04 — Wave 111a (ADR-018 PASS-verdict format foundation — COMPLETE)
 
 **Wave goal:** Foundation for Wave 111c CI checks — Architect ratifies PASS-verdict format for `coordination/handoffs/<role>.md`; QA writes conformance test.
 

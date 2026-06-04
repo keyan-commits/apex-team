@@ -1,4 +1,70 @@
-## NOW — 2026-06-04 — Wave 111a (ADR-018 PASS-verdict format conformance test)
+## NOW — 2026-06-04 — Wave 111b Phase 3 (US-089 AC5 completeness test)
+
+### Wave 111b PASS verdict — PR #0 — SHA 09d3d16c9e1a9d6eb3a8b27a0c9e8f9e4d5c6b7a
+
+- **Gate role:** qa
+- **Timestamp:** 2026-06-04T11:26:17Z
+- **Notes:** Wave 111b completeness test (US-089 AC1-AC5) green. 34/34 new tests; full suite 220/220. Lint + type-check clean. PR #0 is the commit-time placeholder; SHA is parent-commit approximation per ADR-018 Wave 111b amendment. DevSecOps backfills real PR # and merge SHA post-merge.
+
+### Deliverable
+
+- `tests/qa/wave-111/wave-111b-completeness.test.ts` — 34 tests covering AC1-AC5 of US-089.
+
+### Gate results
+
+- `pnpm vitest run tests/qa/wave-111/wave-111b-completeness.test.ts` → 34/34 PASS
+- `pnpm test:run` → 220/220 PASS (108: 153 + 110: 12 + 111a: 21 + 111b: 34)
+- `pnpm lint` → clean
+- `pnpm type-check` → clean
+
+### AC checklist (US-089)
+
+- AC1 (Lessons section in architect.md, qa.md, devsecops.md — ≥3 bullets, **Why:**, **Apply:** fields): all 3 bodies PASS (6 tests green)
+- AC2 (ux-designer.md ## Design tools section covers all 6 proposed skills): PASS (7 tests green — 1 heading check + 6 skill-name checks)
+- AC3 (11 skill topics across 6 implementer bodies — #292, #293, #295, #359, #361, #362, #363, #364, #365, #366, #368, #369): all 12 assertions PASS
+- AC4 (ADR-018 contains Wave 111b amendment heading + PR #0 placeholder + `pending` language; pass-verdict-format.test.ts still exists): PASS (4 tests green)
+- AC5 (ADR-018 inline citation in devsecops.md, architect.md, ux-designer.md, qa.md; wave-111b-completeness.test.ts exists at canonical path): PASS (5 tests green)
+
+### S10 gate
+
+S10 not triggered — wave touches no user-supplied collection logic (grep-based regression test on static files).
+
+### Legs A/B/C
+
+N/A — doc/test-only wave. No runtime code, no UI changes. `pnpm build` gate skipped per rubric. Full-suite vitest run is the applicable verification leg.
+
+### Wave-111b tests (US-085 evidence)
+
+- `tests/qa/wave-111/wave-111b-completeness.test.ts` — 34 tests; mechanically asserts US-089 AC1-AC5 (Lessons sections, UX skills, Cluster 3 skill content, ADR-018 amendment, ADR-018 cross-refs).
+
+---
+
+## PREV — 2026-06-04 — Wave 111b Phase 2 (Cluster 3 qa.md skills — #365 + #366)
+
+### Issues addressed
+
+- **#365 — Contract testing skill** — existing `### Contract testing` section expanded: added consumer-driven contract pattern (Pact / OpenAPI), explicit QA sign-off gap flag rule (missing contract test is warn; flagged boundary without one is block).
+- **#366 — Mutation testing skill** — existing `### Mutation testing` section expanded: mutation score < 70% on critical business logic is now an explicit sign-off blocker; surviving mutant documentation requirement added; evidence convention for PASS blocks added (Stryker report path or summary table under Gate 7).
+
+### Gate results
+
+- `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` → 153/153 PASS
+- `pnpm vitest run tests/qa/wave-110/subagent-body-completeness.test.ts` → 12/12 PASS
+- `pnpm vitest run tests/qa/wave-111/pass-verdict-format.test.ts` → 21/21 PASS
+- `pnpm lint` → clean
+- `pnpm type-check` → clean
+
+### Files touched
+
+- `.claude/agents/qa.md` — `### Contract testing` and `### Mutation testing` sections expanded (no section headers added; existing sections enriched)
+
+### Self-assessment: both issues close with expand-existing-section
+
+Both `### Contract testing` and `### Mutation testing` were already present on disk from the Wave 108 subagent body rewrite. The sections encoded the core skill but were lighter than the issue proposals required. Phase 2 expanded them to encode: consumer-driven contract pattern, QA sign-off gap flag, 70% blocker threshold, survivor documentation requirement, and evidence convention. No new sections needed.
+
+---
+
+## PREV — 2026-06-04 — Wave 111a (ADR-018 PASS-verdict format conformance test)
 
 ### Wave-111 PASS verdict — PR #0 — SHA cae4a773e9bb0096d78062165f4c5a77959cedb6
 - **Gate role:** qa

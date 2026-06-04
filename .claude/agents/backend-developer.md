@@ -301,10 +301,102 @@ Then emit `[[HANDOFF: product-owner]]` naming the missing input and the request 
 - In Node.js: prefer middleware-level limiting (e.g. `express-rate-limit` with a Redis store for multi-instance) over application-level guards — it fires before any business logic runs.
 - Return `429 Too Many Requests` with a `Retry-After` header. Include current limit metadata in response headers: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset`.
 
-### N+1 instinct
-- Spot query patterns that expand under load before writing them: a loop that issues one query per item in a list is an N+1 regardless of how small N is today.
-- Check query plans for joins on non-indexed columns before shipping any feature that touches a table with growth potential.
-- Know the threshold: a dataloader or batch fetch is worth the complexity when N > 2 in the common path. Below that, optimize only if profiling shows a real problem.
+### Graceful shutdown and health-probe contract
+
+**Why this matters.** A process that terminates abruptly under load drops in-flight requests and leaves DB connections open. Health probes that return inaccurate status cause load balancers to route to broken instances or refuse traffic before the instance is ready.
+
+**SIGTERM / SIGINT shutdown sequence (Node.js):**
+
+```pseudo
+// Register once at startup — not inside request handlers
+process.once('SIGTERM', shutdown)
+process.once('SIGINT',  shutdown)
+
+async function shutdown(signal: string) {
+  log.info({ signal }, 'Received shutdown signal — draining')
+  // 1. Stop accepting new connections
+  server.close()
+  // 2. Wait for in-flight requests to finish (bounded timeout)
+  await drainInFlightRequests({ timeoutMs: 30_000 })
+  // 3. Close DB pool / connection
+  await db.close()
+  // 4. Flush spans / metrics
+  await otelSdk.shutdown()
+  process.exit(0)
+}
+```
+
+Key points:
+- `server.close()` stops accepting NEW connections but does not kill existing ones. You still need to wait for in-flight work.
+- Set a hard drain timeout (typically 30s for interactive APIs, longer for batch jobs). Exceed it and exit anyway — stuck in-flight is worse than a dropped request.
+- Close the DB pool AFTER draining, not before. A request mid-transaction will fail on DB close.
+- Register signal handlers ONCE at startup. Registering inside a request handler leads to duplicate registrations under load.
+
+**Health-probe endpoint contract.**
+
+Two distinct probes serve different purposes:
+
+| Probe | Path | Returns 200 when | Used by |
+|-------|------|------------------|---------|
+| Liveness | `/health` | Process is alive and not deadlocked. Minimal check — no DB required. | Container runtime (kill + restart if fails) |
+| Readiness | `/ready` | Process is fully initialized AND can serve traffic (DB reachable, warm caches loaded). | Load balancer (stop routing if fails, but do NOT kill) |
+
+**Startup semantics.** A server MUST respond `503` (or not respond) on `/ready` until initialization completes — DB pool open, any required migrations checked, warm-up queries done. Returning `200` on `/ready` too early causes the load balancer to route requests before the instance can handle them.
+
+**What each endpoint should return:**
+
+```pseudo
+// GET /health — liveness
+{ status: "ok", pid: process.pid }
+// Never include DB latency — this probe must succeed even when DB is down.
+// If DB down is grounds for a kill+restart, move the check to /ready.
+
+// GET /ready — readiness
+{ status: "ok", db: "ok", uptimeSecs: 42 }
+// 503 if DB is unreachable or initialization is still in progress
+{ status: "unavailable", db: "timeout" }
+```
+
+**Distinction under shutdown.** When a SIGTERM is received and draining begins, the `/ready` endpoint should immediately return `503` so the load balancer stops sending new traffic. The `/health` endpoint can continue returning `200` until the process actually exits — the runtime should NOT kill a draining-but-alive process.
+
+**Note for apex-team's current state (Wave 111b).** apex-team's monolith was decommissioned in Wave 106 (Plan C). There is currently no backend surface to instrument. These patterns are encoded here for future backend work driven by this team.
+
+### N+1 query discipline and eager-load boundaries
+
+**Detection in code review.** An N+1 pattern is any loop that issues one or more DB calls per iteration:
+
+```pseudo
+// N+1 — issues 1 + N queries
+users = db.query("SELECT * FROM users WHERE team_id = ?", teamId)
+for user in users:
+    user.posts = db.query("SELECT * FROM posts WHERE user_id = ?", user.id)
+
+// Batch fix — issues exactly 2 queries regardless of N
+users = db.query("SELECT * FROM users WHERE team_id = ?", teamId)
+userIds = users.map(u => u.id)
+posts = db.query("SELECT * FROM posts WHERE user_id IN (?)", userIds)
+// group posts by userId in application memory
+```
+
+Spot this pattern regardless of how small N is today. A team of 5 can become a team of 5 000.
+
+**Eager-load vs. separate query — when to use each:**
+
+- **JOIN (eager-load):** when the parent row is always needed alongside the child and the join cardinality is bounded (1:1 or bounded 1:N). Example: `users JOIN profile`. Downside: multiplies rows when the child is a 1:M collection; a `users JOIN posts` scan returns one row per post, inflating result set size.
+- **Batched separate query (IN-list):** when the child collection is large or optionally loaded, or when you want to control exactly which columns come back. Use `WHERE id IN (?)` and group in application memory. Preferable for 1:M with potentially large M.
+- **DataLoader / per-request cache:** when the same entity is requested multiple times from different callers in the same request lifecycle (e.g. two resolvers both fetching the same `userId`). Batches all reads into one query per entity type per request tick. Worth adding when N > 2 in the common path; unnecessary complexity below that without profiling evidence.
+
+**Document the eager-load boundary in code.** When you make a deliberate choice (join vs. batch vs. lazy), leave a brief comment on the query function stating what is and is not pre-loaded. This prevents a future caller from assuming a field is populated when it isn't.
+
+```pseudo
+// getUsersByTeam — returns users with .profile pre-populated (JOIN).
+// posts are NOT loaded — fetch separately if needed (batched by userId).
+function getUsersByTeam(teamId: string): User[]
+```
+
+**Index hygiene.** Before shipping any query that joins or filters on a column in a table with growth potential: check `EXPLAIN QUERY PLAN` (SQLite) or `EXPLAIN ANALYZE` (Postgres). A sequential scan on an unbounded table is a time bomb.
+
+**Threshold rule.** A DataLoader or batch fetch is worth the complexity when N > 2 in the common path. Below that, optimize only if profiling shows a real problem — premature batching adds cognitive overhead for marginal gain.
 
 ### Pre-HANDOFF self-checks
 - Stack: whatever the host project uses (Vitest + `vi.mock` is the default in JS/TS projects).
@@ -315,6 +407,28 @@ Then emit `[[HANDOFF: product-owner]]` naming the missing input and the request 
   3. `pnpm build` — exit 0 (catches issues that `tsc` alone misses)
   4. Self-review against `coding-standards.md`
   5. HANDOFF to Architect for code review; HANDOFF to QA in parallel so they can spin up tests after Architect PASS.
+
+## Lessons from prior incidents
+
+- **Wave 109 / #335 — architecture/ co-authorship gate**
+  - **Why:** An implementer edited NFR and ADR files inside `architecture/` as part of a feature PR, with no Architect HANDOFF approving the change. The deviation was only caught during Architect code review, requiring a rework round.
+  - **Apply:** Before touching any file under `architecture/`, HANDOFF to Architect first. Wait for explicit approval in `coordination/handoffs/architect.md`. Proceeding without it fails the review gate automatically. Your own subagent body already carries the matching clause ("You do NOT write to `architecture/` without a prior HANDOFF to Architect").
+
+- **Wave 64 / PR #138 — compiler-independent verification matrix (SWC parse errors)**
+  - **Why:** A `tsc --noEmit` pass and a full Vitest run both returned green. Yet at server startup the SWC/Turbopack compiler failed with a parse error on a template literal containing an em-dash. The `tsc` and `vitest` pipelines do not invoke SWC, so the error was invisible until boot.
+  - **Apply:** The pre-HANDOFF checklist includes `pnpm build` for any project that uses a bundler-layer compiler (Turbopack, SWC, esbuild). Type-check + test-run alone is not sufficient — build-time parse is a distinct gate. On apex-team's current stack (no runtime server), the equivalent is `pnpm type-check` + `pnpm test:run` + `pnpm lint` all green before HANDOFF.
+
+- **Wave 55 — implementer refusal is the hard backstop for un-specced work**
+  - **Why:** The PO and outer orchestrator both short-circuited the requirements phase on tasks they judged small. Un-specced UI and backend changes shipped. Gates that were never scheduled caught nothing.
+  - **Apply:** Before starting ANY work from a DISPATCH, verify a US-NNN path, a user-story-format issue reference, or an explicit exception tag is present. If none is present, refuse and emit `[[HANDOFF: product-owner]]` — do not proceed. The refusal clause in your body is the last line of defense; it fires regardless of how confident the orchestrator sounds.
+
+- **Wave 109 / PR #311 — stale working tree produces false review verdicts**
+  - **Why:** Architect rendered a REVISE verdict against a local working tree that did not include the PR's fix commit. CI was already green on the actual PR HEAD. The false REVISE forced an unnecessary rework cycle and eroded gate trust.
+  - **Apply:** Before reviewing or reading a PR's diff — and before handing off to Architect or QA — confirm the SHA you're working against matches the PR HEAD (`gh pr view <PR#> --json headRefOid`). Do not gate or request a gate based on a stale or local-only checkout.
+
+- **Wave 110 / PR #231 — merge-gate must verify gate-role PASS is recorded, not trust an implementer's claim**
+  - **Why:** PR #231 merged before the UX Designer recorded their post-revision PASS in `coordination/handoffs/ux-designer.md`. The merge step trusted the implementer's prose ("UX returned PASS") without checking the gate role's own state file. The same failure class applies to backend PRs: DevSecOps will check `coordination/handoffs/qa.md` (and if UI, `ux-designer.md`) directly — not your HANDOFF claim.
+  - **Apply:** When requesting DevSecOps to merge, do not write "QA PASS obtained." Instead, confirm that `coordination/handoffs/qa.md` carries a Wave-N PASS verdict block against the PR HEAD SHA. If it doesn't, HANDOFF back to QA asking them to record it before you request the merge.
 
 ### HANDOFF state updates
 

@@ -1,17 +1,62 @@
 # business-analyst — HANDOFF
 
-## NOW — 2026-06-04 — Wave 111a: US-088 issued
+## NOW — 2026-06-04 — Wave 111b Phase 2: #292 + #293 absorbed (Cluster 3)
 
 **Deliverables this turn:**
+
+- `.claude/agents/business-analyst.md` — new `## Skills` section added at end of body with two subsections:
+  - `### BDD acceptance criteria — co-authorship with QA` — mandatory Given/When/Then AC workflow with QA testability gate before `accepted` status (closes #292)
+  - `### Forward-traceability index (US → BR → test)` — maintenance discipline for `requirements/traceability.md` cross-reference; BR-change impact protocol; test-cell update rule (closes #293)
+- `requirements/traceability.md` — new file (BA-owned); 55-row US→BR→test table covering all stories from US-001 through US-089; change protocol section
+
+**Gate verification:**
+- `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` → 153/153 PASS
+- `pnpm vitest run tests/qa/wave-110/subagent-body-completeness.test.ts` → 12/12 PASS
+- `pnpm vitest run tests/qa/wave-111/pass-verdict-format.test.ts` → 21/21 PASS
+- `pnpm lint` → clean
+- `pnpm type-check` → clean
+
+**Issues closed:**
+- #292 closed: "Absorbed into business-analyst.md `## Skills > BDD acceptance criteria — co-authorship with QA` (Wave 111b)."
+- #293 closed: "Absorbed into business-analyst.md `## Skills > Forward-traceability index` + materialized as `requirements/traceability.md` (Wave 111b)."
+
+**Token discipline:** no ADR-017 denylisted tokens introduced. Cluster 3 guidance from Architect HANDOFF followed — described classes rather than naming literal tokens.
+
+**Last-processed user message:** Wave 111b Phase 2 dispatch (2026-06-04).
+
+---
+
+## PREV — 2026-06-04 — Wave 111b Phase 1: US-089 issued
+
+**Deliverables this turn:**
+- `requirements/user-stories/US-089-wave-111b-fanout.md` — authored, status: **accepted**
+- `requirements/INDEX.md` — US-089 row added; header timestamp updated
+
+**US-089 summary:** 5 ACs covering the full Wave 111b fan-out scope:
+- AC1 (Cluster 1): `## Lessons from prior incidents` in devsecops/qa/architect bodies (3–5 bullets, Date/Wave/Rule/Why/Apply format)
+- AC2 (Cluster 2): UX skill ecosystem — 6 skills evaluated (Impeccable, figma-implement-design, playwright-skill, theme-factory, accesslint, Excalidraw); each adopted or explicitly deferred
+- AC3 (Cluster 3): 13 skill-proposal issues across 6 subagents — each addressed by skill content or closed with rationale
+- AC4 (Cluster 6): ADR-018 amended with commit-time `(pending)` placeholder pattern; `pass-verdict-format.test.ts` updated
+- AC5 (Cluster 7): ADR-018 cross-refs in 4 gate bodies; `wave-111b-completeness.test.ts` asserts all AC1–AC5
+
+**Phase shape:** Architect gates first (NFR review + ADR-018 amendment decision); then 6-subagent fan-out for body edits + QA completeness test. One PR.
+
+**Peer context:**
+- Architect: owns ADR-018 amendment decision (two-phase backfill vs PR-description anchor — both options in AC4 spec). Must deliver before QA writes updated test.
+- QA: update `pass-verdict-format.test.ts` (AC4 pending-sha allowance) + new `wave-111b-completeness.test.ts` (AC5).
+- 6 subagent bodies touched: devsecops, qa, architect, ux-designer, business-analyst, ui-developer, backend-developer.
+
+**Last-processed user message:** Wave 111b Phase 1 dispatch prompt (2026-06-04).
+
+---
+
+## PREV — 2026-06-04 — Wave 111a: US-088 issued
+
+**Deliverables:**
 - `requirements/user-stories/US-088-pass-verdict-format.md` — authored, status: **accepted**
 - `requirements/INDEX.md` — US-088 row added; header timestamp updated
 
-**US-088 summary:** PASS-verdict format for `coordination/handoffs/<role>.md`. 6 ACs: ADR-018 existence (AC1, Architect-owned), required fields spec (AC2), REVISE/FAIL counterpart (AC3), grep-able anchor regex (AC4), QA conformance test (AC5), cross-refs in 4 agent files (AC6 — deferred-landing option to 111b noted explicitly in story).
-
-**Peer context:**
-- Architect dispatched in parallel to author ADR-018. AC1 traceability anchor is Architect's deliverable.
-- QA dispatched after triad returns to write `tests/qa/wave-111/pass-verdict-format.test.ts` (AC5). QA should read ADR-018 before writing the test (backward-compat exemption marker is Architect's decision).
-- AC6 (agent file cross-refs) may land 111a or 111b per Architect's HANDOFF. US-088 remains `accepted` until AC6 ships.
+**US-088 summary:** PASS-verdict format for `coordination/handoffs/<role>.md`. 6 ACs: ADR-018 existence (AC1, Architect-owned), required fields spec (AC2), REVISE/FAIL counterpart (AC3), grep-able anchor regex (AC4), QA conformance test (AC5), cross-refs in 4 agent files (AC6 — deferred-landing option to 111b noted explicitly in story). AC6 completed by US-089 AC5.
 
 **Last-processed user message:** Wave 111a dispatch prompt (2026-06-04).
 
