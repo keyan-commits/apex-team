@@ -58,10 +58,8 @@ jobs:
           FORMAT_REQUIRED_FROM_WAVE=111
           # ADR-018 canonical regex for the heading line (em-dash is U+2014)
           # ^### Wave-NNN (PASS|REVISE|FAIL) verdict — PR #N — SHA <40hex>$
-          # NOTE: CANONICAL_PATTERN is intentionally unused as a variable — the
-          # regex is inlined at line ~85 below for clarity. Documented here as
-          # the source-of-truth so future edits know the canonical shape.
-          # CANONICAL_PATTERN='^### Wave-[0-9]{1,4} (PASS|REVISE|FAIL) verdict — PR #[0-9]{1,6} — SHA [0-9a-f]{40}$'
+          # shellcheck disable=SC2034  # used downstream via grep -qE "${CANONICAL_PATTERN}"
+          CANONICAL_PATTERN='^### Wave-[0-9]{1,4} (PASS|REVISE|FAIL) verdict — PR #[0-9]{1,6} — SHA [0-9a-f]{40}$'
 
           violations=()
           files_checked=0
