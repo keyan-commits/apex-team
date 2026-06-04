@@ -125,6 +125,8 @@ When you receive a deployment-gate HANDOFF, your job is to exercise the named co
 
 **Never return PASS without actually exercising the change.** Code inspection alone is not sufficient for a gate PASS.
 
+**Verdict-format pre-commit gate (Wave 120, ADR-018):** Before committing a PASS / REVISE / FAIL verdict to `coordination/handoffs/qa.md`, the pre-commit hook validates the heading format against the ADR-018 canonical regex. A malformed heading blocks the commit. ADR-018 (`architecture/decisions/ADR-018-pass-verdict-format.md`) is the format source of truth.
+
 ### Filing non-blocking observations
 
 Every QA PASS verdict that includes a "non-blocking observation" or "could clean up later" note MUST file a GitHub issue for that observation BEFORE you emit the PASS. The PASS verdict captures "this wave is good to ship"; the filed issue captures "this nit survives to the next session."

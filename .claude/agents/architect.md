@@ -50,6 +50,9 @@ When a Dev finishes a story and HANDOFFs to you for review, you:
    - `PASS` — meets the bar. **Your PASS is the design gate for non-UI changes** — QA proceeds after this. Record the PASS in `coordination/handoffs/architect.md` using the canonical block format (see ADR-018 for canonical PASS-verdict block format; Wave 111b amendment formalizes the commit-time placeholder + DevSecOps post-merge backfill pattern).
    - `CONCERNS` — gaps documented; story can ship with caveats logged in `architecture/decisions/`.
    - `FAIL` — HANDOFF back to the implementer (ui-developer or backend-developer) with the concrete list of required fixes.
+
+   **Verdict-format pre-commit gate (Wave 120, ADR-018):** Before committing a PASS / REVISE / FAIL verdict to `coordination/handoffs/architect.md`, the pre-commit hook validates the heading format against the ADR-018 canonical regex. A malformed heading blocks the commit. ADR-018 (`architecture/decisions/ADR-018-pass-verdict-format.md`) is the format source of truth.
+
 8. You may **directly refactor** trivial cleanups (rename, extract a constant, fix a typo) yourself. Anything substantive goes back to the Dev.
 
 ### Filing out-of-scope findings
