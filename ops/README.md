@@ -1,96 +1,36 @@
 # apex-team ops
 
-DevSecOps lane: CI config, deployment manifests, secrets documentation, and runtime security.
+DevSecOps lane: CI config, secrets documentation, and runtime security.
 
-## Environments
+**Architecture references:**
+- Directory ownership contract: [`architecture/workspace-conventions.md`](../architecture/workspace-conventions.md)
+- Subagent body rewrite rules: [`architecture/decisions/ADR-017-subagent-body-rewrite-rules.md`](../architecture/decisions/ADR-017-subagent-body-rewrite-rules.md)
 
-| Port | Script | DB | Purpose |
-|---|---|---|---|
-| **3000** | `pnpm dev` | `data/apex-team.db` | **Live instance** — user's validation environment |
-| **3100** | `pnpm dev:test:qa` | `data/apex-team-test-qa.db` | QA verification instance |
-| **3110** | `pnpm dev:test:ui` | `data/apex-team-test-ui.db` | UI Developer isolated instance |
-| **3120** | `pnpm dev:test:be` | `data/apex-team-test-be.db` | BE Developer isolated instance |
-| **3130** | `pnpm dev:test:ux` | `data/apex-team-test-ux.db` | UX Designer review instance |
+## Runtime (Plan C — Wave 106+)
 
-The legacy `pnpm dev:test` (port 3100, `data/apex-team-test.db`) remains for backward compat but new waves should use `pnpm dev:test:qa`.
+apex-team runs as **8 Claude Code subagents**. There is no dev server, no MCP server, no health endpoint, and no database. The subagents are files under `.claude/agents/<role-id>.md`.
 
-## Per-role isolated work (ADR-002)
+| Concept | Under Plan C |
+|---|---|
+| Per-role working state | `coordination/handoffs/<role-id>.md` — direct file edits, no fragment fold step |
+| Subagent invocation | Outer Claude Code session uses the `Agent` tool with `subagent_type: <role-id>` |
+| Tests | `pnpm vitest run tests/qa/wave-NNN/<test>.test.ts` (or `pnpm test:run` for all) |
+| User-scope install | `bash scripts/install-agents-user-scope.sh` — symlinks `.claude/agents/` into `~/.claude/agents/` |
 
-### Branch + worktree creation
-
-Implementers start every wave with:
-
-```bash
-pnpm branch:start <role> <wave>-<short>
-# e.g. pnpm branch:start ui-developer 10a-workflow-ui
-# Creates ../apex-team-ui-developer-10a-workflow-ui/ + feature/10a-workflow-ui branch
-```
-
-Valid roles: `ui-developer | backend-developer | qa | ux-designer`
-
-Requires: clean working tree, current branch is `main`. Fetches `origin/main` before creating the branch.
-
-Branch naming convention: `feature/<wave>-<short>` (lowercase, hyphens only).
-
-Each worktree is a physical filesystem clone at `../apex-team-<role>-<short>` — multiple implementers can work in parallel without seeing each other's uncommitted files.
-
-After creating, `cd` into the worktree and run `pnpm install` once before starting the dev server.
-
-### Worktree cleanup (DevSecOps post-deploy)
-
-```bash
-pnpm branch:cleanup <role> <wave>-<short>
-# Removes worktree; deletes feature branch if merged into main.
-```
-
-Run this after `git push origin main` confirms the merge is live.
-
-### UI Developer workflow
-
-1. `pnpm branch:start ui-developer <wave>-<short>` — create worktree + branch
-2. `cd ../apex-team-ui-developer-<short> && pnpm install`
-3. `pnpm dev:test:ui` — spin up on port 3110 with isolated DB
-4. Implement + write unit tests in `tests/ui/`
-5. `pnpm test:run` must pass locally
-6. HANDOFF to QA + UX Designer (if UI changes)
-7. Do NOT push to main — HANDOFF to DevSecOps with PASS evidence
-
-### BE Developer workflow
-
-1. `pnpm branch:start backend-developer <wave>-<short>` — create worktree + branch
-2. `cd ../apex-team-backend-developer-<short> && pnpm install`
-3. `pnpm dev:test:be` — spin up on port 3120 with isolated DB
-4. Implement + write unit tests in `tests/be/`
-5. `pnpm test:run` must pass locally
-6. HANDOFF to QA
-7. Do NOT push to main — HANDOFF to DevSecOps with PASS evidence
-
-### QA workflow
-
-1. Receive HANDOFF from implementer(s) with UX PASS evidence (if UI)
-2. `pnpm dev:test:qa` — spin up on port 3100
-3. Exercise changes against BA's acceptance criteria in `requirements/user-stories/`
-4. Return PASS (with evidence) or FAIL (with repro) to DevSecOps
-
-### UX Designer workflow
-
-1. Receive HANDOFF from UI implementer
-2. `pnpm dev:test:ux` — spin up on port 3130 for visual review
-3. Verify against spec in `<workspace>/design/INDEX.md`
-4. Return PASS or REVISE to implementer; final PASS goes to DevSecOps
+**Retired (removed Wave 106):** ports `:3100/:3110/:3120/:3130`, `pnpm dev:test:qa|ui|be|ux`, `pnpm dev:supervised`, `.restart-trigger`, `pnpm branch:start`, `pnpm branch:cleanup`, `pnpm fold-handoff`, `_handoff-pending/`. These commands and files do not exist; do not reference them.
 
 ## DevSecOps merge + deploy flow
 
 DevSecOps is the **sole agent authorized** to merge feature branches to main and push to `origin/main`.
 
-**Trigger:** HANDOFF from QA with PASS evidence (+ UX PASS if UI changes).
+**Trigger:** HANDOFF from QA with PASS evidence (+ gate-role PASS as specified in `.claude/agents/devsecops.md` §"Deployment workflow"). See that file for the canonical step sequence — `ops/README.md` is the human-doc view; the agent file is the authoritative runtime contract.
 
 **Steps:**
 
 ```bash
-# 1. Switch to main + pull latest
-git checkout main
-git pull origin main
+# 1. Fetch + verify main is up to date
+git fetch origin
+git checkout main && git pull origin main
 
 # 2. Merge the feature branch (no-fast-forward to preserve history)
 git merge --no-ff feature/<wave>-<short>
@@ -99,14 +39,13 @@ git merge --no-ff feature/<wave>-<short>
 pnpm type-check
 pnpm test:run
 
-# 4. Push to origin/main (the live user instance picks this up)
+# 4. Push to origin/main
 git push origin main
-
-# 5. If MCP-side modules changed, trigger restart
-echo "$(date -u +%s)" >> .restart-trigger
 ```
 
-**Rollback:** if the live instance shows regressions after deploy, `git revert HEAD` + push. No force-push.
+**Rollback:** `git revert HEAD && git push origin main`. No force-push. The revert commit is the rollback record.
+
+**HANDOFF-in-PR invariant:** the wave's HANDOFF doc refresh ships inside the code PR. Never a separate doc-only PR after merge.
 
 ## Secrets
 
@@ -114,24 +53,23 @@ No secrets are committed to source. The only non-default env vars are:
 
 | Var | Where it lives | Purpose |
 |---|---|---|
-| `GOOGLE_GENERATIVE_AI_API_KEY` | `.env.local` (gitignored) | Gemini agents |
-| `GROQ_API_KEY` | `.env.local` (gitignored) | Groq agents |
-| `APEX_MCP_URL` | `.env.local` or shell | apex-engine override |
-| `APEX_TEAM_DB_PATH` | Script env vars only | Per-instance DB path |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | `.env.local` (gitignored) | Gemini agents (legacy; no active usage under Plan C) |
+| `GROQ_API_KEY` | `.env.local` (gitignored) | Groq agents (legacy; no active usage under Plan C) |
 
-All `.env*.local` files are gitignored. Never commit them.
+All `.env*.local` files are gitignored. Never commit them. `GITHUB_TOKEN` is the only secret used in CI workflows (auto-injected by GitHub Actions; no additional secrets required).
 
 ## Pipeline & security tooling
 
-Implemented in Wave 10b (US-002, ADR-002). DevSecOps owns all artifacts below — the only path to change pipeline behavior is a PR touching `ops/` or `.github/`.
+DevSecOps owns all artifacts below. The only path to change pipeline behavior is a PR touching `ops/` or `.github/`.
 
 | Artifact | Purpose |
 |---|---|
-| `.github/workflows/ci.yml` | Runs `pnpm audit --audit-level moderate` + `pnpm type-check` + `pnpm test:run` + `pnpm lint` on every PR and push. Audit and lint are `continue-on-error` so transient registry or lint failures don't block PRs. |
+| `.github/workflows/ci.yml` | Runs `pnpm lint`, `pnpm audit --audit-level moderate`, `pnpm type-check`, `pnpm test:run` on every push and PR. Audit is `continue-on-error` so transient registry failures don't block PRs. Also runs a dedicated `merge-driver-test` job verifying `merge=union` on `HANDOFF.md`. |
 | `.github/workflows/codeql.yml` | CodeQL SAST for JS/TS. Runs on push to main + weekly Monday 05:30 UTC. Free because the repo is public. |
+| `.github/workflows/pr-hygiene.yml` | Validates PR body close-keyword syntax — rejects comma-list refs like `closes #123, #456` (GitHub only auto-closes the first). Fires on `pull_request` opened/edited events. |
 | `.github/dependabot.yml` | Weekly CVE scan of npm deps. Minor + patch updates grouped into one PR to reduce noise. Critical CVEs in direct deps block merge until patched. |
-| `scripts/post-deploy-smoke.mjs` | Post-deploy health check. Curls `localhost:3000/api/health`, validates `status=ok` and `mcpMounted=true`. Run via `pnpm smoke`. |
-| `scripts/git-hooks/pre-commit` | Gitleaks secrets scan on staged files (see below). Also enforces HANDOFF.md update + INDEX.yaml integrity. |
+| `scripts/git-hooks/pre-commit` | Type-check + gitleaks secrets scan on staged files (see below). Also enforces HANDOFF.md update + INDEX.yaml integrity. |
+| `scripts/git-hooks/pre-push` | Blocks direct pushes to `origin/main` from non-DevSecOps contexts — first line of defense before GitHub branch protection. |
 
 ### CodeQL note
 
@@ -155,23 +93,13 @@ brew install gitleaks
 
 The pre-commit hook runs `gitleaks protect --staged --no-banner` automatically if gitleaks is installed. If it is NOT installed, the hook skips silently — install it to get the secret-leak protection guarantee. A commit containing a detected secret will be rejected.
 
-### Post-deploy smoke test
-
-After every merge + deploy, run:
-
-```bash
-pnpm smoke
-```
-
-Exits 0 if the server is healthy, 1 with a descriptive error message if not. If it fails: check `pnpm dev` terminal output; rollback with `git revert HEAD && git push origin main` if the deploy is the cause.
-
 ### CI secrets
 
 The CI workflows use only `GITHUB_TOKEN` (auto-injected by GitHub Actions). No additional secrets are required.
 
 ## Infrastructure as Code (IaC)
 
-**Not applicable for apex-team.** This project runs entirely on a single Mac with no cloud infrastructure, no remote servers, no VPCs, and no managed databases. There is nothing to provision with Terraform, Pulumi, CDK, or equivalent tooling. The "infrastructure" is: one Mac, one repo, one SQLite file.
+**Not applicable for apex-team.** This project runs as Claude Code subagents on a single Mac with no cloud infrastructure, no remote servers, no VPCs, and no managed databases. There is nothing to provision with Terraform, Pulumi, CDK, or equivalent tooling. The "infrastructure" is: one Mac, one repo, subagent files on disk.
 
 If apex-team ever acquires remote infra (a staging server, a hosted deployment, a managed database), DevSecOps will open an ADR to select an IaC tool and provision it under `ops/infra/`. Until that happens, this section serves as the explicit record that IaC was considered and deliberately deferred.
 
