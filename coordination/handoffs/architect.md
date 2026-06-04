@@ -1,6 +1,75 @@
 # architect — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 125 Lane 3 code review (PRs #407 + viewer #10 — PASS)
+## ⏭️ NOW — 2026-06-04 — Wave 126 Lane 3 code-review gate (PR #411 — PASS)
+
+### Wave-126 PASS verdict — PR #411 — SHA feef0820621674b101c4f56f289e2e4a75a72c40
+- **Gate role:** architect (non-UI rubric — pure CLI / Node script + docs surface; no UI files in diff)
+- **Timestamp:** 2026-06-04T22:18:00Z
+- **Notes:** Code-review gate for `feature/126-feat-backfill-command` HEAD `feef082`. Scope: `scripts/feat-backfill.mjs` (1282 lines — note brief said "641 lines" which is stale; actual is 1282; flagged as observation only), `.claude/agents/ui-developer.md` + `backend-developer.md` Plan-C additive clauses, `frontend/features/` retro summary docs (FE-0001..FE-0004), `ops/features/FEAT-0005-feat-backfill-command/OPS-0004-feat-backfill-script.md`, and `tests/qa/features/FEAT-0005-feat-backfill-command/TEST-0005-feat-backfill.test.ts`. Architecture/ co-authorship gate (Wave 109 #335): `git diff main..HEAD -- architecture/` shows only `architecture/features/FEAT-0005-feat-backfill-command/ARCH-0002-feat-backfill-protocol.md` (new — my own work) + `architecture/features/INDEX.md` (my own INDEX row + allocation log) — gate satisfied, no peer edits under `architecture/`. All eight ARCH-0002 NFRs verified against the implementation. Full test suite: 17/17 files, 722/722 tests pass + 1 skipped, lint clean, zero failures.
+
+### Per-NFR verification matrix (ARCH-0002 §§1-8 vs implementation)
+
+| NFR | Verification | Result |
+|---|---|---|
+| **NFR-001 idempotence** | `injectFrontmatter` (scripts/feat-backfill.mjs:526-580) re-reads file, calls `parseFrontmatter`, returns `applied-noop` at line 546 if both `feat` + `parent_feat` match. Conflict path at line 550 leaves file untouched. TEST-0005 §8(b) double-invocation test (test.ts:429-531) asserts byte-identical state after run 2. | PASS |
+| **NFR-002 dry-run-first** | All 15 write sites audited. Lines 132-134 → outDir scaffolding (always `coordination/feat-backfill/`); 558, 578 → `injectFrontmatter` (callable only from `runApply` at line 1196, which is itself gated on `flagApply` at line 1235); 625, 628 → `_insertIndexRow` (scaffolded but uninvoked in MVP — underscore-prefix); 741, 780 → `seedFERetroDoc` writes (callable only from `runApply` at line 1216, also `flagApply`-gated); 998-999, 1088, 1092 → proposal/dispatch/brief writes (all under `outDir`). Dry-run path `runPhase1()` writes EXCLUSIVELY under `coordination/feat-backfill/`. TEST-0005 §8(a) (test.ts:322-381) asserts dry-run writes ONLY under that prefix across all three fixtures. | PASS |
+| **NFR-003 orchestration boundary** | Single `execSync` site at line 124 — `git rev-parse --show-toplevel` for workspace resolution (read-only, allowed). No `claude` CLI shell-out. No `Agent` invocation. The string "Agent tool calls" at line 1010 is in the emitted dispatch-plan markdown that the OUTER orchestrator reads; script never invokes it. Subagent JSON proposals consumed via `parseResponseFiles` (line 491) reading `coordination/feat-backfill/responses/*.md`. | PASS |
+| **NFR-004 cross-workspace** | `--workspace=<path>` parsed at line 95, resolved at line 115-128 with `existsSync` precondition + git-toplevel fallback. `walkDir` (line 289) tolerates missing dirs via `if (!existsSync(dir)) return results;`. `classifyRoleFiles` (line 340) returns empty buckets + a Plan-C note when role dir absent. TEST-0005 sections 5-9 parameterize over `plan-c-workspace`, `legacy-workspace`, `empty-workspace` fixtures. | PASS |
+| **NFR-005 audit log** | `audit()` at line 317-322 uses `appendFileSync` — never `writeFileSync`, never truncates. Tab-separated `[ts, mode, role, relFile, feat, action].join('\t')`. TEST-0005 §8(c) (test.ts:537-599) asserts post-run-2 size strictly > post-run-1 + validates the canonical regex format. | PASS |
+| **NFR-006 forbidden surfaces** | `grep -n "git add\|git commit\|git push\|\.claude/agents\|coordination/handoffs\|architecture/decisions\|ADR-"` against the script returns ONLY line 1079, which is the emitted-text WARNING in the dispatch plan (the script TELLS subagents not to do those — never does them itself). No `rename` / `mv` / file-deletion calls anywhere. TEST-0005 forbidden-surfaces describe block (test.ts:1053-1142) parameterizes 3 surfaces (HANDOFFs / `.claude/agents/` / ADRs) × 3 fixtures = 9 tests, all PASS. | PASS |
+| **NFR-007 conflict resolution** | `resolveConflicts` at line 434-468 sorts by `parseInt(p.proposedFeat.replace('FEAT-', ''), 10)` ascending — lower wins. Voided entries pushed to `conflicts` array → emitted in proposal `## Reconciliation notes` (line 941-946) and `propose-conflict` audit row (line 828). `--ba-approved` parsed at line 97 with the `_flagBaApproved` underscore-prefix indicating MVP placeholder per ARCH-0002 §9 item 2 ("Wave 126's MVP can ship without the flag — always halts on conflict in `--apply`"). Acceptable per ARCH-0002 §9 deferral. | PASS |
+| **NFR-008 frontmatter parser fail-soft** | `parseFrontmatter` at line 241-268 wraps key-extraction in try/catch (line 255-266), sets `parseError`, returns `frontmatterParsed: null` without throwing. Unclosed block at line 246-248 returns `parseError: 'unclosed frontmatter block'` cleanly. `classifyRoleFiles` line 361-364 reads `parseError` and pushes file to `skipped` (treated as ungrouped) — file untouched on disk. TEST-0005 §8(d) (test.ts:605-700) covers corrupt YAML + unclosed block + no-frontmatter fixtures. | PASS |
+
+### Surface 2 — subagent Plan-C additive clauses
+
+- `.claude/agents/ui-developer.md` + `backend-developer.md` diffs are 100% additive — a single new bullet under the existing Wave 122 anchor heading. The Wave 122 anchor `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)` is unchanged (no `^-` lines touch that heading or any pre-existing bullet). Wave 122 TEST-0001 anchor-stability assertion will continue to pass.
+- The clause is content-aligned with the script's Plan-C detection logic (script line 144-145: `isPlanC = !hasSrc && hasAgents`) and the `ROLE_DIRS` switch (line 170-171: `'ui-developer': isPlanC ? 'frontend' : 'src'`).
+
+### Surface 3 — frontend retro summary docs
+
+- `FE-0001-tbd/FE-0001-viewer-workspace-switcher.md` + `FE-0002-tbd/FE-0002-viewer-auto-follow.md`: `parent_feat: TBD` for pre-convention waves 119/121 — schema-correct (BA reconciles to a real FEAT later). Directory placement `FE-NNNN-tbd/` is consistent with the "no FEAT bound yet" semantics.
+- `FEAT-0002-feat-grouped-rendering/FE-0003-feat-grouped-rendering.md`: `parent_feat: FEAT-0002` — valid (FEAT-0002 ships in requirements/features/INDEX.md).
+- `FEAT-0004-viewer-a11y-polish/FE-0004-viewer-a11y-polish.md`: `parent_feat: FEAT-0004` — valid (FEAT-0004 is the wave-125 viewer-a11y feature; my own ARCH-0001 covers it).
+- All four carry consistent frontmatter (`ticket`, `parent_feat`, `parent_us`, `wave`, `role: ui-developer`, `status: retro`). Schema clean.
+
+### Surface 4 — OPS-0004 allocation + BA stale reference
+
+- `ops/features/FEAT-0005-feat-backfill-command/OPS-0004-feat-backfill-script.md` — correct ticket number (OPS-0001..0003 were Wave 124; OPS-0004 is the next available slot for Wave 126). Frontmatter clean (`ticket: OPS-0004`, `parent_feat: FEAT-0005`, `parent_us: US-102`, `role: devsecops`, `status: in-flight`).
+- **DISCREPANCY FLAGGED for BA:** `requirements/features/FEAT-0005-feat-backfill-command.md` line 15 cites `OPS-0001 (pending — DevSecOps …)` and line 94 (`| DevSecOps | OPS-0001 | …`) still cites OPS-0001. Stale reference — should be `OPS-0004`. This is the BA's own parent doc; non-blocking for the wave, but BA should backfill in a follow-up edit. Filing as a HANDOFF note rather than a github issue since the fix is one-line and BA is already active on this wave.
+
+### Surface 5 — TEST-0005 ARCH-0002 §8 coverage
+
+- All four mandatory assertions present:
+  - §8(a) — dry-run zero-write boundary (test.ts:322 + parameterized across 3 fixtures).
+  - §8(b) — `--apply` idempotence (test.ts:429 + parameterized).
+  - §8(c) — audit log append-only (test.ts:537 + regex validation at 581-595).
+  - §8(d) — fail-soft YAML parser (test.ts:605 + 3 corrupt-YAML subcases).
+- Beyond §8 minimum: forbidden-surfaces (test.ts:1053), dispatch-plan emission (test.ts:866), Plan-C FE retro seeding, cross-workspace fixture coverage — exceeds the Wave 118 comprehensive-testing skill bar.
+- Full run: 43 tests pass on the single file; 722 tests pass overall.
+
+### Maintainability observations (non-blocking, for follow-up wave)
+
+- `_insertIndexRow` at scripts/feat-backfill.mjs:591 is scaffolded but never invoked. Underscore-prefix convention communicates "intentionally unused" but the dead branch is real (lines 591-632, 42 LOC). Per ARCH-0002 §9 follow-up #2 (`--ba-approved` flag), this becomes the implementation site for in-band conflict resolution. Acceptable to defer; flagged in case the conflict-resolution wave doesn't fire soon.
+- `runPhase1` at scripts/feat-backfill.mjs:789 is ~340 LOC — borderline long for a single function. Three internal sections (classification → proposal markdown → dispatch plan) could each be a private helper. Not blocking — function is procedural and reads top-to-bottom — but a refactor candidate when the script next changes substantively.
+- Brief said "scripts/feat-backfill.mjs — 641 lines" — actual is 1282 lines. Likely the brief was drafted against an earlier interim diff. Documenting for traceability; not a defect.
+
+### Architecture/ co-authorship gate (Wave 109 #335) — self-reflection
+
+`git diff main..HEAD --stat -- architecture/` produces exactly two files:
+- `architecture/features/FEAT-0005-feat-backfill-command/ARCH-0002-feat-backfill-protocol.md` (new — Architect's lane).
+- `architecture/features/INDEX.md` (modified — Architect's INDEX row + allocation log).
+
+Zero peer co-authorship on any `architecture/` file. Gate satisfied.
+
+### Verdict
+
+**PASS** for non-UI rubric. No UI surface in PR — pure CLI/Node script + docs/tests. UX Designer gate not required (verified: no `.tsx`, no `globals.css`, no `page.tsx` / `layout.tsx` in diff). QA gates next on `:3100` test instance.
+
+Per ADR-018 the verdict heading uses the real PR # (411) and the real 40-char HEAD SHA (`feef0820621674b101c4f56f289e2e4a75a72c40`). DevSecOps post-merge will backfill the merge SHA if it differs from HEAD.
+
+---
+
+## PREV — 2026-06-04 — Wave 125 Lane 3 code review (PRs #407 + viewer #10 — PASS)
 
 ### Wave-125 PASS verdict — PR #407 — SHA 16f3fa0067537aeed4c21622df03e2c7296fe93b
 - **Gate role:** architect

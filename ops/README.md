@@ -256,3 +256,97 @@ gh auth refresh -h github.com -s repo
 ```
 
 The script never auto-applies branch protection — explicit `y` at the prompt is always required.
+
+## FEAT Backfill Command (FEAT-0005 — Wave 126)
+
+`scripts/feat-backfill.mjs` retroactively groups existing workspace artifacts under FEAT-XXXX
+identifiers by injecting YAML frontmatter. It follows a two-phase flow so the user reviews
+proposed changes before any workspace files are mutated.
+
+### Command surface
+
+```bash
+pnpm run feat:backfill [--all | --feat=FEAT-XXXX] [--role=<r>...] [--apply] [--out=<path>] [--workspace=<path>]
+```
+
+| Flag | Description |
+|---|---|
+| `--all` | Scan all roles for all known FEATs + ungrouped assets |
+| `--feat=FEAT-XXXX` | Scope to one feature only (FEAT file must pre-exist) |
+| `--role=<r>` | Restrict to listed roles (repeatable); valid: `business-analyst`, `architect`, `ux-designer`, `qa`, `devsecops`, `ui-developer`, `backend-developer` |
+| `--apply` | Write frontmatter mutations; omit = dry-run (default) |
+| `--out=<path>` | Override output directory (default: `<workspace>/coordination/feat-backfill/`) |
+| `--workspace=<path>` | Operate on a different workspace root (default: `git rev-parse --show-toplevel`) |
+| `--proposal=<path>` | Bind `--apply` to a specific proposal JSON file |
+
+Calling with neither `--all` nor `--feat=FEAT-XXXX` prints usage and exits non-zero.
+
+### Two-phase flow
+
+**Phase 1 (dry-run, default):**
+
+1. Resolves workspace root from `--workspace` or git toplevel.
+2. Detects Plan C shape: no `src/`, has `.claude/agents/` → uses `frontend/` + `backend/` for FE/BE Dev.
+3. Walks each role's owned directory; reads file frontmatter via regex (fail-soft on malformed YAML).
+4. Groups files into already-grouped (has `parent_feat:` / `feat:`) vs ungrouped.
+5. Applies heuristic FEAT assignment to ungrouped files; ungroupable files go to the `## Ungrouped` bucket.
+6. Runs reconciliation: lower FEAT number wins on conflicts (NFR-007).
+7. Emits:
+   - `coordination/feat-backfill/proposal-<ISO>.md` — human-readable proposal report
+   - `coordination/feat-backfill/proposal-<ISO>.json` — machine-readable manifest (`--apply` reads this)
+   - `coordination/feat-backfill/dispatch-plan-<ISO>.md` — per-role subagent briefs for outer Claude Code session
+   - `coordination/feat-backfill/dispatch/<role>-<ISO>.md` — individual role briefs
+   - Appends to `coordination/feat-backfill/audit.log`
+8. Prints counts + file paths + next steps to stdout.
+
+**Phase 2 (`--apply`):**
+
+1. Phase 1 runs first (always emits fresh proposal for audit context).
+2. Reads most recent `proposal-*.json` (or `--proposal=<path>`).
+3. Merges any subagent response files from `coordination/feat-backfill/responses/`.
+4. Injects `feat:` + `parent_feat:` into each matched file (idempotent: skip if already set).
+5. On Plan C workspaces: seeds retroactive FE summary docs at `frontend/features/FEAT-NNNN-<slug>/FE-NNNN-<slug>.md` for Waves 119, 121, 123, 125.
+6. Updates each role's INDEX (de-dup by ticket id).
+7. Appends all actions to `coordination/feat-backfill/audit.log`.
+
+### Plan C clause
+
+When the workspace has no `src/` directory but has `.claude/agents/` (Plan C shape — e.g. apex-team itself):
+
+- `ui-developer` owned directory is `frontend/` (not `src/`)
+- `backend-developer` owned directory is `backend/` (not `src/`)
+- FE retro summary docs are seeded at `frontend/features/FEAT-NNNN-<slug>/FE-NNNN-<slug>.md`
+- BE retro summary docs would be seeded at `backend/features/FEAT-NNNN-<slug>/BE-NNNN-<slug>.md`
+
+If `frontend/` or `backend/` is absent in dry-run mode, the proposal reports:
+`"Plan C workspace detected; frontend/ or backend/ does not yet exist — retro FE/BE summary docs cannot be scanned but can be seeded by AC15."`
+
+### Cross-workspace invocation
+
+The script works on any workspace that follows the standard directory layout:
+
+```bash
+node /path/to/apex-team/scripts/feat-backfill.mjs \
+  --workspace=/path/to/other/repo \
+  --all \
+  --apply
+```
+
+No apex-team-specific path assumptions are hardcoded in workspace resolution.
+
+### NFR adherence
+
+| NFR | Enforcement |
+|---|---|
+| NFR-001 idempotence | Second `--apply` on same proposal = same on-disk state; audit log appends no-op rows |
+| NFR-002 dry-run safety | Without `--apply`, zero writes outside `coordination/feat-backfill/` |
+| NFR-003 orchestration boundary | Script does all FS IO; subagents return proposals to `responses/`; script parses and applies |
+| NFR-004 cross-workspace portability | `--workspace` flag; tolerates any subset of canonical dirs |
+| NFR-005 audit log | Append-only TSV at `coordination/feat-backfill/audit.log` |
+| NFR-006 forbidden surfaces | No file moves, renames, FEAT renumbering, `.claude/agents/` edits, HANDOFF edits, git ops, network |
+| NFR-007 conflict resolution | Lower FEAT number wins; voided FEAT logged as `propose-conflict` |
+| NFR-008 fail-soft | Malformed frontmatter → `error` audit row + file skipped; run continues |
+
+### OPS ticket
+
+OPS-0004 — `ops/features/FEAT-0005-feat-backfill-command/OPS-0004-feat-backfill-script.md`

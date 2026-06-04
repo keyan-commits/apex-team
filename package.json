@@ -12,6 +12,7 @@
     "devsecops:bootstrap-workspace": "node scripts/devsecops/bootstrap-workspace.mjs",
     "ops:run": "node scripts/ops-run.mjs",
     "qa:feat": "node scripts/qa-feat.mjs",
+    "feat:backfill": "node scripts/feat-backfill.mjs",
     "postinstall": "git rev-parse --git-dir >/dev/null 2>&1 && git config core.hooksPath .githooks || true"
   },
   "devDependencies": {
