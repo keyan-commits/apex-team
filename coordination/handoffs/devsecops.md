@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-06-04 (Wave 112)
 
-### Wave-112 PASS verdict — PR #0 — SHA (SHA-pending)
+### Wave-112 PASS verdict — PR #0 — SHA 8ba1bbbb0b0aa12ed707d51957870e42ff39542a
 
 - **Gate role:** devsecops
 - **Timestamp:** 2026-06-04T12:30:00Z
