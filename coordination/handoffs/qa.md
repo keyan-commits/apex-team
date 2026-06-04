@@ -1,4 +1,44 @@
-## NOW — 2026-06-04 — Wave 112 Phase 3 (US-091 completeness test)
+## NOW — 2026-06-04 — Wave 113 (US-092 AC4 backfill-enforcement completeness test)
+
+### Wave-113 PASS verdict — PR #0 — SHA fa682cc624b0791e437115a3503db1721203be2c
+
+- **Gate role:** qa
+- **Timestamp:** 2026-06-04T13:39:58Z
+- **Notes:** Wave 113 completeness test (US-092 AC1-AC4) green. 16/16 new tests; full suite 324/324. Lint + type-check clean. PR #0 is commit-time placeholder per ADR-018 Wave 111b amendment; SHA is last-known branch HEAD `fa682cc` (PR #394 merge). DevSecOps backfills real PR # and merge SHA post-merge.
+
+### Deliverable
+
+- `tests/qa/wave-113/backfill-enforcement.test.ts` — 16 tests covering AC1-AC4 of US-092.
+
+### Gate results
+
+- `pnpm vitest run tests/qa/wave-113/backfill-enforcement.test.ts` → 16/16 PASS
+- `pnpm test:run` → 324/324 PASS (108: 153 + 110: 12 + 111a: 21 + 111b: 34 + 111c: 29 + 112: 59 + 113: 16)
+- `pnpm lint` → clean
+- `pnpm type-check` → clean
+
+### AC checklist (US-092)
+
+- AC1 (nightly cron trigger): `schedule:` block present with cron `0 6 * * *`; TTL check job exists without pull_request-only gate. PASS (4 tests green)
+- AC2 (push-to-main trigger): `push:` block present targeting `main`; push trigger section confirmed before `jobs:` key in YAML. PASS (3 tests green)
+- AC3 (soft-fail semantics + job split): format-check job has `if: github.event_name == 'pull_request'` guard; at least 2 jobs declared; TTL check job does NOT call `exit 1`; `exit 0` confirmed; format-check job uses `exit 1` for hard gate. PASS (5 tests green)
+- AC4 (self-reference / metadata): test file exists at canonical path; US-092 file exists; US-092 contains `## Acceptance criteria` section; all four ACs referenced. PASS (4 tests green)
+
+### S10 gate
+
+S10 not triggered — wave touches no user-supplied collection logic (grep-based regression test on static workflow YAML files).
+
+### Legs A/B/C
+
+N/A — doc/test-only wave. No runtime code, no UI changes. `pnpm build` gate skipped per rubric. Full-suite vitest run is the applicable verification leg.
+
+### Wave-113 tests (US-085 evidence)
+
+- `tests/qa/wave-113/backfill-enforcement.test.ts` — 16 tests; mechanically asserts US-092 AC1-AC4 (nightly cron trigger, push-to-main trigger, soft-fail job split, self-reference metadata).
+
+---
+
+## PREV — 2026-06-04 — Wave 112 Phase 3 (US-091 completeness test)
 
 ### Wave-112 PASS verdict — PR #0 — SHA 4a455f0141f6b30f3d84b5d004a42852fcef588d
 

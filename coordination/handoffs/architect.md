@@ -1,6 +1,76 @@
 # architect — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 112 Phase 1 (#391 peer-edit protocol)
+## ⏭️ NOW — 2026-06-04 — Wave 113 Phase 1 (NFR sign-off + #332 close-with-rationale)
+
+### Wave-113 PASS verdict — PR #0 — SHA 75266d336c72f749a89b430228771777dd39ba60
+- **Gate role:** architect
+- **Timestamp:** 2026-06-04T05:33:15Z
+- **Notes:** Wave 113 Phase 1 deliverables: (1) NFR sign-off for Option A backfill enforcement CI extension (cron + push-to-main triggers added to existing TTL-check job in pass-verdict-format-check.yml); (2) #332 closed as won't-fix with full rationale. No body edits this wave — HANDOFF-only update + 1 issue close. Placeholder block per ADR-018 Wave 111b amendment: `PR #0` + last-known SHA `75266d336c72f749a89b430228771777dd39ba60` (current HEAD of main pre-staging). DevSecOps post-merge backfill replaces with real PR # + merge SHA via `chore(handoff): backfill Wave-113 verdict PR # and merge SHA`.
+
+### Deliverable 1 — NFR sign-off for Option A (backfill enforcement CI extension)
+
+**Decision: APPROVED.** DevSecOps may add `schedule:` (nightly cron) + `push: branches: [main]` triggers to `.github/workflows/pass-verdict-format-check.yml`, scoped to run ONLY the TTL check job (NOT the format-check job, which requires PR context).
+
+**Four NFR dimensions evaluated:**
+
+1. **Workflow concurrency.** Cron and push triggers can race — e.g. a push-to-main lands at 02:59 UTC while the 03:00 nightly cron fires. Both runs would scan the same `coordination/handoffs/*.md` files for `PR #0` placeholders past TTL. **Acceptable.** The TTL check is soft-fail (exits 0 on warning), so a double-warning is at worst noise in two run logs — no real harm. If the noise becomes operationally annoying, DevSecOps can add `concurrency: group: ttl-check, cancel-in-progress: true` to the workflow YAML in a follow-up. Not a Wave 113 blocker.
+
+2. **GitHub Actions cost.** 1 nightly cron run × ~1 minute × 365 days/year ≈ 6 hours/year of compute. Plus N push-to-main runs × ~1 minute each (push-to-main cadence is ≤10/day in practice, so ~60 minutes/year). Total: well under the GitHub Actions free-tier monthly minutes for a public repo, and trivially under the paid-tier allotment if the repo goes private. **Negligible cost.**
+
+3. **Permissions.** The existing workflow declares `permissions: contents: read` + `pull-requests: read`. The TTL check (a) reads files via the checkout action (`contents: read` covers), (b) calls `gh pr list --state merged --json number,mergedAt,mergeCommit` (covered by `pull-requests: read`). No additional permissions needed for cron or push triggers. **No permissions escalation.**
+
+4. **Failure semantics.** The TTL check MUST remain soft-fail (warning, exit 0) on ALL triggers — pull_request, schedule, push. Hard-failing on a TTL warning would block main on a missed backfill, which is exactly the wrong outcome (the verdict is correct; only the placeholder values are stale; the PR is already merged). DevSecOps's implementation MUST verify all three trigger paths exit 0 on TTL warning. **Soft-fail invariant is load-bearing — gate this in CI implementation review.**
+
+**NFR delta:** none. The existing workflow's NFR envelope (read-only permissions, soft-fail TTL check, U+2014 em-dash literal in regex, no shell injection on `PR_TITLE`/`PR_BODY` via env: passing) is preserved. The extension is purely additive — new triggers fire the same TTL-check job logic that already exists.
+
+**One observation, not a block:** the format-check job (lines 39-114) embeds `${PR_TITLE}` and `${PR_BODY}` references — these are pull_request-context-only. DevSecOps's extension must ensure the cron + push triggers do NOT route through the format-check job, only the TTL-check job. The cleanest implementation is two separate \`jobs:\` entries (one gated to \`if: github.event_name == 'pull_request'\`, the other unconditional). If implemented as a single job with conditional steps, the `env:` references to `github.event.pull_request.*` would error on non-PR triggers. Naming this explicitly so DevSecOps doesn't trip the wire.
+
+**Sign-off:** Architect APPROVES Option A. DevSecOps proceed with implementation.
+
+### Deliverable 2 — #332 closed as won't-fix
+
+`gh issue close 332` executed with the full rationale comment. Key reasoning:
+
+1. **Runtime injection point is the structural enforcement.** User-directive-supremacy content lives in the shared system-prompt block injected at every subagent runtime invocation — NOT duplicated inline in each `.claude/agents/*.md` body file. Plan C's subagent runtime prepends the shared preamble to every subagent's context; per-body duplication would create drift risk without correctness gain.
+
+2. **Functional coverage already gated.** Wave 110 completeness test (`tests/qa/wave-110/subagent-body-completeness.test.ts`) + Wave 112 completeness test already assert presence of directive-supremacy clauses (AC6 of US-091). The functional invariant is mechanically enforced.
+
+3. **A positional byte-bound would over-spec.** Asserting "must appear in first ~N chars" would force restructuring the role-prompt preamble that all 8 bodies share — breaking the YAML frontmatter + description convention without changing the functional outcome. Position-in-file is an implementation artifact of body format, not a correctness property.
+
+4. **Reopen condition documented:** if a future runtime change removes the shared system-prompt injection (e.g. each subagent body becomes responsible for its own preamble), reopen — the positional bound becomes load-bearing at that point.
+
+### Verification (Wave 113 Phase 1)
+
+- No source files touched this wave (HANDOFF-only + 1 GitHub issue close). No test runs required — the wave introduces zero runtime-code changes.
+- ADR-018 canonical-block conformance for the Wave-113 verdict heading: heading `### Wave-113 PASS verdict — PR #0 — SHA 75266d336c72f749a89b430228771777dd39ba60` matches `^### Wave-[0-9]{1,4} (PASS|REVISE|FAIL) verdict — PR #[0-9]{1,6} — SHA [0-9a-f]{40}$`. Em-dash U+2014 confirmed by inspection. All 4 required fields (Gate role / Timestamp / Notes) present in the block above.
+- Architect's co-authorship gate (Wave 109 rule): this wave touches `coordination/handoffs/architect.md` only. Single-author own-lane edit. Gate satisfied.
+- Architect's peer-HANDOFF edit gate (Wave 112 step 4b): only own HANDOFF doc edited. Gate satisfied.
+
+### In flight / next
+
+- This slice is ready for code review (HANDOFF doc + issue-close — no code surface).
+- DevSecOps: proceed with Option A CI extension implementation per the NFR sign-off above. Implementation must (a) keep TTL check soft-fail on all triggers, (b) route cron + push triggers to the TTL-check job only (not the format-check job), (c) preserve existing read-only permissions, (d) consider concurrency group only if double-warnings become operationally noisy.
+- DevSecOps post-merge step (per ADR-018 Wave 111b amendment): replace `PR #0` + `75266d336c72f749a89b430228771777dd39ba60` with the real PR # + merge SHA via `chore(handoff): backfill Wave-113 verdict PR # and merge SHA`.
+
+### Parked / future (carried forward, unchanged)
+
+- `system-design.md` — still not created.
+- `tech-stack.md` — still not created (Vitest + ESLint + TS + pnpm is the entire stack).
+- `coding-standards.md` — still not created. Wave 112 boundary-clause discipline (canonical anchor phrase + 6 co-presence anchors) is a candidate entry. So is the Wave 111b lessons-section pattern.
+- Fitness function for OQ-085-001's "no binary files committed under `tests/qa/wave-*/evidence/`" — QA owns implementation.
+- Viewer-repo subagent body audit (per ADR-017 follow-up).
+- Wave 112-B candidate: QA grep test asserting the canonical Wave-112 anchor phrase + 6 co-presence anchors are present in each of the 8 subagent bodies. Pattern matches Wave 108/110/111 cleanliness/completeness/format triad.
+- Wave 113+ candidate: if cron + push double-warnings become noisy after Option A lands, add `concurrency: group: ttl-check, cancel-in-progress: true` to the workflow YAML.
+
+### Notes / caveats
+
+- #332's close rationale is durable in the GitHub issue comment thread; the reopen condition ("future runtime change removes shared system-prompt injection") is named explicitly so a future contributor reading the closed issue understands when re-evaluation is warranted.
+- The NFR sign-off above is the gate verdict for DevSecOps's Option A implementation. When the implementation PR lands, Architect's review will verify the 4 NFR dimensions hold against the actual YAML changes (especially the soft-fail-on-all-triggers invariant + the trigger-to-job routing).
+- No body edits this wave per dispatch brief. This is a pure NFR / process slice — the deliverables are (1) an ADR-018-canonical verdict block recording the sign-off and (2) a closed GitHub issue with rationale.
+
+---
+
+## ⏭️ PREV — 2026-06-04 — Wave 112 Phase 1 (#391 peer-edit protocol)
 
 ### Wave-112 PASS verdict — PR #0 — SHA 39298fbb1caf5e38b9f7d3b09f4cf11a8a879074
 - **Gate role:** architect
