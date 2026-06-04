@@ -1,6 +1,78 @@
 # architect — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 111b Phase 1 (Clusters 1 + 6 + 7 single-author)
+## ⏭️ NOW — 2026-06-04 — Wave 111c (alpha-suffix ratification + PR #388 review)
+
+### Wave-111 PASS verdict — PR #388 — SHA ce6b2b1a0781ee15fcf8987cbc6a16e55671ec5b
+- **Gate role:** architect
+- **Timestamp:** 2026-06-04T03:50:02Z
+- **Notes:** Wave 111c co-authorship + alpha-suffix ratification. **Decision: Option A — RATIFY DevSecOps's normalization. ADR-018 unchanged.** Sub-waves (a/b/c) are operational sequencing within a parent wave-number; PR# is the load-bearing disambiguator (ADR-018's state-semantics table identifies verdicts by PR# + HEAD SHA, not wave-id). PR #386 = Wave 111a, PR #387 = Wave 111b, PR #388 = Wave 111c — distinguished by PR#, all canonical `Wave-111`. Co-authorship gate verified: PR #388 touches zero `architecture/` files (gh pr view confirms 9 files, none under `architecture/`). All gates clean: vitest 220/220, lint clean, type-check clean. Canonical regex unchanged in workflow YAML (lines 58 + 79 match ADR-018 spec exactly, `\d` → `[0-9]` for grep -E compatibility only).
+
+### Decision rationale — Option A (ratify) vs Option B (amend regex)
+
+**Chosen: Option A.** Reasoning:
+
+1. **ADR-018's state-semantics table already identifies verdicts by `PR #N` + HEAD SHA, NOT by wave-number.** Wave-number is descriptive metadata; PR# + SHA are the load-bearing identifiers. Allowing `[a-z]?` solves a disambiguation problem the format does not have — PR# is the disambiguator and was always intended to be.
+
+2. **Semantic clarity preserved.** With Option A, `Wave-NNN` always means "the integer wave-number." With Option B, `Wave-111` would ambiguously mean either "the parent wave covering 111a/b/c" or "the first sub-wave whose author skipped the letter." Mixing parent-wave and sub-wave identifiers in the same regex muddies the data model.
+
+3. **Zero churn.** Backfills already done; no test update; no workflow YAML edit; no ADR amendment. Wave 111c's pending QA completeness test continues against the unchanged spec.
+
+4. **Sub-waves are operational artifacts.** `111a/b/c` describes intra-wave sequencing for the team (Phase 1 lands the foundation, Phase 1b lands the amendment surfaced by self-application, Phase 1c lands the CI wiring + ratification). The canonical wave-number is the numeric prefix; sub-letters are casual organizing convention, not first-class identifiers.
+
+5. **Wave 111c HANDOFF doc edit accepts (not amends) the decision.** DevSecOps's `coordination/handoffs/devsecops.md` Wave 111c entry references `Wave-111c` in prose (e.g. backfill commit message `chore(handoff): backfill Wave-111c verdict PR # and merge SHA`); the prose use of sub-wave letters in commit messages, branch names, narrative documentation remains acceptable — the spec binds only the canonical verdict block heading.
+
+### Co-authorship gate verification (Wave 109 rule)
+
+`gh pr view 388 --json files` → 9 files. Manual scan: zero matches under `architecture/`. PR #388 does NOT trip the co-authorship gate. DevSecOps correctly deferred the ADR-018 amendment question via HANDOFF rather than editing `architecture/` unilaterally — that is the correct discipline, ratified here.
+
+### Pre-verdict SHA sync (Wave 109 rule)
+
+Verdict rendered against worktree at SHA `ce6b2b1a0781ee15fcf8987cbc6a16e55671ec5b` (PR #388 HEAD per `gh pr view`). Worktree created at `/tmp/arch-wave-111c`. `pnpm install --frozen-lockfile` clean. `pnpm test:run` 220/220 PASS. `pnpm lint` clean. `pnpm type-check` clean. `pnpm vitest run tests/qa/wave-111/pass-verdict-format.test.ts` 21/21 PASS.
+
+### Review of PR #388 deliverables (non-UI lane — full Architect rubric applies)
+
+**Scope:** 9 files. UI-touching detection: zero matches against `src/app/**/page.tsx`, `src/app/**/layout.tsx`, `src/components/**/*.tsx`, `src/app/globals.css`. **Pure non-UI PR — Architect-only gate.** No UX HANDOFF needed.
+
+**File-by-file:**
+
+1. **`.claude/agents/devsecops.md`** (+50 lines) — step 2a added (`gh pr checks` pre-merge gate, addresses #240) + new section "`gh pr merge --delete-branch` anomalous-closure playbook" (addresses #301). Step 2a's phrasing is concrete and verifiable: `gh pr checks <PR#> --watch` + treatment of `pending/in_progress/fail` as hard blockers, `skipped` as non-blocker. Aligns with deployment-gate discipline already in step 3. The anomalous-closure playbook is well-structured (Symptom / Detection / Recovery), recovery steps cite `git reflog show origin/<branch>` for the lost-branch case, and the escalation rule ("do not force-push a re-created branch to main without explicit authorization") is correctly conservative. **PASS.**
+
+2. **`.github/workflows/pass-verdict-format-check.yml`** (+204 lines, new) — implements ADR-018 mechanical enforcement. The `CANONICAL_PATTERN` on line 58 (`^### Wave-[0-9]{1,4} (PASS|REVISE|FAIL) verdict — PR #[0-9]{1,6} — SHA [0-9a-f]{40}$`) matches ADR-018 §"Grep-able anchor regex" exactly (modulo `\d` → `[0-9]` for grep -E compat). Em-dash embedded as literal U+2014 in the YAML — required per ADR-018's em-dash note. Two checks (format + placeholder TTL) correctly separated; format check is hard-fail, TTL check is soft-warn (exits 0 on warning) per ADR-018 amendment's "out of scope this wave; catches missed backfills without blocking pre-merge legitimate placeholders." Skip override `[skip-verdict-check]` honors emergency-rollback class. **One observation, not a block:** the embedded Python heredoc at lines 155-183 mixes shell + Python which is slightly fragile — but it's bounded, only fires on placeholder verdicts, and a Python failure exits the heredoc with `2>/dev/null`. A future refactor extracting to `scripts/check-placeholder-ttl.py` would improve maintainability; logging as a follow-up candidate, not a block. **PASS with one CONCERN logged below.**
+
+3. **`.github/workflows/ux-gate-check.yml`** (+150 lines, new) — implements #246 (UX gate bypass detection). Pattern at line 79 matches ADR-018 canonical regex. Path filter (`src/**`, `design/**`, `tests/qa/wave-*/ui-*` and `ux-*`) aligns with Architect's UI-touching detection rule in subagent body (`src/app/**/page.tsx` etc.). The reachable-ancestor check (`git merge-base --is-ancestor`) correctly implements ADR-018 amendment §"State semantics for DevSecOps step 3 (amended)" row 2. State machine well-modeled: FOUND_PASS / FOUND_REVISE_OR_FAIL / STALE_PASS / PLACEHOLDER_PASS — each with distinct exit + fail message. `[skip-ux-gate]` override honored. **One observation:** path filter at `tests/qa/wave-*/ui-*` will not match `tests/qa/wave-111/ui-foo.test.ts` (glob `*` won't cross directory boundary in YAML path filter? — GitHub's documentation says `**` is required for cross-dir; `*` matches within a single segment). Likely correct as-is (the wave-* directory is one segment, and `ui-*` is a filename prefix in the next segment, which is one segment-glob). Verified by re-reading the pattern: `tests/qa/wave-*/ui-*` matches `tests/qa/wave-NN/ui-foo.test.ts` because both `*` are single-segment globs and the path has exactly two intermediate path components. **PASS.**
+
+4. **`LESSONS.md`** (+5 lines) — new entry at top of 2026-06-04 block for `gh pr merge --delete-branch` anomalous closure (#301). Newest-first ordering preserved. Three-field shape (What broke / Why / We now do) matches the LESSONS.md convention. Cites #301 as closed. **PASS.**
+
+5. **`_handoff-pending/wave-111c-devsecops.md`** (+19 lines, new) — *flagged for ADR-017 inspection.* `_handoff-pending/` is a legacy convention from Wave 93 (fragment-folding workflow). ADR-014 was Superseded by ADR-017 (Wave 108), and ADR-017's denylist tooling (`tests/qa/wave-108/subagent-body-cleanliness.test.ts`) flags `_handoff-pending` references in subagent bodies. Verified: ADR-017 denylists `_handoff-pending` and `fold-handoff` tokens **in subagent bodies (`.claude/agents/*.md`) only** — not in arbitrary repo paths. The file at `_handoff-pending/wave-111c-devsecops.md` is a developer-facing fragment, not a subagent body, so it does not fail the cleanliness test. But the directory itself is stale infrastructure — under Plan C subagent runtime, fragment-folding is retired and HANDOFF docs live at `coordination/handoffs/<role>.md`. **This file should not exist in the new convention.** It duplicates content already in `coordination/handoffs/devsecops.md`. Not a block for this PR (the file is harmless and content is duplicative not conflicting), but flagging as **CONCERN** + filing follow-up issue to retire the `_handoff-pending/` convention repo-wide. Logged below.
+
+6. **`coordination/handoffs/architect.md`** (+19 / -1) — DevSecOps's edit to my own HANDOFF doc surfacing the ratification request. **This is unusual** — typically a peer's HANDOFF to me would land via a `[[HANDOFF: architect]]` block parsed by the outer orchestrator; direct edits to my own state file by a peer are not the convention. However: under the Plan C subagent runtime, HANDOFF blocks ARE advisory text and don't auto-fire peer turns; DevSecOps left the request as both a HANDOFF block in their own state AND a direct edit in mine. Direct-edit-to-peer-HANDOFF-doc isn't forbidden by the protocol, and this is now self-corrected by my overwrite of the NOW section this turn. **Not a block, but worth noting:** the cleaner protocol would be a HANDOFF block in DevSecOps's own state pointing at me (which they did), without also editing my state. Adding to the parked items for a future protocol-discipline cluster. **PASS.**
+
+7. **`coordination/handoffs/devsecops.md`** (+29 / -14) — DevSecOps's own state update for Wave 111c. Verdict recorded in ADR-018 canonical form on line 5 (`### Wave-111 PASS verdict — PR #0 — SHA 10c002b723ea2da2e757e57ab42f832253310c0b`). **Note:** the SHA `10c002b7` is the *parent* commit, not the PR HEAD (`ce6b2b1a`). That is correct per ADR-018 Wave 111b amendment Phase-1 ("the **last-known SHA** at the time the verdict is recorded — typically `git rev-parse HEAD` of the gate role's worktree before staging the verdict commit"). DevSecOps's verdict is a self-attested PASS, which is acceptable — the role can attest their own deliverables, and Architect's verdict here (this turn) is the cross-cutting gate. **PASS.**
+
+8. **`coordination/handoffs/qa.md`** (+4 / -4) — Wave 111a + 111b verdict backfills. Both backfilled lines (3 + 69) match the canonical regex. Notes fields updated to record the normalization decision. **PASS.**
+
+9. **`requirements/user-stories/US-090-wave-111c-ci-process-discipline.md`** (+68 lines, new) — well-formed US-NNN file: Status / Wave / Primary owner / Issues addressed header, AC1-AC5 each with explicit issue#, Out of scope section, Issues-addressed footer. AC5 cites the canonical regex enforcement. **BA-owned file; not in my review lane per `architecture/` co-authorship gate boundary**, but a passing observation: well-structured. PR diff shows BA was not in the loop for this US, which is a minor process-discipline observation (US creation typically goes through BA, but US-NNN files are owned by `requirements/` and DevSecOps as a peer creating one without BA HANDOFF is acceptable in emergency-class waves). **Not a block.**
+
+### Verdict: PASS (Wave 111c PR #388)
+
+All 9 files meet the bar. Two CONCERN-level observations filed as follow-up issues below; neither blocks merge:
+
+1. **`_handoff-pending/` directory is stale Plan C infrastructure** — the file `_handoff-pending/wave-111c-devsecops.md` should not exist under the subagent runtime. Filing issue to retire the directory entirely.
+2. **Embedded Python heredoc in `pass-verdict-format-check.yml`** — extract to `scripts/check-placeholder-ttl.py` for maintainability. Filing issue.
+
+### Filed follow-up issues (out-of-scope findings)
+
+- **#389 (`self-improvement`)** — Retire `_handoff-pending/` directory and the fragment-fold convention under Plan C runtime. Discovered during PR #388 review.
+- **#390 (`self-improvement`)** — Extract embedded Python heredoc in `pass-verdict-format-check.yml` placeholder-TTL check to `scripts/check-placeholder-ttl.py` for maintainability. Discovered during PR #388 review.
+- **#391 (`self-improvement`)** — Protocol clarification: peers should not directly edit each other's `coordination/handoffs/<peer>.md` state files. Use HANDOFF blocks (advisory text in own state) instead. Discovered when DevSecOps's PR #388 edited `coordination/handoffs/architect.md` directly.
+
+### Worktree cleanup
+
+`/tmp/arch-wave-111c` will be removed at end of turn via `git worktree remove`.
+
+---
+
+## ⏭️ PREV — 2026-06-04 — Wave 111b Phase 1 (Clusters 1 + 6 + 7 single-author)
 
 **Deliverables (5 files, all single-author within Architect's own lane — no co-authorship gate fires):**
 

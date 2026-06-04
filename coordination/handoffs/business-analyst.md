@@ -1,6 +1,26 @@
 # business-analyst — HANDOFF
 
-## NOW — 2026-06-04 — Wave 111b Phase 2: #292 + #293 absorbed (Cluster 3)
+## NOW — 2026-06-04 — Wave 111c: US-090 issued
+
+**Deliverables this turn:**
+
+- `requirements/user-stories/US-090-wave-111c-ci-process-discipline.md` — authored, status: **accepted**
+- `requirements/INDEX.md` — US-090 row added; Wave 111c timestamp header added
+
+**US-090 summary:** 5 ACs covering Wave 111c Cluster 4 CI/process discipline scope:
+- AC1 (#240): `gh pr checks` step in devsecops.md merge protocol
+- AC2 (#246): CI job gating PRs touching UI-relevant paths against UX PASS verdict (ADR-018 regex)
+- AC3 (#301): `gh pr merge --delete-branch` anomalous-closure playbook in devsecops.md + LESSONS.md entry
+- AC4 (#324): `pnpm outdated` deps verification; bump or close #324 with rationale
+- AC5: ADR-018 CI regex enforcement + PR#0 placeholder flag; Wave 111a (PR #386, SHA a16c924) and Wave 111b (PR #387, SHA ba0905f) PASS-verdict backfill in qa.md
+
+**Architecture gate:** no `architecture/` edits. Gate doesn't fire.
+
+**Last-processed user message:** Wave 111c dispatch (2026-06-04, main ba0905f).
+
+---
+
+## PREV — 2026-06-04 — Wave 111b Phase 2: #292 + #293 absorbed (Cluster 3)
 
 **Deliverables this turn:**
 

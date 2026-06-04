@@ -1,0 +1,207 @@
+name: Pass Verdict Format Check
+
+# Verifies ADR-018 canonical PASS-verdict format on PRs.
+#
+# Two checks per run:
+#   1. Format check — every Wave-111+ verdict heading in PR-touched
+#      coordination/handoffs/*.md files must match the ADR-018 canonical regex.
+#      Line-by-line output on failure.
+#
+#   2. Placeholder TTL check — flag `PR #0` placeholder verdicts whose
+#      wrapping PR merged >1h ago. Soft-fail (warning, non-blocking) —
+#      placeholders are legitimate pre-merge; this catches missed backfills.
+#
+# Allowlists:
+#   - PRs whose title/body contain [skip-verdict-check] (emergency override)
+#
+# Spec: architecture/decisions/ADR-018-pass-verdict-format.md
+
+on:
+  pull_request:
+    branches: ["**"]
+    paths:
+      - "coordination/handoffs/**"
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  pass-verdict-format-check:
+    name: "ADR-018 — verdict format + backfill TTL check"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: "Install gh CLI (already present on ubuntu-latest; verify)"
+        run: gh --version
+
+      - name: "ADR-018 verdict format check"
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+
+          # --- Emergency override ---
+          # PR_TITLE/PR_BODY passed via env: to prevent shell injection on
+          # special characters (backticks, $, code-fences). Original
+          # injection bug fixed in #378; same anti-pattern caught again here.
+          if printf '%s%s' "$PR_TITLE" "$PR_BODY" | grep -qF '[skip-verdict-check]'; then
+            echo "SKIP: [skip-verdict-check] override present in PR title/body."
+            exit 0
+          fi
+
+          HANDOFFS_DIR="coordination/handoffs"
+          FORMAT_REQUIRED_FROM_WAVE=111
+          # ADR-018 canonical regex for the heading line (em-dash is U+2014)
+          # ^### Wave-NNN (PASS|REVISE|FAIL) verdict — PR #N — SHA <40hex>$
+          CANONICAL_PATTERN='^### Wave-[0-9]{1,4} (PASS|REVISE|FAIL) verdict — PR #[0-9]{1,6} — SHA [0-9a-f]{40}$'
+          # Detection pattern: any "### Wave-NNN" heading that contains a verdict token
+          CANDIDATE_PATTERN='^### Wave-[0-9]{1,4}[[:space:]]'
+
+          violations=()
+          files_checked=0
+
+          # Check all handoff docs (not just PR-touched ones — a bad format in any
+          # file is a signal; PR-touched ones are the primary scope but a global
+          # sweep is cheap and catches drift).
+          for f in "${HANDOFFS_DIR}"/*.md; do
+            [ -f "${f}" ] || continue
+            files_checked=$((files_checked + 1))
+            lineno=0
+            while IFS= read -r line; do
+              lineno=$((lineno + 1))
+              # Is this a potential verdict heading?
+              if echo "${line}" | grep -qE '^### Wave-[0-9]{1,4}[^0-9].*\b(PASS|REVISE|FAIL) verdict\b'; then
+                # Extract wave number
+                wave_num=$(echo "${line}" | grep -oE 'Wave-[0-9]{1,4}' | head -1 | grep -oE '[0-9]{1,4}')
+                if [ -z "${wave_num}" ]; then
+                  continue
+                fi
+                if [ "${wave_num}" -lt "${FORMAT_REQUIRED_FROM_WAVE}" ]; then
+                  # Pre-111: grandfathered, skip
+                  continue
+                fi
+                # Wave >= 111: must match canonical regex
+                if ! echo "${line}" | grep -qE "${CANONICAL_PATTERN}"; then
+                  violations+=("${f}:${lineno}: ${line}")
+                fi
+              fi
+            done < "${f}"
+          done
+
+          echo "Files checked: ${files_checked}"
+          echo ""
+
+          if [ "${#violations[@]}" -gt 0 ]; then
+            echo "FAIL: ${#violations[@]} Wave-${FORMAT_REQUIRED_FROM_WAVE}+ verdict heading(s) do not match ADR-018 canonical format."
+            echo ""
+            echo "Canonical format:"
+            echo "  ### Wave-NNN PASS verdict — PR #N — SHA <40-char-lowercase-hex>"
+            echo "  (em-dash separators are U+2014 — not a hyphen or en-dash)"
+            echo ""
+            echo "Offending lines:"
+            for v in "${violations[@]}"; do
+              echo "  ${v}"
+            done
+            echo ""
+            echo "Spec: architecture/decisions/ADR-018-pass-verdict-format.md"
+            exit 1
+          fi
+
+          echo "OK: All Wave-${FORMAT_REQUIRED_FROM_WAVE}+ verdict headings match ADR-018 canonical format."
+
+      - name: "ADR-018 placeholder TTL check (PR #0 on merged PRs > 1h)"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          # Soft-fail: emit a warning when PR #0 placeholders exist for PRs that
+          # have been merged for > 1 hour. Pre-merge placeholders are expected;
+          # this catches missed post-merge backfills.
+
+          HANDOFFS_DIR="coordination/handoffs"
+          WARN=0
+          NOW_EPOCH=$(date +%s)
+          GRACE_SECONDS=3600   # 1 hour
+
+          for f in "${HANDOFFS_DIR}"/*.md; do
+            [ -f "${f}" ] || continue
+            lineno=0
+            while IFS= read -r line; do
+              lineno=$((lineno + 1))
+              # Look for Wave-111+ PASS verdicts with PR #0 placeholder
+              if echo "${line}" | grep -qE '^### Wave-[0-9]{1,4} PASS verdict — PR #0 — SHA [0-9a-f]{40}$'; then
+                wave_num=$(echo "${line}" | grep -oE 'Wave-[0-9]{1,4}' | head -1 | grep -oE '[0-9]{1,4}')
+                if [ -z "${wave_num}" ] || [ "${wave_num}" -lt 111 ]; then
+                  continue
+                fi
+                # Extract the placeholder SHA and check if it corresponds to a merged PR
+                placeholder_sha=$(echo "${line}" | grep -oE 'SHA [0-9a-f]{40}' | grep -oE '[0-9a-f]{40}')
+                echo "Found Wave-${wave_num} PR #0 placeholder at ${f}:${lineno} (SHA: ${placeholder_sha})"
+
+                # Use gh to find merged PRs whose merge commit matches the placeholder SHA
+                # (or check all recently merged PRs for a SHA match in the merge chain).
+                # Approximation: query the 20 most recently merged PRs and check if the
+                # placeholder SHA is an ancestor of any merge commit.
+                merged_info=$(gh pr list \
+                  --repo "${{ github.repository }}" \
+                  --state merged \
+                  --limit 20 \
+                  --json number,mergedAt,mergeCommit \
+                  2>/dev/null || echo "[]")
+
+                if echo "${merged_info}" | python3 -c "
+          import json, sys, time, subprocess
+          prs = json.load(sys.stdin)
+          placeholder = '${placeholder_sha}'
+          grace = ${GRACE_SECONDS}
+          now = ${NOW_EPOCH}
+          for pr in prs:
+              mc = pr.get('mergeCommit') or {}
+              merge_sha = mc.get('oid', '')
+              merged_at = pr.get('mergedAt', '')
+              if not merge_sha or not merged_at:
+                  continue
+              # Check if placeholder is an ancestor of the merge commit
+              result = subprocess.run(
+                  ['git', 'merge-base', '--is-ancestor', placeholder, merge_sha],
+                  capture_output=True
+              )
+              if result.returncode != 0:
+                  continue
+              # It's an ancestor -- check the merge age
+              from datetime import datetime, timezone
+              merged_dt = datetime.fromisoformat(merged_at.replace('Z', '+00:00'))
+              merged_epoch = int(merged_dt.timestamp())
+              age = now - merged_epoch
+              if age > grace:
+                  print(f'PR #{pr[\"number\"]} merged {age//3600}h{(age%3600)//60}m ago -- backfill overdue')
+                  sys.exit(1)
+          sys.exit(0)
+          " 2>/dev/null; then
+                  : # No overdue backfill found for this placeholder
+                else
+                  echo "WARNING: PR #0 placeholder at ${f}:${lineno} appears to correspond to a PR merged >1h ago."
+                  echo "         DevSecOps should run the post-merge backfill:"
+                  echo "         chore(handoff): backfill Wave-${wave_num} verdict PR # and merge SHA"
+                  WARN=1
+                fi
+              fi
+            done < "${f}"
+          done
+
+          if [ "${WARN}" = "1" ]; then
+            echo ""
+            echo "WARNING: One or more PR #0 verdict placeholders are overdue for backfill."
+            echo "This is a soft warning — the PR is NOT blocked. DevSecOps should backfill."
+            echo "See ADR-018 Wave 111b amendment: architecture/decisions/ADR-018-pass-verdict-format.md"
+            # Soft fail: exit 0 (warning only)
+            exit 0
+          fi
+
+          echo "OK: No overdue PR #0 placeholders found."

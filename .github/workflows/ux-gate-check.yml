@@ -1,0 +1,152 @@
+name: UX Gate Check
+
+# Fires on PRs that touch UI-relevant paths.
+# Fails the PR if no ADR-018 canonical UX PASS verdict is recorded in
+# coordination/handoffs/ux-designer.md for this PR's HEAD SHA (or a
+# reachable ancestor per the ADR-018 Wave 111b placeholder amendment).
+#
+# Allowlists:
+#   - Doc-only PRs (no files outside docs / coordination / requirements / design)
+#   - PRs whose title or body contains [skip-ux-gate] (emergency override)
+
+on:
+  pull_request:
+    branches: ["**"]
+    paths:
+      - "src/**"
+      - "design/**"
+      - "tests/qa/wave-*/ui-*"
+      - "tests/qa/wave-*/ux-*"
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  ux-gate-bypass-check:
+    name: "UX gate — verify PASS verdict in ux-designer.md"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          # Fetch full history so we can check ancestor reachability for
+          # the ADR-018 placeholder SHA check.
+          fetch-depth: 0
+
+      - name: "Check UX PASS verdict in coordination/handoffs/ux-designer.md"
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -euo pipefail
+
+          HANDOFF_FILE="coordination/handoffs/ux-designer.md"
+          PR_NUMBER="${PR_NUMBER}"
+          HEAD_SHA="${HEAD_SHA}"
+
+          echo "PR #${PR_NUMBER}  HEAD SHA: ${HEAD_SHA}"
+          echo ""
+
+          # --- Emergency override ---
+          # If PR title or body contains [skip-ux-gate], skip the check.
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          PR_BODY="${{ github.event.pull_request.body }}"
+          if echo "${PR_TITLE}${PR_BODY}" | grep -qF '[skip-ux-gate]'; then
+            echo "SKIP: [skip-ux-gate] override present in PR title/body."
+            exit 0
+          fi
+
+          # --- Existence check ---
+          if [ ! -f "${HANDOFF_FILE}" ]; then
+            echo "FAIL: ${HANDOFF_FILE} not found in the repository."
+            exit 1
+          fi
+
+          # --- ADR-018 canonical regex ---
+          # ^### Wave-(\d{1,4}) (PASS|REVISE|FAIL) verdict — PR #(\d{1,6}) — SHA ([0-9a-f]{40})$
+          # Em-dash is U+2014 (—), encoded directly in the pattern below.
+          #
+          # We search for a PASS verdict for this PR number (or PR #0 placeholder)
+          # whose SHA matches HEAD_SHA or is a reachable ancestor of HEAD_SHA.
+
+          FOUND_PASS=0
+          FOUND_REVISE_OR_FAIL=0
+          STALE_PASS=0
+          PLACEHOLDER_PASS=0
+
+          while IFS= read -r line; do
+            # Match: ### Wave-NNN (PASS|REVISE|FAIL) verdict — PR #N — SHA <40hex>
+            if echo "${line}" | grep -qE '^### Wave-[0-9]{1,4} (PASS|REVISE|FAIL) verdict — PR #[0-9]{1,6} — SHA [0-9a-f]{40}$'; then
+              # Extract fields
+              VERDICT_TYPE=$(echo "${line}" | grep -oE '(PASS|REVISE|FAIL)')
+              VERDICT_PR=$(echo "${line}" | grep -oE 'PR #[0-9]{1,6}' | grep -oE '[0-9]{1,6}')
+              VERDICT_SHA=$(echo "${line}" | grep -oE 'SHA [0-9a-f]{40}' | grep -oE '[0-9a-f]{40}')
+
+              # Check if this verdict is for our PR (or the #0 placeholder)
+              if [ "${VERDICT_PR}" = "${PR_NUMBER}" ] || [ "${VERDICT_PR}" = "0" ]; then
+                if [ "${VERDICT_TYPE}" = "PASS" ]; then
+                  if [ "${VERDICT_SHA}" = "${HEAD_SHA}" ]; then
+                    # Exact match — PASS against current HEAD SHA
+                    FOUND_PASS=1
+                    echo "PASS: Found exact UX PASS verdict for PR #${PR_NUMBER} at SHA ${HEAD_SHA}"
+                  elif git merge-base --is-ancestor "${VERDICT_SHA}" "${HEAD_SHA}" 2>/dev/null; then
+                    # Placeholder / ancestor SHA — valid per ADR-018 Wave 111b amendment
+                    FOUND_PASS=1
+                    PLACEHOLDER_PASS=1
+                    echo "PASS (placeholder): UX PASS verdict SHA ${VERDICT_SHA} is a reachable ancestor of HEAD ${HEAD_SHA}."
+                    echo "       PR #${VERDICT_PR} placeholder — valid pre-merge per ADR-018 Wave 111b amendment."
+                  else
+                    # SHA present but not reachable — stale verdict
+                    STALE_PASS=1
+                    echo "WARN: Found UX PASS verdict for PR #${VERDICT_PR} but SHA ${VERDICT_SHA} is NOT HEAD (${HEAD_SHA}) and NOT an ancestor — stale verdict."
+                  fi
+                else
+                  # REVISE or FAIL for this PR
+                  FOUND_REVISE_OR_FAIL=1
+                  echo "WARN: Found ${VERDICT_TYPE} verdict for PR #${VERDICT_PR} at SHA ${VERDICT_SHA}."
+                fi
+              fi
+            fi
+          done < "${HANDOFF_FILE}"
+
+          echo ""
+
+          if [ "${FOUND_PASS}" = "1" ]; then
+            echo "OK: UX gate PASS verdict confirmed for PR #${PR_NUMBER}."
+            exit 0
+          fi
+
+          if [ "${FOUND_REVISE_OR_FAIL}" = "1" ]; then
+            echo "FAIL: UX gate has a REVISE or FAIL verdict for PR #${PR_NUMBER}."
+            echo "      The UX Designer must issue a PASS verdict before this PR can be merged."
+            echo ""
+            echo "      Expected format in ${HANDOFF_FILE}:"
+            echo "        ### Wave-NNN PASS verdict — PR #${PR_NUMBER} — SHA <40-char-hex>"
+            echo "        - **Gate role:** ux-designer"
+            echo "        - **Timestamp:** <ISO-8601-UTC>"
+            echo "        - **Notes:** <verification summary>"
+            exit 1
+          fi
+
+          if [ "${STALE_PASS}" = "1" ]; then
+            echo "FAIL: Found a UX PASS verdict for PR #${PR_NUMBER} but the SHA does not"
+            echo "      match the current HEAD (${HEAD_SHA}) and is not a reachable ancestor."
+            echo "      The UX Designer must re-verify against the current HEAD and re-issue PASS."
+            exit 1
+          fi
+
+          echo "FAIL: No UX PASS verdict found in ${HANDOFF_FILE} for PR #${PR_NUMBER}."
+          echo ""
+          echo "This PR touches UI-relevant paths and requires a UX Designer gate verdict."
+          echo ""
+          echo "Required format in ${HANDOFF_FILE}:"
+          echo "  ### Wave-NNN PASS verdict — PR #${PR_NUMBER} — SHA ${HEAD_SHA}"
+          echo "  - **Gate role:** ux-designer"
+          echo "  - **Timestamp:** $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+          echo "  - **Notes:** <verification summary>"
+          echo ""
+          echo "Pre-merge: PR #0 placeholder is valid if the verdict SHA is an ancestor of HEAD."
+          echo "See ADR-018 Wave 111b amendment: architecture/decisions/ADR-018-pass-verdict-format.md"
+          exit 1

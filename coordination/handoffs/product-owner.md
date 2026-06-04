@@ -1,6 +1,23 @@
 # product-owner — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 111b (5-cluster fan-out — COMPLETE, ready to merge)
+## ⏭️ NOW — 2026-06-04 — Wave 111c (CI/process discipline + Wave 111a/b backfills — DISPATCHED)
+
+**Final sub-wave of Wave 111.** Cluster 4 close-out (#240, #246, #301, #324) + ADR-018 CI wiring + `PR #0` TTL check + Wave 111a/111b PASS verdict backfills. Single PR.
+
+**Lane:** DevSecOps PRIMARY OWNER (5 deliverables), Architect ratifies CI shape per Wave 109, BA wraps as US-090, UX courtesy, QA Wave 111c completeness test.
+
+**Key calls:**
+- Bundle Wave 111a + 111b backfills into Wave 111c PR (first real test of ADR-018 post-merge backfill convention).
+- DevSecOps decides CI job shape (separate `pass-verdict-format-check` job preferred; Architect ratifies).
+- `PR #0` TTL threshold = >1h.
+- US-090 wraps 5 ACs.
+- QA test completes the discipline triad: cleanliness (Wave 108) + completeness (Wave 110/111b) + format-conformance (Wave 111a) + backfill-presence (Wave 111c).
+
+**Dispatched (parallel):** BA (US-090), Architect (co-authorship gate pre-stage), UX (courtesy), DevSecOps (primary), QA (regression test — can pre-stage now; finalize after DevSecOps).
+
+---
+
+## ⏭️ PREV — 2026-06-04 — Wave 111b (5-cluster fan-out — COMPLETE, merged at ba0905f)
 
 **Wave goal:** Fan-out close of Wave 111 Clusters 1+2+3+6+7 across 7 subagent bodies + ADR-018 amendment + traceability index + completeness test. Single PR.
 

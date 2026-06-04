@@ -1,6 +1,18 @@
 # ux-designer — HANDOFF
 
-## NOW — 2026-06-04 — Wave 111b (design-skill ecosystem evaluation)
+## NOW — 2026-06-04 — Wave 111c (CI/process discipline, ADR-018 wiring)
+
+**Verdict: No UI impact — skip UX gate.**
+
+Reasoning: Wave 111c covers CI/process discipline (#240, #246, #301, #324), ADR-018 CI wiring, and Wave 111a/111b backfills. All docs and workflow edits. No paths match the UX gate detection rule (`src/app/**/page.tsx`, `src/app/**/layout.tsx`, `src/components/**/*.tsx`, `src/app/globals.css`). apex-team-viewer untouched. Zero rendered UI surface — gate does not fire.
+
+**Glob note (non-blocking):** AC2 (#246) path glob includes `design/**`. The `design/` directory holds UX spec markdown files — not rendered pixels. Including it in the CI "requires UX PASS" check would false-positive on waves that touch specs without touching any rendered surface. Recommend narrowing to `src/**` only (exclude `design/**`, `tests/qa/wave-*/ui-*` should stay for actual UI test artifacts). Filed as follow-up if DevSecOps wants input before wiring.
+
+**Status:** Complete — verdict delivered.
+
+---
+
+## PREV — 2026-06-04 — Wave 111b (design-skill ecosystem evaluation)
 
 **Task:** Evaluate 6 proposed community design skills per issue #199. Add `## Design tools` section to `.claude/agents/ux-designer.md`.
 
