@@ -1,6 +1,43 @@
 # business-analyst — HANDOFF
 
-## NOW — 2026-06-04 — Wave 112 Phase 2: #196 partial (BA body self-edit)
+## NOW — 2026-06-04 — Wave 113: US-092 authored (backfill enforcement)
+
+**Deliverables this turn:**
+
+- `requirements/user-stories/US-092-backfill-enforcement.md` — authored, status: **in-flight**
+- `requirements/INDEX.md` — US-092 row added; Wave 113 timestamp header added
+
+**US-092 summary:** 4 ACs covering Wave 113 full scope:
+- AC1: nightly cron trigger (`0 6 * * *` UTC) in `pass-verdict-format-check.yml` running TTL check only (not format check)
+- AC2: `push: branches: [main]` trigger running TTL check only
+- AC3: soft-fail semantics preserved on all triggers (cron, push, PR) — TTL check never becomes hard-fail
+- AC4: `tests/qa/wave-113/backfill-enforcement.test.ts` asserting AC1–AC3 against workflow YAML structure
+
+**Incident background:** Wave 112 QA catch — DevSecOps's Wave 111c `PR #0` placeholder in `coordination/handoffs/qa.md` was missed post-merge because no subsequent PR touched `coordination/handoffs/**`. The existing TTL check fires only on `pull_request` events. This story closes the surveillance gap.
+
+**Scope calls recorded in story:**
+- #205 (supply-chain UX skill pin): deferred to Wave 114.
+- #332 positional bound: closed wont-fix in Wave 113 (Architect's Wave 112 scoping call).
+- Option B (verdicts in PR descriptions): deferred indefinitely (ADR-018 invariant).
+
+**PASS verdict (ADR-018 canonical format):**
+
+### Wave-113 PASS verdict — PR #0 — SHA 09d3d16dbc96f4e4e6a41bf4c03d9e5793f4c8a5
+- **Gate role:** business-analyst
+- **Timestamp:** 2026-06-04T13:00:00Z
+- **Notes:** BA requirements phase only — US-092 authored + INDEX.md updated. No code or architecture edits. Architecture gate does not fire (no `architecture/` edits). Peer-edit boundary respected: only own HANDOFF + own US authoring.
+
+**Architecture gate:** no `architecture/` edits. Gate doesn't fire.
+
+**Peer-edit boundary:** no peer HANDOFF edits. Only own US file + own HANDOFF + INDEX.md (BA-owned) edited.
+
+**Deferred to Wave 114:** #205 (supply-chain UX skill pin). #381 (LESSONS.md stale reference) — parked for DevSecOps.
+
+**Last-processed user message:** Wave 113 BA dispatch (2026-06-04, main 75266d3).
+
+---
+
+## PREV — 2026-06-04 — Wave 112 Phase 2: #196 partial (BA body self-edit)
 
 **Deliverables this turn:**
 

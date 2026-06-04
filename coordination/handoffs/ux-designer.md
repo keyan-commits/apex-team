@@ -1,6 +1,18 @@
 # ux-designer — HANDOFF
 
-## NOW — 2026-06-04 — Wave 112 Phase 2 (#196 Lessons section — ux-designer.md)
+## NOW — 2026-06-04 — Wave 113 (CI extension, QA tests, issue #332)
+
+**Verdict: No UI impact — skip UX gate.**
+
+Reasoning: Wave 113 touches `.github/workflows/pass-verdict-format-check.yml` (CI extension), `tests/qa/wave-113/` (test code), and a GitHub issue #332 comment (close-with-rationale). None of these paths match the UX gate detection rule (`src/app/**/page.tsx`, `src/app/**/layout.tsx`, `src/components/**/*.tsx`, `src/app/globals.css`). No `design/` surface, no `src/` UI, no a11y/contrast/motion impact. Zero rendered UI surface — gate does not fire.
+
+**ADR-018 canonical format:** PR #0 placeholder — SHA base `75266d3`. DevSecOps backfills real PR # + merge SHA post-merge.
+
+**Status:** Complete — verdict delivered.
+
+---
+
+## PREV — 2026-06-04 — Wave 112 Phase 2 (#196 Lessons section — ux-designer.md)
 
 ### Wave-112 PASS verdict — PR #0 — SHA 09d3d16f3e4a2b1c8d5e7f9a0b3c6d8e1f2a4b5c
 - **Gate role:** ux-designer
