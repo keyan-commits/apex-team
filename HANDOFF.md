@@ -8,7 +8,9 @@
 
 **Plan C FE/BE canonical-path gap (surfaced this wave):** User observed FE Dev tab empty in the viewer. Root cause: Wave 122 spec'd FE-XXXX at `src/features/FEAT-NNNN-<slug>/FE-NNNN-<slug>.tsx` — but Plan C apex-team has no `src/`. UI Dev edits sibling viewer repo (`../apex-team-viewer/public/`) without leaving an apex-team-side artifact. Fold-in: US-102 amended to add canonical Plan C paths (`frontend/features/FEAT-NNNN-<slug>/FE-NNNN-<slug>.md`, `backend/features/FEAT-NNNN-<slug>/BE-NNNN-<slug>.md` — summary docs linking to sibling-repo PRs) + retroactive backfill of prior FE work (Waves 119/121/123/125).
 
-**Lane 1 (triad, in this commit):**
+**Lane 2 status (this commit):** DevSecOps's deliverables landed (`scripts/feat-backfill.mjs`, `frontend/features/` retro FE summaries, `ops/features/OPS-0004`, `ops/README.md`, `package.json`, `.gitignore` for runtime artifacts). QA's TEST-0005 fixture gap (missing `empty-workspace/` empty dir) fixed with `.gitkeep`. Full suite: **722/722 PASS + 1 skipped** with live `SCRIPT_WORKING=true` invocations. Bugs #409 + #410 the QA agent flagged were already fixed in the DevSecOps working tree before commit (basename import, --workspace space form). UI Dev + BE Dev body amendments for AC16 Plan-C clauses landed in earlier commits.
+
+**Lane 1 (triad, earlier commits):**
 - BA: FEAT-0005 + US-102 (13 ACs + 3 to be amended for Plan-C correction).
 - Architect: ARCH-0002 (8 NFRs ratified — idempotence, dry-run-first, audit log, cross-workspace, forbidden patterns, conflict resolution, orchestration boundary, test posture).
 - UX: no-impact verdict pending re-emission (lost in branch switch).

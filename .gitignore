@@ -26,3 +26,11 @@ next-env.d.ts.bak
 # Playwright MCP artifacts (per-turn console/snapshot dumps)
 .playwright-mcp/
 .recover-logs/
+
+# Wave 126 — runtime backfill artifacts (regenerated each invocation)
+coordination/feat-backfill/proposal-*.md
+coordination/feat-backfill/proposal-*.json
+coordination/feat-backfill/dispatch-plan-*.md
+coordination/feat-backfill/dispatch/
+coordination/feat-backfill/responses/
+coordination/feat-backfill/audit.log
