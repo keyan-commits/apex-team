@@ -1,6 +1,151 @@
 # architect — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 128b standing-rules codification (workspace-conventions QA artifact discipline)
+## ⏭️ NOW — 2026-06-04 — Wave 130 code-review re-gate (viewer PR #13 — PASS)
+
+### Wave-130 PASS verdict — PR #13 — SHA dd70fffa4e4499c9a9ee0778e06fc78a1c8b9d11
+- **Gate role:** architect (non-UI rubric — re-gate of viewer PR #13 after UI Dev applied the 1-line fix for prior CONCERN 1).
+- **Cross-repo verdict:** PR # refers to `keyan-commits/apex-team-viewer#13`. Re-gate HEAD SHA `dd70fffa4e4499c9a9ee0778e06fc78a1c8b9d11` (was `b205ec18159017ec154709d8025d6bb2b4798215` at CONCERNS gate; +1 commit `dd70fff` fix(viewer): pass existsSync to detectPackageManager).
+- **Timestamp:** 2026-06-04T23:52:00Z
+- **Closure of CONCERN 1:** `git diff b205ec1..dd70fff -- server.mjs` shows exactly the 1-line fix at `server.mjs:857`: `const pm = detectPackageManager(root, existsSync);` — matches the fix I prescribed in the prior verdict. `existsSync` was already imported at server.mjs:13, no new import needed.
+- **Regression-test coverage added:** UI Dev added a new describe block `detectPackageManager — orphan fallback (regression)` in `__tests__/runner-resolver.test.ts` with 2 tests: (1) does-not-throw + returns `"npm"` when no lock file exists, (2) returns `"pnpm"` when `pnpm-lock.yaml` present. The first test specifically covers the path that produced the original `TypeError: existsFn is not a function`. Resolver-suite count moved from 19 → 21 tests.
+- **Suite green at re-gate HEAD:** `npx vitest run` on `pr-13-head` (sha `dd70fff`) → `Test Files 1 passed (1), Tests 21 passed (21), Duration 732ms`. No regressions in the existing 19 resolver tests; the 2 new tests pass on the patched code.
+- **CONCERN 2 (Gradle wrapper `shell: true` at `server.mjs:887`)** remains out-of-scope per the original verdict — filed and tracked as `keyan-commits/apex-team-viewer#14` (`bug` label). Does NOT block this PASS. Must be patched before any user is encouraged to ▶ Run Gradle test files in production; Gradle runner currently has no in-tree integration test exercising the vulnerable path.
+- **Per-rubric matrix:** unchanged from CONCERNS gate (all 9 axes PASS — see sub-block below). The only delta is CONCERN 1 closure; CONCERN 2 still tracked externally.
+- **Architecture/ co-authorship gate (Wave 109 #335):** `git diff origin/main..origin/feature/wave-130-architect-gate -- architecture/` empty. This re-gate amends onto the existing Wave 130 architect-gate PR #418 (single-file edit to this HANDOFF doc). Architect's own lane only. Peer-edit boundary (Wave 112) satisfied — no peer HANDOFF doc touched.
+- **PR #** placeholder per ADR-018 Wave 111b amendment: this re-gate ships against `feature/wave-130-architect-gate` (PR #418) via a normal commit (no force-push). DevSecOps post-merge backfill replaces with real merge SHA.
+
+### Routing — DevSecOps may merge
+
+With this PASS, the Wave 130 gate stack is:
+- **Architect (this):** PASS @ `dd70fff` for the non-UI rubric.
+- **UX Designer:** owns runner-badge visual / a11y gate — separate; not blocked by this verdict.
+- **QA:** gates after Architect PASS. With the 2 new regression tests + 21/21 suite green at re-gate HEAD, QA has positive verification surface on the previously-uncovered orphan-fallback path.
+
+DevSecOps may proceed to merge viewer #13 + apex-team #416 (UI Dev HANDOFF refresh) + #417 (UX Designer's slot) + #418 (this Architect re-gate) once QA + UX gates clear.
+
+### Prior Wave-130 CONCERNS verdict (RESOLVED by `dd70fff`)
+
+Demoted from primary verdict per re-gate convention. The original 2026-06-04T23:42:00Z CONCERNS gate at SHA `b205ec18159017ec154709d8025d6bb2b4798215` is preserved below for traceability:
+
+#### Wave-130 CONCERNS verdict — PR #13 — SHA b205ec18159017ec154709d8025d6bb2b4798215 (SUPERSEDED by dd70fff)
+- **Gate role:** architect (non-UI rubric — runner-resolution decision tree, nested discovery, SSE shape, security envelope, backward compat across `keyan-commits/apex-team-viewer#13`). UI surface (runner-badge CSS + per-row render in `public/style.css` + `public/app.js`) routes to UX Designer in parallel — NOT covered by this verdict.
+- **Cross-repo verdict:** PR # refers to `keyan-commits/apex-team-viewer#13` (not apex-team#13). SHA `b205ec18159017ec154709d8025d6bb2b4798215` is HEAD of `feature/wave-130-polyglot-run` in the viewer repo.
+- **Timestamp:** 2026-06-04T23:42:00Z
+- **Notes:** Reviewed the polyglot runner extraction + nested discovery + SSE start-event JSON shape + `.apex-viewer.json` project-root config + Maven/Gradle/Playwright/Jest/Vitest resolver decision tree. 19/19 resolver unit tests pass. apex-team baseline 722/1 skipped post-Wave 129 — unaffected by Wave 130 (no apex-team source touched). One blocking-quality bug found in `server.mjs:857` fallback path (`detectPackageManager(root)` missing the `existsFn` arg required by the resolver-module function signature — throws TypeError when `resolveRunner` returns null cleanly, which the resolver's own test #3 deliberately exercises). One out-of-scope security finding — Gradle wrapper invocation uses `shell: command === './gradlew'` which makes the className arg (derived from `basename(absPath, '.java')`) a command-injection vector for malicious Java filenames in the workspace — filed as `keyan-commits/apex-team-viewer#14` (`bug` label). Both concerns are documented in the PR #13 inline comment with concrete reproduction + 1-line fixes. CONCERNS rather than FAIL because (a) Bug 1 is unreachable for apex-team's own workflow (root `package.json` exists so resolver returns vitest+root, never null), and (b) Bug 2's threat model requires the user to ▶ Run a maliciously-named file in their own workspace. UI Dev's call: patch in this PR (preferred, 1-line) and I re-gate to PASS, or acknowledge the fallback is documented-unused-for-apex-team and ship as-is. Architecture/ co-authorship gate (Wave 109 #335) verified on companion apex-team PR #416: `git diff origin/main..origin/feature/wave-130-handoff-refresh -- architecture/` is empty (PR #416 touches only `coordination/handoffs/ui-developer.md`, UI Dev's own lane). This Wave 130 architect-gate PR ships against `feature/wave-130-architect-gate` off `main@b6a8515449146695ebbcbcb83f9bf70e2cfe552a` with a single-file edit to this HANDOFF doc — Architect's own lane, no peer co-authorship, both gates satisfied. PR # placeholder per ADR-018 Wave 111b amendment until DevSecOps post-merge backfill replaces with real PR # + merge SHA.
+
+#### Per-rubric verification matrix (Wave 130 viewer PR #13 — applies unchanged at re-gate)
+
+| Rubric axis | Verification | Result |
+|---|---|---|
+| **Decision tree correctness** | Maven > Gradle ordering (resolver-test #11), wrapper > bare gradle (test #8), `build.gradle.kts` (test #10), JS PM precedence pnpm>yarn>npm (lib/runner-resolver.mjs:51-56), playwright before package-tooling for `*.spec.*` (createResolver line 175-179), `findAncestorContaining` correctly terminates at filesystem root (line 32-40). | PASS |
+| **Project-agnostic** | Zero LFM paths anywhere. `loadProjectRoots` honors `.apex-viewer.json` `projects[]` if present, otherwise depth-3 auto-detect via `BUILD_FILES` sentinels (`package.json`, `pom.xml`, `build.gradle{,.kts}`, all 4 `playwright.config.*`). `walkQaPolyglot` skip-list is reasonable. | PASS |
+| **SSE start event additive** | server.mjs:880 emits `JSON.stringify({command, cwd, runner})`; app.js:484-493 falls back to plain-text via `try/catch JSON.parse`. Within-repo back-compat preserved (no external SSE consumers documented). | PASS |
+| **Configurable timeouts** | `APEX_VIEWER_MAVEN_TIMEOUT_MS` default 300s, `APEX_VIEWER_VITEST_TIMEOUT_MS` default 60s, env-overrideable. Routing in `runTest` at line 892 picks per-runner family. JVM cold start handled. | PASS |
+| **Nested discovery skip-list** | `QA_SKIP_DIRS`: node_modules / .git / dist / build / target / .next / .gradle / _archive / .turbo / .cache / coverage + dotfile guard at line 473. `hardLimit = 1000` caps worst case. | PASS |
+| **Argv-array spawn / path safety** | `spawn(command, args, {cwd})` everywhere with arrays. `safeJoin` enforces workspace boundary on the input path at server.mjs:846. ClassName extraction regex (`/Test\.java$|Tests\.java$/`) doesn't expose regex injection — `basename` is the only downstream consumer. | PASS (but see CONCERN 2) |
+| **Backward compat (apex-team root vitest)** | `resolveJsRunner` with root `package.json` + `vitest` in `devDependencies` returns `{ command: pm, args: ['vitest', 'run', relPath], cwd: root, runner: 'vitest' }` — apex-team's own workflow uses the PRIMARY path, not the fallback. Functional behavior preserved. | PASS |
+| **No NFR delta** | Same security envelope, same perf profile (resolver O(depth) per file, hard-limited discovery), same deployment model. No new prod runtime deps (vitest is devDep). | PASS |
+| **Architecture/ co-authorship gate (apex-team PR #416)** | `git diff origin/main..origin/feature/wave-130-handoff-refresh -- architecture/` empty. PR #416 touches only `coordination/handoffs/ui-developer.md`. | PASS |
+
+#### CONCERN 1 — `runTest` fallback path calls `detectPackageManager` with wrong arity (CLOSED at dd70fff)
+
+`server.mjs:857`:
+
+```js
+const pm = detectPackageManager(root);   // missing existsFn arg
+```
+
+`lib/runner-resolver.mjs:51`:
+
+```js
+export function detectPackageManager(projectDir, existsFn) {
+  if (existsFn(join(projectDir, 'pnpm-lock.yaml'))) return 'pnpm';
+  ...
+}
+```
+
+When `resolveRunner` returns null (resolver-test #3 deliberately exercises this — "returns null when no package.json ancestor found"), the fallback at line 855-859 fires. `existsFn(...)` throws `TypeError: existsFn is not a function`. The outer try/catch at 860 catches and surfaces as `runner resolution failed: existsFn is not a function`.
+
+Locally reproduced:
+
+```
+$ node -e "const m=await import('./lib/runner-resolver.mjs'); m.detectPackageManager('/tmp')"
+TypeError: existsFn is not a function
+```
+
+Unreachable for apex-team's own workflow (root `package.json` exists; resolver returns vitest+root). But ANY workspace with an orphan test file outside any project boundary hits it. Escaped the test suite because tests cover the resolver in isolation; nothing exercises `runTest`'s fallback.
+
+**Fix (1-line):** `const pm = detectPackageManager(root, existsSync);` — `existsSync` is already imported at `server.mjs:13`.
+
+#### CONCERN 2 — Gradle wrapper shell-injection (out-of-scope, filed as keyan-commits/apex-team-viewer#14 — STILL OPEN)
+
+`server.mjs:887`: `spawn(command, args, { cwd, env, shell: command === './gradlew' })`. The `shell:true` branch runs argv through `/bin/sh -c`, so shell metacharacters in any arg execute. ClassName comes from `basename(absPath, '.java')` — filename `Bad$(rm -rf $HOME)Test.java` yields className `Bad$(rm -rf $HOME)Test`, command substitution fires.
+
+Threat model: low (attacker has to land a malicious filename in your workspace AND user has to ▶ Run it). Fix: drop `shell: command === './gradlew'` entirely; `spawn('./gradlew', args, { cwd })` resolves correctly without a shell (verified locally — `ENOENT` raised when gradlew missing, which is the expected resolution mode).
+
+Filed as **`keyan-commits/apex-team-viewer#14`** with `bug` label. Out-of-scope for THIS verdict (Gradle runner has no in-tree test exercising it yet); should be patched before any user is encouraged to ▶ Run Gradle tests in production.
+
+#### Non-blocking observations (no action required Wave 130)
+
+1. **`relative` import** at `lib/runner-resolver.mjs:14` is used at lines 92 + 120 — clean. Flagged only because import-rot is on my rubric axis.
+2. **`runner: 'unknown'` UX** — resolver returns `{runner: 'unknown'}` when `package.json` exists but neither vitest nor jest declared (resolver line 100). Badge correctly hides (app.js:167: `f.runner !== 'unknown'` check). The SSE start event shows `npm test -- <relPath>` which may confuse users on mocha/tap projects. Worth a small UX caveat in a follow-up — not blocking.
+3. **`walkQaPolyglot` resolver call per file** — server.mjs:485 resolves runner for EVERY discovered file at discovery time. Bounded at 1000 entries by `hardLimit`, but if `listRoleGrouped` is polled at 10s (app.js:739 interval), that's N × calls. Memoizing on path + mtime would be a reasonable optimization if profile shows hotspot. Non-blocking — current profile is fine.
+
+#### Path forward (UI Dev choice — RESOLVED — chose Option A)
+
+- **Option A (recommended) — TAKEN:** UI Dev patched CONCERN 1 in PR #13 — single-line `detectPackageManager(root, existsSync)` + 2 regression tests. Architect re-gated to PASS (top of NOW block, sha `dd70fff`).
+- ~~Option B: acknowledge + file tracking issue.~~ Not taken — Option A is the correct call.
+
+QA gates after Architect PASS. UX Designer separately gates the UI portion (runner-badge styling + per-row badge render) — out of my lane.
+
+#### Cross-repo HANDOFF location
+
+- **viewer-repo HANDOFF doc:** if `keyan-commits/apex-team-viewer` has its own HANDOFF doc, the Wave 130 verdict belongs there too via the viewer's own gating loop. Per Wave 109 #335, cross-repo coordination is `gh pr comment` first (already posted), HANDOFF doc second (this file is apex-team's; viewer-repo HANDOFF backfill is DevSecOps's call at Lane 3 if applicable).
+- **apex-team-side HANDOFF refresh:** PR #416 is UI Dev's own HANDOFF refresh referencing the viewer PR — verified above. Architecture/ co-authorship gate satisfied.
+
+### Architecture/ co-authorship gate (Wave 109 rule, self-reflection for this re-gate PR)
+
+PR #418 (Wave 130 architect re-gate, branch `feature/wave-130-architect-gate` off `main@b6a8515`) touches exactly one file: `coordination/handoffs/architect.md`. Zero peer files edited. Zero `architecture/` files edited (this is a HANDOFF refresh, not an architecture artifact change — Wave 130 didn't surface novel NFRs). Both gates satisfied.
+
+### Peer-edit boundary (Wave 112)
+
+This PR touches only my own HANDOFF doc. No peer HANDOFF doc touched. UI Dev's own PR #416 is theirs, BA's requirements/ untouched, UX's design/ untouched, QA's tests/ untouched, DevSecOps's ops/ untouched. Boundary satisfied.
+
+### In flight / next
+
+- **DONE:** Re-gated Wave 130 viewer PR #13 to PASS at `dd70fff` after UI Dev's 1-line fix + 2 regression tests landed. PASS verdict posted to PR #13 comment.
+- **DevSecOps next:** merge viewer PR #13, then apex-team PRs #416 (UI Dev HANDOFF) + #417 (UX Designer slot, when ready) + #418 (this re-gate) per the standard Wave 130 merge queue. Architect gate is closed; QA + UX still hold their own gates.
+- Wave 130 UI gate (runner-badge a11y, focus-visible behavior on the new badge, contrast on per-runner accent colors) is UX Designer's lane — not blocked by Architect PASS.
+- apex-team-side QA's `tests/qa/wave-130/` (if any) covers the apex-team-side integration concern — not in this PR's diff. The new viewer-repo regression tests cover the orphan-fallback path that produced CONCERN 1.
+- Wave 128b PR # + SHA backfill still pending from DevSecOps (`PR #0` placeholder in prior PREV block — see below).
+- `keyan-commits/apex-team-viewer#14` (Gradle wrapper shell-injection) remains open. Owner: UI Dev or DevSecOps for the viewer repo. Trigger: before any user is encouraged to ▶ Run Gradle test files; or before the Gradle runner ships an in-tree integration test.
+
+### Parked / future (carried from Wave 128b + Wave 130 additions)
+
+- `system-design.md` — still not created.
+- `tech-stack.md` — still not created.
+- `coding-standards.md` — still not created. Wave 117 + Wave 118 + Wave 122 + Wave 128 discipline are candidate entries once seeded.
+- Fitness function for OQ-085-001's "no binary files committed under `tests/qa/wave-*/evidence/`" — QA owns implementation.
+- Viewer-repo subagent body audit (per ADR-017 follow-up).
+- ADR formalizing the ADR-NNNN-vs-ARCH-XXXX distinction (candidate ADR-019, deferred from Wave 122).
+- WCAG 2.1 AA promotion from FEAT-local ratification to workspace-conventions-level NFR (carried from Wave 125).
+- ADR for the keyboard-reachability rule (carried from Wave 125).
+- Automated WCAG conformance in viewer CI (carried from Wave 125).
+- CI automation for Wave 128 artifact disciplines (S1/S5/S6/S7) — LibreOffice headless + image diff + contrast gate + deploy-verification (carried from Wave 128b).
+- Structured QA verdict-block schema attesting S1–S9 (ADR-018 amendment candidate, carried from Wave 128b).
+- **NEW (Wave 130):** apex-team-viewer#14 — Gradle wrapper shell-injection fix. Owner: UI Dev or DevSecOps for the viewer repo. Trigger: before any user is encouraged to ▶ Run Gradle test files; or before the Gradle runner ships an in-tree integration test.
+- **NEW (Wave 130):** Resolver decision-tree codification candidate ADR (or `architecture/features/FEAT-NNNN-polyglot-run/ARCH-NNNN-runner-resolver-decisions.md` if the viewer adopts the Wave 122 convention). Currently the decision tree lives only in the resolver module's docstring + the 19 unit tests. A short ADR would give it durable home for future runner additions (e.g., pytest, cargo test, go test).
+
+### Notes / caveats (Wave 130 re-gate)
+
+- The viewer PR description's claim "Backward compatibility — existing apex-team vitest tests still ▶ RUN-able via the fallback path" is slightly inaccurate: apex-team's own tests use the PRIMARY `resolveJsRunner` branch (root `package.json` + vitest devDep), not the fallback. Functional behavior is correct — the description just mis-labels which code path apex-team hits. Documented for traceability; not a defect.
+- Test-coverage gap from prior CONCERNS verdict (19 resolver unit tests covered the resolver IN ISOLATION but the `runTest` fallback path was uncovered) is now **closed**: UI Dev added 2 regression tests in the orphan-fallback describe block that exercise the previously-uncovered code path. Resolver suite is now 21 tests.
+- Cross-repo verdict means SHA `dd70fffa4e4499c9a9ee0778e06fc78a1c8b9d11` is the viewer's HEAD at re-gate, not apex-team's. apex-team's main HEAD at gate time remains `b6a8515449146695ebbcbcb83f9bf70e2cfe552a` (post-Wave 129).
+- This re-gate amends onto the existing PR #418 with a normal commit (no force-push). Coordinator approved either route; chose amend rather than a 5th separate PR to keep the gate-correspondence 1:1 with the Wave 130 architect-gate PR slot.
+
+---
+
+## PREV — 2026-06-04 — Wave 128b standing-rules codification (workspace-conventions QA artifact discipline)
 
 ### Wave-128 PASS verdict — PR #414 — SHA 6579f8b7a68718675f67887d0839b9dce268e210
 - **Gate role:** architect (self-attested — standing-rules codification, single-author within Architect's lane)
