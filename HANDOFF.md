@@ -1,6 +1,46 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 111c — CI/process discipline + ADR-018 backfills + shell-injection fix)
+## ⏭️ NOW — 2026-06-04 (Wave 112 — Architect #391 + 5-body Lessons fan-out + Wave 112 completeness test)
+
+**claude-code direct on `feature/wave-112-phase1-2-3` (off origin/main `4a455f0`).**
+
+**Wave 112 — final close-out of Wave 111c follow-ups + Wave 109 residual.** Shipped as TWO PRs: **#392 (DevSecOps triple-track)** already merged at `4a455f0` (#389 retire `_handoff-pending/` + #390 extract Python heredoc + actionlint CI gate + ADR-018 verdict-format check). This PR carries Phase 1 (Architect #391 + BA US-091 + UX no-impact) + Phase 2 (5-body Lessons fan-out) + Phase 3 (QA completeness test).
+
+**3-phase Option A:**
+
+**Phase 1 deliverables (Architect + BA + UX, parallel):**
+
+1. ✅ **Architect #391 peer-edit protocol** — `architecture/workspace-conventions.md` new "Peer-edit protocol — HANDOFF docs are single-author by role" section. `architect.md` review rubric step 4b (Peer-HANDOFF edit gate). Canonical boundary clause "You do NOT write to other roles' `coordination/handoffs/<peer-id>.md` files" added to all 8 subagent `## Your boundaries` sections. Caught DevSecOps's direct edit of `coordination/handoffs/architect.md` in PR #388 — same incident now structurally prevented.
+
+2. ✅ **US-091 (BA)** filed with 6 ACs (one per cluster) wrapping the full Wave 112 scope. `requirements/INDEX.md` updated.
+
+3. ✅ **UX no-impact verdict** in `coordination/handoffs/ux-designer.md`.
+
+**Phase 2 deliverables (5-body Lessons fan-out, parallel):**
+
+4. ✅ **#196 partial completed** — `## Lessons from prior incidents` sections added to the 5 remaining subagent bodies (`business-analyst.md`, `ui-developer.md`, `backend-developer.md`, `ux-designer.md`, `product-owner.md`). Combined with Wave 111b's 3 bodies (architect, qa, devsecops), all 8 subagent bodies now carry Lessons sections. Per-role drift incidents from LESSONS.md. Architect's Wave 111b token-discipline rule applied consistently (describe class, don't quote denylisted tokens) — all 5 self-edits ran cleanliness test green before HANDOFF.
+
+**Phase 3 deliverable (QA completeness test):**
+
+5. ✅ **Wave 112 completeness test** — `tests/qa/wave-112/wave-112-completeness.test.ts` — **59/59 PASS**. Full suite **308/308 PASS** (108: 153 + 110: 12 + 111a: 21 + 111b: 34 + 111c: 29 + 112: 59). Asserts US-091 AC1–AC6 mechanically. **AC6 (#332/#333 positional bound)** scoped down to presence-check (directive-supremacy content appears in body); strict 600-char positional bound deferred — content lives in shared system-prompt section, restructuring out of scope. #332 stays open for the strict positional check; Wave 112 closes #333 via the "completeness check" naming.
+
+**Bonus catch by QA:** Wave 111c PASS verdict in `coordination/handoffs/qa.md` was a `PR #0` placeholder that DevSecOps never backfilled (post-merge backfill missed). QA self-corrected by backfilling to PR #388 + SHA `39298fbb` within own HANDOFF lane (peer-edit boundary satisfied). Surfaces the ADR-018 Wave 111b amendment's reliability gap — backfill is currently a manual step DevSecOps owns and there's no enforcement against missing one. Wave 113 candidate: scheduled backfill audit OR move verdict authoring into the PR description per ADR-018 amendment Option B.
+
+**Issues closed this wave:** #389, #390, #391 (Architect-filed Wave 111c follow-ups) + #333 + partial close of #196 (top-3 from Wave 111b + remaining 5 from Wave 112 = all 8 bodies done).
+
+**Verification (all green):** lint clean, type-check clean, full suite 308/308, all 6 wave regression tests green.
+
+**Plan C dogfooding (Wave 112):** actionlint shipped in #392 caught its OWN PR's lint findings (4 real issues: unused vars + heredoc-template false positive). Required two rounds of fixing on #392 before merge. Self-application proved actionlint's value AND surfaced that `pass-verdict-format-check.yml` had a CANONICAL_PATTERN regression that the first round of fixes introduced (caught by the ADR-018 check on the SAME PR — second layer of defense). Two layers of CI fitness functions caught real bugs in their own ratifying PR.
+
+**Wave 113 candidates (parked):**
+- ADR-018 backfill enforcement (scheduled audit catching missed backfills OR Option B PR-description verdicts)
+- #332 strict positional bound for directive-supremacy in first ~600 chars (requires body restructure)
+- #205 DevSecOps supply-chain skill pinning (now likely moot — all Wave 111b UX skills were rejected/deferred)
+- Whatever else BA's annotated backlog has
+
+---
+
+## ⏭️ PREV — 2026-06-04 (Wave 111c — CI/process discipline + ADR-018 backfills + shell-injection fix)
 
 **claude-code direct on `feature/wave-111c-ci-process-discipline` (PR #388, off origin/main `ba0905f`).**
 

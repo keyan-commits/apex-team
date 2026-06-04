@@ -1,19 +1,57 @@
 # product-owner — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 111c (CI/process discipline + Wave 111a/b backfills — DISPATCHED)
+## ⏭️ NOW — 2026-06-04 — Wave 112 Phase 2 (PO self-edit, #196 partial)
 
-**Final sub-wave of Wave 111.** Cluster 4 close-out (#240, #246, #301, #324) + ADR-018 CI wiring + `PR #0` TTL check + Wave 111a/111b PASS verdict backfills. Single PR.
+### Wave-112 PASS verdict — PR #0 — SHA 4a455f0141f6b30f3d84b5d004a42852fcef588d
+- **Gate role:** product-owner
+- **Timestamp:** 2026-06-04T12:42:30Z
+- **Notes:** Phase 2 self-edit of own body — appended `## Lessons from prior incidents` (5 incidents: triad mandate Wave 53/55, user-directive supremacy Wave 321, two-phase Option A wave shape Wave 108/111b, token-discipline for body edits Wave 111b, pipeline parallelism Lane A/Lane B). Per-bullet format matches Architect's Wave 111b canonical pattern (Date/Wave/Rule + Why + Apply sub-fields). Tail-appended after the "Include last 5 user messages" section — region-disjoint from Wave 112 Phase 1's mid-file boundary-clause additions. Peer-edit boundary respected: only own body + own HANDOFF touched this turn. Token discipline observed — described retired patterns by class (no denylisted tokens reproduced verbatim). All gates clean: `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` 153/153 PASS, `pnpm test:run` 249/249 PASS, `pnpm lint` clean, `pnpm type-check` clean. Placeholder block per ADR-018 Wave 111b amendment: `PR #0` + last-known SHA `4a455f0141f6b30f3d84b5d004a42852fcef588d` (HEAD before staging this verdict commit). DevSecOps post-merge backfill replaces with real PR # + merge SHA.
 
-**Lane:** DevSecOps PRIMARY OWNER (5 deliverables), Architect ratifies CI shape per Wave 109, BA wraps as US-090, UX courtesy, QA Wave 111c completeness test.
+**Wave goal (residual context):** Single-PR fan-out of 6 deliverables across 3 clusters from Wave 111c close-out menu. Phase 1 (Architect single-author #391 + DevSecOps triple-track #389/#390/+shell-lint) is committed. Phase 2 is the 5-subagent self-edit fan-out for #196 (BA, UI Dev, BE Dev, UX, PO bodies — Architect/QA/DevSecOps Lessons sections already shipped in Wave 111b).
+
+**Phase 2 own deliverable (this turn):** `.claude/agents/product-owner.md` tail-appended with `## Lessons from prior incidents` section. 5 PO-specific incidents picked from LESSONS.md + memory of past wave incidents. Format matches the Wave 111b canonical per-bullet shape.
+
+**Issues addressed (own slice):** #196 (PO portion).
+
+**Next:** Other Phase 2 subagents (BA, UI Dev, BE Dev, UX) continue their own self-edits in parallel. After all 5 land + QA writes `tests/qa/wave-112/wave-112-completeness.test.ts` (AC1–AC6 incl. positional bound assertion for #332/#333), Wave 112 is ready for code review (Architect's review-gate rubric + Wave 112 step 4b peer-HANDOFF-edit gate) → merge.
+
+---
+
+## ⏭️ PREV — 2026-06-04 — Wave 112 (3-cluster close-out, Wave 111 trilogy follow-ups — TRIAD DISPATCHED)
+
+**Wave goal:** Single-PR fan-out of 6 deliverables across 3 clusters from Wave 111c close-out menu.
+
+**Shape:** SINGLE wave, single PR, TWO-PHASE (lightweight).
+- **Phase 1 (parallel after triad):** Architect single-author #391 (peer-edit protocol clause to all 8 bodies + workspace-conventions canonical rule + review rubric) + DevSecOps triple-track (#389 retire `_handoff-pending/` + `.githooks/pre-commit` rewrite; #390 extract Python heredoc to `scripts/check-placeholder-ttl.py`; shell-injection lint — actionlint or custom grep, DevSecOps's call).
+- **Phase 2 (parallel after Phase 1):** 5-subagent self-edit fan-out for #196 `## Lessons from prior incidents` sections (BA, UI Dev, BE Dev, UX, PO bodies — Architect/QA/DevSecOps already done in Wave 111b) + QA `tests/qa/wave-112/wave-112-completeness.test.ts` covering AC1-AC6 (folds in #332/#333 positional bound assertion).
+
+**Cluster A (Architect-filed Wave 111c follow-ups):**
+- AC1 (#389) — retire `_handoff-pending/` + fragment-fold convention → DevSecOps
+- AC2 (#390) — extract Python heredoc to `scripts/check-placeholder-ttl.py` → DevSecOps
+- AC3 (#391) — peer-edit protocol clarification → Architect (workspace-conventions + 8 bodies + rubric)
+
+**Cluster B:**
+- AC4 — shell-injection lint for `.github/workflows/` → DevSecOps (actionlint preferred; their call)
+
+**Cluster C (residual Wave 109):**
+- AC5 (#196) — 5 remaining Lessons sections → BA, UI Dev, BE Dev, UX, PO self-edit + Architect co-authorship
+- AC6 (#332/#333) — positional test → QA (folds into Wave 112 completeness test)
 
 **Key calls:**
-- Bundle Wave 111a + 111b backfills into Wave 111c PR (first real test of ADR-018 post-merge backfill convention).
-- DevSecOps decides CI job shape (separate `pass-verdict-format-check` job preferred; Architect ratifies).
-- `PR #0` TTL threshold = >1h.
-- US-090 wraps 5 ACs.
-- QA test completes the discipline triad: cleanliness (Wave 108) + completeness (Wave 110/111b) + format-conformance (Wave 111a) + backfill-presence (Wave 111c).
+- Two-phase ordering rationale: Architect's #391 clause edits target stable mid-file regions (rubric/boundaries); Phase 2 fan-out appends `## Lessons` at file end. Region-disjoint by construction, but explicit sequencing avoids last-write-wins risk.
+- US-091 wraps 6 ACs.
+- QA folds positional test into Wave 112 completeness test (single test file, no double-testing).
+- Shell-injection lint mechanism: DevSecOps's call.
 
-**Dispatched (parallel):** BA (US-090), Architect (co-authorship gate pre-stage), UX (courtesy), DevSecOps (primary), QA (regression test — can pre-stage now; finalize after DevSecOps).
+**Dispatched (parallel, this turn):** Architect (NFR + #391 single-author + co-authorship pre-stage), BA (US-091 + INDEX.md), UX (no-impact + Phase 2 Lessons pre-stage).
+
+**Next:** After triad returns → fire Phase 1 (Architect's Phase 1 work confirmed + DevSecOps triple-track). After Phase 1 commits → fire Phase 2 (5-body fan-out + QA test).
+
+---
+
+## ⏭️ PREV — 2026-06-04 — Wave 111c (CI/process discipline + Wave 111a/b backfills)
+
+Cluster 4 close-out (#240, #246, #301, #324) + ADR-018 CI wiring + `PR #0` TTL check + Wave 111a/111b PASS verdict backfills. Merged at `39298fb`. DevSecOps primary (5 deliverables). Architect surfaced #389/#390/#391 follow-ups → Wave 112.
 
 ---
 

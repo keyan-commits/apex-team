@@ -1,6 +1,70 @@
 # business-analyst — HANDOFF
 
-## NOW — 2026-06-04 — Wave 111c: US-090 issued
+## NOW — 2026-06-04 — Wave 112 Phase 2: #196 partial (BA body self-edit)
+
+**Deliverables this turn:**
+
+- `.claude/agents/business-analyst.md` — `## Lessons from prior incidents` section tail-appended at end of `## Skills` section. 5 incidents selected:
+  1. Wave 65 / #143 — promote-to-MD discipline (repeated business-logic questions)
+  2. Wave 55 — US-NNN traceability (implementers dispatched without a story)
+  3. Wave 321 — directive-vs-plan conflict: BA's conflict-tracking had no mandatory workflow
+  4. Wave 109 — `Closes #N` discipline: retain-vs-close decisions need rationale
+  5. Wave 111b — self-application: test-bearing waves need a US even when they feel "docs-only"
+
+**Gate verification:**
+- `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` → 153/153 PASS
+- `pnpm vitest run tests/qa/wave-110/subagent-body-completeness.test.ts` → 12/12 PASS
+- `pnpm test:run` → 249/249 PASS
+- `pnpm lint` → clean
+- `pnpm type-check` → clean
+
+**Token discipline:** no ADR-017 denylisted tokens introduced. Described pattern classes rather than naming literal retired tokens verbatim.
+
+**Issue partial-close:** #196 (BA body done). Remaining bodies for full close: ui-developer, backend-developer, ux-designer, product-owner — not BA's lane.
+
+**PASS verdict (ADR-018 canonical format):**
+
+### Wave-112 PASS verdict — PR #0 — SHA 09d3d16dbc96f4e4e6a41bf4c03d9e5793f4c8a5
+- **Gate role:** business-analyst
+- **Timestamp:** 2026-06-04T12:42:30Z
+- **Notes:** BA self-edit only — tail-appended `## Lessons from prior incidents` to `.claude/agents/business-analyst.md`. Region-disjoint from Architect's Phase 1 mid-file boundary clauses. All 249 tests pass. Token discipline preserved (Wave 108 cleanliness test 153/153). PR #0 + last-known SHA placeholder per ADR-018 Wave 111b amendment; DevSecOps to backfill with real PR # + merge SHA post-merge.
+
+**Architecture gate:** no `architecture/` edits. Gate doesn't fire.
+
+**Peer-edit boundary:** no peer HANDOFF edits. Only own body + own HANDOFF edited.
+
+**Last-processed user message:** Wave 112 Phase 2 dispatch (2026-06-04).
+
+---
+
+## PREV — 2026-06-04 — Wave 112 Phase 1: US-091 issued
+
+**Deliverables this turn:**
+
+- `requirements/user-stories/US-091-wave-112-cluster-cleanup.md` — authored, status: **accepted**
+- `requirements/INDEX.md` — US-091 row added; Wave 112 timestamp header added
+
+**US-091 summary:** 6 ACs covering Wave 112 full scope:
+- AC1 (#389): `_handoff-pending/` directory deleted; `.githooks/pre-commit` rewritten to check `coordination/handoffs/*.md`
+- AC2 (#390): Python heredoc extracted from `pass-verdict-format-check.yml` to `scripts/check-placeholder-ttl.py`
+- AC3 (#391): Peer-edit protocol section in `architecture/workspace-conventions.md`; architect.md rubric flags peer-HANDOFF edits as FAIL; all 8 agent bodies gain "no peer HANDOFF writes" boundary clause
+- AC4: actionlint job (or grep equivalent) in `.github/workflows/` catching `${{ github.event.* }}` inline-shell anti-pattern
+- AC5 (#196 partial): `## Lessons from prior incidents` in 5 remaining agent bodies (business-analyst, ui-developer, backend-developer, ux-designer, product-owner); closes #196 fully combined with Wave 111b
+- AC6 (#332 #333): `tests/qa/wave-112/wave-112-completeness.test.ts` — mechanical AC1–AC5 checks + positional directive-supremacy check in first ~600 chars post-frontmatter of all 8 agent bodies
+
+**Phase 2 parked:** BA's own `## Lessons from prior incidents` self-edit to `.claude/agents/business-analyst.md` happens Phase 2 after Architect's #391 edits land. Not done this turn.
+
+**Architecture gate:** no `architecture/` edits this turn. Gate doesn't fire.
+
+**Peer-edit boundary:** no peer HANDOFF edits. Files-on-disk only.
+
+**Last-processed user message:** Wave 112 Phase 1 dispatch (2026-06-04, main 39298fb).
+
+**PASS verdict placeholder:** PR #0 (pending — to be updated at commit time).
+
+---
+
+## PREV — 2026-06-04 — Wave 111c: US-090 issued
 
 **Deliverables this turn:**
 
