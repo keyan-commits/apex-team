@@ -1,6 +1,104 @@
 # architect — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 111c (alpha-suffix ratification + PR #388 review)
+## ⏭️ NOW — 2026-06-04 — Wave 112 Phase 1 (#391 peer-edit protocol)
+
+### Wave-112 PASS verdict — PR #0 — SHA 39298fbb1caf5e38b9f7d3b09f4cf11a8a879074
+- **Gate role:** architect
+- **Timestamp:** 2026-06-04T12:25:30Z
+- **Notes:** Single-author multi-file edit landing the #391 peer-edit boundary across the 8 subagent bodies and `architecture/workspace-conventions.md`. Self-attested PASS — all edits within Architect's own lane (architecture/ + .claude/agents/), no peer-edit-violation footprint of my own. Placeholder block per ADR-018 Wave 111b amendment: `PR #0` + last-known SHA (current HEAD `39298fbb1caf5e38b9f7d3b09f4cf11a8a879074` from main before staging the verdict commit). DevSecOps post-merge backfill replaces with real PR # + merge SHA.
+
+### Canonical boundary clause text (Wave 112 — grep-reuse for QA Phase 3 completeness test)
+
+The Wave 112 peer-edit boundary clause MUST appear in each of the 8 subagent bodies' "Your boundaries" section. The canonical anchor phrase (every body contains this verbatim substring):
+
+> **You do NOT write to other roles' `coordination/handoffs/<peer-id>.md` files.**
+
+Plus, in EVERY body's clause, the following anchor substrings co-present within the same boundary bullet:
+
+1. `your own HANDOFF doc` — points the role at its own file as the correct write target.
+2. `advisory ` (followed eventually by `[[HANDOFF: peer]]` or `[[DISPATCH: peer]]`) — names the cross-role mechanism.
+3. `outer orchestrator relays` (or `outer Claude Code orchestrator`) — explains the runtime semantics under Plan C.
+4. `Agent` (the `Agent` tool invocation) — names the relay mechanism.
+5. `muddies the verdict chain` — explains the harm.
+6. `Architect's review gate` (or `step 4b`) — names the enforcement mechanism.
+
+Per-role variations to note in QA's completeness test:
+- **product-owner.md** uses `[[DISPATCH: peer]]` (PO's mechanism) rather than `[[HANDOFF: peer]]`.
+- **devsecops.md** carries a single narrow exception clause for the ADR-018 post-merge backfill of `PR #0` + placeholder SHA → real PR # + merge SHA. This is the ONE authorized peer-edit class and is named in ADR-018 itself. The test should not flag DevSecOps's exception text as a boundary-clause violation.
+
+### Files landed Wave 112 Phase 1 (8 .claude/agents/ + 1 architecture/)
+
+1. `architecture/workspace-conventions.md` — new section "Peer-edit protocol — HANDOFF docs are single-author by role (Wave 112)" with: rule (peers read; only owner writes), rationale (audit trail integrity, verdict chain load-bearing for ADR-018), correct mechanisms (own HANDOFF + workspace artifacts + advisory blocks), narrow exception (system-level housekeeping with explicit authorization + 3 conditions), enforcement (Architect step 4b + body boundary clauses), discovered-during (Wave 111c PR #388 / #391). Also annotated the `coordination/handoffs/<role-id>.md` row in the contract table.
+
+2. `.claude/agents/architect.md` —
+   - New code-review rubric step `4b` ("Peer-HANDOFF edit gate") sibling to existing step 4 ("Co-authorship gate (`architecture/` files)"). Parallel gates; both FAIL the PR on violation. Step 4b text includes the canonical anchor phrase and cites issue #391 + workspace-conventions.md.
+   - New boundary clause appended to "Your boundaries" section. Covers the case where Architect would otherwise edit a peer's HANDOFF to record review findings — directs to advisory blocks + workspace artifacts instead.
+
+3. `.claude/agents/product-owner.md` — new "Your boundaries" section (PO did not previously have one explicitly delineated). Single boundary bullet covers the peer-HANDOFF edit prohibition + narrow housekeeping exception. Mechanism field uses `[[DISPATCH: peer]]` per PO convention.
+
+4. `.claude/agents/business-analyst.md` — new boundary bullet appended after the existing `architecture/` co-authorship boundary. Clarifies that "file it as a HANDOFF entry in `coordination/handoffs/architect.md`" historically meant emit a `[[HANDOFF: architect]]` block — NOT directly edit Architect's HANDOFF. This is the most-likely-to-be-misread existing clause across the implementer bodies.
+
+5. `.claude/agents/ux-designer.md` — new boundary bullet appended after `architecture/` boundary. Reinforces that PASS/REVISE verdicts land in UX's OWN HANDOFF per ADR-018, never in the implementer's.
+
+6. `.claude/agents/ui-developer.md` — new boundary bullet between `architecture/` boundary and the "You do NOT write tests" line. Reinforces "file a HANDOFF entry" = advisory block, not direct peer edit.
+
+7. `.claude/agents/backend-developer.md` — same shape as ui-developer.md. Boundary bullet positioned after `architecture/` and before the tests/UI/CI exclusion bullets.
+
+8. `.claude/agents/qa.md` — new boundary bullet after `architecture/` boundary. Reinforces that QA's PASS/FAIL verdicts land in QA's OWN HANDOFF per ADR-018 — not in the implementer's, not in Architect's, not in DevSecOps's. Also addresses the "file a HANDOFF entry" semantic.
+
+9. `.claude/agents/devsecops.md` — new boundary bullet after `architecture/` boundary, with the ONE narrow ADR-018 backfill exception named explicitly. The exception is scoped: replace `PR #0` + placeholder SHA with real PR # + merge SHA on the verdict line — any edit outside that scope is a violation. Cites Wave 111c (PR #388) + #391.
+
+### Gate verification (Wave 112 Phase 1)
+
+- `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` → 153/153 PASS. Token discipline preserved across all 8 body edits (no denylisted tokens reproduced verbatim in the boundary clauses).
+- `pnpm vitest run tests/qa/wave-110/subagent-body-completeness.test.ts` → 12/12 PASS. Existing co-authorship clauses untouched; new boundary clauses are region-disjoint additions.
+- `pnpm vitest run tests/qa/wave-111/pass-verdict-format.test.ts` → 21/21 PASS. The Wave-112 PASS verdict block above conforms to ADR-018 canonical regex (verified by inspection: `### Wave-112 PASS verdict — PR #0 — SHA 39298fbb1caf5e38b9f7d3b09f4cf11a8a879074` matches `^### Wave-\d{1,4} (PASS|REVISE|FAIL) verdict — PR #\d{1,6} — SHA [0-9a-f]{40}$`).
+- `pnpm vitest run tests/qa/wave-111/wave-111b-completeness.test.ts` → 34/34 PASS. ADR-018 cross-refs and Lessons sections in gate-role bodies untouched by Wave 112's boundary-clause additions (Phase 2 will add Lessons to the remaining 5 bodies — region-disjoint from Phase 1's mid-file boundary edits).
+- `pnpm vitest run tests/qa/wave-111c/wave-111c-completeness.test.ts` → 29/29 PASS.
+- `pnpm test:run` → 249/249 PASS full suite.
+- `pnpm lint` → clean.
+- `pnpm type-check` → clean.
+
+### Co-authorship gate verification (Wave 109 rule, self-reflection)
+
+This wave's PR will touch:
+- `architecture/workspace-conventions.md` (Architect-owned, single-author = me, gate satisfied)
+- `.claude/agents/*.md` (Architect's lane for review-rule edits; my own rules; gate satisfied)
+
+No peer is co-authoring any file under `architecture/`. No HANDOFF-from-peer pre-condition required.
+
+### Peer-HANDOFF edit gate verification (Wave 112 step 4b — meta-self-check)
+
+This wave's PR touches `coordination/handoffs/architect.md` (this file) — edited by Architect. No peer HANDOFF docs are edited. Step 4b boundary satisfied: own-lane edit only.
+
+### Phase 2 region-disjoint confirmation
+
+Per the dispatch brief, PO confirmed Phase 2 (5 other subagents adding `## Lessons from prior incidents` sections per #196 carry-over) lands the new sections as tail-appended `## Lessons from prior incidents` headings at end-of-file. My Wave 112 edits land in mid-file `### Your boundaries` sections (or the new section position for PO). Region-disjoint: no edit collision between Phase 1 (mid-file boundary additions) and Phase 2 (end-of-file Lessons additions). The two phases can sequence without rework.
+
+### In flight / next
+
+- This slice is ready for code review. Single-author across all 10 files (1 architecture/ doc + 8 subagent bodies + this HANDOFF) within my own lane — both gates (co-authorship + peer-HANDOFF edit) verified.
+- Phase 2 fan-out — 5 subagents (BA, UI Dev, BE Dev, UX, PO) self-edit their bodies to add `## Lessons from prior incidents` sections per #196 carry-over. Phase 2 is region-disjoint from Phase 1 by design.
+- DevSecOps post-merge step (per ADR-018 Wave 111b amendment): replace `PR #0` placeholder + last-known SHA `39298fbb1caf5e38b9f7d3b09f4cf11a8a879074` with the real PR # + merge SHA via `chore(handoff): backfill Wave-112 verdict PR # and merge SHA`.
+
+### Parked / future (carried forward, plus Wave 112 additions)
+
+- `system-design.md` — still not created.
+- `tech-stack.md` — still not created (Vitest + ESLint + TS + pnpm is the entire stack).
+- `coding-standards.md` — still not created. Wave 112 boundary-clause discipline (the canonical anchor phrase + 6 co-presence anchors) is a candidate entry. So is the Wave 111b lessons-section pattern.
+- Fitness function for OQ-085-001's "no binary files committed under `tests/qa/wave-*/evidence/`" — QA owns implementation.
+- Viewer-repo subagent body audit (per ADR-017 follow-up).
+- **NEW (Wave 112):** consider a Wave 112-B QA grep test that asserts the canonical anchor phrase + 6 co-presence anchors are present in each of the 8 subagent bodies. Pattern matches Wave 108/110/111 cleanliness/completeness/format triad. Filing as candidate after PR merges.
+
+### Notes / caveats
+
+- Step 4b in architect.md uses the bullet number `4b.` rather than renumbering subsequent steps. Rationale: existing Wave 110 completeness test asserts canonical step phrases anchored against current numbering (step 4 = co-authorship gate). Adding 4b preserves the existing assertion semantics without renumbering churn. If a future wave wants to renumber, that's a Wave 110 completeness-test update + cross-file rewrite — out of scope here.
+- The boundary clause in each body intentionally varies in wording per-body tone (UI Dev / BE Dev plain-spoken; QA verdict-aware; UX verdict-aware; PO orchestration-aware; BA spec-aware; DevSecOps with the named exception). The 6 co-presence anchors are what makes it grep-checkable; verbatim phrasing across bodies is NOT the requirement.
+- DevSecOps's ADR-018 backfill exception is the ONE authorized peer-edit class. It is named explicitly in DevSecOps's body and scoped narrowly (placeholder-replacement only). Any future peer-edit-exception class needs a similar treatment: named in the relevant subagent body, scoped narrowly, justified in an ADR or workspace-conventions amendment.
+
+---
+
+## ⏭️ PREV — 2026-06-04 — Wave 111c (alpha-suffix ratification + PR #388 review)
 
 ### Wave-111 PASS verdict — PR #388 — SHA ce6b2b1a0781ee15fcf8987cbc6a16e55671ec5b
 - **Gate role:** architect

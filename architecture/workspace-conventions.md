@@ -36,7 +36,7 @@ Authoritative path → owning role → contents → notes.
 | `tests/qa/wave-NNN/` | qa | The canonical per-wave home for tests authored during wave NNN. | Test **code** committed; **evidence** (screenshots, console logs, traces) gitignored — see OQ-085-001 resolution below. |
 | `ops/` | devsecops | CI/CD recipes, secrets policy, deploy scripts, supply-chain manifests, branch-protection payloads, ops README. | **Carveout:** GitHub Actions workflows live at the repo root under `.github/workflows/*.yml`, NOT under `ops/`. GitHub requires this path. `ops/README.md` cross-references the workflow files. |
 | `.github/workflows/*.yml` | devsecops | CI workflows enforced by GitHub Actions. | Repo-root carveout; conventionally owned by DevSecOps but path is fixed by GitHub. Pre-commit hooks at `scripts/git-hooks/` likewise live outside `ops/` for the same path-dependence reason. |
-| `coordination/handoffs/<role-id>.md` | each subagent owns its own file | Per-role working state ("HANDOFF doc"). Files-on-disk replacement for the retired SQLite `agent_state` table. | One file per subagent. Naming **MUST** match the subagent's role-id exactly (see role-id list below). |
+| `coordination/handoffs/<role-id>.md` | each subagent owns its own file | Per-role working state ("HANDOFF doc"). Files-on-disk replacement for the retired SQLite `agent_state` table. | One file per subagent. Naming **MUST** match the subagent's role-id exactly (see role-id list below). Peers MAY read; only `<role-id>` MAY write — see "Peer-edit protocol" section below. |
 | `HANDOFF.md` (repo root) | rotates per wave; PO consolidates | Wave-level NOW block + recent session history. | Composed via towncrier-style fragments at `_handoff-pending/<wave>-<role>.md`, folded by PO with `pnpm fold-handoff` (ADR-014). |
 | `LESSONS.md` (repo root) | shared | Append-only "we hit X, it broke for Y, we now do Z." | Explains WHY conventions exist. Never edited in place — only appended. |
 | `_handoff-pending/<wave>-<role>.md` | each role authors its own fragment | Per-wave HANDOFF fragment; folded into `HANDOFF.md` at wave close. | ADR-014. PO writes no fragment — the fold commit IS PO's state update. |
@@ -47,6 +47,35 @@ Authoritative path → owning role → contents → notes.
 `product-owner`, `business-analyst`, `architect`, `ux-designer`, `ui-developer`, `backend-developer`, `qa`, `devsecops`.
 
 Subagent definition files: `.claude/agents/<role-id>.md`. HANDOFF files: `coordination/handoffs/<role-id>.md`. Role-ids **MUST** match across both surfaces; renaming a role requires updating both (plus this doc).
+
+## Peer-edit protocol — HANDOFF docs are single-author by role (Wave 112)
+
+Each `coordination/handoffs/<role-id>.md` file is **owned exclusively by `<role-id>`**. This is the durable rule for cross-role coordination under the subagent runtime.
+
+**Rule:** other roles MAY **read** any peer's HANDOFF doc; they **MUST NOT write** to a peer's HANDOFF doc. Writes to `coordination/handoffs/<role-id>.md` are reserved for `<role-id>` itself.
+
+**Why:**
+
+- A HANDOFF doc is the role's own audit trail — the durable record of what that role decided, what it gated, and what it's tracking. Peer edits muddle ownership and make the verdict chain ambiguous (which role attested what?).
+- Verdicts recorded in a gate role's HANDOFF doc (per ADR-018) are load-bearing: DevSecOps's merge step verifies them against the PR HEAD SHA. If any peer can edit a gate role's HANDOFF, the verdict is no longer self-attested by the gate role; the integrity chain breaks.
+- The subagent runtime gives every role full write access to the filesystem; the discipline is policy, not OS permissions. The Architect's code review gate enforces it.
+
+**The correct mechanisms for cross-role communication:**
+
+1. **Your own HANDOFF doc.** Write what you requested, what you observed, what you decided in `coordination/handoffs/<self>.md`. That doc IS your durable record. Peers read it.
+2. **Workspace artifacts.** US-NNN files, ADRs, design specs, test files, ops manifests — these are the cross-role contracts. They live in their owning role's lane (`requirements/`, `architecture/`, `design/`, `tests/`, `ops/`) and are edited by that role.
+3. **Advisory `[[HANDOFF: <peer-id>]]` blocks** in the subagent's visible reply. Under the subagent runtime these are advisory text; the outer Claude Code orchestrator reads them and decides whether to invoke the named peer via the `Agent` tool. The advisory block is NOT a substitute for a direct file edit — it is the mechanism that REPLACES the direct file edit.
+
+**Exception (narrow, named, single class):**
+
+- **System-level housekeeping with explicit authorization.** A repo-wide rename, a wave-level HANDOFF compaction request, or a coordinated migration that touches multiple HANDOFF docs at once MAY be authored by a system-level role (typically Product Owner under user direction) provided: the authorization is explicit in the PR body or commit message, the touched HANDOFF docs are listed in the PR description, and the affected role is HANDOFF-ed to confirm the change matches their working state. Without these three conditions, the edit is a peer-edit violation.
+
+**Enforcement:**
+
+- Architect's code review rubric (`.claude/agents/architect.md`, step 4-parallel) FAILs any PR whose diff modifies `coordination/handoffs/<role-id>.md` where the PR author is not the same `<role-id>` (and not a system-level housekeeping author with the three-condition authorization above).
+- Subagent bodies carry the matching boundary clause ("You do NOT write to other roles' `coordination/handoffs/<peer-id>.md` files") in their "Your boundaries" section.
+
+**Discovered:** Wave 111c. DevSecOps's PR #388 edited `coordination/handoffs/architect.md` directly to surface an ADR-018 ratification request. The edit was self-corrected by Architect's overwrite of the NOW section, but the cleaner protocol — a `[[HANDOFF: architect]]` advisory block in DevSecOps's own state — would have left both roles' verdict chains intact. Filed as issue #391; codified here Wave 112.
 
 ## OQ-085-001 — Test artifact retention policy (RESOLVED)
 

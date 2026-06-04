@@ -1,10 +1,52 @@
-## NOW — 2026-06-04 — Wave 111c (US-090 CI/process discipline completeness test)
+## NOW — 2026-06-04 — Wave 112 Phase 3 (US-091 completeness test)
 
-### Wave-111 PASS verdict — PR #0 — SHA ce6b2b1a0781ee15fcf8987cbc6a16e55671ec5b
+### Wave-112 PASS verdict — PR #0 — SHA 4a455f0141f6b30f3d84b5d004a42852fcef588d
+
+- **Gate role:** qa
+- **Timestamp:** 2026-06-04T12:49:49Z
+- **Notes:** Wave 112 completeness test (US-091 AC1-AC6) green. 59/59 new tests; full suite 308/308. Lint + type-check clean. PR #0 is commit-time placeholder per ADR-018 Wave 111b amendment; SHA is branch HEAD 4a455f0141f6b30f3d84b5d004a42852fcef588d. DevSecOps backfills real PR # and merge SHA post-merge.
+
+### Deliverable
+
+- `tests/qa/wave-112/wave-112-completeness.test.ts` — 59 tests covering AC1-AC6 of US-091.
+
+### Gate results
+
+- `pnpm vitest run tests/qa/wave-112/wave-112-completeness.test.ts` → 59/59 PASS
+- `pnpm test:run` → 308/308 PASS (108: 153 + 110: 12 + 111a: 21 + 111b: 34 + 111c: 29 + 112: 59)
+- `pnpm lint` → clean
+- `pnpm type-check` → clean
+
+### AC checklist (US-091)
+
+- AC1 (#389 — `_handoff-pending/` retired): directory does NOT exist; .githooks/pre-commit references `coordination/handoffs/` and does not use `_handoff-pending/` as active pattern. PASS (3 tests green)
+- AC2 (#390 — Python heredoc extracted): `scripts/check-placeholder-ttl.py` exists with shebang; `pass-verdict-format-check.yml` calls `python3 scripts/check-placeholder-ttl.py` and contains no Python heredoc. PASS (4 tests green)
+- AC3 (#391 — Peer-edit protocol codified): `architecture/workspace-conventions.md` contains "Peer-edit protocol" section; `architect.md` review rubric contains peer-HANDOFF edit gate (step 4b); all 8 `.claude/agents/*.md` bodies contain the canonical boundary clause. PASS (11 tests green)
+- AC4 (actionlint live): `ci.yml` contains `actionlint` reference; `.github/actionlint-matcher.json` exists. PASS (3 tests green)
+- AC5 (#196 partial — 5 remaining bodies): `business-analyst.md`, `ui-developer.md`, `backend-developer.md`, `ux-designer.md`, `product-owner.md` each contain `## Lessons from prior incidents` with >= 3 bullets + `**Why:**` + `**Apply:**`. All-8-bodies parametrized check also green (Wave 111b's 3 + Wave 112's 5). PASS (18 tests green + 8 all-roles tests = 26 total)
+- AC6 (#332 + #333 — directive-supremacy completeness check): all 8 agent bodies contain directive-supremacy content (post-frontmatter). Named "completeness check" per #333. Positional enforcement (~600 chars) deferred to future wave — content is in the shared system-prompt block deep in the body, not moved to top in Wave 112. PASS (8 tests green). Filed no new issue — positional improvement already tracked in open #332.
+
+### S10 gate
+
+S10 not triggered — wave touches no user-supplied collection logic (grep-based regression test on static files).
+
+### Legs A/B/C
+
+N/A — doc/test-only wave. No runtime code, no UI changes. `pnpm build` gate skipped per rubric. Full-suite vitest run is the applicable verification leg.
+
+### Wave-112 tests (US-085 evidence)
+
+- `tests/qa/wave-112/wave-112-completeness.test.ts` — 59 tests; mechanically asserts US-091 AC1-AC6 (_handoff-pending retired, Python heredoc extracted, peer-edit protocol codified, actionlint live, Lessons sections in all 8 bodies, directive-supremacy completeness check).
+
+---
+
+## PREV — 2026-06-04 — Wave 111c (US-090 CI/process discipline completeness test)
+
+### Wave-111 PASS verdict — PR #388 — SHA 39298fbb1caf5e38b9f7d3b09f4cf11a8a879074
 
 - **Gate role:** qa
 - **Timestamp:** 2026-06-04T11:51:49Z
-- **Notes:** Wave 111c completeness test (US-090 AC1-AC5) green. 29/29 new tests; full suite 249/249. Lint + type-check clean. PR #0 is commit-time placeholder per ADR-018 Wave 111b amendment; SHA is branch HEAD ce6b2b1a at commit time. DevSecOps backfills real PR # and merge SHA post-merge.
+- **Notes:** Wave 111c completeness test (US-090 AC1-AC5) green. 29/29 new tests; full suite 249/249. Lint + type-check clean. Backfilled by QA Wave 112 Phase 3: PR #388 merge SHA 39298fbb1caf5e38b9f7d3b09f4cf11a8a879074 (was PR #0 placeholder; backfill confirmed via `gh pr view 388 --json mergeCommit`).
 
 ### Deliverable
 

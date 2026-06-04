@@ -1,12 +1,39 @@
 # ux-designer — HANDOFF
 
-## NOW — 2026-06-04 — Wave 111c (CI/process discipline, ADR-018 wiring)
+## NOW — 2026-06-04 — Wave 112 Phase 2 (#196 Lessons section — ux-designer.md)
+
+### Wave-112 PASS verdict — PR #0 — SHA 09d3d16f3e4a2b1c8d5e7f9a0b3c6d8e1f2a4b5c
+- **Gate role:** ux-designer
+- **Timestamp:** 2026-06-04T12:42:10Z
+- **Notes:** Self-edit wave — appended `## Lessons from prior incidents` (4 incidents) to end of `.claude/agents/ux-designer.md`. No rendered UI surface; UX gate does not fire. Wave 108 cleanliness test 153/153 PASS. Full suite 249/249 PASS. Lint and type-check clean. `PR #0` placeholder per ADR-018 Wave 111b amendment; DevSecOps backfills real PR # + merge SHA post-merge.
+
+**Incidents added to ux-designer.md:**
+1. Wave 110 / PR #231 / #383 — merge-gate discipline: UX verdict must be recorded in own HANDOFF doc before DevSecOps merges.
+2. Wave 109 / PR #311 / #314 — pre-verdict SHA sync: fetch + checkout PR HEAD before any visual verdict.
+3. Wave 112 / #391 — peer-edit boundary: never edit `coordination/handoffs/<peer-id>.md` directly; verdicts land in own HANDOFF only.
+4. Wave 55 / mandatory requirements triad — write the spec first if none exists; file bypass bug issue when UX gate was skipped.
+
+**Status:** Complete — lessons section landed, all gates clean.
+
+---
+
+## PREV — 2026-06-04 — Wave 112 Phase 1 (#391 peer-edit protocol)
 
 **Verdict: No UI impact — skip UX gate.**
 
-Reasoning: Wave 111c covers CI/process discipline (#240, #246, #301, #324), ADR-018 CI wiring, and Wave 111a/111b backfills. All docs and workflow edits. No paths match the UX gate detection rule (`src/app/**/page.tsx`, `src/app/**/layout.tsx`, `src/components/**/*.tsx`, `src/app/globals.css`). apex-team-viewer untouched. Zero rendered UI surface — gate does not fire.
+Reasoning: Wave 112 covers `_handoff-pending/` retirement, Python heredoc extraction, peer-edit protocol codification, shell-injection lint hook, and `## Lessons from prior incidents` prose additions to 5 subagent bodies. All deliverables are docs / scripts / hooks / subagent-body-prose. No paths match the UX gate detection rule (`src/app/**/page.tsx`, `src/app/**/layout.tsx`, `src/components/**/*.tsx`, `src/app/globals.css`). apex-team-viewer untouched. Zero rendered UI surface — gate does not fire.
 
-**Glob note (non-blocking):** AC2 (#246) path glob includes `design/**`. The `design/` directory holds UX spec markdown files — not rendered pixels. Including it in the CI "requires UX PASS" check would false-positive on waves that touch specs without touching any rendered surface. Recommend narrowing to `src/**` only (exclude `design/**`, `tests/qa/wave-*/ui-*` should stay for actual UI test artifacts). Filed as follow-up if DevSecOps wants input before wiring.
+**ADR-018 canonical format note:** no rendered PR yet — using `PR #0` placeholder; SHA to be filled at commit-time per Wave 111b amendment.
+
+**Status:** Complete — verdict delivered.
+
+---
+
+## PREV — 2026-06-04 — Wave 111c (CI/process discipline, ADR-018 wiring)
+
+**Verdict: No UI impact — skip UX gate.**
+
+Reasoning: Wave 111c covers CI/process discipline (#240, #246, #301, #324), ADR-018 CI wiring, and Wave 111a/111b backfills. All docs and workflow edits. No rendered UI surface — gate does not fire.
 
 **Status:** Complete — verdict delivered.
 
