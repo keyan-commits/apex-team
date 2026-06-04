@@ -1,6 +1,18 @@
 # business-analyst — HANDOFF
 
-## NOW — 2026-06-04 — Wave 109 close-sweep complete
+## NOW — 2026-06-04 — Wave 110 triad confirmation
+
+**Verdict: no US-088.**
+Wave 110 deliverables are docs/rules-only (devsecops.md prose edit, LESSONS.md correction, ops/README.md rewrite, QA presence test). The QA test asserts presence of already-shipped rules — it does not introduce new behavioral user-facing surface. Wave 109 precedent confirmed: docs/rules-only = skip US. Wave 108 precedent (US-087) was for a full subagent body-rewrite bundle + new test discipline; Wave 110 is a narrower prose-correction + presence-assertion wave, not comparable scope.
+
+**INDEX.md check:**
+`grep -E '#380|#381' requirements/INDEX.md` → no output. Neither issue is referenced in any active US row. The new merge-protocol issue Architect files this wave will likewise require no INDEX.md US row (same docs-only rationale). Verified for #380 and #381; will confirm Architect's new issue number as advisory after it is filed — no INDEX.md action expected.
+
+**Last-processed user message:** Wave 110 triad confirmation prompt (2026-06-04).
+
+---
+
+## PREV — 2026-06-04 — Wave 109 close-sweep complete
 
 **Wave 109 deliverables:**
 

@@ -1,6 +1,44 @@
 # product-owner — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 109 (close-sweep + Slice 1 review-gate hardening — COMPLETE, ready to merge)
+## ⏭️ NOW — 2026-06-04 — Wave 110 (gate-discipline hardening + docs-integrity sweep — COMPLETE)
+
+**Wave goal:** Land all 4 user-ratified candidates from Wave 109's close-out menu.
+
+**PR bundling note:** Wave 110 shipped as TWO PRs, not one (DevSecOps's #384 went first; Architect+QA bundle is the second). Charter intent was one PR; DevSecOps shipped the ops/README rewrite as a separate PR before Architect's HANDOFF landed. Pragmatic outcome — both PRs are docs-only, no conflict risk.
+
+**Returned (all 5 lanes):**
+- ✅ **Architect (Lane A + D-#381)** — Filed **issue #383** (`DevSecOps merge protocol: require gate-role PASS recorded in HANDOFF doc before merge`). Edited `.claude/agents/devsecops.md` line 58 inserting step 3 "Verify gate-role PASS is recorded in HANDOFF (mandatory pre-merge)." Original steps 3–8 renumbered. LESSONS.md: new Wave 110 entry tying rule to PR #231; rewrote Wave 93 stale entry to reference `coordination/handoffs/<role-id>.md` + ADR-017 supersession; annotated three other stale-ops entries with "Superseded by Wave 106 (Plan C)" notes. Wave 108 regression test still 153/153 PASS.
+- ✅ **DevSecOps (Lane C + D-#380)** — **PR #384 merged at `cb14be2`** (closes #380). Verdict on C: already covered by global `Tests` job — no new path-conditional job needed. Rewrote `ops/README.md` for Plan C runtime (removed `:3100/:3110/:3120/:3130` ports, `pnpm dev:test:*`, `.restart-trigger`, `pnpm fold-handoff` references; added Plan C runtime table, cross-links to workspace-conventions + ADR-017).
+- ✅ **BA** — confirmed no-US for Wave 110; INDEX.md no-op verified.
+- ✅ **UX** — no UI impact, skip UX gate.
+- ✅ **QA (Lane B)** — `tests/qa/wave-110/subagent-body-completeness.test.ts` — **12/12 PASS in 99ms**. Full suite 165/165 (wave-108 153 + wave-110 12). 7 ACs all green: AC-1 Architect co-authorship gate, AC-2 6 implementer body co-authorship clauses, AC-3/4 SHA-sync in Architect/UX, AC-5a/b/c devsecops.md merge-protocol clause (title + load-bearing imperative + co-present qa/ux HANDOFF refs).
+
+**Architect's #383 (merge-protocol rule) is now load-bearing on Wave 110's own PR:** per the new step 3, DevSecOps must verify QA's PASS in `coordination/handoffs/qa.md` against Wave 110 PR's HEAD SHA before merging. QA's Wave 110 HANDOFF records the PASS verdict; the PR can merge.
+
+**Wave 110 follow-up PR scope (this commit):**
+- Modified: `.claude/agents/devsecops.md` (Architect-A step 3), `LESSONS.md` (3 entries + stale annotations), 6 `coordination/handoffs/*.md` updates (architect, business-analyst, product-owner, qa, ux-designer + already-merged devsecops).
+- New: `tests/qa/wave-110/subagent-body-completeness.test.ts` (QA-B).
+- Closes: #383 (Architect's merge-protocol issue).
+
+**Wave 111 candidates (parked):**
+- Issue #196 (encode lessons into role bodies — BA's Wave 109 Slice 3)
+- Issue #199 (UX design-skill ecosystem)
+- Remaining retained backlog from Wave 109 BA menu (#240, #246, #295, #301, #324, #335, #359, #362, #363, #364, #365, #366, #368, #369, etc.)
+
+---
+
+## ⏭️ PREV — 2026-06-04 — Wave 110 (gate-discipline hardening — DISPATCHED)
+
+**Wave goal:** All 4 user-ratified candidates from Wave 109 close-out menu.
+
+**Charter decisions:**
+- No new US — gate-protocol prose / regression test for already-shipped rules / CI eval / docs-accuracy rewrites.
+- Lanes: A (Architect, merge-protocol rule + #383 issue + devsecops.md step 3 + LESSONS), B (QA, completeness test, sequenced after A), C (DevSecOps, CI eval), D-#380 (DevSecOps, ops/README), D-#381 (Architect, LESSONS:17-19 rewrite).
+- BA confirms no-US; UX no-impact.
+
+---
+
+## ⏭️ PREV — 2026-06-04 — Wave 109 (close-sweep + Slice 1 review-gate hardening — COMPLETE, merged at c068c58)
 
 **Returned (all 3 lanes):**
 - ✅ **BA** — closed 6 issues (#322 #217 #211 #289 #126 #194) with one-line rationale citing Wave 108 absorption or monolith decommission. Filed 2 new docs-integrity issues: **#380** (`ops/README.md` stale monolith refs) + **#381** (`LESSONS.md:17-19` stale `_handoff-pending/` references). INDEX.md no-op (no closed issues touched active US rows). HANDOFF at `coordination/handoffs/business-analyst.md`.

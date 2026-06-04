@@ -1,6 +1,32 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 109 — review-gate hardening + retained-backlog close-sweep)
+## ⏭️ NOW — 2026-06-04 (Wave 110 — gate-discipline hardening + docs-integrity sweep)
+
+**claude-code direct on `feature/wave-110-completeness-and-merge-protocol` (off origin/main `cb14be2`).**
+
+**Wave 110 — fourth wave under the Plan C subagent runtime.** PO charter → 5-lane parallel dispatch. User picked "all 4" Wave 109 close-out candidates. Shipped as TWO PRs (DevSecOps's #384 merged at `cb14be2`; this PR bundles Architect + QA).
+
+**Deliverables:**
+
+1. ✅ **DevSecOps merge-protocol rule (Architect, closes #383)** — `.claude/agents/devsecops.md` step 3 "Verify gate-role PASS is recorded in HANDOFF (mandatory pre-merge)." Parallel rule to #314 SHA-sync but for merge step. Prevents PR #231 class of bypass.
+
+2. ✅ **`LESSONS.md` cleanup (Architect — Lane D-#381)** — Wave 93 stale entry rewritten to `coordination/handoffs/<role-id>.md` + ADR-017 supersession; new Wave 110 entry ties rule to PR #231; three other stale-ops entries annotated with "Superseded by Wave 106 (Plan C)."
+
+3. ✅ **CI hook eval (DevSecOps — Lane C)** — Already covered by global `Tests` job. No new path-conditional job needed.
+
+4. ✅ **`ops/README.md` rewrite (DevSecOps — Lane D-#380, PR #384 merged at `cb14be2`)** — Removed retired monolith infra; added Plan C runtime table; cross-linked workspace-conventions + ADR-017.
+
+5. ✅ **Completeness regression test (QA — Lane B)** — `tests/qa/wave-110/subagent-body-completeness.test.ts`, **12/12 PASS in 99ms**. PRESENCE counterpart to Wave 108's ABSENCE test. Full suite 165/165.
+
+**Verification (all green):** wave-108 153/153, wave-110 12/12, full suite 165/165, lint clean, type-check clean.
+
+**Wave 110 closes:** #380, #381, #383.
+
+**Wave 111 candidates (parked):** #196 (encode lessons into role bodies), #199 (UX design-skill ecosystem), remaining retained backlog (#240, #246, #295, #301, #324, #359, etc.).
+
+---
+
+## ⏭️ PREV — 2026-06-04 (Wave 109 — review-gate hardening + retained-backlog close-sweep)
 
 **claude-code direct on `feature/wave-109-review-gate-hardening` (off origin/main `79edd1e`).**
 

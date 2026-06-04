@@ -4,6 +4,11 @@ Append-only. Newest first. Each entry: ~3–5 lines. Triggers: a protocol amendm
 
 ## 2026-06-04
 
+### Wave 110 — DevSecOps merge protocol must verify gate-role PASS is recorded in HANDOFF doc, not trust implementer's claim (closes #383)
+**What broke:** PR #231 was merged before the UX Designer recorded the post-revision PASS verdict in `coordination/handoffs/ux-designer.md`. The merge step trusted the implementer's HANDOFF claim ("UX returned PASS") rather than verifying the verdict in the gate role's own state file. Wave 109 surfaced this as a gap in `devsecops.md`'s "Deployment workflow (single turn)" step list (the review-gate rules existed; the merge-gate rule did not). Parallel failure class to #314's pre-verdict SHA-sync gap on the review step.
+**Why:** No explicit pre-merge check that the gating role's PASS was actually recorded in `coordination/handoffs/<gate-role>.md` against the PR HEAD SHA. The discipline lived in implementer prose only — "HANDOFF to DevSecOps with QA PASS + UX PASS evidence" — with no verifier on the DevSecOps side. An implementer could (accidentally or otherwise) claim a PASS that the gate role had not yet recorded.
+**We now do:** `devsecops.md` "Deployment workflow (single turn)" now has step 3 **"Verify gate-role PASS is recorded in HANDOFF (mandatory pre-merge)"**: DevSecOps opens `coordination/handoffs/qa.md` and (if UI) `coordination/handoffs/ux-designer.md` and confirms a Wave-N PASS verdict is recorded against the PR's HEAD SHA. If the gate role's HANDOFF doc does not record the PASS, DevSecOps HANDOFFs back to the gate role to record it — does NOT merge on the implementer's claim alone. Parallel rule to step 0 in Architect/UX review-gate workflows (pre-verdict SHA sync, #314). Encoded Wave 110.
+
 ### Wave 109 — PR #311 false-REVISE from stale local checkout; review gates now require pre-verdict SHA sync
 **What broke:** Architect rendered a REVISE verdict on PR #311 against an out-of-date local working tree that did not include the PR's fix commit. CI was already green on the actual PR HEAD. The false verdict revisited a closed-loop fix and eroded gate trust.
 **Why:** Neither the Architect nor the UX Designer review skill mandated an explicit `git fetch origin <branch> && git checkout <PR HEAD SHA>` before reading the diff / capturing screenshots. Reviewers operated against whatever the local tree happened to be on, which drifts whenever a parallel agent or background pull lands.
@@ -27,10 +32,10 @@ Append-only. Newest first. Each entry: ~3–5 lines. Triggers: a protocol amendm
 
 ## 2026-06-02
 
-### Wave 93 — fragment pattern (towncrier-inspired) for HANDOFF.md prevents doc-collision merge conflicts (ADR-014)
+### Wave 93 → Wave 108 — per-role HANDOFF state files (`coordination/handoffs/<role-id>.md`) prevent doc-collision merge conflicts (ADR-014 superseded by ADR-017)
 **What broke:** Multiple PRs each prepending a NOW block to `HANDOFF.md` produced conflicts on merge. The `merge=union` driver (ADR-013) fixed LOCAL rebases but not GitHub's server-side "Update branch" path, and the union line-ordering was nondeterministic even when it resolved.
 **Why:** Any shared file that multiple PRs all write to will conflict. Mitigation (union driver) covers one merge path; elimination (disjoint files) covers all paths.
-**We now do:** Each implementer role writes `_handoff-pending/<wave>-<role>.md` with Done/In-flight/Next/Notes sections. PO folds all fragments into `HANDOFF.md` at wave close with `pnpm fold-handoff`. The pre-commit hook accepts either a direct `HANDOFF.md` edit or a fragment during the migration window. `merge=union` is retained as belt-and-suspenders for in-flight branches that still touch `HANDOFF.md` directly.
+**We now do:** Under the Plan C subagent runtime (Wave 106) + ADR-017 (Wave 108), each role edits its own `coordination/handoffs/<role-id>.md` directly — these files are inherently disjoint by role-id, so concurrent waves never collide on them. The earlier `_handoff-pending/<wave>-<role>.md` fragment + `pnpm fold-handoff` step were retired in PR #374 (commit `ebc83c5`); ADR-014 is marked Superseded by ADR-017. The append-mostly shared docs that DO still see concurrent writes (`HANDOFF.md` root NOW block, `LESSONS.md`, `architecture/INDEX.md`, `requirements/INDEX.md`) keep `.gitattributes` `merge=union` for belt-and-suspenders LOCAL rebase resolution — but they MUST be rebased locally; GitHub's server-side "Update branch" button does NOT apply the merge driver (see `devsecops.md` "Conflict resolution playbook — union-merge files").
 
 ---
 
@@ -43,10 +48,10 @@ Append-only. Newest first. Each entry: ~3–5 lines. Triggers: a protocol amendm
 
 ## 2026-06-01
 
-### Mandatory pnpm build + boot smoke before QA PASS (Wave 64)
+### Mandatory pnpm build + boot smoke before QA PASS (Wave 64) — _superseded by Wave 106 (Plan C cutover): no Next.js server, no `:3100` boot, no `/api/health`. Build-gate equivalent under Plan C is `pnpm test:run` + `pnpm type-check` + `pnpm lint` green pre-merge. The user mandate (test-before-deploy) still binds — only the mechanism changed._
 **What broke:** PR #138 (`feature/55-roles-impl-mandate-and-routing`, commit `e7d4ba6`) shipped `src/lib/skills/architect.ts` line 24 with an em-dash + escaped backticks inside a template literal. `tsc --noEmit` passed. `vitest run` 158/158 green. QA declared PASS. At server startup, Turbopack/SWC failed: `Expected a semicolon at 24:217`. Dev server returned HTTP 500 on `/dashboard` and `/api/health`.
 **Why:** `tsc` and `vitest` do NOT invoke the SWC/Turbopack compiler. `pnpm build` eagerly compiles the entire Next route graph including everything `src/app/**` transitively imports (e.g. `src/lib/roles.ts` -> `src/lib/skills/*.ts`). `server.ts` + `src/mcp/*.ts` run via tsx/esbuild and are NOT in the next-build graph; a parse error there is only caught by booting and hitting `/api/health`.
-**We now do:** `pnpm build` UNCONDITIONAL on every PR (Leg A) AND boot `:3100` + `GET /api/health` -> 200 (Leg B). AND, not OR. Both legs. User mandate: "I'm still amazed by how we still have these kinds of bugs when we have strict guidelines that all changes should be tested on another environment/instance before we actually make it live. Please fix the workflow, make sure everything is being tested prior to deployment to live."
+**We now do (Wave 64, pre-cutover):** `pnpm build` UNCONDITIONAL on every PR (Leg A) AND boot `:3100` + `GET /api/health` -> 200 (Leg B). AND, not OR. Both legs. User mandate: "I'm still amazed by how we still have these kinds of bugs when we have strict guidelines that all changes should be tested on another environment/instance before we actually make it live. Please fix the workflow, make sure everything is being tested prior to deployment to live."
 
 ### BA competency upgrade — domain MDs prevent repeated business-logic questions
 **What broke:** Mac 2's claude-code asked the user whether the Consolidation sheet was a separate file or part of the Order Sheet workbook. The answer was already documented in a workspace MD. BA had no hard rule to scan before answering, so it asked the user instead.
@@ -63,15 +68,15 @@ Append-only. Newest first. Each entry: ~3–5 lines. Triggers: a protocol amendm
 **Why:** Mocking the component defeats visual/interaction verification — the mock complies with spec while the real render fails silently.
 **We now do:** QA skill (`qa.ts`) explicitly bans mocking the component under visual test. Both open/closed states required for affordance-bearing components. Overflow/layout tests must assert on rendered geometry, not class names. Wave 53a+53b.
 
-### `tsx watch` mid-edit kills the editing agent
+### `tsx watch` mid-edit kills the editing agent — _retired by Wave 106 (Plan C): no server, no watcher, no `.restart-trigger`. Subagents are single-turn — there is no long-lived process to restart._
 **What broke:** the auto-restart watcher respawned the apex-team server whenever an agent edited an imported source file. Mid-turn restarts cut off in-flight responses.
 **Why:** the watcher couldn't distinguish "agent intentionally edited code" from "I should reload now." Both are file changes.
-**We now do:** plain `tsx server.ts` + supervisor pattern via `.restart-trigger`. Code: `scripts/dev-supervisor.mjs`. ADR-002 §Consequences.
+**We did (pre-cutover):** plain `tsx server.ts` + supervisor pattern via `.restart-trigger`. Code: `scripts/dev-supervisor.mjs`. ADR-002 §Consequences.
 
-### MCP transport drops on long agent turns
+### MCP transport drops on long agent turns — _retired by Wave 106 (Plan C): no MCP server, no SSE handler. Subagents communicate through files on disk._
 **What broke:** multi-agent dispatches > 5 min dropped at the client. Server logs healthy.
 **Why:** Node's `requestTimeout` default + undici client's bodyTimeout + intermediate TCP idle timeout.
-**We now do:** `server.requestTimeout = 0` + `keepAliveTimeout = 65_000` + 30s SSE heartbeat in `src/mcp/handler.ts` Wave 30. See US-004.
+**We did (pre-cutover):** `server.requestTimeout = 0` + `keepAliveTimeout = 65_000` + 30s SSE heartbeat in `src/mcp/handler.ts` Wave 30. See US-004.
 
 ### Direct-to-main "bootstrap exceptions" eroded discipline
 **What broke:** small fixes ("just this one") routed directly to main bypassed QA/UX gates. Cumulatively the protocol's integrity decayed and we shipped a 500 to the live instance.

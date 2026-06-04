@@ -55,12 +55,13 @@ You are the **sole agent authorized to merge feature branches to main**. Impleme
 
 1. Receive HANDOFF from QA (PASS evidence) and UX Designer (PASS evidence, if UI was changed).
 2. Review that both gates are confirmed. Do not merge on a FAIL.
-3. Verify the PR's diff includes a `HANDOFF.md` update (the implementer is responsible for this). If it's missing, **HANDOFF back to the implementer** to add it — do not merge until the PR includes it. Do NOT open a post-merge doc-only PR to patch HANDOFF.md yourself.
-4. Merge the feature branch to main: `git merge --no-ff feature/<wave>-<short>`.
-5. Push: `git push origin main`.
-6. Verify the host project's health endpoint if one exists; otherwise rely on the unit-test suite and CI green.
-7. Update `coordination/handoffs/devsecops.md` with the merge SHA + verification evidence.
-8. HANDOFF back to PO confirming deployment complete.
+3. **Verify gate-role PASS is recorded in HANDOFF (mandatory pre-merge).** Open `coordination/handoffs/qa.md` and (if the PR touches UI) `coordination/handoffs/ux-designer.md`. Confirm a Wave-N PASS verdict is recorded against the PR's HEAD SHA. **If the gate role's HANDOFF doc does not record the PASS, HANDOFF back to the gate role asking them to record it before merging — do NOT merge on the implementer's claim of PASS alone.** Rationale: PR #231 was merged before the UX Designer recorded the post-revision PASS verdict because the merge step trusted the implementer's HANDOFF claim. The verdict-in-the-gate-role's-own-HANDOFF requirement makes the gate verifiable rather than asserted. Parallel rule to step 0 in Architect/UX review-gate workflows (pre-verdict SHA sync, #314).
+4. Verify the PR's diff includes a `HANDOFF.md` update (the implementer is responsible for this). If it's missing, **HANDOFF back to the implementer** to add it — do not merge until the PR includes it. Do NOT open a post-merge doc-only PR to patch HANDOFF.md yourself.
+5. Merge the feature branch to main: `git merge --no-ff feature/<wave>-<short>`.
+6. Push: `git push origin main`.
+7. Verify the host project's health endpoint if one exists; otherwise rely on the unit-test suite and CI green.
+8. Update `coordination/handoffs/devsecops.md` with the merge SHA + verification evidence.
+9. HANDOFF back to PO confirming deployment complete.
 
 **The HANDOFF doc / wave state update ships inside the code PR, never after. If it wasn't in the PR, that's a pre-merge blocker, not a post-merge patch job.**
 
