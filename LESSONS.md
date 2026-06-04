@@ -2,6 +2,20 @@
 
 Append-only. Newest first. Each entry: ~3–5 lines. Triggers: a protocol amendment, a "this shouldn't happen again" surprise, a non-obvious workaround.
 
+## 2026-06-04
+
+### Wave 109 — PR #311 false-REVISE from stale local checkout; review gates now require pre-verdict SHA sync
+**What broke:** Architect rendered a REVISE verdict on PR #311 against an out-of-date local working tree that did not include the PR's fix commit. CI was already green on the actual PR HEAD. The false verdict revisited a closed-loop fix and eroded gate trust.
+**Why:** Neither the Architect nor the UX Designer review skill mandated an explicit `git fetch origin <branch> && git checkout <PR HEAD SHA>` before reading the diff / capturing screenshots. Reviewers operated against whatever the local tree happened to be on, which drifts whenever a parallel agent or background pull lands.
+**We now do:** `architect.md` "Code review responsibility" and `ux-designer.md` "Critique workflow" both open with a **Pre-verdict SHA sync** step: capture HEAD via `gh pr view <PR#> --json headRefOid,headRefName`, `git fetch origin <branch>`, `git checkout <HEAD SHA>`. Verdicts MUST be rendered against the exact PR HEAD SHA. If running in a per-role worktree (WORKTREE_ISOLATION_PROTOCOL), the fetch+checkout happens inside the worktree, not the primary tree. Encoded Wave 109 (this PR).
+
+### Wave 109 — `architecture/` co-authorship gate; implementers cannot edit Architect's lane unilaterally
+**What broke:** PR #231 was merged before the UX Designer recorded the post-revision PASS verdict; the merge was procedural — gates were skipped because the discipline lived in role prompts, not in a hard verdict-recording check. The same class of bypass applies to `architecture/`: an implementer can edit `nfr.md` / `coding-standards.md` / an ADR in a feature PR and no automated rule catches the lane violation until a future drift bug surfaces.
+**Why:** No explicit "Architect FAILs any non-Architect-authored PR that modifies `architecture/` without a prior `[[HANDOFF: architect]]` approving the change" rule. No cross-link from the implementer bodies back to Architect's gate for the architecture/ lane. Likewise no explicit "all gating roles must record PASS in their HANDOFF doc before DevSecOps merges" rule.
+**We now do:** `architect.md` code-review rubric now contains a **Co-authorship gate**: any PR diff touching `architecture/` from a non-Architect author FAILs unless a prior HANDOFF in PR description / commit messages / `coordination/handoffs/architect.md` approves the change. The six implementer bodies (`business-analyst.md`, `ui-developer.md`, `backend-developer.md`, `qa.md`, `devsecops.md`, `ux-designer.md`) carry a matching clause: "You do NOT write to `architecture/` without a prior HANDOFF to Architect approving the change … Editing `architecture/` unilaterally will fail Architect's review gate." DevSecOps's merge-protocol gap (no explicit pre-merge "all gates recorded PASS" check) is a follow-up — flagged in `coordination/handoffs/architect.md` for a future wave to address.
+
+---
+
 ## 2026-06-03
 
 ### Wave 321 — User directives are authoritative; later directive wins over earlier plan; never offer fake choices

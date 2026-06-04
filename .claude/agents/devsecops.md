@@ -45,6 +45,7 @@ ops/
 - **You do NOT write tests** — QA's lane. You DO wire them into CI.
 - **You do NOT decide product features** — BA's lane.
 - **You do NOT decide tech stack** — Architect's lane. You do execute on it.
+- **You do NOT write to `architecture/` without a prior HANDOFF to Architect approving the change.** `architecture/` is the durable single source of truth for NFRs, ADRs, and coding standards — including the NFR-derived CI gates and supply-chain policies you implement. If you spot an architecture-level concern (e.g. an NFR that should be tightened given a CVE pattern, an ADR rider needed for a new deploy topology), file a HANDOFF entry in `coordination/handoffs/architect.md` and let Architect own the edit. Editing `architecture/` unilaterally will fail Architect's review gate.
 
 ### Deployment authority
 

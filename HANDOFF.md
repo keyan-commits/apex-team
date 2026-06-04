@@ -1,6 +1,37 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 108 — subagent body rewrites: ADR-017 + 95→0 legacy refs + first US-085 AC5 smoke proof)
+## ⏭️ NOW — 2026-06-04 (Wave 109 — review-gate hardening + retained-backlog close-sweep)
+
+**claude-code direct on `feature/wave-109-review-gate-hardening` (off origin/main `79edd1e`).**
+
+**Wave 109 — third wave under the Plan C subagent runtime.** PO charter → 3-lane parallel dispatch (BA, Architect, UX) → all green. User picked Slice 1 + close-sweep from BA's prioritized retained-backlog menu.
+
+**Deliverables:**
+
+1. ✅ **Retained-backlog close-sweep (BA).** 6 GitHub issues closed as Wave-108-absorbed or monolith-decommission-moot: #322 ADR-016 in INDEX (absorbed), #217 QA 9-skill (absorbed — S1-S9 in `qa.md`), #211 DevSecOps local-rebase merge=union (absorbed — `devsecops.md:372-389`), #289 US-062 design doc (moot — dashboard retired), #126 Surface QA tests in `/agents/qa` (moot — route retired), #194 ESLint no-unused-vars (moot — `src/` gone).
+
+2. ✅ **2 new docs-integrity issues filed (BA).** #380 (`ops/README.md` stale monolith refs), #381 (`LESSONS.md:17-19` stale `_handoff-pending/` references — actively misleading DevSecOps).
+
+3. ✅ **Slice 1 review-gate hardening (Architect).** 8 files modified:
+   - **#335** `architecture/` co-authorship rule — `architect.md` review rubric flags any non-Architect modification of `architecture/` without prior HANDOFF; co-authorship clause in 6 implementer "Your boundaries" sections (BA, UI, BE, QA, DevSecOps, UX).
+   - **#314** Pre-verdict SHA sync — `architect.md` review-gate + `ux-designer.md` critique workflow both mandate `git fetch origin <branch> && git checkout <PR HEAD SHA>` before rendering verdict. PR #311 false-REVISE callout inline.
+   - **`LESSONS.md`** — 2 new entries at top (per "Newest first" header): PR #311 false-REVISE from stale checkout + `architecture/` co-authorship gate.
+
+4. ✅ **UX verdict:** no UI impact, skip UX gate.
+
+**Verification (all green):** `pnpm vitest run tests/qa/wave-108/` → 153/153 PASS (ADR-017 still clean); `pnpm lint --max-warnings 0` clean; `pnpm type-check` clean; ADR-017 denylist grep 0 matches; allowlist count = 8.
+
+**Surfaced Wave 110 candidate (Architect-flagged):** `devsecops.md` step 2 "Review that both gates are confirmed" trusts the implementer's claim of PASS rather than verifying the gating role recorded PASS in `coordination/handoffs/<gate-role>.md`. This is the PR #231 class of bypass at the merge step.
+
+**Wave 110 candidates (parked):**
+- DevSecOps merge-protocol rule (Architect's flag above)
+- Slice 2 completeness test (`tests/qa/wave-109/subagent-body-completeness.test.ts`, QA-owned)
+- DevSecOps CI hook for `tests/qa/wave-108/subagent-body-cleanliness.test.ts`
+- Address #380 + #381 docs-integrity bugs filed this wave
+
+---
+
+## ⏭️ PREV — 2026-06-04 (Wave 108 — subagent body rewrites: ADR-017 + 95→0 legacy refs + first US-085 AC5 smoke proof)
 
 **claude-code direct on `feature/wave-108-subagent-body-rewrites` (off origin/main `3df219d`).**
 

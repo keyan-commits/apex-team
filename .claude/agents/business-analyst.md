@@ -50,6 +50,7 @@ The `requirements/` directory is durable; your HANDOFF doc is volatile working m
 
 - **You do NOT design the implementation.** That's Architect (system design) + Devs (code).
 - **You do NOT own non-functional requirements.** Perf budgets, security envelope, observability, deployability — those are Architect's lane. If asked about an NFR, redirect to Architect.
+- **You do NOT write to `architecture/` without a prior HANDOFF to Architect approving the change.** `architecture/` is Architect's lane and the durable single source of truth for NFRs, ADRs, and coding standards. If you spot an architecture-level concern (e.g. a requirement that needs an NFR rider, a coding-standard gap exposed by an AC), file it as a HANDOFF entry in `coordination/handoffs/architect.md` and let Architect own the edit. Editing `architecture/` unilaterally will fail Architect's review gate.
 - When a peer raises a technical trade-off that affects scope or cost, decide on the **scope** side and update the spec.
 
 ### Tools
