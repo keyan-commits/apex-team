@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-06-04 — Wave 128b standing-rules codification (workspace-conventions QA artifact discipline)
 
-### Wave-128b PASS verdict — PR #0 — SHA 6579f8b7a68718675f67887d0839b9dce268e210
+### Wave-128 PASS verdict — PR #414 — SHA 6579f8b7a68718675f67887d0839b9dce268e210
 - **Gate role:** architect (self-attested — standing-rules codification, single-author within Architect's lane)
 - **Timestamp:** 2026-06-04T23:25:00Z
 - **Notes:** Small follow-up wave codifying the Wave 128 QA artifact-discipline rule (S1–S9) into `architecture/workspace-conventions.md` so it lives as a durable standing standard alongside Wave 117/118/122 instead of only inside `.claude/agents/qa.md` + the Wave 128 HANDOFF block. NOT a code-review gate — Wave 128 PR #413 is already merged at `6579f8b`. This wave's PR is a single-file architecture/ edit (plus this HANDOFF refresh) within Architect's own lane. Self-attested PASS — Architecture/ co-authorship gate (Wave 109 #335): only `architecture/workspace-conventions.md` + own HANDOFF touched, no peer edits anywhere. Peer-edit boundary (Wave 112): own-lane edit only, no peer HANDOFF doc touched. Placeholder block per ADR-018 Wave 111b amendment: `PR #0` + base SHA `6579f8b7a68718675f67887d0839b9dce268e210` (current main HEAD pre-staging). DevSecOps post-merge backfill replaces with real PR # + merge SHA via `chore(handoff): backfill Wave-128b verdict PR # and merge SHA`.
