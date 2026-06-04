@@ -1,6 +1,44 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 119 — viewer current-project switcher: US-095)
+## ⏭️ NOW — 2026-06-04 (Wave 121 — viewer auto-follows Claude Code's active project: US-097)
+
+**claude-code direct on `feature/wave-121-handoff-ui-developer` (off origin/main `8e6fbc6`).**
+
+**Trigger:** other Mac running Claude Code on LFM but apex-team viewer was showing apex-team's content. Wave 119 added a workspace switcher but auto-discovery only matched `requirements/user-stories/` (LFM has `requirements/samples/`) and the viewer didn't know which project Claude Code was actively in.
+
+**Sibling repo viewer PR `keyan-commits/apex-team-viewer #4` merged at `17261cd`:**
+- Broadened auto-discovery filter: any `requirements/*` subdir qualifies (was: only `requirements/user-stories/`)
+- New `~/.claude/projects/` scan — Claude Code's per-project JSONL directory. Decode encoded path (`-Users-X-Y` → `/Users/X/Y`), existsSync skip on miss, max JSONL mtime = recency signal.
+- New `mostRecent: boolean` field on each workspace registry entry (highest mtime wins).
+- Default resolution order extended: `APEX_TEAM_ROOT` env > **most-recent Claude Code project (new)** > CWD > hardcoded fallback.
+- `APEX_TEAM_AUTO_FOLLOW=1` env var enables 30s poll that auto-switches root when most-recent project changes; `lastManualSwitchAt` suppresses one tick after manual switch.
+- `GET /api/health` extended with `autoFollow` + `autoFollowPaused` fields.
+- `POST /api/auto-follow/toggle` toggles pause state.
+- Header UI: `.badge` ("following Claude Code" / "auto-follow paused") + `.badge-btn` toggle button.
+
+**This apex-team PR ships:**
+- US-097 with 7 ACs
+- `requirements/samples/wave-121-claude-projects/` — 6 fixture mock states
+- `tests/qa/wave-121/viewer-auto-follow.test.ts` — **27 tests** (26 PASS + 1 skipped runtime-gated)
+
+**Verification (all green):**
+- `pnpm vitest run tests/qa/wave-121/` → 26/26 PASS
+- `pnpm test:run` → **534/534 PASS** (prior 507 + Wave 121: 27)
+- All 11 wave regression test suites green
+- `pnpm lint`, `pnpm type-check` clean
+- Live viewer with `APEX_TEAM_AUTO_FOLLOW=1`: `autoFollow:true`, `mostRecent:true` on apex-team (only workspace on this Mac qualifies; LFM Mac will discover both)
+
+**Other-Mac activation steps:**
+1. `cd /path/to/apex-team-viewer && git pull`
+2. `APEX_TEAM_AUTO_FOLLOW=1 node server.mjs`
+3. Viewer auto-detects LFM as most-recent from `~/.claude/projects/-Users-nikolaiedralin-Study-LFM/` JSONL mtimes
+4. Header dropdown shows both LFM + apex-team; LFM rendered with `mostRecent: true`
+
+**Known limitation:** naive `-` → `/` decode in `~/.claude/projects/` scan fails for project names containing dashes (e.g. `apex-team` → `apex/team`). `existsSync` silently skips. `apex-team` still discovered via `add(activeRoot)` on startup. Tracked at `keyan-commits/apex-team-viewer#5` as a follow-up.
+
+---
+
+## ⏭️ PREV — 2026-06-04 (Wave 119 — viewer current-project switcher: US-095)
 
 **claude-code direct on `feature/wave-119-viewer-workspace-switcher` (off origin/main `c795ab5`).**
 
