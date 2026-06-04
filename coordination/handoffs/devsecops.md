@@ -1,6 +1,16 @@
-# DevSecOps — HANDOFF (Wave 120)
+# DevSecOps — HANDOFF (Wave 124)
 
-## ⏭️ NOW — 2026-06-04 (Wave 120)
+## ⏭️ NOW — 2026-06-04 (Wave 124)
+
+### Wave-124 PASS verdict — PR #0 — SHA a4ce3c752aa3cd75d25030ca47ec964038aee8a3
+
+- **Gate role:** devsecops
+- **Timestamp:** 2026-06-04T20:20:00Z
+- **Notes:** Wave 124 US-100 AC1-AC6 complete. `ops/pipelines/dev.sh` (OPS-0001), `staging.sh` (OPS-0002), `prod.sh` (OPS-0003) created and chmod +x. `ops/pipelines/_template.sh` skeleton (NOT executable). `ops/features/INDEX.md` allocation log created. `scripts/ops-run.mjs` + `scripts/qa-feat.mjs` CLI runners created. `package.json` `ops:run` + `qa:feat` scripts added. `ops/README.md` pipeline section added (direct + pnpm invocation, overlay convention, scaffolding vs live note). `.claude/agents/devsecops.md` amended with `### ops/pipelines standard (Wave 124 — MANDATORY)` section. Token cleanliness 153/153 PASS. Full suite 655/655 PASS. Lint + type-check clean. PR #0 placeholder — DevSecOps to backfill post-merge. AC7 (QA regression tests) is QA's lane, dispatched in parallel.
+
+---
+
+## PREV — 2026-06-04 (Wave 120)
 
 ### Wave-120 PASS verdict — PR #401 — SHA 017145022ee78d2849356f9ef3d56ddb42adf577
 

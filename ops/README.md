@@ -1,5 +1,91 @@
 # apex-team ops
 
+## Reusable pipeline templates + CLI runners (Wave 124 — FEAT-0003)
+
+Three environment pipeline templates live at `ops/pipelines/`:
+
+| Template | Ticket | Purpose |
+|---|---|---|
+| `ops/pipelines/dev.sh` | OPS-0001 | Dev: lint + type-check + test |
+| `ops/pipelines/staging.sh` | OPS-0002 | Staging: lint + type-check + test + build + deploy-preview |
+| `ops/pipelines/prod.sh` | OPS-0003 | Prod: all stages + sign + deploy-dry-run + approval gate |
+| `ops/pipelines/_template.sh` | — | Copy-paste skeleton for new environments (NOT executable) |
+
+Each template is a POSIX shell script, executable by any POSIX-compatible shell.
+
+### Direct invocation (no Claude Code required)
+
+```sh
+# Run the dev pipeline (base steps only — no feature overlay)
+sh ops/pipelines/dev.sh
+
+# Run the dev pipeline with a per-feature overlay
+sh ops/pipelines/dev.sh FEAT-0001
+
+# Run staging or prod
+sh ops/pipelines/staging.sh FEAT-0003
+sh ops/pipelines/prod.sh FEAT-0003
+```
+
+### pnpm runner invocation
+
+```sh
+# DevSecOps pipeline runner
+pnpm run ops:run --env=dev --feat=FEAT-0001
+pnpm run ops:run --env=staging --feat=FEAT-0003
+pnpm run ops:run --env=prod --feat=FEAT-0003
+
+# QA test runner for a specific feature
+pnpm run qa:feat --feat=FEAT-0001
+pnpm run qa:feat --feat=FEAT-0003
+```
+
+Both runners are implemented as Node.js scripts in `scripts/ops-run.mjs` and `scripts/qa-feat.mjs`.
+
+### Per-feature overlay convention
+
+Feature-scoped pipeline customisations live at:
+
+```
+ops/features/FEAT-XXXX-<slug>/OPS-NNNN-<slug>.sh
+```
+
+Mandatory frontmatter at the top of every overlay file (after the shebang):
+
+```sh
+# ticket: OPS-NNNN
+# parent_feat: FEAT-XXXX
+# parent_us: US-NNN
+# role: devsecops
+# status: proposed | accepted | in-flight | done
+```
+
+The pipeline template sources each `*.sh` file in the feature's overlay directory automatically. Overlays can extend base steps, set additional env vars, or skip steps via guard flags. If no overlay directory exists, the pipeline runs base steps only — no error.
+
+To create a new overlay:
+
+1. Allocate the next `OPS-NNNN` number from `ops/features/INDEX.md`.
+2. Create `ops/features/FEAT-XXXX-<slug>/OPS-NNNN-<slug>.sh`.
+3. Add the mandatory frontmatter.
+4. Implement your feature-specific pipeline additions.
+5. Add a row to `ops/features/INDEX.md`.
+
+### Adding a new environment pipeline
+
+1. Copy `ops/pipelines/_template.sh` to `ops/pipelines/<env>.sh`.
+2. Fill in the `ticket:`, `parent_feat:`, `parent_us:` frontmatter.
+3. Set `ENV_NAME="<env>"` and implement the base step functions.
+4. Run `chmod +x ops/pipelines/<env>.sh`.
+5. Document the new env in this README.
+
+### Scaffolding vs live pipeline
+
+Templates ship as **scaffolding**: placeholder step-function stubs with commented-out commands, not wired to a real CI vendor. Existing features (FEAT-0001 Grouping Convention, FEAT-0002 Viewer Rendering) do **not** get real pipeline overlays until there is something to deploy.
+
+When a project needs real pipelines (cloud deploy, artifact publish, container push), DevSecOps authors feature overlays at that time. The templates provide the skeleton; the overlays provide the substance. Specific cloud or CI vendor wiring (GitHub Actions YAML, GitLab CI, AWS Pipelines) is a per-feature overlay concern — out of scope for the scaffolding itself.
+
+---
+
 DevSecOps lane: CI config, secrets documentation, and runtime security.
 
 **Architecture references:**
