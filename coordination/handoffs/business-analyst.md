@@ -1,16 +1,32 @@
 # business-analyst — HANDOFF
 
-## NOW — 2026-06-04 — Wave 107 (Plan C subagent runtime, first BA turn)
+## NOW — 2026-06-04 — Wave 108 triad (subagent body rewrite)
+
+**Wave 108 triad deliverable complete (BA lane):**
+- US-087 filed at `requirements/user-stories/US-087-subagent-body-rewrite.md` (status: accepted)
+- `requirements/INDEX.md` updated: US-087 row added
+
+**For Architect (Wave 108 ADR cross-link):**
+- US-087 is the traceability wrapper for Wave 108 subagent body rewrite.
+- The ADR (ADR-NNN) Architect writes must reference US-087 as the driving story.
+- `architecture/workspace-conventions.md` must be cross-linked from the ADR per AC2 of US-087.
+- Forbidden-pattern enumeration in the ADR must cover at minimum: `pnpm dev:test*`, `pnpm dev:supervised`, `/api/health` (as verification step), `.restart-trigger`, `agent_state` (SQLite), `mcp__apex-team__*`, `talk_to_product_owner`, `talk_to_role`, `:3100` test instance references. Allowlist: `mcp__apex-engine__*` (still live).
+- Adapter-header decision (keep / remove / condense) must be ratified in the ADR.
+
+**Open in BA lane:**
+- US-086 status: accepted. Waiting for Architect to deliver `architecture/workspace-conventions.md` (Deliverable 1, Wave 107). Once Architect's doc lands, BA closes OQ-085-001/002 and moves US-086 to done.
+- US-087 status: accepted. Waiting for Architect (ADR) + implementers (body edits) + QA (regression test).
+- Viewer-repo conventions: parked, out of scope.
+
+---
+
+## Previous wave context — Wave 107 (archived below)
 
 **Wave 107 deliverables complete (BA lane):**
 - US-086 filed at `requirements/user-stories/US-086-workspace-conventions.md` (Task 1)
 - Monolith-era backlog re-triaged (Task 2) — see table below
 - `requirements/INDEX.md` updated: US-086 added, US-065/066/079-084 marked closed, closed-stories section added
 - 30+ GitHub issues closed; 2 issues annotated with "surface changed to .claude/agents/*.md"
-
-**Open in BA lane:**
-- US-086 status: accepted. Waiting for Architect to deliver `architecture/workspace-conventions.md` (Deliverable 1). Once Architect's doc lands, BA closes OQ-085-001/002 in `requirements/open-questions.md` and moves US-086 to done.
-- Viewer-repo conventions: parked, out of scope this wave.
 
 ---
 

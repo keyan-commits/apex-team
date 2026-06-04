@@ -1,11 +1,11 @@
 # ADR-014 — Towncrier-style HANDOFF fragment pattern: eliminate the doc-collision conflict class at the source
 
-- **Status:** Accepted
+- **Status:** Superseded by ADR-017 under the subagent runtime (Wave 108). Kept Accepted for the monolith-history record; new subagent work edits `coordination/handoffs/<role-id>.md` directly.
 - **Date:** 2026-06-02
 - **Wave:** 93
 - **Issue:** #212 (US-047 `accepted`)
 - **Relates / composes with:** ADR-013 (`merge=union` driver — belt-and-suspenders, see "Composition")
-- **Supersedes:** none. ADR-013's `merge=union` driver is **retained**, not replaced.
+- **Superseded by:** ADR-017 (Wave 108) for `.claude/agents/*.md` subagent bodies. The fragment mechanism does not exist under the subagent runtime.
 
 ## Context
 
