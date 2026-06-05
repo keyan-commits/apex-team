@@ -11,7 +11,7 @@
   - `backend/features/FEAT-tbd-test-cancel/BE-0010-test-cancel-endpoint.md` authored.
   - `backend/features/INDEX.md` updated: BE-0010 allocated, next = BE-0011.
 
-### Wave-140 PASS verdict — viewer PR #23 — SHA 1b74301b (pending apex-team PR)
+### Wave-140 PASS verdict — PR #437 — SHA e10692fc947f2b76b2a3874bd5720567b11e23f1
 
 - **Gate role:** backend-developer (self-review, BE lane)
 - **Timestamp:** 2026-06-05T00:00:00Z
