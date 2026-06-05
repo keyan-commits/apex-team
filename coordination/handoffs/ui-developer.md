@@ -1,6 +1,37 @@
 # ui-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-05 — Wave 133: viewer scan-dir off-by-one fix
+## ⏭️ NOW — 2026-06-05 — Wave 134: viewer flicker fix + workspace-root display bug
+
+### Wave-134 — viewer PR #20 open — apex-team HEAD (SHA-pending)
+
+**Symptom 1 — flicker:** full `innerHTML` rewrite on every 10s poll tick causes visible repaint, scroll-position reset, and focus loss.
+
+**Symptom 2 — stale root-path display:** switching workspace via dropdown updated the `<select>` but not the `root: /Users/...` text in the top-right header.
+
+**Fix summary (all in `keyan-commits/apex-team-viewer#20`, branch `feature/wave-134-skip-render-if-unchanged`):**
+
+1. `public/app.js`:
+   - `hashString(s)` — FNV-1a 32-bit hash, no imports.
+   - `state.lastHashes = { now, tickets, output, prs, ci }` — per-tab payload hashes initialized to `null`.
+   - Each `load*` function computes `hashString(JSON.stringify(response))` after fetch; skips `render*` if hash matches stored value.
+   - Hash reset to `null` on error, so the next poll always re-renders after a transient failure.
+   - `setTab()` / `setRole()` clear the relevant hash before calling `load*`, ensuring user-driven navigation always triggers a render.
+   - `doWorkspaceSwitch()` now calls `loadHealth()` after successful switch (fixes stale root-path display) and invalidates all hashes (new workspace = new data).
+   - Poll interval: `10_000` → `30_000` ms. Configurable via `window.__APEX_POLL_INTERVAL_MS__`.
+
+2. `__tests__/hash-string.test.ts` — 7 tests: determinism, unsigned-int range, length + order sensitivity, empty-string edge case.
+
+**Test results:** 53/53 PASS (46 pre-existing + 7 new).
+
+**Viewer PR:** `keyan-commits/apex-team-viewer#20` (branch `feature/wave-134-skip-render-if-unchanged`, commit `58ac877`).
+
+**Gate routing:**
+- `public/app.js` is rendered UI → UX Designer gates; no server-side changes so Architect gate not required.
+- QA can verify on viewer PR branch.
+
+---
+
+## ⏭️ PREV — 2026-06-05 — Wave 133: viewer scan-dir off-by-one fix
 
 ### Wave-133 — viewer PR #19 open — apex-team HEAD `8ea0e5b83ccaf2368ce76efb244a87e45a8005ef`
 
