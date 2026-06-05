@@ -36,6 +36,15 @@
 
 ---
 
+## ⏭️ PREV — 2026-06-05 — Wave 139 Server-vs-UI routing assertion clause
+
+### Wave-139 PASS verdict — PR #434 — SHA ff7674c77bbd04f0c2c1369f7209d2bbfc6c8d30
+- **Gate role:** backend-developer (self-attestation — single-file body amendment)
+- **Timestamp:** 2026-06-05T17:35:00Z
+- **Notes:** Added `### Server-vs-UI routing assertion (Wave 139 — MANDATORY)` section to `.claude/agents/backend-developer.md` before Wave 122 anchor. 8 trigger patterns + 2-step assertion protocol (HANDOFF to PO + retro BE-NNNN authorship for drift). Cross-ref to `~/.claude/skills/role-routing-server-vs-ui/SKILL.md`. Cleanliness 153/153 + FEAT-0001 38/38 PASS.
+
+---
+
 ## ⏭️ PREV — 2026-06-05 — Wave 137 BE retro backfill (viewer server.mjs waves 119–136)
 
 ## Done
