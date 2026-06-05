@@ -3,7 +3,7 @@
  * parent_feat: FEAT-0002
  * parent_us: US-099
  * role: qa
- * status: in-flight
+ * status: done
  *
  * Wave 123 — Viewer FEAT-grouped rendering regression tests (US-099 AC8)
  *

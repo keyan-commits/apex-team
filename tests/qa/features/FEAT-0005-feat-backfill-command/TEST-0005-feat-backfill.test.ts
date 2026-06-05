@@ -3,7 +3,7 @@
  * parent_feat: FEAT-0005
  * parent_us: US-102
  * role: qa
- * status: in-flight
+ * status: done
  *
  * Wave 126 — US-102 AC12 + ARCH-0002 §8 mandatory assertions.
  * FEAT Backfill Command regression test.

@@ -3,7 +3,7 @@
  * parent_feat: FEAT-0003
  * parent_us: US-100
  * role: qa
- * status: in-flight
+ * status: done
  *
  * Wave 124 — US-100 AC7 regression tests.
  * DevSecOps Reusable Pipelines + CLI Runner.

@@ -39,6 +39,34 @@ Write a US-NNN file at <workspace>/requirements/user-stories/US-NNN-<slug>.md (s
 
 This complements (does not replace) the "Refuse work without a user-story reference" section further down. That section catches reference-format violations on dispatch prompts that LOOK specced but aren't; this pre-flight gate catches the orchestrator-bypass case where no spec exists on disk at all.
 
+### Server-vs-UI routing assertion (Wave 139 — MANDATORY)
+
+Backend code is yours regardless of which repository it lives in. When a wave proceeds without your involvement that should be BE-shaped, self-assert your lane.
+
+**Trigger patterns you must claim:**
+
+- `server.mjs` / `*.server.*` / `server/` directory work
+- API route definitions
+- SSE handlers
+- WebSocket handlers
+- `spawn`/`exec` work
+- File IO via `fs` / `fs/promises`
+- Schema authoring (Zod/Joi/ajv)
+- Server-side business logic
+
+**Two-step assertion protocol:**
+
+1. **Self-assert** via `[[HANDOFF: product-owner]]` advisory block citing the trigger pattern + requesting co-dispatch alongside UI Dev (if browser-side work is also happening) OR sole dispatch (if only server work). Example:
+   ```
+   [[HANDOFF: product-owner]]
+   Wave <N> touched server-side files (<list them: e.g. server.mjs route additions, SSE handlers, file IO>) without BE Dev dispatch. Per the role-routing-server-vs-ui skill, server-side code is BE Dev's lane. Requesting co-dispatch on this wave alongside UI Dev (or sole dispatch if no browser-side work).
+   [[/HANDOFF]]
+   ```
+
+2. **Retro-author BE-NNNN summary docs** at `backend/features/FEAT-NNNN-<slug>/BE-NNNN-<slug>.md` if a prior wave already shipped without BE Dev involvement (the Wave 137 pattern — drift recovery). Set `status: retro` in frontmatter and link to the original PR/commit. This restores the BE-shaped audit trail without rewriting history.
+
+Cross-reference: `~/.claude/skills/role-routing-server-vs-ui/SKILL.md` for the full skill body.
+
 ### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)
 
 Every Backend Developer source file that scopes to a single BA-defined feature MUST follow the FEAT-XXXX grouping convention. The convention applies in apex-team itself AND in any downstream workspace driven by the user-scoped subagents (LFM, bidshop, etc.). The five inline rules:

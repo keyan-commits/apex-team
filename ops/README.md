@@ -350,3 +350,73 @@ No apex-team-specific path assumptions are hardcoded in workspace resolution.
 ### OPS ticket
 
 OPS-0004 — `ops/features/FEAT-0005-feat-backfill-command/OPS-0004-feat-backfill-script.md`
+
+---
+
+## Status reconciliation
+
+### Problem
+
+When a wave ships, QA test files and requirement files carry `status: in-flight` in their
+frontmatter. The merge itself does not update this field — it requires a separate edit in
+the same PR. When that edit is missed, viewer badges stay `IN-FLIGHT` for merged waves, giving
+the false impression that work is still pending.
+
+This is a **process gap**, not a viewer bug. The reconcile script closes the gap on demand and
+can be wired into CI as a periodic drift check.
+
+### Command
+
+```bash
+pnpm run status:reconcile [--dry-run] [--workspace=<path>] [--apply] [--bump-accepted]
+```
+
+| Flag | Description |
+|---|---|
+| _(none)_ / `--dry-run` | Scan + report. Writes only to `coordination/status-reconcile/`. No role-owned files written. |
+| `--apply` | Rewrite `status: in-flight` → `status: done` for every file whose parent PR is merged. Idempotent. |
+| `--bump-accepted` | Also bump `status: accepted` → `done` when parent PR merged. Default off. |
+| `--workspace=<path>` | Operate on a different workspace root. Default: `git rev-parse --show-toplevel`. |
+
+### Algorithm
+
+For every `.md` / `.test.ts` / `.test.tsx` / `.spec.ts` / `.spec.tsx` / `Test.java` / `Tests.java`
+file in `tests/qa/features/**/`, `requirements/features/**/`, `requirements/user-stories/`,
+`architecture/features/**/`, `design/features/**/`, `frontend/features/**/`, `backend/features/**/`,
+`ops/features/**/`:
+
+1. Parse frontmatter (YAML `---` block or `// key: value` line-comment header).
+2. If `status: in-flight` (or `accepted` with `--bump-accepted`):
+3. Find the parent PR via `git log --follow <file>` → oldest commit → `git log --merges
+   --ancestry-path <sha>..HEAD` → extract `Merge pull request #NNN`.
+4. Query `gh pr view <N> --json state,mergedAt` to confirm merged.
+5. If merged: rewrite `status:` to `done`. All other frontmatter preserved.
+6. Append audit row to `coordination/status-reconcile/audit.log`
+   (TSV: `ts | file | old_status | new_status | pr_number | merge_sha`).
+
+### Skip rules (never touched)
+
+- `requirements/samples/**` — fixture files carry intentional `status: in-flight`.
+- `_archive/**` — archived artifacts.
+- `coordination/feat-backfill/**` — feat-backfill runtime artifacts.
+- `coordination/status-reconcile/**` — own output directory.
+
+### Idempotence
+
+Re-running `--apply` on an already-reconciled workspace is a no-op. Each file is only written if
+its current status differs from the target (`done`).
+
+### Drift rule
+
+> A `status: in-flight` badge visible in the viewer for a wave whose PR merged more than 24 h ago
+> is process drift. Run `pnpm run status:reconcile --apply` to close it.
+
+### Cross-workspace
+
+The script works on any workspace with the standard directory layout:
+
+```bash
+pnpm run status:reconcile --apply --workspace=/path/to/other-repo
+# or directly:
+node /path/to/apex-team/scripts/status-reconcile.mjs --apply --workspace=/path/to/other-repo
+```
