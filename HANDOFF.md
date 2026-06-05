@@ -1,6 +1,32 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-04 (Wave 129 — test-coverage-audit skill + auto-fire hook on QA)
+## ⏭️ NOW — 2026-06-05 (Wave 142 — strip orchestration mandate; subagents become direct-talk roles)
+
+**Branch `feature/wave-142-strip-orchestration` off main.** User feedback: "3 hours for a 50-line app with broken login → workflow is net-negative." Wave 142 tears down the orchestration discipline that accumulated across Waves 117-141.
+
+**Deleted:**
+- 6 orchestration-mandate memory files (`feedback_drive_via_apex_team`, `feedback_po_mandatory_requirements_phase`, `feedback_pipeline_parallelism`, `feedback_zero_idle_and_consult_ba`, `feedback_auto_loop_while_in_flight`, `feedback_polling_no_resume`).
+- 9 enforcement test files (wave-108 cleanliness, wave-110/111/111c/112/117/118 completeness, FEAT-0001 anchor test, FEAT-tbd-role-routing TEST-0006). ~453 tests removed — all of them asserted agent-body text matching the removed rules, not real code behavior.
+
+**Rewrote lean (~40-50 lines each, was ~500):**
+- All 8 subagent bodies at `.claude/agents/*.md`. Total: 4415 → 333 lines (92% reduction).
+- New shape per body: role + job + style + what-they-DON'T-do (no MANDATORY clauses, no refusals, no auto-dispatch) + optional skill references + outputs path.
+
+**Updated:**
+- `MEMORY.md` index. New memory `feedback_no_orchestration_mandate.md` documents the new direct-talk model + what stays/leaves.
+- `CLAUDE.md` reframed: direct-talk subagents, no orchestration layer, no required triad. FEAT-XXXX + testing rubrics + ADR-018 verdict format kept as **optional guidance**, not enforced gates.
+
+**Kept (because they're quality, not ceremony):**
+- HANDOFF-in-PR rule (pre-commit hook). Never bypass without explicit user authorization.
+- No `shell: true` on user-derived args (Wave 131).
+- `Cache-Control: no-cache` on static assets (Wave 135).
+- All functional tests (SSE batching, runner-resolver, frontmatter parser, status-reconcile, scan-dir, hash-string, cache-control, spawn-safety, playwright-headed, test-runner-ui, viewer feat-grouped-rendering, etc.) — 315 tests pass.
+
+**Suite:** 315/315 + 1 skipped on this branch.
+
+---
+
+## ⏭️ PREV — 2026-06-04 (Wave 129 — test-coverage-audit skill + auto-fire hook on QA)
 
 **Branch `feature/129-test-coverage-audit-skill` (off main `44b3110`).** Wave 128 (QA artifact-discipline S1-S9) merged + Architect codified the standing rule in `architecture/workspace-conventions.md`. Wave 129 adds a complementary **systematic coverage-audit capability**: a project-agnostic skill that discovers test runners across any workspace, maps every FEAT → its tests, audits ACs against the comprehensive-testing + S1–S9 rubrics, and reports gaps to per-FEAT `TEST-PLAN.md` + workspace-level `tests/qa/COVERAGE-AUDIT.md`.
 

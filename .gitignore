@@ -34,3 +34,8 @@ coordination/feat-backfill/dispatch-plan-*.md
 coordination/feat-backfill/dispatch/
 coordination/feat-backfill/responses/
 coordination/feat-backfill/audit.log
+
+# Wave 138 — runtime status-reconcile artifacts (regenerated each invocation)
+coordination/status-reconcile/proposal-*.md
+coordination/status-reconcile/apply-*.md
+coordination/status-reconcile/audit.log
