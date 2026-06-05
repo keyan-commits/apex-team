@@ -71,4 +71,12 @@ Accessibility: add a visually-hidden `aria-live="polite"` region (position off-s
 
 ---
 
-_UX Designer · 2026-05-31_
+## features/FEAT-0005-test-runner-ui
+
+| File | Feature | Status | Notes |
+|---|---|---|---|
+| [features/FEAT-0005-test-runner-ui/UX-0002-test-runner-redesign.md](features/FEAT-0005-test-runner-ui/UX-0002-test-runner-redesign.md) | UX-0002 | ready | Wave 141. Full redesign of run drawer: status badge (6 states + pulse animation), elapsed timer (mm:ss), live progress counter (vitest/jest/playwright/maven/gradle parsers), color-coded log lines (error/warn/pass/info + symbol prefixes), collapsible log panel (localStorage persist), copy-logs button with toast, Playwright screenshot button, cancel button visual (muted amber #c87840), result summary card, empty state, a11y focus management + ARIA, reduced-motion, responsive 768px/390px. Assumes Wave 140 SSE batching + ring buffer + runId land first. |
+
+---
+
+_UX Designer · 2026-06-05_
