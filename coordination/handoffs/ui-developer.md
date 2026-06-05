@@ -1,6 +1,30 @@
 # ui-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-05 — Wave 132: runner sub-grouping + Java frontmatter parser
+## ⏭️ NOW — 2026-06-05 — Wave 133: viewer scan-dir off-by-one fix
+
+### Wave-133 — viewer PR #19 open — apex-team HEAD `8ea0e5b83ccaf2368ce76efb244a87e45a8005ef`
+
+**Symptom:** workspace switcher dropdown empty — no sibling workspaces listed.
+
+**Root cause:** `SELF` in `server.mjs` is already a directory (`dirname(fileURLToPath(import.meta.url))`). The prior `dirname(dirname(SELF))` walked up two levels instead of one, landing at `~/Development/` rather than `~/Development/Study/`.
+
+**Fix (1 line, `server.mjs:193`):** `dirname(dirname(SELF))` → `dirname(SELF)`.
+
+**Regression test:** `__tests__/scan-dir.test.ts` (4 tests) encodes the correct dirname algebra.
+
+**Test results:** 46/46 PASS (viewer), up from 42 before this wave.
+
+**Viewer PR:** `keyan-commits/apex-team-viewer#19` (branch `feature/wave-133-scan-dir-fix`, commit `50adba0`).
+
+**apex-team HEAD SHA:** `8ea0e5b83ccaf2368ce76efb244a87e45a8005ef`
+
+**Gate routing:**
+- Pure server-side logic change (no rendered UI) → Architect gates; no UX dispatch needed.
+- QA can verify against viewer PR branch.
+
+---
+
+## ⏭️ PREV — 2026-06-05 — Wave 132: runner sub-grouping + Java frontmatter parser
 
 ### Wave-132 MERGED — viewer PR #17 + apex-team PRs #422/#423/#424 — 2026-06-05
 
