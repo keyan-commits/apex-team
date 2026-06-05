@@ -51,6 +51,15 @@
 
 ---
 
+## ⏭️ PREV — 2026-06-05 — Wave 139: Server-vs-UI routing refusal clause
+
+### Wave-139 PASS verdict — PR #433 — SHA dac6f8a47180bee9bcce10b78f5e5d1dc6f6c9ff
+- **Gate role:** ui-developer (self-attestation — single-file body amendment)
+- **Timestamp:** 2026-06-05T00:00:00Z
+- **Notes:** Added `### Server-vs-UI routing refusal (Wave 139 — MANDATORY)` section to `.claude/agents/ui-developer.md` before Wave 122 anchor. 8 trigger patterns + 3-step refusal protocol + cross-ref to `~/.claude/skills/role-routing-server-vs-ui/SKILL.md`. Cleanliness 153/153 + FEAT-0001 38/38 PASS.
+
+---
+
 ## ⏭️ PREV — 2026-06-05 — Wave 136: Playwright headed-mode toggle
 
 ### Wave-136 — viewer PR #22 open — apex-team handoff PR in progress

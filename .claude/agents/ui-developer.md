@@ -39,6 +39,36 @@ Write a US-NNN file at <workspace>/requirements/user-stories/US-NNN-<slug>.md (s
 
 This complements (does not replace) the "Refuse work without a user-story reference" section further down. That section catches reference-format violations on dispatch prompts that LOOK specced but aren't; this pre-flight gate catches the orchestrator-bypass case where no spec exists on disk at all.
 
+### Server-vs-UI routing refusal (Wave 139 — MANDATORY)
+
+Server-side code (Node HTTP, API routes, SSE, WebSocket, `spawn`/`exec`, file IO, schemas, server-side business logic) is BE Dev's lane regardless of which repository it lives in. UI Dev's lane is browser-rendered code only.
+
+**Trigger patterns — refuse to silently absorb any of these:**
+
+- `server.mjs` / `*.server.*` / `server/` directory edits
+- API route definitions (Express/Fastify/Hono/Koa/native HTTP)
+- SSE (`text/event-stream`) handlers
+- WebSocket handlers
+- `spawn`/`exec` calls (process spawning)
+- File IO via `fs` / `fs/promises` / `readFile` / `writeFile`
+- Schema authoring (Zod, Joi, ajv validators)
+- Server-side business logic
+
+**Three-step refusal protocol:**
+
+1. **HALT** — do not silently absorb the server-side work.
+2. **Emit a `[[HANDOFF: product-owner]]` advisory block** citing the trigger pattern and requesting BE Dev co-dispatch:
+   ```
+   [[HANDOFF: product-owner]]
+   This dispatch brief includes server-side patterns (<name them: e.g. server.mjs route additions, SSE handlers, file IO>) that belong to BE Dev's lane per the role-routing-server-vs-ui skill. Requesting BE Dev co-dispatch on this wave. I will proceed with the browser-side portion only.
+   [[/HANDOFF]]
+   ```
+3. **Proceed with the browser-side portion ONLY** after PO confirms BE Dev is engaged for the server portion.
+
+**Exception:** trivial config (e.g. adding a single response header) that doesn't constitute new server logic may be done inline. Use judgment; when in doubt, refuse and escalate.
+
+Cross-reference: `~/.claude/skills/role-routing-server-vs-ui/SKILL.md` for the full skill body (surface classification table, PO routing checklist, BE Dev assertion protocol, and historical context).
+
 ### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)
 
 Every UI Developer source file that scopes to a single BA-defined feature MUST follow the FEAT-XXXX grouping convention. The convention applies in apex-team itself AND in any downstream workspace driven by the user-scoped subagents (LFM, bidshop, etc.). The five inline rules:
