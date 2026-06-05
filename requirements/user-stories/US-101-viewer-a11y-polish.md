@@ -2,7 +2,7 @@
 ticket: US-101
 parent_feat: FEAT-0004
 role: business-analyst
-status: in-flight
+status: done
 ---
 
 # US-101 — Viewer A11y Polish

@@ -1,6 +1,32 @@
-# DevSecOps — HANDOFF (Wave 132)
+# DevSecOps — HANDOFF (Wave 138)
 
-## ⏭️ NOW — 2026-06-05 (Wave 132)
+## ⏭️ NOW — 2026-06-05 (Wave 138)
+
+### Wave-138 PASS verdict — PR #0 — SHA 3fdb5e148b1616ad9177f91da4dd5ead3ed726aa
+
+- **Gate role:** devsecops
+- **Timestamp:** 2026-06-05T09:15:33Z
+- **Branch:** feature/wave-138-status-reconcile
+- **Notes:** Wave 138 status-reconcile script + one-shot drift backfill complete.
+  - `scripts/status-reconcile.mjs` — reusable CLI; `--dry-run` (default) / `--apply` / `--bump-accepted` / `--workspace=<path>`.
+  - `package.json` — `"status:reconcile": "node scripts/status-reconcile.mjs"` added.
+  - `tests/qa/wave-138/status-reconcile.test.ts` — 14 tests; all green. 3 fixture dirs under `tests/qa/wave-138/fixtures/`.
+  - `ops/README.md` — `## Status reconciliation` section appended.
+  - One-shot backfill: 8 files bumped `status: in-flight → done`:
+    - `tests/qa/features/FEAT-0001-feat-grouping-convention/TEST-0001-anchor-and-prefixes.test.ts` (PR #403)
+    - `tests/qa/features/FEAT-0002-viewer-feat-grouped-rendering/TEST-0003-feat-grouped-api.test.ts` (PR #405)
+    - `tests/qa/features/FEAT-0003-devsecops-reusable-pipelines/TEST-0002-pipelines-cli-regression.test.ts` (PR #405)
+    - `tests/qa/features/FEAT-0004-viewer-a11y-polish/TEST-0004-viewer-a11y-polish.test.ts` (PR #407)
+    - `tests/qa/features/FEAT-0005-feat-backfill-command/TEST-0005-feat-backfill.test.ts` (PR #411)
+    - `requirements/user-stories/US-101-viewer-a11y-polish.md` (PR #407)
+    - `requirements/user-stories/US-102-retroactive-feat-backfill-command.md` (PR #411)
+    - `ops/features/FEAT-0005-feat-backfill-command/OPS-0004-feat-backfill-script.md` (PR #411)
+  - Audit log: `coordination/status-reconcile/audit.log` (21 rows).
+  - Full suite: 739 passed + 1 skipped. Lint clean. Type-check clean.
+
+---
+
+## ⏭️ PREV — 2026-06-05 (Wave 132)
 
 ### Wave-132 MERGE COMPLETE — all 4 PRs merged 2026-06-05
 
