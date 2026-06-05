@@ -1,6 +1,27 @@
 # ui-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-05 — Wave 136: Playwright headed-mode toggle
+## ⏭️ NOW — 2026-06-05 — Wave 140: SSE batching + log ring buffer + cancel button
+
+### Wave-140 — viewer PR #24 open — apex-team HANDOFF PR in progress
+
+**Feature:** SSE perf hotfix — high-throughput test runs (Spring Boot 100s of `[WebServer]` lines/sec) caused Chrome Page Unresponsive via per-line DOM mutations. Cancel button added for long-running tests.
+
+**Deliverables (all in `keyan-commits/apex-team-viewer` PR #24, branch `feature/wave-140-sse-perf-hotfix-ui`, commit `11e4bd7`):**
+
+1. `public/app.js` — `pushLogLine()` / `flushLogBuffer()` rAF-throttle; `MAX_LOG_LINES=2000` ring buffer with `removeChild` eviction + cap indicator; `currentRunId` from `start` SSE JSON; `cancelRun()` calling `DELETE /api/run-test/:id`; `finishRun()` hide-button + null-runId; `openDrawer()` refactored for file vs run modes; cancel button event listener.
+2. `public/index.html` — `#drawer-cancel` button (hidden, amber); drawer split into `#drawer-file-content` (pre) + `#drawer-content` (div with `#drawer-log-cap` + `#drawer-log`).
+3. `public/style.css` — `#drawer-cancel` amber style; `.drawer-content` shared base; `.drawer-log-cap` indicator; `.drawer-log` line container; `#drawer-status.cancelled` pill.
+4. `__tests__/sse-batching.test.ts` — 8 unit tests: rAF coalescing, ring buffer 3000→2000 eviction, cap indicator, resetLogBuffer, cancel button visibility states.
+
+**Test results:** 77/77 PASS (69 pre-existing + 8 new).
+
+**Co-dispatched BE Dev PR:** `keyan-commits/apex-team-viewer#23` — process registry + `DELETE /api/run-test/:id` + 10 tests. Cancel button degrades gracefully (404 → log note).
+
+**Gate routing:** `public/app.js`, `public/index.html`, `public/style.css` → UX Designer gates. No `server.mjs` changes — Architect gate not required.
+
+---
+
+## ⏭️ PREV — 2026-06-05 — Wave 136: Playwright headed-mode toggle
 
 ### Wave-136 — viewer PR #22 open — apex-team handoff PR in progress
 
