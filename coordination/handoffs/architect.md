@@ -1,6 +1,97 @@
 # architect — HANDOFF
 
-## ⏭️ NOW — 2026-06-05 — Wave 131 security gate (viewer PR #16 — PASS, closes #14)
+## ⏭️ NOW — 2026-06-05 — Wave 132 code-review gate (viewer PR #17 — PASS, Java/line-comment frontmatter)
+
+### Wave-132 PASS verdict — PR #17 — SHA 05d6ac1560de8538d5e22332be92eaed4a9a6ea2
+- **Gate role:** architect (non-UI rubric — viewer PR #17, `feature/wave-132-runner-grouping-java-frontmatter`, HEAD `05d6ac1`). UI portion (runner sub-group headers + ▶Run-for-all-test-files in `public/app.js` + `public/style.css`) routes to UX Designer in parallel — NOT covered by this verdict.
+- **Cross-repo verdict:** PR # refers to `keyan-commits/apex-team-viewer#17`. SHA `05d6ac1560de8538d5e22332be92eaed4a9a6ea2` is HEAD of `feature/wave-132-runner-grouping-java-frontmatter` in the viewer repo at gate time (verified via `gh pr view 17 -R keyan-commits/apex-team-viewer --json headRefOid`).
+- **Timestamp:** 2026-06-05T12:03:00Z
+- **Scope of this verdict:** the `parseFrontmatter` extension in `server.mjs` (line-comment frontmatter for `//` and `#` languages) plus its 14-test suite at `__tests__/frontmatter-parser.test.ts`. The runner sub-grouping JS/CSS additions in `public/app.js` + `public/style.css` are UX Designer's lane and explicitly out of scope here.
+- **Suite green at gate HEAD:** `npm test` in isolated worktree at PR HEAD `05d6ac1` → **Test Files 3 passed (3), Tests 42 passed (42)** (frontmatter-parser 14, spawn-safety 7, runner-resolver 21). Duration 238ms. Zero regressions in the Wave 130 resolver suite + Wave 131 spawn-safety suite. Worktree `/tmp/arch-w132` cleaned up post-verification.
+
+### Per-gate-criterion verification matrix (Wave 132 brief)
+
+| Criterion | Verification | Result |
+|---|---|---|
+| **1a. Parser scans first 20 non-empty lines for `^(//|#)\s*(parent_feat|parent_us|feat|ticket|role|status)\s*:\s*(.+?)\s*$`** | Verified at `server.mjs:364` — `COMMENT_FM_RE = /^(?:\/\/|#)\s*(parent_feat|parent_us|feat|ticket|role|status)\s*:\s*(.+?)\s*$/`. Loop at `server.mjs:399-414` increments `nonEmptyCount` per non-blank line; `if (nonEmptyCount > 20) break;` at line 401 enforces the cap. Test `does not scan beyond 20 non-empty lines` (line 157-164) exercises the boundary (21 padded comments + 1 key on line 22 → null). | PASS |
+| **1b. Stops at first non-comment line** | Verified at `server.mjs:411-413` — `else { /* First non-comment, non-blank line: stop scanning */ break; }`. Test `stops scanning at first non-comment line` (line 86-95) exercises: `// parent_feat: FEAT-0001` + `package com.example;` + `// parent_feat: FEAT-9999` → returns `FEAT-0001` only, second `parent_feat` never seen because `package` breaks the loop. | PASS |
+| **1c. YAML `---` block still wins when present (no regression)** | Verified at `server.mjs:368-392` — YAML branch executes FIRST; if `parsed === true` returns immediately (line 389). Test `returns YAML values when --- block is present and has recognised keys` (line 172-186) exercises: YAML `parent_feat: FEAT-YAML` + body `// parent_feat: FEAT-COMMENT` → returns `FEAT-YAML`. Wave 132's 3-test YAML regression block (line 209-241) confirms standard YAML, quote-stripping, and unterminated-block-null behaviors all preserved. | PASS |
+| **1d. Returns null gracefully on no-match (fail-soft semantics preserved)** | Verified at `server.mjs:417` — `return parsed ? result : null;`. Five negative tests cover: empty file, all-blank file, no-comment-header Java file, plain comments with no recognised keys, unterminated YAML block. All return null. Downstream consumers at `server.mjs:444` + `server.mjs:584` are guarded with `if (fm && ...)` checks — null is the documented contract. | PASS |
+| **2. Test coverage — 14 new tests across positive/negative/edge** | Wave 118 comprehensive-testing rubric: **Positive** (5): basic Java header, `#` Python style, non-key comments interleaved, standard YAML regression, quote-stripping. **Negative** (5): no recognised keys, empty file, blank-only file, immediate-class-no-header, unterminated YAML. **Edge** (4): stop-at-non-comment, 20-line boundary, YAML-wins-over-comments, YAML-no-keys-no-fallthrough. All three categories covered. Test-shim at line 23-69 is **byte-for-byte identical** to production `server.mjs:366-415` (verified via `git show` side-by-side) — keep-in-sync risk is mitigated by the explicit comment at line 16-18. | PASS |
+| **3. Project-agnostic** | `grep -i 'lfm\|order-sheet\|ordersheet' server.mjs` → zero hits. Only `lfm` occurrence in the entire PR diff is the Java fixture string `'package com.lfm.portal.ordersheet;'` at test line 81 — a sample input VALUE inside a string literal, not a code path. Parser depends on no workspace-specific path. Works on any repo whose test files carry `// parent_feat:` / `# parent_feat:` headers. Wave 130 nested-discovery skip-list + Wave 130 `.apex-viewer.json` config preserved unchanged. | PASS |
+| **4. No NFR delta — parser purity, idempotence, no new side effects** | `parseFrontmatter(content: string): Record<string,string> \| null` — pure function: no I/O, no global mutation, no closure over external state. Callers at `server.mjs:444` (FEAT title lookup) + `server.mjs:584` (per-file ticket extraction) already invoke it inside `readFileSync` blocks — the existing I/O is unchanged. **Perf:** YAML-present path is identical to pre-Wave-132 (early-return at line 389). YAML-absent path adds an inner `content.split('\n')` traversal capped at 20 non-empty lines + a single regex per line (O(n) where n ≤ 20). Negligible — well under 1ms per file for realistic inputs. **Observability/deployment:** unchanged. **Availability:** unchanged. | PASS |
+| **5. Security — frontmatter values not eval'd / not shell-interpolated** | `grep -n 'fm\[\|fm\.' server.mjs` → 5 consumer sites: `fm.title` (line 445, assigned to string field), `fm.parent_feat`/`fm.feat` (line 593, assigned to `featId`), `fm.ticket` (line 611), `fm.status` (line 612). None passed to `spawn`/`exec`/`Function`/`eval`/template-literal-in-shell. The two `spawn(...)` sites in `server.mjs` (line 918 runTest, line 955 runGh) are Wave 130/131-audited argv-array with no shell — neither consumes `fm.*`. **Threat model:** an attacker who can plant a malicious Java/Python file in a workspace can inject any string into `fm.parent_feat`, `fm.ticket`, etc. Downstream those strings flow into HTML via `esc(...)` at `public/app.js:166-167` (escaped) and into the FEAT-grouping bucket key (string compare). No code-execution path. Safe. | PASS |
+| **6. Architecture/ co-authorship gate (Wave 109 #335)** | `git diff origin/main..feature/wave-132-architect-gate -- architecture/` empty. This Wave 132 architect-gate PR touches only `coordination/handoffs/architect.md` — Architect's own HANDOFF doc, my lane only. | PASS |
+| **7. Peer-edit boundary (Wave 112)** | This PR touches only my own HANDOFF doc. No peer HANDOFF doc touched. UI Dev's own viewer PR is theirs (cross-repo), BA's requirements/ untouched, UX's design/ untouched, QA's tests/ untouched, DevSecOps's ops/ untouched. Boundary satisfied. | PASS |
+
+### Verdict
+
+**PASS** for the non-UI portion of viewer PR #17 (the `parseFrontmatter` extension and its 14-test suite). The implementation matches the design contract: line-comment frontmatter scanning for `//` and `#` comment-language test files, capped at 20 non-empty lines, stops at first non-comment line, YAML `---` block wins when present. Fail-soft (null) on no-match preserved. Pure function with no I/O, no security surface. Comprehensive test coverage across positive/negative/edge axes meets the Wave 118 rubric.
+
+Per ADR-018 the verdict heading uses the real PR # (17) and the real 40-char HEAD SHA (`05d6ac1560de8538d5e22332be92eaed4a9a6ea2`). DevSecOps post-merge will backfill the merge SHA if it differs from HEAD.
+
+### Routing — UX Designer (UI portion) + QA next
+
+- **UX Designer:** owns the UI portion of PR #17 — runner sub-group headers (`renderRunnerGroups`, `groupByRunner`, RUNNER_ORDER) + `▶ Run` button shown for ALL test files (not just resolver-known ones) + the new `.runner-group-header` / `.runner-group-count` CSS at `public/style.css:541-565`. Visual hierarchy + a11y (focus-visible on `.feat-run` for the previously-hidden unknown-runner test rows) + contrast (group header `#4a4e5a` on `#0a0a0c` background — UX should run a WCAG check) + visual regression (existing single-runner FEAT cards now have an extra sub-header; UX confirms `omitHeaderIfSingle = true` keeps single-group sections clean). Out of my lane.
+- **QA:** gates AFTER both design gates (Architect's, here, and UX Designer's). With 42/42 green at PR HEAD including 14 new comprehensive frontmatter-parser tests, the parser surface is fully covered. QA's gate should add: (a) a smoke run against a real polyglot workspace (e.g. a workspace with `// parent_feat:` Java tests + standard YAML markdown frontmatter mixed) confirming the FEAT-grouping bucket fills correctly; (b) a runner sub-group rendering smoke (UI smoke — runs after UX PASS). Test soundness for the parser itself is already validated.
+- **DevSecOps:** may proceed to merge once UX + QA gates clear. Standard merge-and-backfill flow.
+
+### Non-blocking observations (no action required Wave 132)
+
+1. **Test-narrative drift on the "YAML-no-keys" test (line 188-202).** The test's inline comment claims "we do NOT re-scan the body for `//` comments" — but the production code at `server.mjs:391-392` explicitly DOES fall through to the comment-scan loop when the YAML branch yields no recognised keys (`if (parsed) return result;` only returns when something matched; the comment at line 391 names the fallthrough intent). The test still passes because the `---` literal in the body trips the `else { break; }` branch of the comment loop on the first iteration (it's not blank, not `//`/`#`, not a key match). So the assertion is correct but for a different reason than the test narrative suggests. If anyone ever changes the loop's `else { break; }` to `else { continue; }` (loosening "stop-at-first-non-comment" to "skip-non-comment-lines"), this test would silently start parsing the body's `// parent_feat: FEAT-0001` and the assertion would fail. The asymmetry is **safe at HEAD** but worth fixing in a follow-up — either tighten the comment narrative ("returns null because `---` breaks the comment-loop on line 1") or tighten the production semantics (return null immediately if YAML branch entered but yielded nothing — explicit "YAML block wins or fails, never falls back"). Non-blocking. Filing as out-of-scope follow-up below.
+2. **Test-shim keep-in-sync risk.** Test file at `__tests__/frontmatter-parser.test.ts:23-69` carries an inline copy of the production parser to avoid importing `server.mjs` (which has HTTP server side effects on import). The shim is byte-for-byte identical at HEAD — verified. The header comment at line 9-10 names the remediation: "If parseFrontmatter is later extracted to `lib/frontmatter-parser.mjs`, this test file should be updated to import from there." This is the right call — extraction is a future refactor, not in scope for Wave 132. Non-blocking. Tracking as candidate cleanup below.
+3. **`feat` and `role` keys not exercised by Wave 132 tests.** The parser recognises 6 keys (`ticket`, `parent_feat`, `feat`, `parent_us`, `role`, `status`) but the new test block exercises only 4 of them (`parent_feat`, `parent_us`, `ticket`, `status`). `feat` and `role` are covered by existing pre-Wave-132 behavior for YAML inputs, and the line-comment regex treats all 6 keys symmetrically (single alternation group). Non-blocking — coverage gap is symmetry, not defect.
+
+### Out-of-scope follow-ups (filed inline; no GH issues — both are <5-LOC clarifications)
+
+- **F1 (Wave 133+ candidate):** Either update the test narrative comment at `__tests__/frontmatter-parser.test.ts:189-191` to name the real reason for null (`---` trips the break on line 1), OR tighten production semantics at `server.mjs:391-392` to explicitly return null when YAML branch was entered but yielded no recognised keys (rejecting the comment-scan fallback path entirely). The latter is the more defensible long-term posture — once `---` is seen, the file is asserting "I am YAML"; if its YAML has no recognised keys, that's a parser-soft-fail and we should NOT silently rescue via the comment scan. Either way it's <5 LOC. Owner: UI Dev or anyone touching the parser next.
+- **F2 (Wave 133+ candidate):** Add `feat:` and `role:` keys to the Wave 132 test block (4 tests' worth — 1 positive Java + 1 positive Python + 2 mixed-key) to close the coverage symmetry gap noted in observation 3. Owner: QA or UI Dev next time the parser is touched.
+
+### Architecture/ co-authorship gate (Wave 109 rule, self-reflection for this gate PR)
+
+This Wave 132 architect-gate PR (apex-team `feature/wave-132-architect-gate` off `main@c062267`) touches exactly one file: `coordination/handoffs/architect.md`. Zero peer files edited. Zero `architecture/` files edited (Wave 132 is a code-review gate on a parser extension, not an architecture artifact change — no novel NFRs surfaced; the existing fail-soft + pure-function posture is preserved). Both gates satisfied.
+
+### Peer-edit boundary (Wave 112)
+
+This PR touches only my own HANDOFF doc. No peer HANDOFF doc touched. Boundary satisfied.
+
+### In flight / next
+
+- **DONE:** Gated viewer PR #17 at HEAD `05d6ac1`. PASS verdict for non-UI portion (parser + tests). 42/42 suite green. Two non-blocking observations filed as Wave 133+ candidates inline (F1 + F2).
+- **UX Designer next:** owns the UI portion gate (runner sub-group rendering + ▶Run-for-all-test-files visual + a11y).
+- **QA next:** gates after both design gates (Architect's here + UX Designer's). Polyglot smoke run recommended.
+- **DevSecOps next:** merge viewer PR #17 + this apex-team Wave 132 architect-gate PR once UX + QA gates clear.
+
+### Parked / future (carried from Wave 131 + Wave 132 additions)
+
+- `system-design.md` — still not created.
+- `tech-stack.md` — still not created.
+- `coding-standards.md` — still not created. Wave 117 + Wave 118 + Wave 122 + Wave 128 + Wave 131 + Wave 132 (test-shim hygiene, frontmatter purity) discipline are candidate entries once seeded.
+- Fitness function for OQ-085-001's "no binary files committed under `tests/qa/wave-*/evidence/`" — QA owns implementation.
+- Viewer-repo subagent body audit (per ADR-017 follow-up).
+- ADR formalizing the ADR-NNNN-vs-ARCH-XXXX distinction (candidate ADR-019, deferred from Wave 122).
+- WCAG 2.1 AA promotion from FEAT-local ratification to workspace-conventions-level NFR (carried from Wave 125).
+- ADR for the keyboard-reachability rule (carried from Wave 125).
+- Automated WCAG conformance in viewer CI (carried from Wave 125).
+- CI automation for Wave 128 artifact disciplines (S1/S5/S6/S7) — LibreOffice headless + image diff + contrast gate + deploy-verification (carried from Wave 128b).
+- Structured QA verdict-block schema attesting S1–S9 (ADR-018 amendment candidate, carried from Wave 128b).
+- Resolver decision-tree codification candidate ADR (or `architecture/features/FEAT-NNNN-polyglot-run/ARCH-NNNN-runner-resolver-decisions.md` if the viewer adopts the Wave 122 convention) — carried from Wave 130.
+- ADR candidate "No `shell:true` on user-data-derived argv" — sibling to NFR-SEC-001 once `nfr.md` exists. Carried from Wave 131.
+- Architectural lint candidate — CI grep gate failing any PR introducing `shell:\s*(true|.*===)` on `spawn`/`exec`. DevSecOps lane. Carried from Wave 131.
+- **NEW (Wave 132):** F1 — tighten `parseFrontmatter` YAML-no-keys semantics (either narrative or code; see Out-of-scope follow-ups above). <5 LOC.
+- **NEW (Wave 132):** F2 — add `feat:` + `role:` coverage to the frontmatter-parser test block (4 tests). Owner: QA or UI Dev next time the parser is touched.
+- **NEW (Wave 132):** Extraction candidate — pull `parseFrontmatter` (plus `FRONTMATTER_KEYS` + `COMMENT_FM_RE`) out of `server.mjs` into a standalone `lib/frontmatter-parser.mjs`. Would let the test file `import` directly instead of duplicating. Worthwhile once the parser grows a 3rd recognised input format (e.g. block-comment frontmatter `/* parent_feat: ... */`). Not urgent — current shim is byte-stable and the test header documents the keep-in-sync contract.
+
+### Notes / caveats (Wave 132)
+
+- The UI portion of PR #17 (runner sub-grouping in `public/app.js` + `.runner-group-header` CSS) is genuinely UI-design work — visual hierarchy, header weight, contrast, single-vs-multi-runner conditional rendering. UX Designer's lane. The brief noted "UI portion is UX's lane" and I respected that — my verdict scopes ONLY to `server.mjs` + `__tests__/frontmatter-parser.test.ts`.
+- The `.runner-group-header` styling at `public/style.css:541-560` uses `color: #4a4e5a` on `background: #0a0a0c` — a contrast ratio of ~3.1:1 by eyeball (UX should verify formally). Per WCAG 2.1 AA, that's BELOW the 4.5:1 threshold for normal text. At 11px font-size with `font-weight: 600`, it does NOT qualify as "large text" (≥18.66px regular or ≥14px bold). UX Designer should flag this. Filing as an observation here but NOT as a blocker on my non-UI gate.
+- Cross-repo verdict means SHA `05d6ac1560de8538d5e22332be92eaed4a9a6ea2` is the viewer's HEAD at gate time, not apex-team's. apex-team's main HEAD at gate time is `c062267` (this gate's branch is `feature/wave-132-architect-gate` off that base).
+- Wave 131 verdict (viewer PR #16) demoted to PREV below per ADR-018 convention.
+
+---
+
+## PREV — 2026-06-05 — Wave 131 security gate (viewer PR #16 — PASS, closes #14)
 
 ### Wave-131 PASS verdict — PR #16 — SHA 847b7c45037f7933ad95f66433c91b30c46c6f12
 - **Gate role:** architect (non-UI security rubric — viewer PR #16, `feature/wave-131-shell-injection-fix`, HEAD `847b7c4`).
