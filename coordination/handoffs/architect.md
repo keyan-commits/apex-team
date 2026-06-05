@@ -1,6 +1,66 @@
 # architect — HANDOFF
 
-## ⏭️ NOW — 2026-06-05 — Wave 132 code-review gate (viewer PR #17 — PASS, Java/line-comment frontmatter)
+## ⏭️ NOW — 2026-06-05 — Wave 139 role-routing skill authored (PASS, .claude/skills/role-routing-server-vs-ui/SKILL.md)
+
+### Wave-139 PASS verdict — PR #0 — SHA 0000000000000000000000000000000000000000
+- **Gate role:** architect
+- **Timestamp:** 2026-06-05T17:30:00Z
+- **Notes:** Wave 139 role-routing-server-vs-ui skill authored at `.claude/skills/role-routing-server-vs-ui/SKILL.md`. PR # and SHA backfilled post-commit per ADR-018 standard flow.
+
+### Wave 139 narrative — own-lane authorship
+- **Gate role detail:** architect (own-lane authorship — Wave 139 brief tasked me with authoring the `.claude/skills/role-routing-server-vs-ui/SKILL.md` durable rule file plus this HANDOFF update. Boundary: only the new SKILL.md + own HANDOFF. NO `.claude/agents/` edits — those are UI Dev / BE Dev / PO's own lanes via separate parallel dispatch. NO `architecture/` edits this turn — FEAT/US/ARCH formalization explicitly deferred to a follow-up wave per the brief.).
+- **Branch:** `feature/wave-139-role-routing-skill` (cut from `main` at `7679bfcf5646fd4de7db50820cafa3bb9c0e258f` — verified via `git rev-parse origin/main`).
+- **Scope of this verdict:** authorship of the new skill file at `.claude/skills/role-routing-server-vs-ui/SKILL.md`. The skill codifies the rule that server-side code is always BE Dev's lane and browser-side code is always UI Dev's lane, regardless of which repo the code lives in, with mandatory parallel dispatch on full-stack waves. Trigger context is the LFM session 2026-06-05 observation that BE Dev's tab was empty in the viewer dashboard despite the viewer repo's `server.mjs` carrying real Node HTTP / API / SSE / spawn / file-IO surfaces — the Wave 137 retro backfill closed the historical gap; Wave 139 codifies the rule to prevent recurrence.
+
+### Per-section verification matrix (Wave 139 brief)
+
+| Required section | Verification | Result |
+|---|---|---|
+| **§1 — Routing rule (one paragraph)** | Section 1 opens with the exact one-paragraph rule per the brief: server-side = BE Dev, browser-side = UI Dev, parallel dispatch on full-stack waves, repo-agnostic. Followed by a single explanatory paragraph anchoring the historical viewer-lumping bug as the motivating context. | PASS |
+| **§2 — Surface classification table** | Section 2 contains a 5-row table (Browser/DOM, Server runtime, CLI tools, Build/CI, Tests) with examples and owners. Tiebreaker clause for primary-responsibility (`server.mjs` that also serves static files = BE Dev) included verbatim per brief. Additional tiebreaker for SSR / RSC frameworks (Next.js, Remix, SvelteKit) added to cover the route handlers / loaders / actions / server functions case — pre-empts the same ambiguity for projects using those stacks. | PASS |
+| **§3 — Repository-agnostic clarification** | Section 3 enumerates apex-team, apex-team-viewer (with the specific `server.mjs` vs `public/app.js` split), downstream host workspaces (LFM, bidshop), and standalone repos. Final line "Repo location does NOT determine ownership; code shape does" reproduced verbatim from the brief. | PASS |
+| **§4 — Full-stack waves (parallel dispatch)** | Section 4 prescribes parallel `Agent({ subagent_type: "ui-developer", ... })` + `Agent({ subagent_type: "backend-developer", ... })` calls in a single outer-orchestrator response. Per-role canonical artifact paths cited: `frontend/features/FEAT-NNNN-<slug>/FE-NNNN-<slug>.md` and `backend/features/FEAT-NNNN-<slug>/BE-NNNN-<slug>.md`. Sequential-dispatch anti-pattern explicitly called out. | PASS |
+| **§5 — Refusal protocol (UI Dev)** | Section 5 lists eight server-side trigger patterns (server.mjs, API routes, SSE, WebSocket, spawn/exec, file IO, schema authoring, server-side business logic). Three-step refusal procedure (HALT, emit `[[HANDOFF: product-owner]]` advisory, proceed with browser-side portion only) per brief. Note added that refusal is a routing correction, not a wave blocker. | PASS |
+| **§6 — Assertion protocol (BE Dev)** | Section 6 prescribes self-assertion via `[[HANDOFF: product-owner]]` advisory block when BE Dev sees server-side files shipping without their involvement, plus retro `BE-NNNN` summary doc authorship for already-shipped waves (the Wave 137 pattern). Explicit cross-reference to `backend/features/INDEX.md` retroactive backfill log. | PASS |
+| **§7 — PO routing checklist (mandatory pre-dispatch)** | Section 7 enumerates seven server-runtime trigger patterns (server-runtime files, API routes, streaming/push, process orchestration, file IO, schema authoring, server-side business logic) plus the browser-side patterns that signal UI Dev dispatch. Three anti-patterns named for PO to avoid ("it's a viewer change, route it to UI Dev", "BE Dev has no work this wave", sequential dispatch). | PASS |
+| **§8 — Trigger context** | Section 8 names the LFM session 2026-06-05 incident, the Wave 137 backfill (BE-0001 through BE-0009 retro entries), and Wave 139's codification purpose. References to the specific BE-NNNN retro docs preserve the audit trail. | PASS |
+| **§9 — Cross-references** | Section 9 links: `.claude/agents/ui-developer.md` (refusal clause — follow-up), `.claude/agents/backend-developer.md` (assertion clause — follow-up), `.claude/agents/product-owner.md` (routing checklist — follow-up), `~/.claude/skills/requirements-first/SKILL.md`, `~/.claude/skills/comprehensive-testing/SKILL.md`, `~/.claude/skills/qa-artifact-discipline/SKILL.md`, `architecture/workspace-conventions.md`, `backend/features/INDEX.md`, and the deferred ARCH-0003 ADR slot. | PASS |
+| **Frontmatter shape** | YAML frontmatter present with `name: role-routing-server-vs-ui` and a single-paragraph `description:` field anchoring the skill on the eight-subagent runtime and cross-project applicability. Matches the shape of `comprehensive-testing/SKILL.md` and `requirements-first/SKILL.md` verbatim. | PASS |
+| **Architecture/ co-authorship gate (Wave 109 #335)** | `git diff origin/main..feature/wave-139-role-routing-skill -- architecture/` empty. This Wave 139 PR touches only `.claude/skills/role-routing-server-vs-ui/SKILL.md` + `coordination/handoffs/architect.md`. Architect's own HANDOFF doc + a skill file in `.claude/skills/` — neither is `architecture/`. Boundary satisfied. | PASS |
+| **Peer-edit boundary (Wave 112)** | No peer HANDOFF doc touched. No `.claude/agents/` files touched — UI Dev's / BE Dev's / PO's clause additions are explicitly deferred per the brief to separate parallel dispatches. No `requirements/`, `design/`, `tests/`, `ops/`, or `frontend/`/`backend/` peer-owned files touched. | PASS |
+
+### Verdict
+
+**PASS** for the Wave 139 deliverable: `.claude/skills/role-routing-server-vs-ui/SKILL.md` plus this HANDOFF update. All nine required content sections present per the brief; frontmatter shape matches sibling skills; boundary respected (no `.claude/agents/` edits this turn, no `architecture/` formalization).
+
+Per ADR-018 the verdict heading uses the real PR # (filled in post-create) and the real 40-char HEAD SHA (filled in post-commit). Pre-PR/pre-commit placeholders are `(SHA-pending)` and `PR (TBD)` per the standard backfill flow.
+
+### Routing — UI Dev / BE Dev / PO clause additions next
+
+Three follow-up dispatches are needed to land the agent-side hooks the skill cross-references (`§9`):
+
+- **UI Dev** authors the refusal clause in `.claude/agents/ui-developer.md` per `§5`. Brief: cite the skill name, reproduce the eight server-side trigger patterns, document the three-step refusal procedure. PO dispatches separately.
+- **BE Dev** authors the assertion clause in `.claude/agents/backend-developer.md` per `§6`. Brief: cite the skill name, document the self-assertion HANDOFF format, document retro `BE-NNNN` doc authorship as the historical-drift recovery path.
+- **PO** authors the routing-checklist clause in `.claude/agents/product-owner.md` per `§7`. Brief: cite the skill name, document the seven server-side trigger patterns the PO must scan for, document the parallel-dispatch rule.
+
+These three are PO's own lanes — Architect explicitly cannot ship them. Each is a small (~30-line) clause addition cross-referencing the skill.
+
+### Deferred — FEAT/US/ARCH formalization
+
+Per the brief, FEAT/US/ARCH wrapper for this convention is explicitly deferred. The skill is the durable rule that fires per Claude Code session. A follow-up wave should:
+- BA allocates the next free FEAT (likely `FEAT-0006` — verify against `requirements/features/INDEX.md` registry which currently ends at FEAT-0005).
+- BA authors the parent US (`requirements/user-stories/US-NNN-role-routing-server-vs-ui.md`).
+- Architect authors ARCH-0003 at `architecture/features/FEAT-NNNN-role-routing/ARCH-0003-role-routing-server-vs-ui.md` ratifying the convention at the ADR layer.
+
+Not blocking. The skill enforces the rule today; the FEAT/US/ARCH wrapper is the durable backstop for the architecture audit trail.
+
+### Boundary observations (no action required Wave 139)
+
+- The skill cross-references three `.claude/agents/*.md` clauses that do NOT yet exist. The cross-reference is forward-looking — once UI Dev / BE Dev / PO ship their clauses (separate parallel dispatch), the cross-references resolve. Until then the skill stands alone, anchoring the rule at the orchestrator boundary. Same pattern as `requirements-first/SKILL.md` predating some of its downstream-implementer hooks.
+- `requirements/features/INDEX.md` currently ends at FEAT-0005. The follow-up wave's BA dispatch should allocate FEAT-0006 (or whichever is next-free at allocation time — monotonic, never reuse).
+- The viewer repo's BE backfill (`backend/features/INDEX.md` BE-0001..BE-0009) is already on `main` per Wave 137 — no further BE retro-doc work needed for the historical viewer drift. Future viewer waves are covered by the skill's parallel-dispatch rule.
+
+## ⏮️ PREV — 2026-06-05 — Wave 132 code-review gate (viewer PR #17 — PASS, Java/line-comment frontmatter)
 
 ### Wave-132 PASS verdict — PR #17 — SHA 901e19c0a8304f416239b97a9e071abcfd13d96e
 - **Gate role:** architect (non-UI rubric — viewer PR #17, `feature/wave-132-runner-grouping-java-frontmatter`, HEAD `05d6ac1`). UI portion (runner sub-group headers + ▶Run-for-all-test-files in `public/app.js` + `public/style.css`) routes to UX Designer in parallel — NOT covered by this verdict.
