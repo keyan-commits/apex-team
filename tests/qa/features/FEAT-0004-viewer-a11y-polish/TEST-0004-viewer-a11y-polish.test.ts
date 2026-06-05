@@ -2,7 +2,7 @@
 // parent_feat: FEAT-0004
 // parent_us: US-101
 // role: qa
-// status: in-flight
+// status: done
 //
 // Wave 125 — Viewer A11y Polish regression tests (US-101 AC6)
 //
