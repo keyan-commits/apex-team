@@ -1,6 +1,25 @@
 # ui-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-05 — Wave 136: Playwright headed-mode toggle
+## ⏭️ NOW — 2026-06-05 — Wave 139: Server-vs-UI routing refusal clause
+
+### PASS verdict — Wave 139
+
+- **Gate role:** ui-developer (self-attestation — single-file body amendment, no runtime code)
+- **Timestamp:** 2026-06-05T00:00:00Z
+- **Branch:** `feature/wave-139-ui-dev-clause`
+- **PR:** (SHA-pending)
+
+**Deliverable:** `.claude/agents/ui-developer.md` — new section `### Server-vs-UI routing refusal (Wave 139 — MANDATORY)` inserted before Wave 122 anchor. Section body contains: 1-sentence lane rule, 8 trigger patterns verbatim from skill §5, three-step refusal protocol with `[[HANDOFF: product-owner]]` template, trivial-config exception, and cross-reference to `~/.claude/skills/role-routing-server-vs-ui/SKILL.md`.
+
+**Verification:**
+- `grep -c "### Server-vs-UI routing refusal (Wave 139 — MANDATORY)" .claude/agents/ui-developer.md` → 1
+- All existing anchor headings (Wave 117, Wave 122) unchanged byte-for-byte
+- `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` → 153/153 PASS
+- `pnpm vitest run tests/qa/features/FEAT-0001-feat-grouping-convention/` → 38/38 PASS
+
+---
+
+## ⏭️ PREV — 2026-06-05 — Wave 136: Playwright headed-mode toggle
 
 ### Wave-136 — viewer PR #22 open — apex-team handoff PR in progress
 
