@@ -1,6 +1,45 @@
 # backend-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-05 — Wave 137 BE retro backfill (viewer server.mjs waves 119–136)
+## ⏭️ NOW — 2026-06-05 — Wave 139 Server-vs-UI routing assertion clause
+
+## Done
+
+- **Wave 139 — Server-vs-UI routing assertion clause added to `.claude/agents/backend-developer.md`.**
+  - Inserted `### Server-vs-UI routing assertion (Wave 139 — MANDATORY)` immediately before `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)`.
+  - Section body: 1-sentence rule, 8 trigger patterns, 2-step assertion protocol (HANDOFF advisory to PO + retro BE-NNNN doc authorship for drift recovery), cross-ref to `~/.claude/skills/role-routing-server-vs-ui/SKILL.md`.
+  - All existing anchor headings preserved byte-for-byte.
+  - Branch: `feature/wave-139-be-dev-clause`. PR pending.
+
+- **Verification gates all passed (Wave 139):**
+  - `grep -c "### Server-vs-UI routing assertion (Wave 139 — MANDATORY)"` = 1 ✓
+  - `grep -c "### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)"` = 1 ✓
+  - `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` — 153/153 PASS ✓
+  - `pnpm vitest run tests/qa/features/FEAT-0001-feat-grouping-convention/` — 38/38 PASS ✓
+
+### Wave-139 PASS verdict — PR #0 — SHA 7679bfcf5646fd4de7db50820cafa3bb9c0e258f
+- **Gate role:** backend-developer
+- **Timestamp:** 2026-06-05T17:35:00Z
+- **Notes:** Docs-only wave. Only `.claude/agents/backend-developer.md` + `coordination/handoffs/backend-developer.md` touched. No `architecture/` edited. No peer HANDOFF docs edited. Wave 122 anchor heading byte-for-byte preserved. Token discipline verified (153/153). Phase-1 placeholder per ADR-018 §amendment; DevSecOps backfills PR # and merge SHA post-merge.
+
+## In flight
+
+- PR `feature/wave-139-be-dev-clause` open, awaiting Architect code review + QA PASS + DevSecOps merge.
+
+## Next
+
+- After PR merge: backfill real PR # and merge SHA in this HANDOFF.
+- Architect to gate (docs-only subagent body edit; no `architecture/` touched; Wave 122 anchor preserved).
+- QA to gate after Architect PASS.
+- DevSecOps to merge after QA PASS.
+
+## Notes
+
+- Boundary respected: only `.claude/agents/backend-developer.md` + own HANDOFF touched per dispatch instructions.
+- Cross-reference to skill at `~/.claude/skills/role-routing-server-vs-ui/SKILL.md` (installed from `feature/wave-139-role-routing-skill`, PR #432).
+
+---
+
+## ⏭️ PREV — 2026-06-05 — Wave 137 BE retro backfill (viewer server.mjs waves 119–136)
 
 ## Done
 
