@@ -1,55 +1,50 @@
 # ux-designer — HANDOFF
 
-## NOW — 2026-06-05 — Wave 132 (Runner sub-grouping UX gate — PR #17)
+## NOW — 2026-06-05 — Wave 132 (Runner sub-grouping UX re-gate — PR #17)
 
-### Wave-132 REVISE verdict — PR #17 — SHA 05d6ac1560de8538d5e22332be92eaed4a9a6ea2
+### Wave-132 PASS verdict — PR #17 — SHA 6b79a7067c578c260127135d4311677c8ab2c9f5
 
 - **Gate role:** ux-designer
 - **Timestamp:** 2026-06-05T00:00:00Z
-- **Repo reviewed:** `keyan-commits/apex-team-viewer` PR #17 commit `05d6ac1560de8538d5e22332be92eaed4a9a6ea2`
-- **Spec file:** No prior design spec for runner sub-grouping. Feature self-contained; spec authored inline from PR diff (below). Gate carries forward Wave 125 a11y conformance requirement.
+- **Repo reviewed:** `keyan-commits/apex-team-viewer` PR #17 branch `feature/wave-132-runner-grouping-java-frontmatter` commit `6b79a7067c578c260127135d4311677c8ab2c9f5`
+- **Spec file:** No prior design spec — feature is self-contained; spec written inline (runner sub-group headers, contrast tokens).
+- **Prior verdict:** REVISE at SHA `05d6ac1560de8538d5e22332be92eaed4a9a6ea2` (two contrast BLOCKs). Resolved by UI Dev in commit `6b79a70`.
 
 **Implied spec (runner sub-grouping):**
 - `.runner-group-header`: `<div>` label, 11px/600-weight uppercase, rendered only when `groups.size > 1`.
-- `.runner-group-count`: `<span>` count in parens, normal weight, inside header.
+- `.runner-group-count`: `<span>` count in parens, `font-weight: 400`, inside header.
+- Color token: `#7a7e88` on `#0a0a0c` = 4.87:1 — passes WCAG AA for both header and count.
 - Canonical runner order: vitest → jest → playwright → maven → gradle → unknown.
-- Single-runner section: header suppressed (`omitHeaderIfSingle = true`).
-- `▶ Run` button: shown for every test file regardless of runner resolution (Wave 132 change from prior ungrouped gap).
-- No new animation or transitions introduced.
+- Single-runner section: header suppressed (`omitHeaderIfSingle = true`) — no noise.
+- `▶ Run` button: shown for every test file regardless of runner resolution.
+- No new animations or transitions.
+- `.feat-section-heading` bonus fix: `#6a6e78` (3.88:1, was failing) → `#7a7e88` (4.87:1). Closes apex-team-viewer#18.
 
-**Criterion-by-criterion results:**
+**Criterion-by-criterion results (re-gate at `6b79a70`):**
 
 | # | Criterion | Result | Detail |
 |---|---|---|---|
-| 1 | Heading semantics | PASS | `.runner-group-header` is a `<div>`, not an `<h4>`. This is correct: a `<div>` avoids polluting the document outline (the parent `<h3>` section heading owns the heading level; the sub-group label is a visual separator, not a structural heading). No outline regression. |
-| 2 | Contrast ≥ AA | **BLOCK** | `.runner-group-header` label uses `color: #4a4e5a` on `background: #0a0a0c` — **2.38:1**, fails AA (requires 4.5:1 at 11px/600-weight). `.runner-group-count` uses `color: #3a3e48` on same bg — **1.85:1**, fails AA. Both values are below the existing `.feat-section-heading` (`#6a6e78` at 3.88:1) which is itself a pre-existing warn (filed below). Required fix: raise label to ≥ `#7a7e88` (4.87:1) and count to ≥ `#7a7e88` (4.87:1) or match label. |
-| 3 | Sub-header consistency | WARN | Design language is consistent in pattern (uppercase, letter-spacing, 11px) but color is darker than `.feat-section-heading` (`#4a4e5a` vs `#6a6e78`). The intent appears intentional (sub-level = more muted) but the delta overshoots into inaccessible territory. Fix resolves both issues simultaneously. |
-| 4 | Empty group handling | PASS | `groupByRunner` only adds keys for items actually present; `RUNNER_ORDER` filters empty groups. `renderRunnerGroups` returns `''` for empty `items`. No `VITEST (0)` noise possible. |
-| 5 | Ordering predictable | PASS | `RUNNER_ORDER = ['vitest', 'jest', 'playwright', 'maven', 'gradle', 'unknown']` enforced. Canonical, matches stated spec. Future-proof append for unknown runners. |
-| 6 | ▶ Run button consistency | PASS | Both `renderTicketRow` (FEAT cards) and `renderUngroupedRow` (Legacy section) now show `▶ Run` for every `isTestPath(f.path) === true` row regardless of runner resolution. The prior Wave 130 gap (ungrouped section only showed ▶ Run for known runners) is fixed. |
-| 7 | Reduced motion / animation regression | PASS | No new `transition` or `animation` rules in `.runner-group-header` or `.runner-group-count`. Existing `@media (prefers-reduced-motion: reduce)` block covers `.feat-card-header`; no new selector needs coverage. |
+| 1 | BLOCK 1 resolved — `.runner-group-header` contrast | PASS | `#7a7e88` on `#0a0a0c` = 4.87:1 ≥ 4.5:1. Exact value requested in REVISE. |
+| 2 | BLOCK 2 resolved — `.runner-group-count` contrast | PASS | `#7a7e88` on `#0a0a0c` = 4.87:1. Weight hierarchy preserved: count at `font-weight: 400` vs label's `font-weight: 600` — visually secondary without a contrast sacrifice. |
+| 3 | Bonus fix — `.feat-section-heading` contrast | PASS | `#6a6e78` (3.88:1) → `#7a7e88` (4.87:1). Pre-existing issue apex-team-viewer#18 closed. |
+| 4 | Heading semantics (`<div>` not `<h4>`) | PASS | Unchanged from REVISE gate — `<div>` correct as a visual separator, not a structural heading. |
+| 5 | Empty group handling | PASS | `groupByRunner` omits empty groups; `omitHeaderIfSingle` suppresses header for single-runner sections. |
+| 6 | Canonical runner order | PASS | `RUNNER_ORDER = ['vitest', 'jest', 'playwright', 'maven', 'gradle', 'unknown']` — future-proof via tail-append. |
+| 7 | ▶ Run button consistency (all test rows) | PASS | `renderTicketRow`: `runBtn` gated on `test` only — runner resolution not required. |
+| 8 | Reduced motion / no new transitions | PASS | No `transition` or `animation` in `.runner-group-header` or `.runner-group-count` rules. |
+| 9 | No layout regressions in `app.js` | PASS | `renderRunnerGroups` wraps existing `renderTicketRow` — no structural change to row HTML. Badge and ▶ Run placement unchanged. |
 
-**Full-page scan:** ≥1280px AND ≥390px viewports verified via source inspection. Sub-group headers render inside `.feat-card-list` and `.feat-section-list` containers; both have `overflow: hidden` and `border-radius: 8px` — header fits cleanly. At ≥390px the `.runner-group-header` is full-width block, no overflow. No layout regression on adjacent widgets (FEAT card toggle, search, pipeline section).
+**Full-page scan:** ≥1280px AND ≥390px viewports verified via source inspection. Sub-group `<div class="runner-group-header">` inserts above grouped rows within `.feat-card-list` and `.feat-section-list`; both are bounded containers — no overflow risk. At ≥390px the header is full-width block, no horizontal overflow. No layout regression on adjacent widgets (FEAT card collapsible, search, role tabs, pipeline section, ungrouped section).
 
-**Block findings (must fix before PASS):**
+**No block findings. No new warn findings.**
 
-1. **[BLOCK] Contrast — `.runner-group-header` label color**
-   - Spec requirement: Wave 125 a11y carry-forward, WCAG 2.1 AA §1.4.3
-   - Observed: `color: #4a4e5a` on `background: #0a0a0c` → 2.38:1
-   - Required: raise `color` to ≥ `#7a7e88` (achieves 4.87:1) or lighter
-   - File: `public/style.css`, `.runner-group-header` rule (line ~549)
+Issue apex-team-viewer#18 closed (`.feat-section-heading` contrast fix bundled in this PR).
 
-2. **[BLOCK] Contrast — `.runner-group-count` color**
-   - Spec requirement: same as above
-   - Observed: `color: #3a3e48` on `background: #0a0a0c` → 1.85:1
-   - Required: raise `color` to ≥ `#7a7e88` (4.87:1). Simplest fix: use same value as label (a count in parens reads fine at equal weight if label is muted; or apply `opacity` via parent — but opacity also reduces contrast, so prefer an explicit hex value)
-   - File: `public/style.css`, `.runner-group-count` rule (line ~562)
+**Verdict: PASS — DevSecOps may merge PR #17.**
 
-**Pre-existing warn filed as issue (not a block for this PR):**
+---
 
-- `.feat-section-heading` uses `color: #6a6e78` on `#0a0a0c` → 3.88:1 (below 4.5:1 AA). Pre-existing, not introduced by Wave 132 diff. Filed as GitHub issue — see below.
-
-**Verdict: REVISE — re-implementation HANDOFF sent to UI Dev. Re-review required before QA proceeds.**
+_(Superseded: Wave-132 REVISE at SHA `05d6ac1` — two contrast BLOCKs: `.runner-group-header` `#4a4e5a` = 2.38:1; `.runner-group-count` `#3a3e48` = 1.85:1. Both fixed in commit `6b79a70` to `#7a7e88` = 4.87:1.)_
 
 ---
 
