@@ -1,7 +1,7 @@
 # Design Features Index
 
 _Owned by UX Designer. One row per UX ticket under a FEAT. Updated at ticket creation, status change, or wave close._
-_Last updated: 2026-06-04 (Wave 125 — UX-0001 created)._
+_Last updated: 2026-06-05 (Wave 141 — UX-0002 created)._
 
 ---
 
