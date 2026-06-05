@@ -2,7 +2,7 @@
 ticket: US-102
 parent_feat: FEAT-0005
 role: business-analyst
-status: in-flight
+status: done
 ---
 
 # US-102 — Retroactive FEAT Backfill Command

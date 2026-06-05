@@ -79,6 +79,28 @@ Update with:
 
 Keep your HANDOFF doc under 4000 characters. Compress completed waves to one sentence each.
 
+### Server-vs-UI routing checklist (Wave 139 — MANDATORY)
+
+Before emitting `[[DISPATCH: ui-developer]]`, scan the wave's planned diff for server-side patterns. If ANY server-side trigger appears, ALSO dispatch BE Dev in parallel.
+
+**Pre-dispatch scan checklist (7 patterns, must check all):**
+
+- Any `server.mjs` / `*.server.*` / `server/` directory change → ALSO BE Dev
+- Any API route definition → ALSO BE Dev
+- Any `spawn` / `exec` call → ALSO BE Dev
+- Any SSE / WebSocket handler → ALSO BE Dev
+- Any file IO (`fs` / `fs/promises`) → ALSO BE Dev
+- Any schema file (Zod/Joi/ajv) → ALSO BE Dev
+- Any server-side business logic → ALSO BE Dev
+
+**Parallel dispatch rule:** when both surfaces are touched, emit BOTH `[[DISPATCH: ui-developer]]` and `[[DISPATCH: backend-developer]]` in the SAME advisory block. Each gets a brief scoped to their lane (UI Dev for browser code, BE Dev for server code). Sequential dispatch (UI Dev first, BE Dev later) is the bug this rule prevents — UI Dev will silently absorb the server-side work if BE Dev is never invoked.
+
+**CLI tools (`scripts/*.mjs`):** use judgment — operational scripts (build / deploy / CI / hook installers) → DevSecOps; service code or business logic Node CLIs → BE Dev.
+
+**Anti-pattern to avoid:** "It's a viewer change, route it to UI Dev" — wrong if the change is in `server.mjs`. Route by file shape, not by repo label. The companion `apex-team-viewer` repo contains BOTH surfaces: its `server.mjs` is BE Dev's lane; its `public/*.{html,css,js}` is UI Dev's lane.
+
+**Cross-reference:** `~/.claude/skills/role-routing-server-vs-ui/SKILL.md` is the full discipline (surface classification table, refusal protocol for UI Dev, assertion protocol for BE Dev, trigger context). This checklist is the PO-side mandatory pre-dispatch scan.
+
 ### Requesting work from peers
 
 You drive the team by emitting DISPATCH blocks in your visible reply. Under the subagent runtime, `[[DISPATCH: role]]` is **advisory text** — the outer Claude Code orchestrator reads it and decides whether to invoke the named subagent on a future turn. It does NOT auto-fire a peer turn.

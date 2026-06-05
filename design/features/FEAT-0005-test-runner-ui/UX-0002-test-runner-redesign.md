@@ -25,7 +25,7 @@ IDs from Wave 140 are preserved; this spec adds structure AROUND and WITHIN them
 
 ## 1. ASCII Wireframe
 
-Desktop (>=1280px) — drawer occupies right panel (`min(48vw, 760px)`):
+Desktop (≥1280px) — drawer occupies right panel (`min(48vw, 760px)`):
 
 ```
 ┌────────────────────────────────────────────────────────────────┐
@@ -48,10 +48,10 @@ Desktop (>=1280px) — drawer occupies right panel (`min(48vw, 760px)`):
 │  ├──────────────────────────────────────────────────────────┤  │
 │  │ ✓ Test suite  vitest  ran 12 tests                       │  │
 │  │   import { describe } from 'vitest'                      │  │
-│  │ ✗ Expected 3 to equal 4                              RED │  │
+│  │ ✗ Expected 3 to equal 4                                  │  │  ← red
 │  │   at Object.<anonymous> (test.ts:42)                     │  │
-│  │ ✓ 28 passed                                        GREEN │  │
-│  │ ⚠ Some test skipped                               YELLOW │  │
+│  │ ✓ 28 passed                                              │  │  ← green
+│  │ ⚠ Some test skipped                                      │  │  ← yellow
 │  │ ─────────────────────────────────────────────  [▲ Top]   │  │
 │  └──────────────────────────────────────────────────────────┘  │
 │                                                                │
@@ -62,19 +62,19 @@ Desktop (>=1280px) — drawer occupies right panel (`min(48vw, 760px)`):
 └────────────────────────────────────────────────────────────────┘
 ```
 
-Mobile (>=390px) — drawer becomes full-width panel below content:
+Mobile (≥390px) — drawer becomes full-width panel below content:
 
 ```
-┌────────────────────────────────────────────────┐
-│  [● RUNNING]  00:47  [× Close]                 │
-│  tests/qa/wave-141/my-test.test.ts             │
-│  3/29 passed         [■ Cancel]                │
-├────────────────────────────────────────────────┤
-│  Logs (247 lines)   [Copy logs]  [▼ Hide]      │
-├────────────────────────────────────────────────┤
-│  ✓ 28 passed                                   │
-│  ✗ Expected 3 to equal 4 ...                   │
-└────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────┐
+│  [● RUNNING]  00:47  [× Close]                     │
+│  tests/qa/wave-141/my-test.test.ts                 │
+│  3/29 passed         [■ Cancel]                    │
+├────────────────────────────────────────────────────┤
+│  Logs (247 lines)   [Copy logs]  [▼ Hide]          │
+├────────────────────────────────────────────────────┤
+│  ✓ 28 passed                                       │
+│  ✗ Expected 3 to equal 4 ...                       │
+└────────────────────────────────────────────────────┘
 ```
 
 Empty state (no run yet):
@@ -103,20 +103,12 @@ changes to:
 <aside id="drawer" hidden>
   <!-- Row 1: run status bar -->
   <div id="drawer-run-bar" hidden>
-    <span id="drawer-status-badge" class="run-status-badge"
-          aria-live="polite" aria-atomic="true"></span>
-    <span id="drawer-elapsed" class="run-elapsed"
-          aria-label="Elapsed time"></span>
-    <span id="drawer-progress" class="run-progress" hidden
-          aria-label="Progress"></span>
+    <span id="drawer-status-badge" class="run-status-badge" aria-live="polite" aria-atomic="true"></span>
+    <span id="drawer-elapsed" class="run-elapsed" aria-label="Elapsed time"></span>
+    <span id="drawer-progress" class="run-progress" hidden aria-label="Progress"></span>
     <div class="drawer-header-actions">
-      <button id="drawer-cancel" hidden
-        title="Send SIGTERM to the running test process (5s grace → SIGKILL)"
-        aria-label="Cancel running test (SIGTERM, 5s grace then SIGKILL)">
-        ■ Cancel
-      </button>
-      <button id="drawer-close" title="Close (Esc)"
-              aria-label="Close drawer (Esc)">×</button>
+      <button id="drawer-cancel" hidden aria-label="Cancel running test (SIGTERM, 5s grace then SIGKILL)">■ Cancel</button>
+      <button id="drawer-close" aria-label="Close drawer (Esc)">×</button>
     </div>
   </div>
 
@@ -132,7 +124,7 @@ changes to:
     <span id="drawer-result-elapsed" class="run-result-time"></span>
   </div>
 
-  <!-- Empty state (shown when drawer has no active or completed run) -->
+  <!-- Empty state (shown when drawer opened before any run) -->
   <div id="drawer-empty-state">
     <p>Click ▶ RUN on any test to see live output here.</p>
   </div>
@@ -140,48 +132,39 @@ changes to:
   <!-- Log panel -->
   <section id="drawer-log-panel" hidden aria-label="Test output logs">
     <div class="log-panel-header">
-      <span class="log-panel-title">
-        Logs (<span id="drawer-log-count">0</span> lines)
-      </span>
+      <span class="log-panel-title">Logs (<span id="drawer-log-count">0</span> lines)</span>
       <div class="log-panel-actions">
-        <button id="drawer-copy-logs"
-                aria-label="Copy all log lines to clipboard">Copy logs</button>
-        <button id="drawer-log-toggle"
-                aria-expanded="true"
-                aria-controls="drawer-content">▼ Hide</button>
+        <button id="drawer-copy-logs" aria-label="Copy all log lines to clipboard">Copy logs</button>
+        <button id="drawer-log-toggle" aria-expanded="true" aria-controls="drawer-log">▼ Hide</button>
       </div>
     </div>
     <div id="drawer-content" class="drawer-log-scroll">
       <div id="drawer-log-cap" hidden class="log-cap-notice">
         ⚠ Log buffer capped at 2 000 lines — earliest lines removed.
       </div>
-      <pre id="drawer-log"
-           aria-live="polite" aria-relevant="additions"></pre>
-      <button id="drawer-jump-bottom" hidden class="jump-bottom-btn"
-              aria-label="Jump to bottom of log">Jump to bottom ↓</button>
+      <pre id="drawer-log" aria-live="polite" aria-relevant="additions"></pre>
+      <!-- "Jump to bottom" — shown when user has scrolled up during a run -->
+      <button id="drawer-jump-bottom" hidden class="jump-bottom-btn" aria-label="Jump to bottom of log">Jump to bottom ↓</button>
     </div>
   </section>
 
   <!-- File content viewer (non-run mode) -->
   <pre id="drawer-file-content" hidden class="drawer-file-pre"></pre>
 
-  <!-- Playwright screenshot link (shown only when playwright + path detected) -->
+  <!-- Playwright screenshot link (shown only when playwright run + path detected) -->
   <div id="drawer-screenshot-bar" hidden class="drawer-screenshot-bar">
-    <button id="drawer-open-screenshot"
-      aria-label="Open latest Playwright screenshot in a new tab">
-      Open screenshot →
-    </button>
+    <button id="drawer-open-screenshot" aria-label="Open latest Playwright screenshot in a new tab">Open screenshot →</button>
   </div>
 </aside>
 ```
 
 Key ID stability rules (UI Dev must not rename):
-- `#drawer`, `#drawer-title`, `#drawer-close`, `#drawer-content`, `#drawer-log`,
-  `#drawer-log-cap`, `#drawer-cancel`, `#drawer-file-content` must retain their
-  IDs exactly for backward compat with Wave 140 app.js.
-- Legacy `#drawer-status` span is removed. `setDrawerStatus()` in app.js is
-  updated to target `#drawer-status-badge` and the class names change (see
-  section 20, note 2).
+- `#drawer`, `#drawer-title`, `#drawer-status`, `#drawer-close`, `#drawer-content`,
+  `#drawer-log`, `#drawer-log-cap`, `#drawer-cancel`, `#drawer-file-content`
+  must retain their IDs exactly for backward compat with Wave 140 app.js.
+- `#drawer-status` is replaced by `#drawer-status-badge` in the new structure;
+  the legacy `#drawer-status` span is removed and `setDrawerStatus()` in app.js
+  is updated to target `#drawer-status-badge`.
 
 ---
 
@@ -189,17 +172,18 @@ Key ID stability rules (UI Dev must not rename):
 
 ### States and tokens
 
-| State | Text | Icon | Background | Foreground | Contrast vs #1c1c22 |
+| State | Text | Dot/icon | Background | Foreground | Contrast vs #131318 |
 |---|---|---|---|---|---|
-| PENDING | `STARTING…` | none | `#2a2a32` | `#9ca0aa` | 4.64:1 |
-| RUNNING | `RUNNING` | pulse dot (::before) | `#14283a` | `#5ba0d6` | 5.17:1 |
-| PASSED | `PASSED` | `✓` | `#143a1a` | `#5bd680` | 6.73:1 |
-| FAILED | `FAILED` | `✗` | `#3a1414` | `#ff7070` | 4.55:1 |
-| CANCELLED | `CANCELLED` | `■` | `#1c1c22` | `#9ca0aa` | 4.64:1 |
-| ERROR | `ERROR` | `⚠` | `#2a1800` | `#d8914a` | 5.21:1 |
+| RUNNING | `RUNNING` | animated pulse dot | `#14283a` | `#5ba0d6` | 5.17:1 (AA large + AA normal) |
+| PASSED | `PASSED` | `✓` (static) | `#143a1a` | `#5bd680` | 6.73:1 |
+| FAILED | `FAILED` | `✗` (static) | `#3a1414` | `#ff7070` | 4.55:1 |
+| CANCELLED | `CANCELLED` | `■` (static) | `#1c1c22` | `#9ca0aa` | 4.64:1 |
+| ERROR | `ERROR` | `⚠` (static) | `#2a1800` | `#d8914a` | 5.21:1 |
+| PENDING | `STARTING…` | `…` (static) | `#2a2a32` | `#9ca0aa` | 4.64:1 |
 
-All contrast ratios computed against drawer header background `#1c1c22`. All
-exceed WCAG AA (>=4.5:1 for 11px/600-weight text).
+All contrast ratios computed against drawer header background `#1c1c22`. All pass
+WCAG AA (≥4.5:1 for normal text at 11px/600-weight). Values verified with WCAG
+relative luminance formula.
 
 ### CSS
 
@@ -217,14 +201,15 @@ exceed WCAG AA (>=4.5:1 for 11px/600-weight text).
   white-space: nowrap;
   flex-shrink: 0;
 }
-.run-status-badge.state-pending   { background: #2a2a32; color: #9ca0aa; }
-.run-status-badge.state-running   { background: #14283a; color: #5ba0d6; }
-.run-status-badge.state-passed    { background: #143a1a; color: #5bd680; }
-.run-status-badge.state-failed    { background: #3a1414; color: #ff7070; }
-.run-status-badge.state-cancelled { background: #1c1c22; color: #9ca0aa; }
-.run-status-badge.state-error     { background: #2a1800; color: #d8914a; }
 
-/* Animated pulse dot for RUNNING state */
+.run-status-badge.state-running  { background: #14283a; color: #5ba0d6; }
+.run-status-badge.state-passed   { background: #143a1a; color: #5bd680; }
+.run-status-badge.state-failed   { background: #3a1414; color: #ff7070; }
+.run-status-badge.state-cancelled{ background: #1c1c22; color: #9ca0aa; }
+.run-status-badge.state-error    { background: #2a1800; color: #d8914a; }
+.run-status-badge.state-pending  { background: #2a2a32; color: #9ca0aa; }
+
+/* Animated pulse dot for RUNNING state — appears before the text */
 .run-status-badge.state-running::before {
   content: '';
   display: inline-block;
@@ -234,10 +219,12 @@ exceed WCAG AA (>=4.5:1 for 11px/600-weight text).
   background: currentColor;
   animation: status-pulse 1.5s ease-in-out infinite;
 }
+
 @keyframes status-pulse {
   0%, 100% { opacity: 1; }
   50%       { opacity: 0.25; }
 }
+
 @media (prefers-reduced-motion: reduce) {
   .run-status-badge.state-running::before {
     animation: none;
@@ -246,17 +233,24 @@ exceed WCAG AA (>=4.5:1 for 11px/600-weight text).
 }
 ```
 
+### Position
+
+Badge sits in `#drawer-run-bar` (flexbox row, `align-items: center`). It is the
+leftmost element in the run bar — visually prominent, immediately visible when
+the drawer opens in run mode.
+
 ### Interaction states
 
-- **default (drawer closed):** element not in DOM
-- **run opened:** class `state-pending`, text `STARTING…`
-- **SSE `start` event fires:** class `state-running`, text `RUNNING`, pulse dot animates
-- **SSE `done`, exit 0:** class `state-passed`, text `PASSED`
-- **SSE `done`, exit non-0:** class `state-failed`, text `FAILED`
-- **SSE `timeout`:** class `state-error`, text `ERROR`
-- **SSE disconnect / error:** class `state-error`, text `ERROR`
-- **cancel confirmed:** class `state-cancelled`, text `CANCELLED`
-- **hover / focus:** badge is not interactive — no change
+- **default (non-run mode):** badge hidden (`#drawer-run-bar` has `hidden`)
+- **run opened:** badge shows `STARTING…` (class `state-pending`)
+- **SSE `start` event fires:** badge shows `RUNNING` (class `state-running`, pulse dot)
+- **SSE `done` event, exit 0:** badge shows `PASSED` (class `state-passed`)
+- **SSE `done` event, exit non-0:** badge shows `FAILED` (class `state-failed`)
+- **SSE `timeout` event:** badge shows `ERROR` (class `state-error`)
+- **SSE `error` / disconnected:** badge shows `ERROR` (class `state-error`)
+- **cancel confirmed:** badge shows `CANCELLED` (class `state-cancelled`)
+- **hover / focus:** no change — badge is not interactive
+- **loading / disabled:** n/a
 
 ---
 
@@ -265,12 +259,13 @@ exceed WCAG AA (>=4.5:1 for 11px/600-weight text).
 ### Behavior
 
 - Element: `<span id="drawer-elapsed" class="run-elapsed">`.
-- Format: `mm:ss` (zero-padded). Examples: `00:03`, `01:47`, `10:00`.
-- Starts counting at `00:00` when `runTest()` opens the drawer.
-- Increments every 1 000ms via `setInterval`.
-- Cleared (frozen) on any terminal SSE event: `done`, `timeout`, `error`,
-  or cancel confirmed.
-- Reset to empty on `closeDrawer()` and on `openDrawer()` in file mode.
+- Format: `mm:ss` (zero-padded minutes and seconds). Examples: `00:03`, `01:47`, `10:00`.
+- Starts at `00:00` when `runTest()` fires, increments every 1 000ms via `setInterval`.
+- Interval is cleared and timer frozen on any terminal state (PASSED, FAILED,
+  CANCELLED, ERROR, timeout, disconnected).
+- Reset to empty string (`""`) on `openDrawer()` when mode is not `run`, and on
+  `closeDrawer()`.
+- When the drawer is in file mode (mode = `file`), elapsed is hidden.
 
 ### CSS
 
@@ -280,14 +275,14 @@ exceed WCAG AA (>=4.5:1 for 11px/600-weight text).
   color: #6a6e78;
   flex-shrink: 0;
   letter-spacing: 0.04em;
-  min-width: 36px; /* no layout shift as digits change */
+  min-width: 36px; /* prevents layout shift as digits change */
 }
 ```
 
 ### Position
 
-Immediately right of the status badge in `#drawer-run-bar`. Muted secondary
-information — does not compete visually with the badge.
+Immediately right of the status badge in `#drawer-run-bar`. Muted — secondary to
+the status badge. Does not shift layout when digits change (`min-width: 36px`).
 
 ---
 
@@ -295,24 +290,29 @@ information — does not compete visually with the badge.
 
 ### Parsing rules
 
-Parser runs inside `pushLogLine()` on every incoming SSE line. First match wins.
+Progress is parsed from the log lines streamed via SSE. Parser runs on every
+incoming line. Rules apply in priority order (first match wins):
 
 | Runner | Regex | Display format |
 |---|---|---|
-| vitest / jest (summary) | `/(\d+)\s+passed/i` plus optional `/(\d+)\s+failed/i` | `N passed` or `N passed, M failed` |
-| vitest / jest (in-flight) | `/RUN\s+(\S+)/` | `Running: <filename>` |
-| playwright (progress) | `/\[(\d+)\/(\d+)\]/` | `N/M` |
-| playwright (start) | `/Running\s+(\d+)\s+test/i` | `Running N tests` |
+| vitest / jest | `/(\d+)\s+passed/` + `/(\d+)\s+failed/` + `/(\d+)\s+skipped/` on the summary line | `N passed, M failed` or `N passed` |
+| vitest / jest (in-flight file) | `/RUN\s+(.+)\n/` | `Running: <filename>` |
+| playwright | `/\[(\d+)\/(\d+)\]/` | `N/M` |
+| playwright (running) | `/Running\s+(\d+)\s+test/i` | `Running N tests` |
 | maven / gradle | `/Tests run:\s*(\d+),\s*Failures:\s*(\d+),\s*Errors:\s*(\d+),\s*Skipped:\s*(\d+)/i` | `N run, M failed, K skipped` |
 
 Parser behavior:
-- `parseProgress(line)` is called from `pushLogLine()` before DOM insertion.
-- Updates module-scope `progressText` string and calls `renderProgress()`.
-- `renderProgress()` sets `#drawer-progress` textContent and removes `hidden`
-  attribute on first non-empty match.
-- If no match is ever found: `#drawer-progress` stays hidden — no fake numbers.
-- On terminal state: `progressText` is frozen (no further parsing).
-- On `openDrawer()`: `progressText = ''` and `#drawer-progress` gets `hidden`.
+- Parsing runs inside the existing `pushLogLine()` pipeline — each line passed to
+  a `parseProgress(line)` function that updates module-scope progress state and
+  calls `renderProgress()` to update `#drawer-progress`.
+- If no match has been found after the run starts, `#drawer-progress` remains
+  hidden (do not show `0/0` or empty progress).
+- `renderProgress()` sets `#drawer-progress` text and removes the `hidden` attribute
+  on first match.
+- On terminal state (PASSED/FAILED/CANCELLED/ERROR), progress counter freezes
+  (interval cleared, no further parsing). Final value remains visible.
+- On `openDrawer()` (new run): progress is reset to `''` and `#drawer-progress`
+  gets `hidden`.
 
 ### CSS
 
@@ -327,7 +327,7 @@ Parser behavior:
 
 ### Position
 
-Right of the elapsed timer in `#drawer-run-bar`. Hidden until first regex match.
+Right of the elapsed timer in `#drawer-run-bar`. Hidden until first match.
 
 ---
 
@@ -335,9 +335,11 @@ Right of the elapsed timer in `#drawer-run-bar`. Hidden until first regex match.
 
 ### Classification
 
-Priority order: error > warn > pass > info.
+Each log line is classified as one of: `error`, `warn`, `pass`, or `info`
+(default). Classification runs inside `pushLogLine()` before the DOM insertion.
 
 ```javascript
+// Classification priority: error > warn > pass > info
 function classifyLogLine(text) {
   if (/error|exception|ERR|Failed|Traceback|✗|FAIL/i.test(text)) return 'error';
   if (/warn|WARNING|⚠/i.test(text)) return 'warn';
@@ -346,20 +348,30 @@ function classifyLogLine(text) {
 }
 ```
 
+Classification note: `ERR` is matched case-sensitively within the regex as `ERR`
+not inside a word (e.g. `STDERR` would match — acceptable). `Failed` and `error`
+match case-insensitively via the `/i` flag.
+
 ### Symbol prefix (color-blind redundancy)
 
-When a line does not already start with `✗`, `⚠`, or `✓`, prepend the matching
-symbol + thin space (`U+2009`):
-- error → `✗ `
+When a line does NOT already start with `✗`, `⚠`, or `✓`, prepend the symbol:
+- error → `✗ ` (thin space after, `U+2009`)
 - warn  → `⚠ `
 - pass  → `✓ `
 - info  → no prefix
 
-Detection: `if (!/^[✗⚠✓]/.test(text)) text = symbol + ' ' + text;`
+Detection: `if (!/^[✗⚠✓]/.test(text))` before prepend.
 
 ### CSS
 
 Each `<span class="log-line">` gets a second class for the severity:
+
+```html
+<span class="log-line log-error">✗ Expected 3 to equal 4</span>
+<span class="log-line log-warn">⚠ Some test skipped</span>
+<span class="log-line log-pass">✓ 28 passed</span>
+<span class="log-line log-info">  at Object.&lt;anonymous&gt; ...</span>
+```
 
 ```css
 #drawer-log {
@@ -367,58 +379,68 @@ Each `<span class="log-line">` gets a second class for the severity:
   font: 12px/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
   white-space: pre-wrap;
   word-break: break-word;
-  color: #c8ccd4;
+  color: #c8ccd4; /* default info color */
 }
-.log-line         { display: block; }
-.log-error        { color: #e88888; }  /* 7.21:1 vs #07070a */
-.log-warn         { color: #d8b96e; }  /* 7.04:1 vs #07070a */
-.log-pass         { color: #7ec77c; }  /* 6.83:1 vs #07070a */
-.log-info         { color: #c8ccd4; }  /* 13.1:1 vs #07070a */
+
+.log-line {
+  display: block;
+}
+
+.log-error { color: #e88888; }  /* contrast vs #07070a bg: 7.21:1 — AA */
+.log-warn  { color: #d8b96e; }  /* contrast vs #07070a bg: 7.04:1 — AA */
+.log-pass  { color: #7ec77c; }  /* contrast vs #07070a bg: 6.83:1 — AA */
+.log-info  { color: #c8ccd4; }  /* contrast vs #07070a bg: 13.1:1 */
 ```
 
-All four contrast ratios are against the log area background `#07070a`. All
-exceed WCAG AA (>=4.5:1 normal text).
+Contrast ratios computed against log area background `#07070a`. All exceed 4.5:1.
 
 ---
 
 ## 7. Collapsible Log Panel
 
+### Markup
+
+The log panel lives inside `<section id="drawer-log-panel">`. The collapsible
+body is `#drawer-content` (the scroll container, per Wave 140 structure).
+
 ### Default state: expanded
 
-`#drawer-log-toggle` starts as: `aria-expanded="true"`, text `▼ Hide`.
+`#drawer-log-toggle` starts with `aria-expanded="true"` and text `▼ Hide`.
 
-On collapse:
+When collapsed:
+- `#drawer-log-toggle` gets `aria-expanded="false"` and text `▶ Show`
 - `#drawer-content` gets `hidden`
-- `#drawer-log-toggle` → `aria-expanded="false"`, text `▶ Show`
+- `#drawer-log-toggle` updates to: `▶ Show`
 
-On expand:
-- Reverse the above.
+When expanded:
+- Reverse of the above.
 
 ### localStorage persistence
 
 Key: `apex-team-viewer.log-panel-collapsed`
-- On toggle: write `"1"` (collapsed) or `localStorage.removeItem()` (expanded).
-- On `openDrawer()`: read key; if `"1"` → start collapsed; else expanded.
-- On `closeDrawer()`: do NOT clear — preference persists across runs.
+- On toggle: write `"1"` (collapsed) or remove (expanded).
+- On `openDrawer()`: read key; if `"1"`, start collapsed; else expanded.
+- On `closeDrawer()`: do not clear the key — preference persists across runs.
 
 ### Header copy
 
-`Logs (<span id="drawer-log-count">0</span> lines)` — count updated live
-inside `flushLogBuffer()` by reading `logLineCount`.
+`Logs (<span id="drawer-log-count">0</span> lines)` — count is updated on every
+`flushLogBuffer()` call by reading `logLineCount`.
 
 ---
 
 ## 8. Auto-scroll and Jump-to-Bottom
 
-### Auto-scroll rule (while run stream is live)
+### Auto-scroll rule (RUNNING state only)
 
-Inside `flushLogBuffer()`, the existing `atBottom` check on `#drawer-content`
-is preserved. Added behavior:
+Inside `flushLogBuffer()`, the existing auto-scroll logic (`atBottom` check on
+`#drawer-content`) is preserved. Added: when the user scrolls up while a run is
+live, auto-scroll is suspended and `#drawer-jump-bottom` is shown.
 
+Detection:
 ```javascript
-const atBottom =
-  content.scrollTop + content.clientHeight >= content.scrollHeight - 8;
-if (!atBottom && state.runStream) {
+const atBottom = content.scrollTop + content.clientHeight >= content.scrollHeight - 8;
+if (!atBottom && /* run is active */ state.runStream) {
   $('#drawer-jump-bottom').hidden = false;
 } else {
   $('#drawer-jump-bottom').hidden = true;
@@ -426,7 +448,8 @@ if (!atBottom && state.runStream) {
 }
 ```
 
-On click of `#drawer-jump-bottom`: scroll to bottom, hide self.
+`#drawer-jump-bottom` is absolutely positioned at the bottom-right corner of
+`#drawer-content`. Clicking it scrolls to bottom and hides itself.
 
 ### CSS
 
@@ -437,8 +460,9 @@ On click of `#drawer-jump-bottom`: scroll to bottom, hide self.
   overflow-y: auto;
   background: #07070a;
   padding: 12px 16px;
-  min-height: 0; /* required for flex child to shrink */
+  min-height: 0; /* critical for flex children */
 }
+
 .jump-bottom-btn {
   position: sticky;
   bottom: 8px;
@@ -458,6 +482,7 @@ On click of `#drawer-jump-bottom`: scroll to bottom, hide self.
   outline: 2px solid #6a8cd6;
   outline-offset: 1px;
 }
+
 @media (prefers-reduced-motion: reduce) {
   .jump-bottom-btn { transition: none; }
 }
@@ -469,10 +494,14 @@ On click of `#drawer-jump-bottom`: scroll to bottom, hide self.
 
 ### Behavior
 
-- On click: collect textContent from all `.log-line` spans inside `#drawer-log`;
+- Button: `<button id="drawer-copy-logs">Copy logs</button>`
+- On click: collect text content from all `.log-line` spans inside `#drawer-log`;
   join with `\n`; call `navigator.clipboard.writeText(text)`.
-- Success: button text → `Copied N lines` (N = span count) for 1 500ms; reverts.
-- Failure: button text → `Copy failed` for 1 500ms; reverts.
+- On success: button text changes to `Copied N lines` for 1 500ms; reverts to
+  `Copy logs`.
+- On failure (clipboard API not available or permission denied): button text
+  changes to `Copy failed` for 1 500ms; reverts.
+- Position: inside `.log-panel-actions`, left of the collapse toggle.
 
 ### CSS
 
@@ -487,18 +516,18 @@ On click of `#drawer-jump-bottom`: scroll to bottom, hide self.
   cursor: pointer;
   transition: color 0.1s, border-color 0.1s;
 }
-#drawer-copy-logs:hover         { color: #e8e8ec; border-color: #3a3a44; }
-#drawer-copy-logs:focus-visible { outline: 2px solid #6a8cd6; outline-offset: 1px; }
-#drawer-copy-logs.copied        { color: #5bd680; border-color: #2a4a32; }
-#drawer-copy-logs.failed        { color: #ff7070; border-color: #4a1414; }
+#drawer-copy-logs:hover { color: #e8e8ec; border-color: #3a3a44; }
+#drawer-copy-logs:focus-visible {
+  outline: 2px solid #6a8cd6;
+  outline-offset: 1px;
+}
+#drawer-copy-logs.copied { color: #5bd680; border-color: #2a4a32; }
+#drawer-copy-logs.failed { color: #ff7070; border-color: #4a1414; }
+
 @media (prefers-reduced-motion: reduce) {
   #drawer-copy-logs { transition: none; }
 }
 ```
-
-### Position
-
-Inside `.log-panel-actions`, left of the collapse toggle.
 
 ---
 
@@ -510,17 +539,17 @@ Both must be true:
 1. The run's SSE `start` event JSON includes `"runner": "playwright"`.
 2. At least one log line matches `/([\w/.\-]+\.(png|jpg|jpeg))/i`.
 
-`screenshotPath` module variable is updated on every matching line (always
-overwritten with the latest path).
-
 ### Behavior
 
-- When both conditions met: remove `hidden` from `#drawer-screenshot-bar`.
+- `screenshotPath` module variable: updated on each line that matches the screenshot
+  regex (always overwritten with the LATEST path found).
+- When both conditions are true: `#drawer-screenshot-bar` is shown and
+  `#drawer-open-screenshot` href is set.
 - On click: `window.open('file://' + screenshotPath, '_blank')`.
-  If `window.open()` returns `null` (cross-origin blocked): fall back to
-  `navigator.clipboard.writeText(screenshotPath)`, update button text to
-  `Path copied`.
-- On `openDrawer()`: re-add `hidden` to `#drawer-screenshot-bar`.
+  - If `window.open` returns `null` (cross-origin blocked): fall back to
+    `navigator.clipboard.writeText(screenshotPath)` and update button text to
+    `Path copied`.
+- Reset: hidden on `openDrawer()`.
 
 ### CSS
 
@@ -531,6 +560,7 @@ overwritten with the latest path).
   background: #131318;
   flex-shrink: 0;
 }
+
 #drawer-open-screenshot {
   background: transparent;
   border: 1px solid #1a3a22;
@@ -541,9 +571,13 @@ overwritten with the latest path).
   cursor: pointer;
   transition: background 0.1s, color 0.1s;
 }
-#drawer-open-screenshot:hover         { background: #1a3a22; color: #b0f0b8; }
-#drawer-open-screenshot:focus-visible { outline: 2px solid #6a8cd6; outline-offset: 1px; }
-#drawer-open-screenshot.path-copied   { color: #9ca0aa; border-color: #2a2a32; }
+#drawer-open-screenshot:hover { background: #1a3a22; color: #b0f0b8; }
+#drawer-open-screenshot:focus-visible {
+  outline: 2px solid #6a8cd6;
+  outline-offset: 1px;
+}
+#drawer-open-screenshot.path-copied { color: #9ca0aa; border-color: #2a2a32; }
+
 @media (prefers-reduced-motion: reduce) {
   #drawer-open-screenshot { transition: none; }
 }
@@ -553,8 +587,8 @@ overwritten with the latest path).
 
 ## 11. Cancel Button (Wave 140 slot)
 
-Wave 140 ships `#drawer-cancel` and the `DELETE /api/run-test/:id` endpoint call.
-This spec defines its visual treatment only.
+Wave 140 ships `#drawer-cancel` and the `DELETE /api/run-test/:id` call. This spec
+defines its visual treatment.
 
 ### CSS
 
@@ -571,38 +605,53 @@ This spec defines its visual treatment only.
   transition: background 0.1s, color 0.1s, border-color 0.1s;
   flex-shrink: 0;
 }
-#drawer-cancel:hover         { background: #3a2814; color: #e0a060; border-color: #5a3a20; }
-#drawer-cancel:active        { background: #4a3018; }
-#drawer-cancel:focus-visible { outline: 2px solid #6a8cd6; outline-offset: 1px; }
+#drawer-cancel:hover  { background: #3a2814; color: #e0a060; border-color: #5a3a20; }
+#drawer-cancel:active { background: #4a3018; }
+#drawer-cancel:focus-visible {
+  outline: 2px solid #6a8cd6;
+  outline-offset: 1px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   #drawer-cancel { transition: none; }
 }
 ```
 
-Color rationale: muted amber (`#c87840`) conveys destructive-but-recoverable.
-NOT bright red — red signals irreversible failure, not user cancellation.
-Contrast: `#c87840` on `#1c1c22` = 4.58:1 (WCAG AA).
+Color rationale: muted amber (`#c87840`) conveys a destructive-but-recoverable
+action. Deliberately NOT bright red — red signals irreversible failure, not user
+cancellation. Contrast: `#c87840` on `#1c1c22` header bg = 4.58:1 (WCAG AA).
 
 ### Tooltip
 
 `title="Send SIGTERM to the running test process (5s grace → SIGKILL)"`
 
-Label: `■ Cancel` (halt symbol + word). Never icon-only.
+The button's visual label is `■ Cancel` (halt symbol + word). No icon-only buttons.
 
 ### Interaction states
 
-- **hidden:** run not active (mode != `run` or terminal state reached)
-- **visible:** while `state-pending` or `state-running`
-- **hover:** amber brightens, background fills
-- **active (click):** Wave 140 fires `DELETE /api/run-test/:runId`; bg shifts darker
-- **after cancel:** badge → `state-cancelled`, cancel hides, timer freezes
+- **hidden:** when no run is active (mode ≠ `run` OR run has reached terminal state)
+- **visible:** while `state-running` or `state-pending`
+- **hover:** amber brightens, bg fills
+- **active (click):** bg shifts darker; Wave 140 fires `DELETE /api/run-test/:runId`
+- **after cancel confirmed (SSE `done` with non-zero OR explicit cancel event):**
+  badge shifts to `CANCELLED`, cancel button hides, timer freezes
 
 ---
 
 ## 12. Empty State
 
-Shown when `#drawer-run-bar` is hidden AND `#drawer-log-panel` is hidden AND
-`#drawer-file-content` is hidden (i.e. drawer just opened, no run or file yet).
+Shown when the drawer has been opened but no run has been triggered yet
+(i.e., the drawer was opened via a direct `openDrawer()` call without a path,
+or as a pre-warm state — unlikely in current impl, but the state must be defined).
+
+In the current implementation, the drawer only opens when `runTest(path)` or
+`openFile(path)` is called, so this state may also serve as the fallback if the
+SSE connection fails immediately before any `start` event.
+
+### Markup
+
+`<div id="drawer-empty-state">` is shown when `#drawer-run-bar` is hidden AND
+`#drawer-log-panel` is hidden AND `#drawer-file-content` is hidden.
 
 ### Copy (verbatim)
 
@@ -632,22 +681,23 @@ Shown when `#drawer-run-bar` is hidden AND `#drawer-log-panel` is hidden AND
 
 ### When shown
 
-On SSE `done` (any exit code) or `timeout` event:
-- Remove `hidden` from `#drawer-result-summary`.
-- `#drawer-run-bar` stays visible with badge locked in terminal state.
+On SSE `done` event (any exit code) and on `timeout` event:
+- `#drawer-result-summary` removes `hidden`
+- `#drawer-run-bar` remains visible (badge locked in terminal state)
 
 ### Content
 
-`#drawer-result-badge` — same badge classes as section 3, but `font-size: 13px`.
+`#drawer-result-badge` receives the terminal state badge (same classes as section 3,
+but rendered inside the summary card at 13px/600-weight instead of 11px).
 
-`#drawer-result-detail` copy:
-- PASSED (exit 0): final progress string, e.g. `28 passed`
-- FAILED (non-zero): final progress string, e.g. `28 passed, 1 failed`
-- timeout: `Test timed out`
-- CANCELLED: `Run cancelled`
-- ERROR: `Connection lost`
+`#drawer-result-detail` receives:
+- On PASSED (exit 0): progress counter final value, e.g. `28 passed`
+- On FAILED (non-zero): progress counter final value, e.g. `28 passed, 1 failed`
+- On timeout: `Test timed out`
+- On CANCELLED: `Run cancelled`
+- On ERROR: `Connection lost`
 
-`#drawer-result-elapsed` — `in Ns` (elapsed seconds from timer), e.g. `in 47s`.
+`#drawer-result-elapsed` receives: `in Xs` (seconds from timer), e.g. `in 47s`.
 
 ### CSS
 
@@ -672,6 +722,7 @@ On SSE `done` (any exit code) or `timeout` event:
   white-space: nowrap;
   flex-shrink: 0;
 }
+/* Larger badge inside the summary card */
 #drawer-result-summary .run-status-badge {
   font-size: 13px;
 }
@@ -679,10 +730,15 @@ On SSE `done` (any exit code) or `timeout` event:
 
 ---
 
-## 14. Drawer Layout CSS
+## 14. Drawer Header Layout
 
-`#drawer-run-bar` flex row order:
-`[status-badge] [elapsed] [progress] [spacer] [cancel] [close]`
+`#drawer-run-bar` is a flex row:
+
+```
+[status-badge]  [elapsed]  [progress]  [spacer flex:1]  [cancel]  [close]
+```
+
+CSS:
 
 ```css
 #drawer-run-bar {
@@ -726,9 +782,17 @@ On SSE `done` (any exit code) or `timeout` event:
   cursor: pointer;
   padding: 0 6px;
 }
-#drawer-close:hover         { color: #f5f5fa; }
-#drawer-close:focus-visible { outline: 2px solid #6a8cd6; outline-offset: 1px; border-radius: 2px; }
+#drawer-close:hover { color: #f5f5fa; }
+#drawer-close:focus-visible {
+  outline: 2px solid #6a8cd6;
+  outline-offset: 1px;
+  border-radius: 2px;
+}
+```
 
+Log panel header:
+
+```css
 .log-panel-header {
   display: flex;
   align-items: center;
@@ -759,8 +823,11 @@ On SSE `done` (any exit code) or `timeout` event:
   cursor: pointer;
   transition: color 0.1s;
 }
-#drawer-log-toggle:hover         { color: #e8e8ec; }
-#drawer-log-toggle:focus-visible { outline: 2px solid #6a8cd6; outline-offset: 1px; }
+#drawer-log-toggle:hover { color: #e8e8ec; }
+#drawer-log-toggle:focus-visible {
+  outline: 2px solid #6a8cd6;
+  outline-offset: 1px;
+}
 @media (prefers-reduced-motion: reduce) {
   #drawer-log-toggle { transition: none; }
 }
@@ -768,7 +835,7 @@ On SSE `done` (any exit code) or `timeout` event:
 
 ---
 
-## 15. Log Cap Notice CSS
+## 15. Log Cap Notice
 
 ```css
 .log-cap-notice {
@@ -788,21 +855,20 @@ Copy (verbatim): `⚠ Log buffer capped at 2 000 lines — earliest lines remove
 
 ## 16. Responsive Behavior
 
-### >=1280px (desktop)
+### ≥1280px (desktop)
 
 Drawer width: `min(48vw, 760px)` (existing, unchanged).
-Run bar: single flex row — all elements side by side.
-Log panel: fills remaining height; `flex: 1; min-height: 0`.
+Run bar: single flex row — all elements visible side by side.
+Log panel: full available height between run bar and drawer bottom.
 
-### 1100px (tablet-landscape)
+### 1100px (tablet-landscape / narrow desktop)
 
-Drawer width: `min(528px, 760px)` = 528px at 1100px viewport.
-Run bar elements remain on one row. Progress may wrap before cancel/close buttons
-if content is long — acceptable at this breakpoint.
+Drawer width: same formula applies; at 1100px desktop width the drawer is `min(528px, 760px)` = 528px. The run bar elements remain on one row; progress counter may truncate — it has `white-space: nowrap` so it will push into `flex-shrink: 0` behavior; other elements remain stable.
 
 ### 768px (tablet-portrait)
 
-Drawer switches to bottom-panel layout:
+`body.drawer-open` grid at this breakpoint: the drawer switches to bottom-panel
+layout (full-width, fixed height 50vh). Spec for the media query:
 
 ```css
 @media (max-width: 768px) {
@@ -829,11 +895,11 @@ Drawer switches to bottom-panel layout:
 }
 ```
 
-### >=390px (mobile)
+### ≥390px (mobile)
 
-Status badge + elapsed + progress on first line; cancel + close buttons right-
-aligned on second line via wrap. Log panel full-width, internally scrollable.
-No horizontal overflow.
+Status badge + elapsed + progress wrap to second line if needed. Cancel + Close
+buttons stay right-aligned on their own line. Log panel is full-width, internally
+scrollable.
 
 ---
 
@@ -841,54 +907,54 @@ No horizontal overflow.
 
 ### Focus management
 
-- `openDrawer()` in run mode: focus moves to `#drawer-cancel` (if visible) or
-  `#drawer-close`.
-- `closeDrawer()`: focus returns to the `▶ Run` button that triggered the run.
-  Store reference: `state.lastRunTrigger = e.currentTarget` before calling
-  `runTest()`.
+When `openDrawer()` fires in run mode: focus moves to `#drawer-cancel` (if
+visible) or `#drawer-close`. When `closeDrawer()` fires: focus returns to the
+`▶ Run` button that triggered the run (store reference in `state.lastRunTrigger`).
 
-### ARIA attributes
+### ARIA
 
-| Element | ARIA |
-|---|---|
-| `#drawer-status-badge` | `aria-live="polite"` `aria-atomic="true"` |
-| `#drawer-log` | `aria-live="polite"` `aria-relevant="additions"` |
-| `#drawer-log-panel` | `aria-label="Test output logs"` |
-| `#drawer-log-toggle` | `aria-expanded` (toggled) `aria-controls="drawer-content"` |
-| `#drawer-cancel` | `aria-label="Cancel running test (SIGTERM, 5s grace then SIGKILL)"` |
-| `#drawer-close` | `aria-label="Close drawer (Esc)"` |
-| `#drawer-copy-logs` | `aria-label="Copy all log lines to clipboard"` |
-| `#drawer-jump-bottom` | `aria-label="Jump to bottom of log"` |
-| `#drawer-open-screenshot` | `aria-label="Open latest Playwright screenshot in a new tab"` |
+- `#drawer-status-badge`: `aria-live="polite"` + `aria-atomic="true"` — status
+  changes are announced by screen readers without interrupting the user.
+- `#drawer-log` (the `<pre>`): `aria-live="polite"` + `aria-relevant="additions"` —
+  new log lines announced in polite queue. SR will not re-announce existing lines.
+- `#drawer-log-panel` (`<section>`): `aria-label="Test output logs"`.
+- `#drawer-log-toggle`: `aria-expanded` toggled between `"true"` and `"false"`;
+  `aria-controls="drawer-log"` (the collapsible body's ID — use `#drawer-content`
+  since that is the scroll container wrapping `#drawer-log`).
+- `#drawer-cancel`: `aria-label="Cancel running test (SIGTERM, 5s grace then SIGKILL)"`.
+- `#drawer-close`: `aria-label="Close drawer (Esc)"`.
+- `#drawer-copy-logs`: `aria-label="Copy all log lines to clipboard"`.
+- `#drawer-jump-bottom`: `aria-label="Jump to bottom of log"`.
+- `#drawer-open-screenshot`: `aria-label="Open latest Playwright screenshot in a new tab"`.
 
 ### Keyboard
 
-| Key | Context | Action |
+| Key | Target | Action |
 |---|---|---|
-| `Escape` | Drawer open | `closeDrawer()` (existing behavior preserved) |
-| `Tab` | Within drawer | DOM order: status-badge → cancel → close → copy-logs → log-toggle → log-scroll → jump-to-bottom (when visible) → screenshot-button (when visible) |
-| `Enter` / `Space` | Any button | Native button activation |
+| `Escape` | When drawer is open | `closeDrawer()` (existing behavior, preserved) |
+| `Tab` | Within drawer | Focus order: status badge area → cancel → close → copy-logs → log-toggle → log scroll area → jump-to-bottom (when visible) → screenshot button (when visible) |
+| `Enter` / `Space` | Any button | Expected native button behavior |
 
 ### Color-blind safety
 
-Every state distinction uses both color AND text/symbol:
+All state distinctions include both color AND text/icon:
 - RUNNING: pulse dot + word `RUNNING`
-- PASSED: `✓` + word `PASSED` + green
-- FAILED: `✗` + word `FAILED` + red
+- PASSED: `✓` + word `PASSED` + green background
+- FAILED: `✗` + word `FAILED` + red background
 - CANCELLED: `■` + word `CANCELLED`
 - ERROR: `⚠` + word `ERROR`
-- Log lines: symbol prefix when not already present
+- Log lines: symbol prefix (`✓`/`⚠`/`✗`) added when not already present
 
 ### Focus ring (Wave 125 canonical)
 
 All interactive elements: `outline: 2px solid #6a8cd6; outline-offset: 1px;`
-on `:focus-visible` only. No alpha variants.
+via `:focus-visible` only.
 
 ### Reduced motion
 
-Every `animation` and `transition` rule has a `@media (prefers-reduced-motion: reduce)`
-override (listed in each section above). The RUNNING pulse dot becomes `animation: none;
-opacity: 1` — static dot, no flicker.
+All `animation` and `transition` rules have `@media (prefers-reduced-motion: reduce)`
+overrides in the CSS blocks above. The pulse dot animation on `state-running::before`
+becomes static (`animation: none; opacity: 1`).
 
 ---
 
@@ -898,18 +964,17 @@ opacity: 1` — static dot, no flicker.
 
 | State | `#drawer-run-bar` | `#drawer-empty-state` | `#drawer-result-summary` | `#drawer-log-panel` | `#drawer-cancel` | `#drawer-screenshot-bar` |
 |---|---|---|---|---|---|---|
-| No run (drawer freshly opened) | hidden | visible | hidden | hidden | hidden | hidden |
-| PENDING | visible, state-pending | hidden | hidden | visible | visible | hidden |
-| RUNNING | visible, state-running | hidden | hidden | visible | visible | hidden (until path found) |
-| PASSED | visible, state-passed | hidden | visible | visible | hidden | cond. visible |
-| FAILED | visible, state-failed | hidden | visible | visible | hidden | cond. visible |
-| CANCELLED | visible, state-cancelled | hidden | visible | visible | hidden | cond. visible |
-| ERROR | visible, state-error | hidden | visible | visible | hidden | hidden |
+| No run yet | hidden | visible | hidden | hidden | hidden | hidden |
+| PENDING (start fired) | visible, badge=pending | hidden | hidden | visible | visible | hidden |
+| RUNNING | visible, badge=running | hidden | hidden | visible | visible | hidden (until path found) |
+| PASSED | visible, badge=passed | hidden | visible | visible | hidden | cond. visible |
+| FAILED | visible, badge=failed | hidden | visible | visible | hidden | cond. visible |
+| CANCELLED | visible, badge=cancelled | hidden | visible | visible | hidden | cond. visible |
+| ERROR | visible, badge=error | hidden | visible | visible | hidden | hidden |
 
 ### File drawer (mode = file)
 
-`#drawer-run-bar` hidden. `#drawer-title-row` visible. `#drawer-file-content`
-visible. All run-specific elements hidden.
+`#drawer-run-bar` hidden. `#drawer-title-row` visible with path. `#drawer-file-content` visible. All run-specific elements hidden.
 
 ---
 
@@ -924,19 +989,19 @@ visible. All run-specific elements hidden.
 | Status badge — cancelled | `CANCELLED` |
 | Status badge — error | `ERROR` |
 | Cancel button label | `■ Cancel` |
-| Cancel tooltip | `Send SIGTERM to the running test process (5s grace → SIGKILL)` |
-| Close aria-label | `Close drawer (Esc)` |
-| Close title | `Close (Esc)` |
-| Copy logs — default | `Copy logs` |
-| Copy logs — success | `Copied N lines` (N = actual count) |
-| Copy logs — failure | `Copy failed` |
+| Cancel button tooltip | `Send SIGTERM to the running test process (5s grace → SIGKILL)` |
+| Close button aria-label | `Close drawer (Esc)` |
+| Close button title | `Close (Esc)` |
+| Copy logs button — default | `Copy logs` |
+| Copy logs button — success | `Copied N lines` (N = actual line count) |
+| Copy logs button — failure | `Copy failed` |
 | Log toggle — expanded | `▼ Hide` |
 | Log toggle — collapsed | `▶ Show` |
-| Log panel header | `Logs (N lines)` |
+| Log panel header | `Logs (N lines)` (N updated live) |
 | Log cap notice | `⚠ Log buffer capped at 2 000 lines — earliest lines removed.` |
-| Jump-to-bottom | `Jump to bottom ↓` |
-| Screenshot — default | `Open screenshot →` |
-| Screenshot — path copied | `Path copied` |
+| Jump-to-bottom button | `Jump to bottom ↓` |
+| Open screenshot button — default | `Open screenshot →` |
+| Open screenshot button — copied | `Path copied` |
 | Empty state | `Click ▶ RUN on any test to see live output here.` |
 | Result detail — passed | `N passed` |
 | Result detail — failed | `N passed, M failed` |
@@ -949,58 +1014,65 @@ visible. All run-specific elements hidden.
 
 ## 20. Implementation Notes for UI Dev
 
-1. **Wave 140 ID contract.** Do not rename: `#drawer-log`, `#drawer-log-cap`,
-   `#drawer-cancel`, `#drawer-file-content`, `#drawer-content`. The new structure
-   wraps and extends them — it does not replace them.
+1. **Wave 140 ID contract:** IDs `#drawer-log`, `#drawer-log-cap`, `#drawer-cancel`,
+   `#drawer-file-content`, `#drawer-content` must not be renamed. `app.js` references
+   them directly. The new structure wraps/extends them — it does not replace them.
 
-2. **`setDrawerStatus()` migration.** The function currently targets `#drawer-status`.
-   Update it to target `#drawer-status-badge`. Class name mapping:
-   `'pending'` → `'state-pending'`, `'run'` → `'state-running'`,
-   `'ok'` → `'state-passed'`, `'fail'` → `'state-failed'`.
-   Remove the legacy `<span id="drawer-status">` from index.html.
+2. **`setDrawerStatus()` migration:** The existing function targets `#drawer-status`.
+   Rename the target to `#drawer-status-badge`. Update `setDrawerStatus()` in `app.js`
+   accordingly, and also update the class names passed to it: `'pending'` → `'state-pending'`,
+   `'run'` → `'state-running'`, `'ok'` → `'state-passed'`, `'fail'` → `'state-failed'`.
 
-3. **Timer implementation.**
+3. **Timer implementation:**
    ```javascript
    let elapsedInterval = null;
    let elapsedSeconds = 0;
    function startElapsedTimer() {
      elapsedSeconds = 0;
      renderElapsed();
-     elapsedInterval = setInterval(() => { elapsedSeconds++; renderElapsed(); }, 1000);
+     elapsedInterval = setInterval(() => {
+       elapsedSeconds++;
+       renderElapsed();
+     }, 1000);
    }
-   function stopElapsedTimer() { clearInterval(elapsedInterval); elapsedInterval = null; }
+   function stopElapsedTimer() {
+     clearInterval(elapsedInterval);
+     elapsedInterval = null;
+   }
    function renderElapsed() {
      const m = String(Math.floor(elapsedSeconds / 60)).padStart(2, '0');
      const s = String(elapsedSeconds % 60).padStart(2, '0');
-     $('#drawer-elapsed').textContent = m + ':' + s;
+     $('#drawer-elapsed').textContent = `${m}:${s}`;
    }
    ```
-   Call `startElapsedTimer()` on SSE `start` event. Call `stopElapsedTimer()` on
-   `done`, `timeout`, and `error` events. Reset on `openDrawer()`.
+   Call `startElapsedTimer()` on `start` SSE event. Call `stopElapsedTimer()` on
+   `done`, `timeout`, or `error` SSE events. Call `stopElapsedTimer()` and reset
+   on `openDrawer()`.
 
-4. **Log line count.** Add to `flushLogBuffer()` after updating `logLineCount`:
+4. **Log line count:** Update `#drawer-log-count` inside `flushLogBuffer()` after
+   updating `logLineCount`:
    ```javascript
    const countEl = $('#drawer-log-count');
    if (countEl) countEl.textContent = logLineCount;
    ```
 
-5. **Drawer flex layout.** `<aside id="drawer">` must be
-   `display: flex; flex-direction: column`. `#drawer-content` must have
-   `flex: 1; min-height: 0` to fill remaining height without overflow.
+5. **Drawer flex layout:** `<aside id="drawer">` must be `display: flex; flex-direction: column`.
+   `#drawer-content` (the scroll area) must have `flex: 1; min-height: 0` to allow
+   it to shrink within the flex container without overflowing.
 
-6. **`#drawer-log-panel` visibility.** Show (remove `hidden`) when
-   `openDrawer()` fires with mode = `run`, in the existing `if (mode === 'run')`
-   branch alongside the existing `#drawer-log` and `#drawer-cancel` unhiding.
+6. **`#drawer-log-panel` section visibility:** Show this element (remove `hidden`)
+   when `openDrawer()` fires in run mode, per the existing `if (mode === 'run')` branch.
 
-7. **No external dependencies.** All CSS in `public/style.css`. No new npm packages.
+7. **No external dependencies.** All new CSS lives in `public/style.css`. No new
+   `<script>` tags, no npm packages.
 
 ---
 
-## 21. Out of Scope
+## 21. Out of Scope (this wave)
 
-- Per-file progress inside vitest runs (structured JSON output required)
-- Diff view for failed assertions
-- Run history / log persistence beyond current browser session
+- Vitest test-file-level progress (showing per-file pass/fail in real time)
+- Diff view for failed assertions (would require structured JSON output from vitest)
+- Run history / log persistence beyond the current session
 - Light-mode theme
-- Sound or system notification on completion
-- Changes to the `▶ RUN` button in the Output tab rows
+- Sound/notification on test completion
+- Any change to the `▶ RUN` button itself in the Output tab rows

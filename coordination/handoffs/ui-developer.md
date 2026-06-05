@@ -4,20 +4,59 @@
 
 ### Wave-140 — viewer PR #24 open — apex-team HANDOFF PR in progress
 
-**Feature:** SSE perf hotfix — high-throughput test runs (Spring Boot 100s of `[WebServer]` lines/sec) caused Chrome Page Unresponsive via per-line DOM mutations. Cancel button added for long-running tests.
+**Feature:** SSE perf hotfix — high-throughput test runs (e.g. Spring Boot 100s of `[WebServer]` lines/sec) caused Chrome Page Unresponsive due to per-line DOM mutations. Cancel button added for long-running tests.
 
 **Deliverables (all in `keyan-commits/apex-team-viewer` PR #24, branch `feature/wave-140-sse-perf-hotfix-ui`, commit `11e4bd7`):**
 
-1. `public/app.js` — `pushLogLine()` / `flushLogBuffer()` rAF-throttle; `MAX_LOG_LINES=2000` ring buffer with `removeChild` eviction + cap indicator; `currentRunId` from `start` SSE JSON; `cancelRun()` calling `DELETE /api/run-test/:id`; `finishRun()` hide-button + null-runId; `openDrawer()` refactored for file vs run modes; cancel button event listener.
-2. `public/index.html` — `#drawer-cancel` button (hidden, amber); drawer split into `#drawer-file-content` (pre) + `#drawer-content` (div with `#drawer-log-cap` + `#drawer-log`).
-3. `public/style.css` — `#drawer-cancel` amber style; `.drawer-content` shared base; `.drawer-log-cap` indicator; `.drawer-log` line container; `#drawer-status.cancelled` pill.
-4. `__tests__/sse-batching.test.ts` — 8 unit tests: rAF coalescing, ring buffer 3000→2000 eviction, cap indicator, resetLogBuffer, cancel button visibility states.
+1. `public/app.js`:
+   - `pendingLogLines: string[]` module-scope buffer + `rafScheduled: boolean` guard.
+   - `pushLogLine(text)`: enqueues a line; schedules `requestAnimationFrame(flushLogBuffer)` only when buffer was empty (coalesces all lines per frame).
+   - `flushLogBuffer()`: snapshot → clear → single `insertAdjacentHTML('beforeend', ...)` → ring-buffer eviction if `logLineCount > MAX_LOG_LINES`.
+   - `MAX_LOG_LINES = 2000`: ring buffer cap. Excess removed from top via `removeChild`. `#drawer-log-cap` indicator shown on first eviction.
+   - `currentRunId: string | null`: populated from `parsed.runId` in `start` SSE event.
+   - `cancelRun()`: closes SSE stream, appends `--- CANCELLED ---`, calls `DELETE /api/run-test/:runId`; 404 → graceful log note.
+   - `finishRun()`: hides cancel button, nulls `currentRunId`. Called from `done`, `timeout`, `error`, `cancelRun`.
+   - `openDrawer()` refactored: toggles `#drawer-file-content` / `#drawer-content` based on mode; shows/hides cancel button; calls `resetLogBuffer()`.
+   - `openFile()` updated to target `#drawer-file-content`.
+   - Cancel button event listener wired: `$('#drawer-cancel').addEventListener('click', cancelRun)`.
+
+2. `public/index.html`:
+   - `<button id="drawer-cancel" class="btn-cancel" hidden>Cancel</button>` added to drawer header before close button.
+   - `<pre id="drawer-file-content" class="drawer-content">` (file view).
+   - `<div id="drawer-content" class="drawer-content">` wrapping `#drawer-log-cap` + `#drawer-log` (run log).
+
+3. `public/style.css`:
+   - `#drawer-cancel`: muted amber style (`#c89840` on `#2a1a08` background, `#5a3a14` border). `:hover` and `:focus-visible` states.
+   - `#drawer-status.cancelled`: amber pill to match.
+   - `.drawer-content`: shared flex/scroll base style.
+   - `.drawer-log-cap`: subtle cap indicator bar.
+   - `.drawer-log`: log line container with padding/monospace.
+   - `.drawer-log .log-line { display: block; white-space: pre-wrap; }`.
+
+4. `__tests__/sse-batching.test.ts` — 8 new unit tests:
+   - rAF batching: 1000 lines → 1 rAF scheduled, 1 `insertAdjacentHTML` call.
+   - rAF scheduling: second rAF fires after first flush.
+   - Ring buffer: 3000 lines → exactly 2000 stored; cap indicator shown at 2001.
+   - `resetLogBuffer()` clears count.
+   - Cancel button visibility: open run → shown; finishRun → hidden; open file → hidden; finishRun clears runId.
 
 **Test results:** 77/77 PASS (69 pre-existing + 8 new).
 
-**Co-dispatched BE Dev PR:** `keyan-commits/apex-team-viewer#23` — process registry + `DELETE /api/run-test/:id` + 10 tests. Cancel button degrades gracefully (404 → log note).
+**Co-dispatched BE Dev PR:** `keyan-commits/apex-team-viewer#23` — process registry + `DELETE /api/run-test/:id` endpoint + 10 cancel endpoint tests. Cancel button gracefully degrades to log note if BE PR not yet merged (404 → "cancel endpoint unavailable").
 
-**Gate routing:** `public/app.js`, `public/index.html`, `public/style.css` → UX Designer gates. No `server.mjs` changes — Architect gate not required.
+**Gate routing:**
+- `public/app.js`, `public/index.html`, `public/style.css` touch rendered UI → UX Designer gates.
+- No `server.mjs` changes — Architect gate not required for this PR.
+- QA can verify on viewer PR #24 branch.
+
+---
+
+## ⏭️ PREV — 2026-06-05 — Wave 139: Server-vs-UI routing refusal clause
+
+### Wave-139 PASS verdict — PR #433 — SHA dac6f8a47180bee9bcce10b78f5e5d1dc6f6c9ff
+- **Gate role:** ui-developer (self-attestation — single-file body amendment)
+- **Timestamp:** 2026-06-05T00:00:00Z
+- **Notes:** Added `### Server-vs-UI routing refusal (Wave 139 — MANDATORY)` section to `.claude/agents/ui-developer.md` before Wave 122 anchor. 8 trigger patterns + 3-step refusal protocol + cross-ref to `~/.claude/skills/role-routing-server-vs-ui/SKILL.md`. Cleanliness 153/153 + FEAT-0001 38/38 PASS.
 
 ---
 

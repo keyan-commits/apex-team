@@ -3,7 +3,7 @@ ticket: OPS-0004
 parent_feat: FEAT-0005
 parent_us: US-102
 role: devsecops
-status: in-flight
+status: done
 wave: 126
 ---
 
