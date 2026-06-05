@@ -1,6 +1,41 @@
 # ui-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-05 — Wave 135: Cache-Control: no-cache for viewer static assets
+## ⏭️ NOW — 2026-06-05 — Wave 136: Playwright headed-mode toggle
+
+### Wave-136 — viewer PR #22 open — apex-team handoff PR in progress
+
+**Feature:** Toggle checkbox in the QA tab that lets users run Playwright tests with a visible browser window instead of headless. Persists state to localStorage. Non-Playwright runners (vitest/jest/maven/gradle) silently ignore the flag.
+
+**Deliverables (all in `keyan-commits/apex-team-viewer` PR #22, branch `feature/wave-136-playwright-headed-toggle`, commit `a3281ec`):**
+
+1. `server.mjs` — `runTest()` reads `?headed=1` query param; appends `--headed` to args only when `runner === 'playwright'`. Comment clarifies other runners are silently unaffected. The echoed command in the SSE `start` event serves as visual confirmation.
+
+2. `public/index.html` — `<label id="playwright-headed-label">` with `<input type="checkbox" id="playwright-headed-checkbox">` added inside `#view-output .view-bar`, initially `hidden`. Carries `title` attribute explaining Playwright-only scope.
+
+3. `public/app.js`:
+   - `PW_HEADED_KEY = 'apex-team-viewer.playwright-headed'` constant.
+   - `initPlaywrightHeadedToggle()` IIFE: restores checkbox state from localStorage on page load; persists on change.
+   - `updatePlaywrightHeadedVisibility(role)`: shows label only when `role === 'qa'`, hides on all others.
+   - `setRole()` calls `updatePlaywrightHeadedVisibility(role)` on each role switch.
+   - `runTest()`: appends `&headed=1` to the EventSource URL when checkbox is checked.
+
+4. `public/style.css` — `.pw-headed-label` + `.pw-headed-checkbox`: small inline-flex label, same visual weight as role tabs. `accent-color: #6a8cd6` for checkbox. `:focus-visible` ring: `2px solid #6a8cd6, offset 1px` matching Wave 125 canonical style.
+
+5. `__tests__/playwright-headed.test.ts` — 3 new tests:
+   - Test 1: resolved playwright args + `--headed` applied → `--headed` in result args.
+   - Test 2: resolved vitest args + headed flag → `--headed` NOT in result args (ignored).
+   - Test 3: inline mini-server validates SSE `start` event echoes `--headed` in command when `?headed=1` is passed.
+
+**Test results:** 56/56 PASS (53 pre-existing + 3 new).
+
+**Gate routing:**
+- `public/app.js`, `public/index.html`, `public/style.css` touch rendered UI → UX Designer gates.
+- `server.mjs` is server-side → Architect gates.
+- QA can verify against viewer PR #22 branch.
+
+---
+
+## ⏭️ PREV — 2026-06-05 — Wave 135: Cache-Control: no-cache for viewer static assets
 
 ### Wave-135 — viewer PR #21 open — apex-team handoff PR pending
 
