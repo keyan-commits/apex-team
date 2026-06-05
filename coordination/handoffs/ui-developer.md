@@ -1,6 +1,57 @@
 # ui-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-05 — Wave 140: SSE batching + log ring buffer + cancel button
+## ⏭️ NOW — 2026-06-05 — Wave 141: test-runner UI redesign (UX-0002)
+
+### Wave-141 — viewer PR #25 open — apex-team HANDOFF PR in progress
+
+**Feature:** Full test-runner UI redesign of the run drawer per UX-0002 spec.
+
+**Viewer PR:** `keyan-commits/apex-team-viewer#25` (branch `feature/wave-141-test-runner-ui-impl`, commit `38b3262`)
+**apex-team HANDOFF PR:** `feature/wave-141-ui-handoff` (this branch)
+
+**Deliverables (all in viewer PR #25):**
+
+1. `public/index.html` — drawer markup replaced with UX-0002 structure (Wave 140 IDs preserved). New elements: `#drawer-run-bar`, `#drawer-status-badge`, `#drawer-elapsed`, `#drawer-progress`, `#drawer-result-summary`, `#drawer-result-badge`, `#drawer-result-detail`, `#drawer-result-elapsed`, `#drawer-empty-state`, `#drawer-log-panel`, `#drawer-log-count`, `#drawer-copy-logs`, `#drawer-log-toggle`, `#drawer-jump-bottom`, `#drawer-screenshot-bar`, `#drawer-open-screenshot`. `#drawer-title-row` wraps `#drawer-title`.
+
+2. `public/app.js`:
+   - **Wave 141 helpers (pre-`flushLogBuffer`):** `startElapsedTimer`/`stopElapsedTimer`/`renderElapsed`, `parseProgress`/`renderProgress`/`resetProgress`, `classifyLogLine`, `prefixLine`, `checkScreenshot`, `initLogPanelCollapse`, `initCopyLogs`, `initScreenshotButton`, `initLogToggle`, `initJumpToBottom`, `showResultSummary`
+   - **`flushLogBuffer`** updated: log lines now classified + prefixed via `classifyLogLine`/`prefixLine`; log count updates `#drawer-log-count`; jump-to-bottom button shown/hidden based on scroll position
+   - **`pushLogLine`** updated: runs `parseProgress` + `checkScreenshot` on each line
+   - **`resetLogBuffer`** updated: resets elapsed, progress, screenshot, jump-button, result-summary, elapsed display, log count, copy-logs button
+   - **`openDrawer`** updated: shows/hides new HTML structure; sets STARTING… badge; restores log panel collapse pref; sets focus on cancel (or close) button
+   - **`closeDrawer`** updated: stops elapsed timer; returns focus to `state.lastRunTrigger`
+   - **`setDrawerStatus`** migrated: targets `#drawer-status-badge` with `state-*` class scheme
+   - **`runTest`** updated: stores `lastRunTrigger`; captures `runner` from SSE start; calls `startElapsedTimer` on start; calls `stopElapsedTimer` + `showResultSummary` on done/timeout; uses `state-*` badge classes
+   - **`cancelRun`** updated: uses `state-cancelled` class; calls `stopElapsedTimer` + `showResultSummary`
+   - `state.lastRunTrigger` field added
+   - Wave 141 handlers wired at bottom: `initCopyLogs`, `initScreenshotButton`, `initLogToggle`, `initJumpToBottom`
+
+3. `public/style.css` — full Wave 141 CSS per UX-0002: run-bar, status badge + 6 state classes + pulse animation + reduced-motion, elapsed timer, progress counter, header actions, close/cancel buttons, result summary card, empty state, log panel section + header + actions, log toggle, copy-logs, drawer-log-scroll, log lines (error/warn/pass/info colors), log-cap notice, jump-to-bottom, drawer-file-pre, screenshot bar, responsive 768px (bottom-panel) + 480px (wrap) breakpoints
+
+4. `__tests__/test-runner-ui.test.ts` — 44 new unit tests:
+   - Progress parsers: vitest/jest summary (N passed + N failed), vitest/jest in-flight RUN, playwright [N/M], playwright Running N, maven Tests run:, gradle (same), no-match → null, playwright priority over vitest on same line
+   - Log classifier: error patterns (error, FAIL), warn patterns (warn, WARNING), pass patterns (PASSED, OK), info default, error > pass precedence
+   - Elapsed formatter: 0s, 3s, 107s, 600s, 3661s (>60min)
+   - Status badge state-class: all 7 transitions (pending/running/passed/failed/cancelled/error/timeout)
+   - Symbol prefix: ✗ prepend, dedup ✗, ⚠ prepend, ✓ prepend, info no-prefix, dedup ✓
+   - Screenshot detection: .png, .jpg, .jpeg match; no-match for plain text / .txt
+   - localStorage (via mock): absent→false, set→'1', clear→null, true-pref persists
+
+**Test results:** 121/121 PASS (77 pre-existing + 44 new).
+
+**ID migration from Wave 140:**
+- `#drawer-status` → `#drawer-status-badge`
+- CSS class migration: `'run'` → `'state-running'`, `'ok'` → `'state-passed'`, `'fail'` → `'state-failed'`, `'pending'` → `'state-pending'`, + new `'state-cancelled'`, `'state-error'`
+
+**Gate routing:**
+- `public/app.js`, `public/index.html`, `public/style.css` touch rendered UI → UX Designer gates.
+- No `server.mjs` or `lib/` changes — BE Dev lane not touched.
+- QA verifies on viewer PR #25 branch.
+- After both UX PASS + QA PASS: HANDOFF to DevSecOps to merge.
+
+---
+
+## ⏭️ PREV — 2026-06-05 — Wave 140: SSE batching + log ring buffer + cancel button
 
 ### Wave-140 — viewer PR #24 open — apex-team HANDOFF PR in progress
 
