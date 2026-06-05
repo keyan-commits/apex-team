@@ -1,6 +1,59 @@
 # ux-designer — HANDOFF
 
-## NOW — 2026-06-04 — Wave 130 (Runner badge UX gate — PR #13)
+## NOW — 2026-06-05 — Wave 132 (Runner sub-grouping UX gate — PR #17)
+
+### Wave-132 REVISE verdict — PR #17 — SHA 05d6ac1560de8538d5e22332be92eaed4a9a6ea2
+
+- **Gate role:** ux-designer
+- **Timestamp:** 2026-06-05T00:00:00Z
+- **Repo reviewed:** `keyan-commits/apex-team-viewer` PR #17 commit `05d6ac1560de8538d5e22332be92eaed4a9a6ea2`
+- **Spec file:** No prior design spec for runner sub-grouping. Feature self-contained; spec authored inline from PR diff (below). Gate carries forward Wave 125 a11y conformance requirement.
+
+**Implied spec (runner sub-grouping):**
+- `.runner-group-header`: `<div>` label, 11px/600-weight uppercase, rendered only when `groups.size > 1`.
+- `.runner-group-count`: `<span>` count in parens, normal weight, inside header.
+- Canonical runner order: vitest → jest → playwright → maven → gradle → unknown.
+- Single-runner section: header suppressed (`omitHeaderIfSingle = true`).
+- `▶ Run` button: shown for every test file regardless of runner resolution (Wave 132 change from prior ungrouped gap).
+- No new animation or transitions introduced.
+
+**Criterion-by-criterion results:**
+
+| # | Criterion | Result | Detail |
+|---|---|---|---|
+| 1 | Heading semantics | PASS | `.runner-group-header` is a `<div>`, not an `<h4>`. This is correct: a `<div>` avoids polluting the document outline (the parent `<h3>` section heading owns the heading level; the sub-group label is a visual separator, not a structural heading). No outline regression. |
+| 2 | Contrast ≥ AA | **BLOCK** | `.runner-group-header` label uses `color: #4a4e5a` on `background: #0a0a0c` — **2.38:1**, fails AA (requires 4.5:1 at 11px/600-weight). `.runner-group-count` uses `color: #3a3e48` on same bg — **1.85:1**, fails AA. Both values are below the existing `.feat-section-heading` (`#6a6e78` at 3.88:1) which is itself a pre-existing warn (filed below). Required fix: raise label to ≥ `#7a7e88` (4.87:1) and count to ≥ `#7a7e88` (4.87:1) or match label. |
+| 3 | Sub-header consistency | WARN | Design language is consistent in pattern (uppercase, letter-spacing, 11px) but color is darker than `.feat-section-heading` (`#4a4e5a` vs `#6a6e78`). The intent appears intentional (sub-level = more muted) but the delta overshoots into inaccessible territory. Fix resolves both issues simultaneously. |
+| 4 | Empty group handling | PASS | `groupByRunner` only adds keys for items actually present; `RUNNER_ORDER` filters empty groups. `renderRunnerGroups` returns `''` for empty `items`. No `VITEST (0)` noise possible. |
+| 5 | Ordering predictable | PASS | `RUNNER_ORDER = ['vitest', 'jest', 'playwright', 'maven', 'gradle', 'unknown']` enforced. Canonical, matches stated spec. Future-proof append for unknown runners. |
+| 6 | ▶ Run button consistency | PASS | Both `renderTicketRow` (FEAT cards) and `renderUngroupedRow` (Legacy section) now show `▶ Run` for every `isTestPath(f.path) === true` row regardless of runner resolution. The prior Wave 130 gap (ungrouped section only showed ▶ Run for known runners) is fixed. |
+| 7 | Reduced motion / animation regression | PASS | No new `transition` or `animation` rules in `.runner-group-header` or `.runner-group-count`. Existing `@media (prefers-reduced-motion: reduce)` block covers `.feat-card-header`; no new selector needs coverage. |
+
+**Full-page scan:** ≥1280px AND ≥390px viewports verified via source inspection. Sub-group headers render inside `.feat-card-list` and `.feat-section-list` containers; both have `overflow: hidden` and `border-radius: 8px` — header fits cleanly. At ≥390px the `.runner-group-header` is full-width block, no overflow. No layout regression on adjacent widgets (FEAT card toggle, search, pipeline section).
+
+**Block findings (must fix before PASS):**
+
+1. **[BLOCK] Contrast — `.runner-group-header` label color**
+   - Spec requirement: Wave 125 a11y carry-forward, WCAG 2.1 AA §1.4.3
+   - Observed: `color: #4a4e5a` on `background: #0a0a0c` → 2.38:1
+   - Required: raise `color` to ≥ `#7a7e88` (achieves 4.87:1) or lighter
+   - File: `public/style.css`, `.runner-group-header` rule (line ~549)
+
+2. **[BLOCK] Contrast — `.runner-group-count` color**
+   - Spec requirement: same as above
+   - Observed: `color: #3a3e48` on `background: #0a0a0c` → 1.85:1
+   - Required: raise `color` to ≥ `#7a7e88` (4.87:1). Simplest fix: use same value as label (a count in parens reads fine at equal weight if label is muted; or apply `opacity` via parent — but opacity also reduces contrast, so prefer an explicit hex value)
+   - File: `public/style.css`, `.runner-group-count` rule (line ~562)
+
+**Pre-existing warn filed as issue (not a block for this PR):**
+
+- `.feat-section-heading` uses `color: #6a6e78` on `#0a0a0c` → 3.88:1 (below 4.5:1 AA). Pre-existing, not introduced by Wave 132 diff. Filed as GitHub issue — see below.
+
+**Verdict: REVISE — re-implementation HANDOFF sent to UI Dev. Re-review required before QA proceeds.**
+
+---
+
+## PREV — 2026-06-04 — Wave 130 (Runner badge UX gate — PR #13)
 
 ### Wave-130 PASS verdict — PR #13 — SHA 6d7f0fdb0c9af73a27303407175ec4a8b956a03b
 - **Gate role:** ux-designer
