@@ -1,4 +1,40 @@
-## NOW — 2026-06-04 — Wave 126 (US-102 AC12 feat-backfill regression test TEST-0005)
+## NOW — 2026-06-05 — Wave 139 (role-routing-server-vs-ui skill + 3 body amendments regression test TEST-0006)
+
+### IN FLIGHT — TEST-0006 on branch feature/wave-139-qa-test
+
+- **Branch:** `feature/wave-139-qa-test`
+- **Commit SHA:** (SHA-pending)
+- **Timestamp:** 2026-06-05T17:45:00Z
+
+#### Wave-139 deliverables
+
+- `tests/qa/features/FEAT-tbd-role-routing/TEST-0006-role-routing-anchors.test.ts` — 29 tests covering Wave 139 role-routing skill + 3 body amendments. Runtime-gated (SKIP not FAIL) for all body-amendment assertions when amendment PRs not yet merged.
+- `tests/qa/features/INDEX.md` — TEST-0006 row added to Registry + allocation log.
+
+#### Gate results
+
+- `pnpm vitest run tests/qa/features/FEAT-tbd-role-routing/` -> 29/29 PASS
+- `pnpm test:run` -> 751/752 PASS + 1 pre-existing skip (Wave 138 skip)
+- `pnpm lint` -> clean (0 warnings)
+- `pnpm type-check` -> clean
+
+#### Runtime-gate status
+
+These tests SKIP (not FAIL) on this QA-only branch because the amendment PRs haven't merged yet:
+- P1 (skill file): SKIP — Wave 139 skill PR #432 not merged on this branch
+- P2 (UI Dev anchor), N1 (trigger keywords), N2 (HALT): SKIP — Wave 139 ui-developer body amendment not merged
+- P3 (BE Dev anchor), N3 (backend/features/): Wave 139 body in working tree (already on HEAD of main), P3/N3 PASS
+- P4 (PO anchor), E2 ui-developer: mixed — depends on whether HEAD has PO amendment merged
+
+These flip to PASS once all 3 amendment PRs (#UI-dev, #BE-dev, #PO) and skill PR #432 merge to main.
+
+#### S10 gate
+
+S10 not triggered — wave tests agent-body text content; no user-supplied collection logic in test code.
+
+---
+
+## PREV — 2026-06-04 — Wave 126 (US-102 AC12 feat-backfill regression test TEST-0005)
 
 ### COMMITTED — TEST-0005 on branch feature/126-feat-backfill-command
 
