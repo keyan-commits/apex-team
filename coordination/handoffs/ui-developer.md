@@ -1,6 +1,24 @@
 # ui-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-05 — Wave 134: viewer flicker fix + workspace-root display bug
+## ⏭️ NOW — 2026-06-05 — Wave 135: Cache-Control: no-cache for viewer static assets
+
+### Wave-135 — viewer PR #21 open — apex-team handoff PR pending
+
+**Symptom:** browsers cached `app.js` / `index.html` aggressively (no `Cache-Control` header) — Wave 134 flicker fix didn't activate for a user despite hard-refresh.
+
+**Fix:** added `res.setHeader('Cache-Control', 'no-cache')` in `serveStatic()` (`server.mjs` line 1053).  `no-cache` means the browser re-validates with `If-Modified-Since` on every load — tiny conditional GET, no flicker risk.
+
+**Test:** `__tests__/cache-control.test.ts` — 3 new integration tests spinning up the server on an ephemeral port and asserting the header on `/app.js` + `/` responses.  56/56 PASS.
+
+**Viewer PR:** `keyan-commits/apex-team-viewer#21` (branch `feature/wave-135-cache-control`, commit `0127d91`).
+
+**Gate routing:**
+- `server.mjs` is pure server-side (no rendered pixels) — Architect gates; no UX review needed.
+- QA can verify on viewer PR branch.
+
+---
+
+## ⏭️ PREV — 2026-06-05 — Wave 134: viewer flicker fix + workspace-root display bug
 
 ### Wave-134 — viewer PR #20 open — apex-team HEAD (SHA-pending)
 
