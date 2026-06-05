@@ -1,6 +1,42 @@
 # backend-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-05 — Wave 137 BE retro backfill (viewer server.mjs waves 119–136)
+## ⏭️ NOW — 2026-06-05 — Wave 140 cancel endpoint + process registry
+
+## Done
+
+- **Wave 140 — BE-0010 cancel endpoint + process registry shipped.**
+  - `server.mjs`: module-scoped `activeRuns` Map, `DELETE /api/run-test/:runId`, SIGTERM→SIGKILL escalation, 429 cap (default 10, env override), TSV audit log.
+  - SSE `start` event extended with `runId` (backward-compatible).
+  - `__tests__/run-cancel.test.ts`: 10 new tests, 69/69 total pass.
+  - `backend/features/FEAT-tbd-test-cancel/BE-0010-test-cancel-endpoint.md` authored.
+  - `backend/features/INDEX.md` updated: BE-0010 allocated, next = BE-0011.
+
+### Wave-140 PASS verdict — viewer PR #23 — SHA 1b74301b (pending apex-team PR)
+
+- **Gate role:** backend-developer (self-review, BE lane)
+- **Timestamp:** 2026-06-05T00:00:00Z
+- **Notes:** server.mjs only. No client-side changes. No `architecture/` touched. 69/69 tests pass. UI Dev co-dispatch on `feature/wave-140-sse-perf-hotfix-ui` (parallel, independent).
+
+## In flight
+
+- Viewer PR #23 (`feature/wave-140-cancel-endpoint-be`) awaiting Architect code review PASS.
+- apex-team PR (`feature/wave-140-be-handoff`) awaiting DevSecOps merge (docs + HANDOFF).
+
+## Next
+
+- After Architect PASS: HANDOFF to QA for verification on viewer repo.
+- After QA PASS: HANDOFF to DevSecOps for viewer PR merge.
+- BA to allocate real FEAT-NNNN for `FEAT-tbd-test-cancel` when formally opened.
+
+## Notes
+
+- UI Dev's PR can land independently — cancel button degrades gracefully to 404 if this endpoint is absent.
+- SIGKILL-after-5s is intentional: test runners have no user data at risk.
+- Audit-log dir (`coordination/test-runs/`) not auto-created — silent-skip avoids filesystem side effects on foreign workspaces.
+
+---
+
+## ⏭️ PREV — 2026-06-05 — Wave 137 BE retro backfill (viewer server.mjs waves 119–136)
 
 ## Done
 
