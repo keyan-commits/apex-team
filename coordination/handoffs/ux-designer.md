@@ -1,16 +1,54 @@
 # ux-designer — HANDOFF
 
-## NOW — 2026-06-05 — Wave 141 (Test runner UI redesign spec — UX-0002)
+## NOW — 2026-06-05 — Wave 141 (Test runner UI redesign — implementation gate)
+
+### Wave-141 PASS verdict — PR #25 — SHA 38b32620d4a8d4d8736467e20ae9a2e7a105edf4
+
+- **Gate role:** ux-designer
+- **Timestamp:** 2026-06-05T00:00:00Z
+- **Repo reviewed:** `keyan-commits/apex-team-viewer` PR #25 branch `feature/wave-141-test-runner-ui-impl` commit `38b32620d4a8d4d8736467e20ae9a2e7a105edf4`
+- **Spec file:** `design/features/FEAT-0005-test-runner-ui/UX-0002-test-runner-redesign.md`
+
+**Criterion-by-criterion results (all 13 + ID contract):**
+
+| # | Criterion | Result | Detail |
+|---|---|---|---|
+| 1 | Status badge — 6 states, hex colors, pulse dot, reduced motion | PASS | All 6 state classes with exact spec hex values. `status-pulse` 1.5s ease-in-out `::before` dot. `prefers-reduced-motion` override: `animation: none; opacity: 1`. |
+| 2 | Elapsed timer — mm:ss, min-width 36px | PASS | `renderElapsed()` with `padStart(2,'0')`. `.run-elapsed { min-width: 36px }`. `startElapsedTimer()` on SSE `start`; `stopElapsedTimer()` on `done`/`timeout`/`error`. |
+| 3 | Progress counter — 5 parsers, hidden until first match | PASS | All 5 parsers present (playwright bracket, playwright Running N, vitest/jest summary, maven/gradle, vitest/jest in-flight). `#drawer-progress` starts hidden; shown on first match; reset on new run. |
+| 4 | Color-coded logs — error/warn/pass/info, symbol prefix, contrast ≥4.5:1 | PASS | `classifyLogLine()` exact spec regex. `prefixLine()` with `^[✗⚠✓]` detection guard. Spec CSS colors verbatim (`#e88888`/`#d8b96e`/`#7ec77c`/`#c8ccd4` on `#07070a`). |
+| 5 | Collapsible log panel + localStorage persistence | PASS | `initLogPanelCollapse()` + `initLogToggle()` with key `apex-team-viewer.log-panel-collapsed`. `aria-expanded` toggled. `▼ Hide` / `▶ Show` copy. `aria-controls="drawer-content"`. |
+| 6 | Auto-scroll + jump-to-bottom | PASS | `flushLogBuffer()` atBottom check; shows/hides `#drawer-jump-bottom`. Sticky float-right button. `initJumpToBottom()` wires click. Reset on `resetLogBuffer()`. |
+| 7 | Copy-logs button + 1500ms toast | PASS | Collects `.log-line` text; success: `Copied N lines` + `.copied` for 1500ms; failure: `Copy failed` + `.failed` for 1500ms. |
+| 8 | Playwright screenshot button — playwright+path conditions only | PASS | `currentRunner` captured from SSE `start`. `checkScreenshot()` guards on `currentRunner !== 'playwright'`. Clipboard fallback + `Path copied`. Reset in `resetLogBuffer()`. |
+| 9 | Cancel button — muted amber `#c87840` | PASS | `color: #c87840; border: 1px solid #3a2814`. Hover/active/focus-visible per spec. `aria-label` + `title` tooltip verbatim. Visual label `■ Cancel`. Reduced motion override. |
+| 10 | Empty state — copy verbatim | PASS | `Click ▶ RUN on any test to see live output here.` (&#x25B6; = ▶). CSS: flex centered, 13px/1.6, `#6a6e78`, max-width 280px. |
+| 11 | Result summary card on terminal state | PASS | `showResultSummary()` called on `done`/`timeout`/`error`/`cancel`. Badge + detail copy per spec (5 outcomes). `in ${elapsedSeconds}s` elapsed. 13px badge font in summary card. |
+| 12 | Responsive — 768px bottom panel, ≥390px run-bar wrap | PASS | `@media (max-width: 768px)`: 50vh bottom panel, grid-row 3, border-top. `#drawer-run-bar` flex-wrap. `.drawer-header-actions` full-width right-aligned. `@media (max-width: 480px)`: log panel header wrap. |
+| 13 | A11y — aria-labels, focus-visible ring, aria-live, aria-expanded, focus management | PASS | All 9 ARIA attributes present verbatim. Focus: `openDrawer` → cancel or close; `closeDrawer` → `lastRunTrigger`. Focus ring: `outline: 2px solid #6a8cd6; outline-offset: 1px` on all interactive elements. Escape key closes drawer. |
+| § | §20 ID contract | PASS | `#drawer-log`, `#drawer-log-cap`, `#drawer-cancel`, `#drawer-file-content`, `#drawer-content` all preserved. `#drawer-status` → `#drawer-status-badge` (authorized). No other IDs silently renamed. |
+
+**Full-page scan:** ≥1280px AND ≥390px viewports verified via source inspection. Drawer as `<aside>` in sticky grid-column-2 layout; Wave 141 CSS adds `max-height: calc(100vh - 53px)` + `overflow: hidden` + flex-column — no unbounded height. At ≥390px (via `max-width: 480px` media query) run-bar and log-panel-header wrap correctly; no horizontal overflow. Pre-existing widgets (role tabs, search, FEAT cards, pipeline section, runner badges) unaffected — Wave 141 diff is confined to the `#drawer` aside and its child elements.
+
+**Nit findings (not blocking):**
+1. Progress parser priority: spec table lists vitest/jest before playwright; implementation checks playwright bracket/Running first. In practice token patterns are disjoint — no behavioral difference. Nit only, not filing an issue.
+2. Mobile wrap breakpoint: `max-width: 480px` vs spec's "≥390px" language. More generous wrap is a conservative UX choice. Nit only.
+
+**No block findings. No warn findings.**
+
+**Verdict: PASS — DevSecOps may merge PR #25.**
+
+---
+
+## PREV — 2026-06-05 — Wave 141 (Test runner UI redesign spec — UX-0002)
 
 ### Wave-141 spec delivered — `design/features/FEAT-0005-test-runner-ui/UX-0002-test-runner-redesign.md`
 
-- **Status:** spec PASS (this is the spec delivery, not the implementation gate)
+- **Status:** spec delivered (this was the spec delivery turn, not the implementation gate)
 - **Spec path:** `design/features/FEAT-0005-test-runner-ui/UX-0002-test-runner-redesign.md`
 - **Branch:** `feature/wave-141-test-runner-ux-spec`
 - **Features specced:** status badge (6 states + pulse dot), elapsed timer (mm:ss), live progress counter (vitest/jest/playwright/maven/gradle regex parsers), color-coded log lines (error/warn/pass/info + symbol prefix for color-blind safety), collapsible log panel (localStorage persist), copy-logs button (clipboard + toast), Playwright screenshot button (file:// open + clipboard fallback), cancel button visual (muted amber #c87840), result summary card, empty state, responsive behavior (768px/390px), full a11y spec (ARIA, focus management, reduced motion).
-- **Dependency:** Wave 140 (SSE batching + ring buffer + runId + cancel endpoint) must land before UI Dev implements. Spec assumes those primitives present.
 - **ID contract:** `#drawer-log`, `#drawer-log-cap`, `#drawer-cancel`, `#drawer-file-content`, `#drawer-content` preserved from Wave 140; `#drawer-status` → `#drawer-status-badge` (rename in setDrawerStatus()).
-- **Next:** UI Dev dispatch after this PR merges. Implementation gate fires after UI Dev's PR — NOT now.
 
 ---
 
