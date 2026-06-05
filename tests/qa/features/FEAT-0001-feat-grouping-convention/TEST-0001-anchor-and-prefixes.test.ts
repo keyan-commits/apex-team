@@ -2,7 +2,7 @@
 // parent_feat: FEAT-0001
 // parent_us: US-098
 // role: qa
-// status: in-flight
+// status: done
 
 /**
  * Wave 122 -- FEAT-XXXX feature grouping convention regression test (US-098 AC13)
