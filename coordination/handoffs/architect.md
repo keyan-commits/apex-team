@@ -2,10 +2,10 @@
 
 ## ⏭️ NOW — 2026-06-05 — Wave 139 role-routing skill authored (PASS, .claude/skills/role-routing-server-vs-ui/SKILL.md)
 
-### Wave-139 PASS verdict — PR #0 — SHA 0000000000000000000000000000000000000000
+### Wave-139 PASS verdict — PR #432 — SHA 5dc87fcd105f63038d74e03144ab0c870030220b
 - **Gate role:** architect
 - **Timestamp:** 2026-06-05T17:30:00Z
-- **Notes:** Wave 139 role-routing-server-vs-ui skill authored at `.claude/skills/role-routing-server-vs-ui/SKILL.md`. PR # and SHA backfilled post-commit per ADR-018 standard flow.
+- **Notes:** Wave 139 role-routing-server-vs-ui skill authored at `.claude/skills/role-routing-server-vs-ui/SKILL.md`. Nine required sections present per the Wave 139 brief; frontmatter shape matches sibling skill files; boundary respected (no `.claude/agents/` edits, no `architecture/` edits this turn). SHA `5dc87fcd105f63038d74e03144ab0c870030220b` is the initial commit on `feature/wave-139-role-routing-skill`; this amend backfills the PR # and SHA into the verdict heading per ADR-018 standard flow.
 
 ### Wave 139 narrative — own-lane authorship
 - **Gate role detail:** architect (own-lane authorship — Wave 139 brief tasked me with authoring the `.claude/skills/role-routing-server-vs-ui/SKILL.md` durable rule file plus this HANDOFF update. Boundary: only the new SKILL.md + own HANDOFF. NO `.claude/agents/` edits — those are UI Dev / BE Dev / PO's own lanes via separate parallel dispatch. NO `architecture/` edits this turn — FEAT/US/ARCH formalization explicitly deferred to a follow-up wave per the brief.).
