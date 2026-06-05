@@ -1,6 +1,54 @@
 # ux-designer — HANDOFF
 
-## NOW — 2026-06-04 — Wave 130 (Runner badge UX gate — PR #13)
+## NOW — 2026-06-05 — Wave 132 (Runner sub-grouping UX re-gate — PR #17)
+
+### Wave-132 PASS verdict — PR #17 — SHA 6b79a7067c578c260127135d4311677c8ab2c9f5
+
+- **Gate role:** ux-designer
+- **Timestamp:** 2026-06-05T00:00:00Z
+- **Repo reviewed:** `keyan-commits/apex-team-viewer` PR #17 branch `feature/wave-132-runner-grouping-java-frontmatter` commit `6b79a7067c578c260127135d4311677c8ab2c9f5`
+- **Spec file:** No prior design spec — feature is self-contained; spec written inline (runner sub-group headers, contrast tokens).
+- **Prior verdict:** REVISE at SHA `05d6ac1560de8538d5e22332be92eaed4a9a6ea2` (two contrast BLOCKs). Resolved by UI Dev in commit `6b79a70`.
+
+**Implied spec (runner sub-grouping):**
+- `.runner-group-header`: `<div>` label, 11px/600-weight uppercase, rendered only when `groups.size > 1`.
+- `.runner-group-count`: `<span>` count in parens, `font-weight: 400`, inside header.
+- Color token: `#7a7e88` on `#0a0a0c` = 4.87:1 — passes WCAG AA for both header and count.
+- Canonical runner order: vitest → jest → playwright → maven → gradle → unknown.
+- Single-runner section: header suppressed (`omitHeaderIfSingle = true`) — no noise.
+- `▶ Run` button: shown for every test file regardless of runner resolution.
+- No new animations or transitions.
+- `.feat-section-heading` bonus fix: `#6a6e78` (3.88:1, was failing) → `#7a7e88` (4.87:1). Closes apex-team-viewer#18.
+
+**Criterion-by-criterion results (re-gate at `6b79a70`):**
+
+| # | Criterion | Result | Detail |
+|---|---|---|---|
+| 1 | BLOCK 1 resolved — `.runner-group-header` contrast | PASS | `#7a7e88` on `#0a0a0c` = 4.87:1 ≥ 4.5:1. Exact value requested in REVISE. |
+| 2 | BLOCK 2 resolved — `.runner-group-count` contrast | PASS | `#7a7e88` on `#0a0a0c` = 4.87:1. Weight hierarchy preserved: count at `font-weight: 400` vs label's `font-weight: 600` — visually secondary without a contrast sacrifice. |
+| 3 | Bonus fix — `.feat-section-heading` contrast | PASS | `#6a6e78` (3.88:1) → `#7a7e88` (4.87:1). Pre-existing issue apex-team-viewer#18 closed. |
+| 4 | Heading semantics (`<div>` not `<h4>`) | PASS | Unchanged from REVISE gate — `<div>` correct as a visual separator, not a structural heading. |
+| 5 | Empty group handling | PASS | `groupByRunner` omits empty groups; `omitHeaderIfSingle` suppresses header for single-runner sections. |
+| 6 | Canonical runner order | PASS | `RUNNER_ORDER = ['vitest', 'jest', 'playwright', 'maven', 'gradle', 'unknown']` — future-proof via tail-append. |
+| 7 | ▶ Run button consistency (all test rows) | PASS | `renderTicketRow`: `runBtn` gated on `test` only — runner resolution not required. |
+| 8 | Reduced motion / no new transitions | PASS | No `transition` or `animation` in `.runner-group-header` or `.runner-group-count` rules. |
+| 9 | No layout regressions in `app.js` | PASS | `renderRunnerGroups` wraps existing `renderTicketRow` — no structural change to row HTML. Badge and ▶ Run placement unchanged. |
+
+**Full-page scan:** ≥1280px AND ≥390px viewports verified via source inspection. Sub-group `<div class="runner-group-header">` inserts above grouped rows within `.feat-card-list` and `.feat-section-list`; both are bounded containers — no overflow risk. At ≥390px the header is full-width block, no horizontal overflow. No layout regression on adjacent widgets (FEAT card collapsible, search, role tabs, pipeline section, ungrouped section).
+
+**No block findings. No new warn findings.**
+
+Issue apex-team-viewer#18 closed (`.feat-section-heading` contrast fix bundled in this PR).
+
+**Verdict: PASS — DevSecOps may merge PR #17.**
+
+---
+
+_(Superseded: Wave-132 REVISE at SHA `05d6ac1` — two contrast BLOCKs: `.runner-group-header` `#4a4e5a` = 2.38:1; `.runner-group-count` `#3a3e48` = 1.85:1. Both fixed in commit `6b79a70` to `#7a7e88` = 4.87:1.)_
+
+---
+
+## PREV — 2026-06-04 — Wave 130 (Runner badge UX gate — PR #13)
 
 ### Wave-130 PASS verdict — PR #13 — SHA 6d7f0fdb0c9af73a27303407175ec4a8b956a03b
 - **Gate role:** ux-designer
