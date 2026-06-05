@@ -1,6 +1,46 @@
 # backend-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-04 — Wave 126 AC16 Plan C clause (US-102)
+## ⏭️ NOW — 2026-06-05 — Wave 137 BE retro backfill (viewer server.mjs waves 119–136)
+
+## Done
+
+- **Wave 137 — BE-0001 through BE-0009 retro summary docs authored.**
+  - Created `backend/features/INDEX.md` (allocation log, BE-0001–BE-0009, next = BE-0010).
+  - Created 9 BE-NNNN summary docs across 3 FEAT-tbd directories:
+    - `FEAT-tbd-viewer-workspace-switcher/` → BE-0001 (Wave 119 workspace switcher API), BE-0002 (Wave 121 auto-follow poll), BE-0007 (Wave 133 scan-dir bugfix)
+    - `FEAT-0002-feat-grouped-rendering/` → BE-0003 (Wave 123 artifacts API shape), BE-0004 (Wave 132 frontmatter parser extension)
+    - `FEAT-tbd-viewer-polyglot-runner/` → BE-0005 (Wave 130 runner resolver + SSE), BE-0006 (Wave 131 shell injection fix), BE-0008 (Wave 135 cache-control), BE-0009 (Wave 136 headed toggle)
+  - Wave 134 (client-only, no BE work) correctly skipped — no BE doc.
+  - Branch: `feature/wave-137-be-retro-backfill`. PR pending.
+
+- **Going-forward routing rule recorded in `backend/features/INDEX.md`:**
+  Any future `apex-team-viewer/server.mjs` or `lib/runner-resolver.mjs` change
+  MUST dispatch BE Dev in parallel with UI Dev. Server-side code is BE Dev's lane.
+
+### Wave-137 PASS verdict — PR #430 — SHA 178eb40e1766c3748bc855db01e15b94dcbf8f26
+
+- **Gate role:** backend-developer (self-review, docs-only wave)
+- **Timestamp:** 2026-06-05T00:00:00Z
+- **Notes:** Docs-only wave. No `.claude/agents/` edited. No `architecture/` touched. No peer HANDOFF docs edited. 9 BE-NNNN retro summary docs + 1 INDEX.md created. Verification gates run before commit (see below).
+
+## In flight
+
+- PR `feature/wave-137-be-retro-backfill` open, awaiting DevSecOps merge (docs-only, no Architect gate required per workspace-conventions.md §doc-only).
+
+## Next
+
+- After PR merge: update SHA in this HANDOFF (or DevSecOps backfills per ADR-018).
+- BA to reconcile `parent_feat: TBD` entries to real FEAT-NNNN allocations when viewer FEATs are formally opened.
+- Any future viewer `server.mjs` change: dispatch BE Dev in parallel with UI Dev.
+
+## Notes
+
+- All 9 BE-NNNN docs are `status: retro` — actual implementation was in the viewer repo under UI Dev's historical authorship. Docs retroactively credit backend-shaped work.
+- Cluster rationale: workspace-switcher group (BE-0001, BE-0002, BE-0007), feat-grouped API group (BE-0003, BE-0004), polyglot-runner group (BE-0005, BE-0006, BE-0008, BE-0009).
+
+---
+
+## ⏭️ PREV — 2026-06-04 — Wave 126 AC16 Plan C clause (US-102)
 
 ## Done
 
