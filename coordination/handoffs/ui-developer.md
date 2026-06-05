@@ -1,6 +1,48 @@
 # ui-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-05 — Wave 131: viewer shell-injection fix (SHIPPED)
+## ⏭️ NOW — 2026-06-05 — Wave 132: runner sub-grouping + Java frontmatter parser
+
+### Wave-132 implementation complete — awaiting Architect + UX gate — viewer PR #17
+
+- **Viewer PR:** `keyan-commits/apex-team-viewer#17` (branch `feature/wave-132-runner-grouping-java-frontmatter`, commit `05d6ac1`)
+- **apex-team HANDOFF refresh:** this branch `feature/wave-132-handoff-refresh` off `c0622672f1bb8435892925ec4f6b07b18b4ff228`
+- **Tests:** 42/42 PASS (was 28/28; +14 new frontmatter-parser tests)
+
+**Deliverables (all in `keyan-commits/apex-team-viewer` PR #17):**
+
+1. `server.mjs` — `parseFrontmatter` extended with Java/line-comment support:
+   - Scans first 20 non-empty lines for `^(//|#)\s*(parent_feat|parent_us|feat|ticket|role|status)\s*:\s*(.+)$`
+   - Stops at first non-comment, non-blank line
+   - YAML `---` block still checked first and wins when present
+   - Works for any `//`-comment language (Java, TypeScript, Go, Kotlin)
+
+2. `public/app.js` — runner sub-grouping in QA tab:
+   - `groupByRunner(items)` + `renderRunnerGroups(items, renderRow)` helpers
+   - Canonical runner order: `vitest, jest, playwright, maven, gradle, unknown`
+   - Applied inside FEAT card bodies AND Legacy/Unsorted section
+   - Empty sub-groups omitted (no "vitest (0)" headers)
+   - ▶Run button now shown for ALL test files (previously only when runner was known)
+   - Runner badge still shown only when a specific runner is detected (not 'unknown')
+
+3. `public/style.css` — `.runner-group-header` + `.runner-group-count`:
+   - 11px uppercase muted label, consistent with `.feat-section-heading`
+   - Visually distinct from FEAT card headers; no new design language
+
+4. `__tests__/frontmatter-parser.test.ts` (14 new tests):
+   - Java `// parent_feat:` parsed correctly
+   - Stops at first non-comment line
+   - YAML wins when present
+   - `#` comment style (Python/shell)
+   - Empty file, no-match, >20-line limit → null
+
+**Gate routing:**
+- Viewer PR #17 touches rendered UI (app.js, style.css) → UX Designer gates UI
+- Server-side logic (server.mjs) → Architect gates
+- QA can verify against viewer PR branch
+
+---
+
+## ⏭️ PREV — 2026-06-05 — Wave 131: viewer shell-injection fix (SHIPPED)
 
 ### Wave-131 PASS verdict — PR #420 — SHA f43eded0ccd3ab93723b63c661806d52c723b158
 
