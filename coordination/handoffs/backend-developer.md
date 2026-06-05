@@ -1,41 +1,47 @@
 # backend-developer — HANDOFF
 
-## ⏭️ NOW — 2026-06-05 — Wave 139 Server-vs-UI routing assertion clause
+## ⏭️ NOW — 2026-06-05 — Wave 140 cancel endpoint + process registry
 
 ## Done
 
-- **Wave 139 — Server-vs-UI routing assertion clause added to `.claude/agents/backend-developer.md`.**
-  - Inserted `### Server-vs-UI routing assertion (Wave 139 — MANDATORY)` immediately before `### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)`.
-  - Section body: 1-sentence rule, 8 trigger patterns, 2-step assertion protocol (HANDOFF advisory to PO + retro BE-NNNN doc authorship for drift recovery), cross-ref to `~/.claude/skills/role-routing-server-vs-ui/SKILL.md`.
-  - All existing anchor headings preserved byte-for-byte.
-  - Branch: `feature/wave-139-be-dev-clause`. PR pending.
+- **Wave 140 — BE-0010 cancel endpoint + process registry shipped.**
+  - `server.mjs`: module-scoped `activeRuns` Map, `DELETE /api/run-test/:runId`, SIGTERM→SIGKILL escalation, 429 cap (default 10, env override), TSV audit log.
+  - SSE `start` event extended with `runId` (backward-compatible).
+  - `__tests__/run-cancel.test.ts`: 10 new tests, 69/69 total pass.
+  - `backend/features/FEAT-tbd-test-cancel/BE-0010-test-cancel-endpoint.md` authored.
+  - `backend/features/INDEX.md` updated: BE-0010 allocated, next = BE-0011.
 
-- **Verification gates all passed (Wave 139):**
-  - `grep -c "### Server-vs-UI routing assertion (Wave 139 — MANDATORY)"` = 1 ✓
-  - `grep -c "### FEAT-XXXX feature grouping standard (Wave 122 — MANDATORY)"` = 1 ✓
-  - `pnpm vitest run tests/qa/wave-108/subagent-body-cleanliness.test.ts` — 153/153 PASS ✓
-  - `pnpm vitest run tests/qa/features/FEAT-0001-feat-grouping-convention/` — 38/38 PASS ✓
+### Wave-140 PASS verdict — PR #437 — SHA e10692fc947f2b76b2a3874bd5720567b11e23f1
 
-### Wave-139 PASS verdict — PR #0 — SHA 7679bfcf5646fd4de7db50820cafa3bb9c0e258f
-- **Gate role:** backend-developer
-- **Timestamp:** 2026-06-05T17:35:00Z
-- **Notes:** Docs-only wave. Only `.claude/agents/backend-developer.md` + `coordination/handoffs/backend-developer.md` touched. No `architecture/` edited. No peer HANDOFF docs edited. Wave 122 anchor heading byte-for-byte preserved. Token discipline verified (153/153). Phase-1 placeholder per ADR-018 §amendment; DevSecOps backfills PR # and merge SHA post-merge.
+- **Gate role:** backend-developer (self-review, BE lane)
+- **Timestamp:** 2026-06-05T00:00:00Z
+- **Notes:** server.mjs only. No client-side changes. No `architecture/` touched. 69/69 tests pass. UI Dev co-dispatch on `feature/wave-140-sse-perf-hotfix-ui` (parallel, independent).
 
 ## In flight
 
-- PR `feature/wave-139-be-dev-clause` open, awaiting Architect code review + QA PASS + DevSecOps merge.
+- Viewer PR #23 (`feature/wave-140-cancel-endpoint-be`) awaiting Architect code review PASS.
+- apex-team PR (`feature/wave-140-be-handoff`) awaiting DevSecOps merge (docs + HANDOFF).
 
 ## Next
 
-- After PR merge: backfill real PR # and merge SHA in this HANDOFF.
-- Architect to gate (docs-only subagent body edit; no `architecture/` touched; Wave 122 anchor preserved).
-- QA to gate after Architect PASS.
-- DevSecOps to merge after QA PASS.
+- After Architect PASS: HANDOFF to QA for verification on viewer repo.
+- After QA PASS: HANDOFF to DevSecOps for viewer PR merge.
+- BA to allocate real FEAT-NNNN for `FEAT-tbd-test-cancel` when formally opened.
 
 ## Notes
 
-- Boundary respected: only `.claude/agents/backend-developer.md` + own HANDOFF touched per dispatch instructions.
-- Cross-reference to skill at `~/.claude/skills/role-routing-server-vs-ui/SKILL.md` (installed from `feature/wave-139-role-routing-skill`, PR #432).
+- UI Dev's PR can land independently — cancel button degrades gracefully to 404 if this endpoint is absent.
+- SIGKILL-after-5s is intentional: test runners have no user data at risk.
+- Audit-log dir (`coordination/test-runs/`) not auto-created — silent-skip avoids filesystem side effects on foreign workspaces.
+
+---
+
+## ⏭️ PREV — 2026-06-05 — Wave 139 Server-vs-UI routing assertion clause
+
+### Wave-139 PASS verdict — PR #434 — SHA ff7674c77bbd04f0c2c1369f7209d2bbfc6c8d30
+- **Gate role:** backend-developer (self-attestation — single-file body amendment)
+- **Timestamp:** 2026-06-05T17:35:00Z
+- **Notes:** Added `### Server-vs-UI routing assertion (Wave 139 — MANDATORY)` section to `.claude/agents/backend-developer.md` before Wave 122 anchor. 8 trigger patterns + 2-step assertion protocol (HANDOFF to PO + retro BE-NNNN authorship for drift). Cross-ref to `~/.claude/skills/role-routing-server-vs-ui/SKILL.md`. Cleanliness 153/153 + FEAT-0001 38/38 PASS.
 
 ---
 

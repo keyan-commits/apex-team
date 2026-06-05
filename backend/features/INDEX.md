@@ -17,6 +17,7 @@ Both files coexist as separate allocation logs — neither supersedes the other.
 | BE-0007 | TBD | TBD | 133 | retro | Scan-dir off-by-one fix — sibling workspace discovery corrected (`__dirname` → parent) |
 | BE-0008 | TBD | TBD | 135 | retro | Cache-Control: no-cache on static asset responses |
 | BE-0009 | TBD | TBD | 136 | retro | Playwright headed-mode toggle — `?headed=1` query param injects `--headed` into spawn args |
+| BE-0010 | TBD | TBD | 140 | in-progress | Process registry + `DELETE /api/run-test/:id` cancel endpoint + concurrent-run cap |
 
 ## Allocation notes
 
@@ -37,4 +38,4 @@ of routing all viewer changes solely to UI Dev was the gap this backfill closes.
 
 ## Next available ticket
 
-**BE-0010**
+**BE-0011**

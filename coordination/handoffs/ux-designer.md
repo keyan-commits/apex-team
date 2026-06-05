@@ -1,6 +1,20 @@
 # ux-designer — HANDOFF
 
-## NOW — 2026-06-05 — Wave 132 (Runner sub-grouping UX re-gate — PR #17)
+## NOW — 2026-06-05 — Wave 141 (Test runner UI redesign spec — UX-0002)
+
+### Wave-141 spec delivered — `design/features/FEAT-0005-test-runner-ui/UX-0002-test-runner-redesign.md`
+
+- **Status:** spec PASS (this is the spec delivery, not the implementation gate)
+- **Spec path:** `design/features/FEAT-0005-test-runner-ui/UX-0002-test-runner-redesign.md`
+- **Branch:** `feature/wave-141-test-runner-ux-spec`
+- **Features specced:** status badge (6 states + pulse dot), elapsed timer (mm:ss), live progress counter (vitest/jest/playwright/maven/gradle regex parsers), color-coded log lines (error/warn/pass/info + symbol prefix for color-blind safety), collapsible log panel (localStorage persist), copy-logs button (clipboard + toast), Playwright screenshot button (file:// open + clipboard fallback), cancel button visual (muted amber #c87840), result summary card, empty state, responsive behavior (768px/390px), full a11y spec (ARIA, focus management, reduced motion).
+- **Dependency:** Wave 140 (SSE batching + ring buffer + runId + cancel endpoint) must land before UI Dev implements. Spec assumes those primitives present.
+- **ID contract:** `#drawer-log`, `#drawer-log-cap`, `#drawer-cancel`, `#drawer-file-content`, `#drawer-content` preserved from Wave 140; `#drawer-status` → `#drawer-status-badge` (rename in setDrawerStatus()).
+- **Next:** UI Dev dispatch after this PR merges. Implementation gate fires after UI Dev's PR — NOT now.
+
+---
+
+## PREV — 2026-06-05 — Wave 132 (Runner sub-grouping UX re-gate — PR #17)
 
 ### Wave-132 PASS verdict — PR #17 — SHA 901e19c0a8304f416239b97a9e071abcfd13d96e
 
