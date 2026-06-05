@@ -17,7 +17,7 @@
   Any future `apex-team-viewer/server.mjs` or `lib/runner-resolver.mjs` change
   MUST dispatch BE Dev in parallel with UI Dev. Server-side code is BE Dev's lane.
 
-### Wave-137 PASS verdict — PR #TBD — SHA (pending merge)
+### Wave-137 PASS verdict — PR #430 — SHA 178eb40e1766c3748bc855db01e15b94dcbf8f26
 
 - **Gate role:** backend-developer (self-review, docs-only wave)
 - **Timestamp:** 2026-06-05T00:00:00Z
