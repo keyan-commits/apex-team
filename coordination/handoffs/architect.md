@@ -2,7 +2,7 @@
 
 ## ⏭️ NOW — 2026-06-05 — Wave 132 code-review gate (viewer PR #17 — PASS, Java/line-comment frontmatter)
 
-### Wave-132 PASS verdict — PR #17 — SHA 05d6ac1560de8538d5e22332be92eaed4a9a6ea2
+### Wave-132 PASS verdict — PR #17 — HEAD SHA 05d6ac1560de8538d5e22332be92eaed4a9a6ea2 — Merge SHA ecef500eb22fadd9ef5a9a9da0d7f919b2ff18cf (apex-team PR #423) / 901e19c0a8304f416239b97a9e071abcfd13d96e (viewer PR #17)
 - **Gate role:** architect (non-UI rubric — viewer PR #17, `feature/wave-132-runner-grouping-java-frontmatter`, HEAD `05d6ac1`). UI portion (runner sub-group headers + ▶Run-for-all-test-files in `public/app.js` + `public/style.css`) routes to UX Designer in parallel — NOT covered by this verdict.
 - **Cross-repo verdict:** PR # refers to `keyan-commits/apex-team-viewer#17`. SHA `05d6ac1560de8538d5e22332be92eaed4a9a6ea2` is HEAD of `feature/wave-132-runner-grouping-java-frontmatter` in the viewer repo at gate time (verified via `gh pr view 17 -R keyan-commits/apex-team-viewer --json headRefOid`).
 - **Timestamp:** 2026-06-05T12:03:00Z
@@ -28,7 +28,7 @@
 
 **PASS** for the non-UI portion of viewer PR #17 (the `parseFrontmatter` extension and its 14-test suite). The implementation matches the design contract: line-comment frontmatter scanning for `//` and `#` comment-language test files, capped at 20 non-empty lines, stops at first non-comment line, YAML `---` block wins when present. Fail-soft (null) on no-match preserved. Pure function with no I/O, no security surface. Comprehensive test coverage across positive/negative/edge axes meets the Wave 118 rubric.
 
-Per ADR-018 the verdict heading uses the real PR # (17) and the real 40-char HEAD SHA (`05d6ac1560de8538d5e22332be92eaed4a9a6ea2`). DevSecOps post-merge will backfill the merge SHA if it differs from HEAD.
+Per ADR-018 the verdict heading uses the real PR # (17) and the real 40-char HEAD SHA (`05d6ac1560de8538d5e22332be92eaed4a9a6ea2`). Merge SHAs backfilled by DevSecOps 2026-06-05: apex-team PR #423 → `ecef500eb22fadd9ef5a9a9da0d7f919b2ff18cf`; viewer PR #17 → `901e19c0a8304f416239b97a9e071abcfd13d96e`.
 
 ### Routing — UX Designer (UI portion) + QA next
 

@@ -1,6 +1,25 @@
-# DevSecOps — HANDOFF (Wave 130)
+# DevSecOps — HANDOFF (Wave 132)
 
-## ⏭️ NOW — 2026-06-04 (Wave 130)
+## ⏭️ NOW — 2026-06-05 (Wave 132)
+
+### Wave-132 MERGE COMPLETE — all 4 PRs merged 2026-06-05
+
+- **Viewer PR #17** (`keyan-commits/apex-team-viewer`) — Java/line-comment frontmatter parser + runner sub-grouping UI + ▶RUN visibility fix + WCAG-AA contrast fix. Closes apex-team-viewer#18. Merge SHA: `901e19c0a8304f416239b97a9e071abcfd13d96e`
+- **apex-team PR #422** (UI Dev HANDOFF refresh) — Merge SHA: `8cbaa36e4765fd1585306837a517dce4d8f151cb`
+- **apex-team PR #423** (Architect gate verdict) — Merge SHA: `ecef500eb22fadd9ef5a9a9da0d7f919b2ff18cf`
+- **apex-team PR #424** (UX Designer gate verdict) — Merge SHA: `c7a67663242a6f218300dadd6f6b49819325a54c`
+
+**Post-merge verification:**
+- apex-team `pnpm test:run` → 17/17 files, 722 passed + 1 skipped (baseline HOLDS)
+- viewer `npm test` → 3/3 files, 42/42 PASS
+- Viewer restart confirmed on port 3200
+- `GET /api/artifacts?role=qa` → returns `runner` fields (runner-resolved metadata LIVE); Wave 132 client-side runner sub-groupings rendered
+
+**SHA backfill PR:** `chore/wave-132-sha-backfill` — updates verdict SHAs in `coordination/handoffs/{architect,ux-designer,ui-developer,devsecops}.md`.
+
+---
+
+## ⏭️ PREV — 2026-06-04 (Wave 130)
 
 ### Wave-130 MERGE COMPLETE — all 4 PRs merged 2026-06-04
 
