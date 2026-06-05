@@ -2,11 +2,14 @@
 
 ## ⏭️ NOW — 2026-06-05 — Wave 132: runner sub-grouping + Java frontmatter parser
 
-### Wave-132 implementation complete — awaiting Architect + UX gate — viewer PR #17
+### Wave-132 MERGED — viewer PR #17 + apex-team PRs #422/#423/#424 — 2026-06-05
 
-- **Viewer PR:** `keyan-commits/apex-team-viewer#17` (branch `feature/wave-132-runner-grouping-java-frontmatter`, commit `05d6ac1`)
-- **apex-team HANDOFF refresh:** this branch `feature/wave-132-handoff-refresh` off `c0622672f1bb8435892925ec4f6b07b18b4ff228`
-- **Tests:** 42/42 PASS (was 28/28; +14 new frontmatter-parser tests)
+- **Viewer PR #17** merge SHA: `901e19c0a8304f416239b97a9e071abcfd13d96e`
+- **apex-team PR #422** (UI Dev HANDOFF refresh) merge SHA: `8cbaa36e4765fd1585306837a517dce4d8f151cb`
+- **apex-team PR #423** (Architect gate) merge SHA: `ecef500eb22fadd9ef5a9a9da0d7f919b2ff18cf`
+- **apex-team PR #424** (UX gate) merge SHA: `c7a67663242a6f218300dadd6f6b49819325a54c`
+- **Tests post-merge:** apex-team 722/722 + 1 skipped PASS; viewer 42/42 PASS
+- **HEAD SHA at gate (for reference):** viewer `05d6ac1` (Arch gate) / `6b79a70` (UX re-gate)
 
 **Deliverables (all in `keyan-commits/apex-team-viewer` PR #17):**
 

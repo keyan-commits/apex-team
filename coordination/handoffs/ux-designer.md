@@ -2,7 +2,7 @@
 
 ## NOW — 2026-06-05 — Wave 132 (Runner sub-grouping UX re-gate — PR #17)
 
-### Wave-132 PASS verdict — PR #17 — SHA 6b79a7067c578c260127135d4311677c8ab2c9f5
+### Wave-132 PASS verdict — PR #17 — HEAD SHA 6b79a7067c578c260127135d4311677c8ab2c9f5 — Merge SHA c7a67663242a6f218300dadd6f6b49819325a54c (apex-team PR #424) / 901e19c0a8304f416239b97a9e071abcfd13d96e (viewer PR #17)
 
 - **Gate role:** ux-designer
 - **Timestamp:** 2026-06-05T00:00:00Z
