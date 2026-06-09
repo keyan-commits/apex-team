@@ -1,6 +1,25 @@
 # HANDOFF — apex-team
 
-## ⏭️ NOW — 2026-06-05 (Wave 142 — strip orchestration mandate; subagents become direct-talk roles)
+## ⏭️ NOW — 2026-06-09 (skill: architectural-diagramming)
+
+**Branch `feature/skill-architectural-diagramming` off main.** One new
+skill at `.claude/skills/architectural-diagramming/SKILL.md` (symlinked
+into `~/.claude/skills/`). Enforces the Architectural Diagramming &
+Execution Protocol on any project drawing AWS network topologies, C4
+models, or other architecture diagrams — hierarchical layer compilation
+(no flat topologies), automated render→inspect→patch validation loop,
+single-source-of-truth schema for actors/systems/components.
+
+Triggered out of the cloud-dashboard Export-to-Lucid trial which surfaced
+several Lucid `create_diagram_from_specification` pitfalls now baked into
+the skill (text silently dropped on AWS-named shapes, `\n` collapse,
+label-above-icon rule, AWS19 vs AWS2024 class compatibility).
+
+**Suite:** unchanged — skill add is doc-only, no code under test.
+
+---
+
+## ⏭️ PREV — 2026-06-05 (Wave 142 — strip orchestration mandate; subagents become direct-talk roles)
 
 **Branch `feature/wave-142-strip-orchestration` off main.** User feedback: "3 hours for a 50-line app with broken login → workflow is net-negative." Wave 142 tears down the orchestration discipline that accumulated across Waves 117-141.
 
